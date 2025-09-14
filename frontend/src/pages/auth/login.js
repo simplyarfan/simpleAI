@@ -69,14 +69,18 @@ const Login = () => {
     
     setIsSubmitting(true);
     
-    const result = await login(formData);
-    
-    if (result.success) {
-      const returnUrl = router.query.returnUrl || '/';
-      router.push(returnUrl);
+    try {
+      const result = await login(formData);
+      
+      if (result.success) {
+        const returnUrl = router.query.returnUrl || '/';
+        router.push(returnUrl);
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   if (loading) {
@@ -238,27 +242,6 @@ const Login = () => {
             </div>
           </form>
 
-          {/* Email verification reminder */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <AlertCircle className="h-5 w-5 text-blue-400" />
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">
-                  Email Verification Required
-                </h3>
-                <div className="mt-2 text-sm text-blue-700">
-                  <p>
-                    New users must verify their email address before logging in.{' '}
-                    <Link href="/auth/verify-email" className="font-medium underline">
-                      Resend verification email
-                    </Link>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

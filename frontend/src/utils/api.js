@@ -4,9 +4,12 @@ import { jwtDecode } from 'jwt-decode';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+console.log('🔗 API Base URL:', API_BASE_URL);
+
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 30000, // 30 second timeout
   headers: {
     'Content-Type': 'application/json',
   },
@@ -18,8 +21,17 @@ export const tokenManager = {
   getRefreshToken: () => Cookies.get('refreshToken'),
   
   setTokens: (accessToken, refreshToken) => {
-    Cookies.set('accessToken', accessToken, { expires: 7, secure: true, sameSite: 'strict' });
-    Cookies.set('refreshToken', refreshToken, { expires: 30, secure: true, sameSite: 'strict' });
+    const isProduction = window.location.protocol === 'https:';
+    Cookies.set('accessToken', accessToken, { 
+      expires: 7, 
+      secure: isProduction, 
+      sameSite: isProduction ? 'none' : 'lax' 
+    });
+    Cookies.set('refreshToken', refreshToken, { 
+      expires: 30, 
+      secure: isProduction, 
+      sameSite: isProduction ? 'none' : 'lax' 
+    });
   },
   
   clearTokens: () => {
@@ -54,15 +66,24 @@ api.interceptors.request.use(
     if (token && !tokenManager.isTokenExpired(token)) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log(`🌐 API Request: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('❌ Request Error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Response interceptor to handle token refresh
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`✅ API Response: ${response.status} ${response.config.url}`);
+    return response;
+  },
   async (error) => {
+    console.error('❌ API Error:', error.response?.status, error.message);
+    
     const originalRequest = error.config;
     
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -81,13 +102,18 @@ api.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         } catch (refreshError) {
+          console.error('❌ Token refresh failed:', refreshError);
           tokenManager.clearTokens();
-          window.location.href = '/auth/login';
+          if (typeof window !== 'undefined') {
+            window.location.href = '/auth/login';
+          }
           return Promise.reject(refreshError);
         }
       } else {
         tokenManager.clearTokens();
-        window.location.href = '/auth/login';
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/login';
+        }
       }
     }
     
@@ -147,17 +173,28 @@ export const analyticsAPI = {
   exportAnalytics: (params) => api.get('/analytics/export', { params })
 };
 
+// Health check
+export const healthAPI = {
+  check: () => api.get('/health')
+};
+
 // Error handling helper
 export const handleAPIError = (error) => {
   if (error.response) {
     // Server responded with error status
-    return error.response.data?.message || 'An error occurred';
+    const message = error.response.data?.message || `Server error: ${error.response.status}`;
+    console.error('❌ Server Error:', message);
+    return message;
   } else if (error.request) {
     // Request made but no response
-    return 'Unable to connect to server. Please check your internet connection.';
+    const message = 'Unable to connect to server. Please check your internet connection.';
+    console.error('❌ Network Error:', message);
+    return message;
   } else {
     // Something else happened
-    return error.message || 'An unexpected error occurred';
+    const message = error.message || 'An unexpected error occurred';
+    console.error('❌ Unknown Error:', message);
+    return message;
   }
 };
 

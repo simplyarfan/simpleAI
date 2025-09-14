@@ -41,12 +41,7 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    if (!user.is_verified) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Please verify your email address' 
-      });
-    }
+    // Email verification check removed - users are auto-verified on registration
 
     // Add user to request object
     req.user = user;
@@ -142,7 +137,7 @@ const validateCompanyDomain = (req, res, next) => {
   }
 
   const emailDomain = email.split('@')[1];
-  const allowedDomain = process.env.COMPANY_DOMAIN;
+  const allowedDomain = process.env.COMPANY_DOMAIN || 'securemaxtech.com';
 
   if (emailDomain !== allowedDomain) {
     return res.status(403).json({

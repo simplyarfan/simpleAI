@@ -12,7 +12,7 @@ class User {
     this.role = userData?.role || 'user';
     this.is_verified = userData?.is_verified || false;
     this.verification_token = userData?.verification_token;
-    this.verification_expires = userData?.verification_expires;
+    this.verification_expiry = userData?.verification_expiry;
     this.password_reset_token = userData?.password_reset_token;
     this.password_reset_expires = userData?.password_reset_expires;
     this.last_login = userData?.last_login;
@@ -27,38 +27,28 @@ class User {
   // Create a new user
   static async create(userData) {
     try {
-      // Hash password
-      const saltRounds = 12;
-      const password_hash = await bcrypt.hash(userData.password, saltRounds);
-
-      // Generate verification token
-      const verification_token = uuidv4();
-      const verification_expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
       const sql = `
         INSERT INTO users (
           email, password_hash, first_name, last_name, role, 
-          verification_token, verification_expires, department, job_title
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          department, job_title, is_verified
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const params = [
         userData.email.toLowerCase(),
-        password_hash,
+        userData.password, // Password should already be hashed in controller
         userData.first_name,
         userData.last_name,
         userData.role || 'user',
-        verification_token,
-        verification_expires.toISOString(),
         userData.department || null,
-        userData.job_title || null
+        userData.job_title || null,
+        userData.is_verified || false
       ];
 
       const result = await database.run(sql, params);
       
-      // Get the created user
-      const user = await User.findById(result.id);
-      return user;
+      // Return the user ID for the controller to fetch the user
+      return result.id;
     } catch (error) {
       console.error('Error creating user:', error);
       throw error;
@@ -89,37 +79,6 @@ class User {
     }
   }
 
-  // Find user by verification token
-  static async findByVerificationToken(token) {
-    try {
-      const sql = `
-        SELECT * FROM users 
-        WHERE verification_token = ? AND verification_expires > datetime('now') 
-        AND is_active = 1
-      `;
-      const row = await database.get(sql, [token]);
-      return row ? new User(row) : null;
-    } catch (error) {
-      console.error('Error finding user by verification token:', error);
-      throw error;
-    }
-  }
-
-  // Find user by password reset token
-  static async findByResetToken(token) {
-    try {
-      const sql = `
-        SELECT * FROM users 
-        WHERE password_reset_token = ? AND password_reset_expires > datetime('now')
-        AND is_active = 1
-      `;
-      const row = await database.get(sql, [token]);
-      return row ? new User(row) : null;
-    } catch (error) {
-      console.error('Error finding user by reset token:', error);
-      throw error;
-    }
-  }
 
   // Verify password
   async verifyPassword(password) {
@@ -187,49 +146,6 @@ class User {
     }
   }
 
-  // Verify email
-  async verifyEmail() {
-    try {
-      const sql = `
-        UPDATE users 
-        SET is_verified = 1, verification_token = NULL, verification_expires = NULL, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-      `;
-      
-      await database.run(sql, [this.id]);
-      this.is_verified = true;
-      this.verification_token = null;
-      this.verification_expires = null;
-      
-      return this;
-    } catch (error) {
-      console.error('Error verifying email:', error);
-      throw error;
-    }
-  }
-
-  // Set password reset token
-  async setPasswordResetToken() {
-    try {
-      const reset_token = uuidv4();
-      const reset_expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-      
-      const sql = `
-        UPDATE users 
-        SET password_reset_token = ?, password_reset_expires = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-      `;
-      
-      await database.run(sql, [reset_token, reset_expires.toISOString(), this.id]);
-      this.password_reset_token = reset_token;
-      this.password_reset_expires = reset_expires;
-      
-      return reset_token;
-    } catch (error) {
-      console.error('Error setting password reset token:', error);
-      throw error;
-    }
-  }
 
   // Get all users (admin only)
   static async getAll(options = {}) {

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { authAPI, tokenManager, handleAPIError } from '../utils/api';
+import { tokenManager } from '../utils/api';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext({});
@@ -30,10 +30,21 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const response = await authAPI.checkAuth();
-      if (response.data.success) {
-        setUser(response.data.data.user);
-        setIsAuthenticated(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/check`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setUser(data.data.user);
+          setIsAuthenticated(true);
+        }
       }
     } catch (error) {
       console.error('Auth check failed:', error);
@@ -46,16 +57,42 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setLoading(true);
-      const response = await authAPI.register(userData);
-      
-      if (response.data.success) {
-        toast.success(response.data.message || 'Registration successful! Please check your email to verify your account.');
-        return { success: true, data: response.data.data };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
       }
-    } catch (error) {
-      const message = handleAPIError(error);
-      toast.error(message);
-      return { success: false, error: message };
+
+      // Handle successful registration with auto-login
+      if (data.success && data.accessToken) {
+        // Store tokens
+        tokenManager.setTokens(data.accessToken, data.refreshToken);
+        
+        // Set user data
+        setUser(data.user);
+        setIsAuthenticated(true);
+        
+        toast.success(data.message || 'Registration successful!');
+      }
+
+      return {
+        success: true,
+        message: data.message
+      };
+    } catch (err) {
+      const errorMessage = err.message || 'Registration failed';
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -64,25 +101,38 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      const response = await authAPI.login(credentials);
-      
-      if (response.data.success) {
-        const { user, tokens } = response.data.data;
-        
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(credentials),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Handle successful login - backend returns user and tokens directly
+      if (data.success && data.accessToken) {
         // Store tokens
-        tokenManager.setTokens(tokens.accessToken, tokens.refreshToken);
-        
+        tokenManager.setTokens(data.accessToken, data.refreshToken);
+
         // Update state
-        setUser(user);
+        setUser(data.user);
         setIsAuthenticated(true);
-        
+
         toast.success('Login successful!');
-        return { success: true, user };
+        return { success: true, user: data.user };
       }
     } catch (error) {
-      const message = handleAPIError(error);
-      toast.error(message);
-      return { success: false, error: message };
+      const errorMessage = error.message || 'Login failed';
+      toast.error(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -90,11 +140,26 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async (logoutAll = false) => {
     try {
+      const token = tokenManager.getAccessToken();
       if (logoutAll) {
-        await authAPI.logoutAll();
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout-all`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
         toast.success('Logged out from all devices');
       } else {
-        await authAPI.logout();
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
         toast.success('Logged out successfully');
       }
     } catch (error) {
@@ -107,110 +172,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const verifyEmail = async (token) => {
-    try {
-      const response = await authAPI.verifyEmail(token);
-      
-      if (response.data.success) {
-        toast.success('Email verified successfully! You can now log in.');
-        return { success: true };
-      }
-    } catch (error) {
-      const message = handleAPIError(error);
-      toast.error(message);
-      return { success: false, error: message };
-    }
-  };
-
-  const resendVerification = async (email) => {
-    try {
-      const response = await authAPI.resendVerification(email);
-      
-      if (response.data.success) {
-        toast.success('Verification email sent successfully!');
-        return { success: true };
-      }
-    } catch (error) {
-      const message = handleAPIError(error);
-      toast.error(message);
-      return { success: false, error: message };
-    }
-  };
-
-  const forgotPassword = async (email) => {
-    try {
-      const response = await authAPI.forgotPassword(email);
-      
-      if (response.data.success) {
-        toast.success('Password reset email sent successfully!');
-        return { success: true };
-      }
-    } catch (error) {
-      const message = handleAPIError(error);
-      toast.error(message);
-      return { success: false, error: message };
-    }
-  };
-
-  const resetPassword = async (token, password) => {
-    try {
-      const response = await authAPI.resetPassword(token, password);
-      
-      if (response.data.success) {
-        toast.success('Password reset successfully! You can now log in.');
-        return { success: true };
-      }
-    } catch (error) {
-      const message = handleAPIError(error);
-      toast.error(message);
-      return { success: false, error: message };
-    }
-  };
-
-  const updateProfile = async (userData) => {
-    try {
-      setLoading(true);
-      const response = await authAPI.updateProfile(userData);
-      
-      if (response.data.success) {
-        setUser(response.data.data.user);
-        toast.success('Profile updated successfully!');
-        return { success: true, user: response.data.data.user };
-      }
-    } catch (error) {
-      const message = handleAPIError(error);
-      toast.error(message);
-      return { success: false, error: message };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshUserData = async () => {
-    try {
-      const response = await authAPI.getProfile();
-      if (response.data.success) {
-        setUser(response.data.data.user);
-        return response.data.data.user;
-      }
-    } catch (error) {
-      console.error('Failed to refresh user data:', error);
-    }
-  };
-
   const value = {
     user,
     loading,
     isAuthenticated,
-    register,
     login,
+    register,
     logout,
-    verifyEmail,
-    resendVerification,
-    forgotPassword,
-    resetPassword,
-    updateProfile,
-    refreshUserData,
     checkAuthStatus
   };
 
@@ -221,4 +189,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthContext;
+export default AuthProvider;

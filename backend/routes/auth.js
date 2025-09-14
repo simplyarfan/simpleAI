@@ -42,22 +42,7 @@ router.post('/login',
   AuthController.login
 );
 
-// Email verification
-router.post('/verify-email', 
-  emailVerificationLimiter,
-  validateEmailVerification,
-  trackActivity('email_verification_attempt'),
-  AuthController.verifyEmail
-);
-
-// Resend verification email
-router.post('/resend-verification', 
-  emailVerificationLimiter,
-  validateEmailOnly,
-  validateCompanyDomain,
-  trackActivity('resend_verification_attempt'),
-  AuthController.resendVerification
-);
+// Email verification routes removed - no longer needed
 
 // Request password reset
 router.post('/forgot-password', 

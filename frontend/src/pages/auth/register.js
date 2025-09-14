@@ -100,21 +100,25 @@ const Register = () => {
     
     setIsSubmitting(true);
     
-    const result = await register({
-      email: formData.email,
-      password: formData.password,
-      first_name: formData.first_name,
-      last_name: formData.last_name,
-      department: formData.department || undefined,
-      job_title: formData.job_title || undefined
-    });
-    
-    if (result.success) {
-      // Registration successful, redirect to verification page
-      router.push('/auth/verify-email?email=' + encodeURIComponent(formData.email));
+    try {
+      const result = await register({
+        email: formData.email,
+        password: formData.password,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        department: formData.department || undefined,
+        job_title: formData.job_title || undefined
+      });
+      
+      if (result.success) {
+        // Registration successful, user is now logged in automatically
+        router.push('/');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   if (loading) {

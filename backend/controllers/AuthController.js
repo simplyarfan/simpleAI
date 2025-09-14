@@ -1,22 +1,24 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
 const { validationResult } = require('express-validator');
 
-// Simple verification system without email
-const generateVerificationCode = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
-};
 
 class AuthController {
   // Register new user
   static async register(req, res) {
     try {
+      console.log('Registration attempt started:', req.body.email);
+      
+      // Ensure database is connected and tables are initialized
+      await database.connect();
+      
       // Check for validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('Validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           message: 'Validation errors',
@@ -25,68 +27,105 @@ class AuthController {
       }
 
       const { email, password, first_name, last_name, department, job_title } = req.body;
+      console.log('Registration data validated for:', email);
 
       // Check if user already exists
+      console.log('Checking if user exists...');
       const existingUser = await User.findByEmail(email);
       if (existingUser) {
-        return res.status(409).json({
+        console.log('User already exists:', email);
+        return res.status(400).json({
           success: false,
-          message: 'User with this email already exists'
+          message: 'An account with this email address already exists. Please try logging in instead.'
         });
       }
 
-      // Determine role (first user becomes superadmin)
-      let role = 'user';
-      const userCount = await database.get('SELECT COUNT(*) as count FROM users WHERE is_active = 1');
-      
-      if (userCount.count === 0) {
-        role = 'superadmin';
-      }
+      // Hash password
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      // Create user
-      const user = await User.create({
-        email,
-        password,
+      console.log('Creating new user account...');
+
+      // Create user (verified by default since no email verification needed)
+      const userId = await User.create({
         first_name,
         last_name,
-        role,
-        department,
-        job_title
+        email,
+        password: hashedPassword,
+        department: department || null,
+        job_title: job_title || null,
+        is_verified: true // Auto-verify since no email verification
       });
 
-      // Generate 6-digit verification code
-      const verificationCode = generateVerificationCode();
-      const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      console.log('User created with ID:', userId);
 
-      // Store verification code in database
-      await database.run(
-        'UPDATE users SET verification_token = ?, verification_expiry = ?, email_verified = 0 WHERE id = ?',
-        [verificationCode, verificationExpiry.toISOString(), user.id]
+      // Get the created user
+      const user = await User.findById(userId);
+      
+      if (!user) {
+        throw new Error(`User not found after creation with ID: ${userId}`);
+      }
+
+      // Generate JWT tokens
+      const accessToken = jwt.sign(
+        { userId: user.id, email: user.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '15m' }
       );
 
+      const refreshToken = jwt.sign(
+        { userId: user.id },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Create session
+      const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      await database.run(`
+        INSERT INTO user_sessions (user_id, session_token, refresh_token, expires_at, ip_address, user_agent)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [
+        user.id,
+        accessToken,
+        refreshToken,
+        sessionExpiry.toISOString(),
+        req.ip,
+        req.get('User-Agent')
+      ]);
+
+      console.log('Session created for user:', userId);
+
+      // Return success with tokens (auto-login after registration)
       res.status(201).json({
         success: true,
-        message: 'Registration successful. Use the verification code to verify your account.',
-        data: {
-          user: {
-            id: user.id,
-            email: user.email,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            role: user.role,
-            is_verified: user.is_verified
-          },
-          verificationCode: verificationCode, // In production, you'd send this via SMS/email service
-          requiresVerification: true,
-          note: 'In a production environment, this code would be sent via SMS or email service'
-        }
+        message: 'Registration successful! You are now logged in.',
+        user: {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          department: user.department,
+          job_title: user.job_title,
+          role: user.role
+        },
+        accessToken,
+        refreshToken
       });
 
     } catch (error) {
       console.error('Registration error:', error);
+      console.error('Error stack:', error.stack);
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        code: error.code,
+        errno: error.errno
+      });
       res.status(500).json({
         success: false,
-        message: 'Internal server error during registration'
+        message: 'Internal server error during registration',
+        error: error.message,
+        details: error.code || error.errno
       });
     }
   }
@@ -165,40 +204,21 @@ class AuthController {
       // Update last login
       await user.update({ last_login: new Date().toISOString() });
 
-      // Track login activity
-      await database.run(`
-        INSERT INTO user_analytics (user_id, action, metadata, ip_address, user_agent)
-        VALUES (?, ?, ?, ?, ?)
-      `, [
-        user.id,
-        'login',
-        JSON.stringify({ device: deviceInfo }),
-        req.ip,
-        req.get('User-Agent')
-      ]);
-
-      // Send login alert email (optional, for security)
-      try {
-        await emailService.sendLoginAlertEmail(user, {
-          loginTime: new Date(),
-          device: deviceInfo,
-          ipAddress: req.ip
-        });
-      } catch (emailError) {
-        console.error('Error sending login alert:', emailError);
-      }
 
       res.json({
         success: true,
         message: 'Login successful',
-        data: {
-          user: user.toJSON(),
-          tokens: {
-            accessToken: sessionToken,
-            refreshToken: refreshToken,
-            expiresIn: process.env.JWT_EXPIRES_IN
-          }
-        }
+        user: {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          department: user.department,
+          job_title: user.job_title,
+          role: user.role
+        },
+        accessToken: sessionToken,
+        refreshToken: refreshToken
       });
 
     } catch (error) {
@@ -210,123 +230,6 @@ class AuthController {
     }
   }
 
-  // Verify email with code
-  static async verifyEmail(req, res) {
-    try {
-      const { email, code } = req.body;
-      
-      if (!email || !code) {
-        return res.status(400).json({
-          success: false,
-          message: 'Email and verification code are required'
-        });
-      }
-      
-      // Find user with verification code
-      const user = await User.findByEmail(email);
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: 'User not found'
-        });
-      }
-      
-      if (user.verification_token !== code) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid verification code'
-        });
-      }
-      
-      // Check if code is expired
-      const now = new Date();
-      const expiry = new Date(user.verification_expiry);
-      
-      if (now > expiry) {
-        return res.status(400).json({
-          success: false,
-          message: 'Verification code has expired'
-        });
-      }
-      
-      // Update user as verified
-      await database.run(
-        'UPDATE users SET is_verified = 1, verification_token = NULL, verification_expiry = NULL WHERE id = ?',
-        [user.id]
-      );
-      
-      res.json({
-        success: true,
-        message: 'Email verified successfully'
-      });
-      
-    } catch (error) {
-      console.error('Email verification error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error during verification'
-      });
-    }
-  }
-
-  // Resend verification code
-  static async resendVerification(req, res) {
-    try {
-      const { email } = req.body;
-
-      if (!email) {
-        return res.status(400).json({
-          success: false,
-          message: 'Email is required'
-        });
-      }
-
-      const user = await User.findByEmail(email);
-      if (!user) {
-        // Don't reveal if user exists or not for security
-        return res.json({
-          success: true,
-          message: 'If an account with this email exists and is not verified, a verification email has been sent.'
-        });
-      }
-
-      if (user.is_verified) {
-        return res.status(400).json({
-          success: false,
-          message: 'This account is already verified'
-        });
-      }
-
-      // Generate new verification token if expired
-      if (!user.verification_token || new Date(user.verification_expires) <= new Date()) {
-        const newToken = uuidv4();
-        const newExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-        
-        await database.run(`
-          UPDATE users 
-          SET verification_token = ?, verification_expires = ?, updated_at = CURRENT_TIMESTAMP
-          WHERE id = ?
-        `, [newToken, newExpires.toISOString(), user.id]);
-        
-        user.verification_token = newToken;
-      }
-
-      // Send verification email
-      await emailService.sendVerificationEmail(user, user.verification_token);
-
-      res.json({
-        success: true,
-        message: 'Verification email sent successfully'
-      });
-
-    } catch (error) {
-      console.error('Resend verification error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error'
-      });
-    }
-  }
 
   // Request password reset
   static async requestPasswordReset(req, res) {
@@ -349,22 +252,15 @@ class AuthController {
         });
       }
 
-      // Generate reset token
-      const resetToken = await user.setPasswordResetToken();
-
-      // Send password reset email
-      await emailService.sendPasswordResetEmail(user, resetToken);
-
-      // Track password reset request
+      // Generate reset token (simplified - no email sending)
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const resetExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      
       await database.run(`
-        INSERT INTO user_analytics (user_id, action, ip_address, user_agent)
-        VALUES (?, ?, ?, ?)
-      `, [
-        user.id,
-        'password_reset_requested',
-        req.ip,
-        req.get('User-Agent')
-      ]);
+        UPDATE users 
+        SET password_reset_token = ?, password_reset_expiry = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `, [resetToken, resetExpiry.toISOString(), user.id]);
 
       res.json({
         success: true,
@@ -395,7 +291,11 @@ class AuthController {
       const { token, password } = req.body;
 
       // Find user by reset token
-      const user = await User.findByResetToken(token);
+      const user = await database.get(
+        'SELECT * FROM users WHERE password_reset_token = ? AND password_reset_expiry > datetime("now")',
+        [token]
+      );
+      
       if (!user) {
         return res.status(400).json({
           success: false,
@@ -403,22 +303,19 @@ class AuthController {
         });
       }
 
-      // Update password
-      await user.updatePassword(password);
+      // Hash new password
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // Update password and clear reset token
+      await database.run(`
+        UPDATE users 
+        SET password_hash = ?, password_reset_token = NULL, password_reset_expiry = NULL, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `, [hashedPassword, user.id]);
 
       // Invalidate all sessions for this user (force re-login)
       await database.run('DELETE FROM user_sessions WHERE user_id = ?', [user.id]);
-
-      // Track password reset
-      await database.run(`
-        INSERT INTO user_analytics (user_id, action, ip_address, user_agent)
-        VALUES (?, ?, ?, ?)
-      `, [
-        user.id,
-        'password_reset_completed',
-        req.ip,
-        req.get('User-Agent')
-      ]);
 
       res.json({
         success: true,
@@ -519,18 +416,6 @@ class AuthController {
         // Remove session from database
         await database.run('DELETE FROM user_sessions WHERE session_token = ?', [token]);
         
-        // Track logout activity
-        if (req.user) {
-          await database.run(`
-            INSERT INTO user_analytics (user_id, action, ip_address, user_agent)
-            VALUES (?, ?, ?, ?)
-          `, [
-            req.user.id,
-            'logout',
-            req.ip,
-            req.get('User-Agent')
-          ]);
-        }
       }
 
       res.json({
@@ -560,17 +445,6 @@ class AuthController {
       // Remove all sessions for this user
       await database.run('DELETE FROM user_sessions WHERE user_id = ?', [req.user.id]);
 
-      // Track logout all activity
-      await database.run(`
-        INSERT INTO user_analytics (user_id, action, ip_address, user_agent)
-        VALUES (?, ?, ?, ?)
-      `, [
-        req.user.id,
-        'logout_all_devices',
-        req.ip,
-        req.get('User-Agent')
-      ]);
-
       res.json({
         success: true,
         message: 'Logged out from all devices successfully'
@@ -595,22 +469,17 @@ class AuthController {
         });
       }
 
-      // Get user preferences
-      const preferences = await database.get(
-        'SELECT * FROM user_preferences WHERE user_id = ?',
-        [req.user.id]
-      );
-
       res.json({
         success: true,
         data: {
-          user: req.user.toJSON(),
-          preferences: preferences || {
-            theme: 'light',
-            notifications_email: true,
-            notifications_browser: true,
-            language: 'en',
-            timezone: 'UTC'
+          user: {
+            id: req.user.id,
+            first_name: req.user.first_name,
+            last_name: req.user.last_name,
+            email: req.user.email,
+            department: req.user.department,
+            job_title: req.user.job_title,
+            role: req.user.role
           }
         }
       });
@@ -646,29 +515,25 @@ class AuthController {
       const { first_name, last_name, department, job_title } = req.body;
 
       // Update user
-      await req.user.update({
-        first_name,
-        last_name,
-        department,
-        job_title
-      });
-
-      // Track profile update
       await database.run(`
-        INSERT INTO user_analytics (user_id, action, ip_address, user_agent)
-        VALUES (?, ?, ?, ?)
-      `, [
-        req.user.id,
-        'profile_updated',
-        req.ip,
-        req.get('User-Agent')
-      ]);
+        UPDATE users 
+        SET first_name = ?, last_name = ?, department = ?, job_title = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `, [first_name, last_name, department, job_title, req.user.id]);
 
       res.json({
         success: true,
         message: 'Profile updated successfully',
         data: {
-          user: req.user.toJSON()
+          user: {
+            id: req.user.id,
+            first_name,
+            last_name,
+            email: req.user.email,
+            department,
+            job_title,
+            role: req.user.role
+          }
         }
       });
 
@@ -694,7 +559,15 @@ class AuthController {
       res.json({
         success: true,
         data: {
-          user: req.user.toJSON(),
+          user: {
+            id: req.user.id,
+            first_name: req.user.first_name,
+            last_name: req.user.last_name,
+            email: req.user.email,
+            department: req.user.department,
+            job_title: req.user.job_title,
+            role: req.user.role
+          },
           authenticated: true
         }
       });

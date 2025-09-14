@@ -22,11 +22,13 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS configuration
+// CORS configuration - Updated for your deployed frontend
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
-    'https://comfy-syrniki-164b7b.netlify.app'
+    'https://comfy-syrniki-164b7b.netlify.app',
+    'https://comfy-syrniki-164b7b.netlify.app/',
+    'http://localhost:3000'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -49,13 +51,28 @@ app.use(generalLimiter);
 // Static file serving for uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Health check endpoint (before rate limiting)
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
     success: true,
-    message: 'AI Platform API is running',
+    status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '1.0.0'
+  });
+});
+
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Enterprise AI Hub Backend API',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      auth: '/api/auth',
+      analytics: '/api/analytics', 
+      support: '/api/support',
+      cvIntelligence: '/api/cv-intelligence'
+    }
   });
 });
 
@@ -71,64 +88,7 @@ app.get('/api', (req, res) => {
     success: true,
     message: 'Enterprise AI Hub API',
     version: '1.0.0',
-    endpoints: {
-      auth: {
-        base: '/api/auth',
-        endpoints: [
-          'POST /register - Register new user',
-          'POST /login - User login',
-          'POST /verify-email - Verify email address',
-          'POST /resend-verification - Resend verification email',
-          'POST /forgot-password - Request password reset',
-          'POST /reset-password - Reset password',
-          'POST /refresh-token - Refresh access token',
-          'GET /profile - Get user profile',
-          'PUT /profile - Update user profile',
-          'GET /check - Check authentication status',
-          'POST /logout - Logout current session',
-          'POST /logout-all - Logout all sessions'
-        ]
-      },
-      analytics: {
-        base: '/api/analytics',
-        description: 'Superadmin only',
-        endpoints: [
-          'GET /dashboard - Dashboard statistics',
-          'GET /users - User analytics',
-          'GET /agents - Agent usage analytics',
-          'GET /cv-intelligence - CV Intelligence analytics',
-          'GET /system - System analytics',
-          'GET /users/:user_id/activity - User activity details',
-          'GET /export - Export analytics data'
-        ]
-      },
-      support: {
-        base: '/api/support',
-        endpoints: [
-          'POST / - Create support ticket',
-          'GET /my-tickets - Get user tickets',
-          'GET /:ticket_id - Get ticket details',
-          'POST /:ticket_id/comments - Add comment',
-          'PUT /:ticket_id - Update ticket',
-          'GET / - Get all tickets (admin)',
-          'GET /admin/stats - Support statistics (admin)',
-          'DELETE /:ticket_id - Delete ticket (admin)'
-        ]
-      },
-      cvIntelligence: {
-        base: '/api/cv-intelligence',
-        endpoints: [
-          'POST / - Create CV analysis batch',
-          'GET /my-batches - Get user batches',
-          'GET /batches/:batch_id - Get batch details',
-          'GET /candidates/:candidate_id - Get candidate details',
-          'GET /batches/:batch_id/export - Export batch results',
-          'DELETE /batches/:batch_id - Delete batch',
-          'GET /admin/stats - CV Intelligence statistics (admin)'
-        ]
-      }
-    },
-    documentation: 'https://docs.yourapi.com'
+    documentation: 'Visit /health for server status'
   });
 });
 
@@ -190,73 +150,29 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Initialize database and start server
-const startServer = async () => {
+// Initialize database on startup
+const initializeDatabase = async () => {
   try {
-    // Connect to database
     await database.connect();
-    console.log('Database connected successfully');
-
-    // Start server
-    const server = app.listen(PORT, () => {
-      console.log(`
-🚀 Enterprise AI Hub API Server is running!
-
-📍 Server URL: http://localhost:${PORT}
-🌍 Environment: ${process.env.NODE_ENV || 'development'}
-📚 API Documentation: http://localhost:${PORT}/api
-❤️  Health Check: http://localhost:${PORT}/health
-
-🔐 Company Domain: ${process.env.COMPANY_DOMAIN}
-📧 Admin Email: ${process.env.ADMIN_EMAIL}
-
-Available Endpoints:
-├── Authentication: /api/auth
-├── Analytics: /api/analytics (superadmin only)
-├── Support: /api/support
-└── CV Intelligence: /api/cv-intelligence
-
-Ready to accept requests! 🎉
-      `);
-    });
-
-    // Graceful shutdown
-    process.on('SIGTERM', () => {
-      console.log('SIGTERM received, shutting down gracefully...');
-      server.close(async () => {
-        await database.disconnect();
-        console.log('Server closed and database disconnected');
-        process.exit(0);
-      });
-    });
-
-    process.on('SIGINT', () => {
-      console.log('SIGINT received, shutting down gracefully...');
-      server.close(async () => {
-        await database.disconnect();
-        console.log('Server closed and database disconnected');
-        process.exit(0);
-      });
-    });
-
+    console.log('✅ Database connected successfully');
+    
+    // Initialize tables if needed
+    await database.initializeTables();
+    console.log('✅ Database tables initialized');
   } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+    console.error('❌ Failed to initialize database:', error);
   }
 };
 
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  process.exit(1);
-});
+// Initialize database
+initializeDatabase();
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
+// Start server (only for local development)
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
+  });
+}
 
-// Start the server
-startServer();
-
+// Export for Vercel
 module.exports = app;
