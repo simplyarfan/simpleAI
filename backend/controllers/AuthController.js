@@ -1,9 +1,14 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
-const emailService = require('../utils/emailService');
 const { validationResult } = require('express-validator');
+
+// Simple verification system without email
+const generateVerificationCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+};
 
 class AuthController {
   // Register new user
@@ -30,11 +35,11 @@ class AuthController {
         });
       }
 
-      // Determine role (first user or admin email becomes superadmin)
+      // Determine role (first user becomes superadmin)
       let role = 'user';
       const userCount = await database.get('SELECT COUNT(*) as count FROM users WHERE is_active = 1');
       
-      if (userCount.count === 0 || email.toLowerCase() === process.env.ADMIN_EMAIL?.toLowerCase()) {
+      if (userCount.count === 0) {
         role = 'superadmin';
       }
 
@@ -49,17 +54,19 @@ class AuthController {
         job_title
       });
 
-      // Send verification email
-      try {
-        await emailService.sendVerificationEmail(user, user.verification_token);
-      } catch (emailError) {
-        console.error('Error sending verification email:', emailError);
-        // Don't fail registration if email fails
-      }
+      // Generate 6-digit verification code
+      const verificationCode = generateVerificationCode();
+      const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+      // Store verification code in database
+      await database.run(
+        'UPDATE users SET verification_token = ?, verification_expiry = ?, email_verified = 0 WHERE id = ?',
+        [verificationCode, verificationExpiry.toISOString(), user.id]
+      );
 
       res.status(201).json({
         success: true,
-        message: 'Registration successful. Please check your email to verify your account.',
+        message: 'Registration successful. Use the verification code to verify your account.',
         data: {
           user: {
             id: user.id,
@@ -68,7 +75,10 @@ class AuthController {
             last_name: user.last_name,
             role: user.role,
             is_verified: user.is_verified
-          }
+          },
+          verificationCode: verificationCode, // In production, you'd send this via SMS/email service
+          requiresVerification: true,
+          note: 'In a production environment, this code would be sent via SMS or email service'
         }
       });
 
@@ -200,66 +210,66 @@ class AuthController {
     }
   }
 
-  // Verify email
+  // Verify email with code
   static async verifyEmail(req, res) {
     try {
-      const { token } = req.body;
-
-      if (!token) {
+      const { email, code } = req.body;
+      
+      if (!email || !code) {
         return res.status(400).json({
           success: false,
-          message: 'Verification token is required'
+          message: 'Email and verification code are required'
         });
       }
-
-      // Find user by verification token
-      const user = await User.findByVerificationToken(token);
+      
+      // Find user with verification code
+      const user = await User.findByEmail(email);
       if (!user) {
-        return res.status(400).json({
+        return res.status(404).json({
           success: false,
-          message: 'Invalid or expired verification token'
+          message: 'User not found'
         });
       }
-
-      // Verify email
-      await user.verifyEmail();
-
-      // Send welcome email
-      try {
-        await emailService.sendWelcomeEmail(user);
-      } catch (emailError) {
-        console.error('Error sending welcome email:', emailError);
+      
+      if (user.verification_token !== code) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid verification code'
+        });
       }
-
-      // Track verification activity
-      await database.run(`
-        INSERT INTO user_analytics (user_id, action, ip_address, user_agent)
-        VALUES (?, ?, ?, ?)
-      `, [
-        user.id,
-        'email_verified',
-        req.ip,
-        req.get('User-Agent')
-      ]);
-
+      
+      // Check if code is expired
+      const now = new Date();
+      const expiry = new Date(user.verification_expiry);
+      
+      if (now > expiry) {
+        return res.status(400).json({
+          success: false,
+          message: 'Verification code has expired'
+        });
+      }
+      
+      // Update user as verified
+      await database.run(
+        'UPDATE users SET is_verified = 1, verification_token = NULL, verification_expiry = NULL WHERE id = ?',
+        [user.id]
+      );
+      
       res.json({
         success: true,
-        message: 'Email verified successfully. You can now log in.',
-        data: {
-          user: user.toJSON()
-        }
+        message: 'Email verified successfully'
       });
-
+      
     } catch (error) {
       console.error('Email verification error:', error);
       res.status(500).json({
         success: false,
-        message: 'Internal server error during email verification'
+        message: 'Internal server error during verification'
       });
     }
   }
 
-  // Resend verification email
+  // Resend verification code
   static async resendVerification(req, res) {
     try {
       const { email } = req.body;
