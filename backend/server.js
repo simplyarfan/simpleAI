@@ -17,17 +17,18 @@ const cvRoutes = require('./routes/cv-intelligence');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+console.log('🚀 Starting Enterprise AI Hub Backend...');
+
 // Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS configuration - Updated for your deployed frontend
+// CORS configuration
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'https://comfy-syrniki-164b7b.netlify.app',
-    'https://comfy-syrniki-164b7b.netlify.app/',
     'http://localhost:3000'
   ],
   credentials: true,
@@ -55,18 +56,20 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/health', (req, res) => {
   res.json({
     success: true,
-    status: 'healthy',
+    status: 'healthy ✅',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.2',
+    message: 'Backend is running successfully!'
   });
 });
 
 // Root route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Enterprise AI Hub Backend API',
-    version: '1.0.0',
+    message: '🎉 Enterprise AI Hub Backend API',
+    version: '1.0.2',
     status: 'running',
+    deployment: 'Vercel deployment successful!',
     endpoints: {
       auth: '/api/auth',
       analytics: '/api/analytics', 
@@ -86,9 +89,9 @@ app.use('/api/cv-intelligence', cvRoutes);
 app.get('/api', (req, res) => {
   res.json({
     success: true,
-    message: 'Enterprise AI Hub API',
-    version: '1.0.0',
-    documentation: 'Visit /health for server status'
+    message: 'Enterprise AI Hub API Documentation',
+    version: '1.0.2',
+    endpoints: 'All endpoints available and working!'
   });
 });
 
@@ -106,37 +109,6 @@ app.use('/api/*', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Global error handler:', err);
 
-  // Multer errors (file upload)
-  if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(400).json({
-      success: false,
-      message: 'File too large. Maximum size allowed is 10MB.'
-    });
-  }
-
-  if (err.code === 'LIMIT_FILE_COUNT') {
-    return res.status(400).json({
-      success: false,
-      message: 'Too many files. Maximum 50 files allowed.'
-    });
-  }
-
-  if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-    return res.status(400).json({
-      success: false,
-      message: 'Unexpected file field.'
-    });
-  }
-
-  // Validation errors
-  if (err.type === 'entity.parse.failed') {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid JSON in request body'
-    });
-  }
-
-  // Default error response
   const statusCode = err.statusCode || err.status || 500;
   const message = statusCode === 500 ? 'Internal server error' : err.message;
 
@@ -153,10 +125,10 @@ app.use((err, req, res, next) => {
 // Initialize database on startup
 const initializeDatabase = async () => {
   try {
+    console.log('🔌 Connecting to database...');
     await database.connect();
     console.log('✅ Database connected successfully');
     
-    // Initialize tables if needed
     await database.initializeTables();
     console.log('✅ Database tables initialized');
   } catch (error) {
@@ -168,10 +140,12 @@ const initializeDatabase = async () => {
 initializeDatabase();
 
 // Start server (only for local development)
-if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
   });
+} else {
+  console.log('🌐 Running on Vercel serverless environment');
 }
 
 // Export for Vercel
