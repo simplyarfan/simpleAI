@@ -24,11 +24,12 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS configuration
+// CORS configuration - Updated for new Netlify URL
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
-    'https://comfy-syrniki-164b7b.netlify.app',
+    'https://thesimpleai.netlify.app',
+    'https://comfy-syrniki-164b7b.netlify.app', // Keep old URL during transition
     'http://localhost:3000'
   ],
   credentials: true,
@@ -56,20 +57,22 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get('/health', (req, res) => {
   res.json({
     success: true,
-    status: 'healthy ✅',
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: '1.0.2',
-    message: 'Backend is running successfully!'
+    version: '1.0.3',
+    message: 'Backend is running successfully!',
+    frontend: 'https://thesimpleai.netlify.app'
   });
 });
 
 // Root route
 app.get('/', (req, res) => {
   res.json({
-    message: '🎉 Enterprise AI Hub Backend API',
-    version: '1.0.2',
+    message: 'Enterprise AI Hub Backend API',
+    version: '1.0.3',
     status: 'running',
     deployment: 'Vercel deployment successful!',
+    frontend: 'https://thesimpleai.netlify.app',
     endpoints: {
       auth: '/api/auth',
       analytics: '/api/analytics', 
@@ -90,7 +93,7 @@ app.get('/api', (req, res) => {
   res.json({
     success: true,
     message: 'Enterprise AI Hub API Documentation',
-    version: '1.0.2',
+    version: '1.0.3',
     endpoints: 'All endpoints available and working!'
   });
 });
@@ -125,14 +128,14 @@ app.use((err, req, res, next) => {
 // Initialize database on startup
 const initializeDatabase = async () => {
   try {
-    console.log('🔌 Connecting to database...');
+    console.log('Connecting to database...');
     await database.connect();
-    console.log('✅ Database connected successfully');
+    console.log('Database connected successfully');
     
     await database.initializeTables();
-    console.log('✅ Database tables initialized');
+    console.log('Database tables initialized');
   } catch (error) {
-    console.error('❌ Failed to initialize database:', error);
+    console.error('Failed to initialize database:', error);
   }
 };
 
@@ -142,10 +145,10 @@ initializeDatabase();
 // Start server (only for local development)
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
   });
 } else {
-  console.log('🌐 Running on Vercel serverless environment');
+  console.log('Running on Vercel serverless environment');
 }
 
 // Export for Vercel
