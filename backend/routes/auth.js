@@ -5,7 +5,9 @@ const {
   authenticateToken, 
   validateCompanyDomain, 
   trackActivity,
-  cleanupExpiredSessions 
+  cleanupExpiredSessions,
+  requireSuperAdmin,
+  requireAdmin
 } = require('../middleware/auth');
 const {
   authLimiter,
@@ -19,7 +21,13 @@ const {
   validatePasswordResetRequest,
   validatePasswordReset,
   validateProfileUpdate,
-  validateEmailOnly
+  validateEmailOnly,
+  validateUserCreation,
+  validateUserId,
+  validatePagination,
+  validateSearch,
+  validateRole,
+  validatePasswordChange
 } = require('../middleware/validation');
 
 // Public routes (no authentication required)
@@ -83,10 +91,74 @@ router.put('/profile',
   AuthController.updateProfile
 );
 
+// Change password
+router.put('/change-password',
+  authenticateToken,
+  validatePasswordChange,
+  trackActivity('password_changed'),
+  AuthController.changePassword
+);
+
 // Check authentication status
 router.get('/check', 
   authenticateToken,
   AuthController.checkAuth
+);
+
+// Admin/Superadmin User Management Routes
+// Get all users (superadmin only)
+router.get('/users',
+  authenticateToken,
+  requireSuperAdmin,
+  validatePagination,
+  validateSearch,
+  validateRole,
+  trackActivity('users_viewed'),
+  AuthController.getAllUsers
+);
+
+// Get user statistics (superadmin only)
+router.get('/stats',
+  authenticateToken,
+  requireSuperAdmin,
+  trackActivity('user_stats_viewed'),
+  AuthController.getUserStats
+);
+
+// Get specific user (admin/superadmin only)
+router.get('/users/:user_id',
+  authenticateToken,
+  requireAdmin,
+  validateUserId,
+  trackActivity('user_details_viewed'),
+  AuthController.getUser
+);
+
+// Create new user (superadmin only)
+router.post('/users',
+  authenticateToken,
+  requireSuperAdmin,
+  validateUserCreation,
+  trackActivity('user_created'),
+  AuthController.createUser
+);
+
+// Update user (admin/superadmin only)
+router.put('/users/:user_id',
+  authenticateToken,
+  requireAdmin,
+  validateUserId,
+  trackActivity('user_updated'),
+  AuthController.updateUser
+);
+
+// Delete user (superadmin only)
+router.delete('/users/:user_id',
+  authenticateToken,
+  requireSuperAdmin,
+  validateUserId,
+  trackActivity('user_deleted'),
+  AuthController.deleteUser
 );
 
 // Admin route to reset user password (for debugging)

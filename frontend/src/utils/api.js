@@ -151,7 +151,16 @@ export const authAPI = {
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
   verifyEmail: (token) => api.post('/auth/verify-email', { token }),
   resendVerification: (email) => api.post('/auth/resend-verification', { email }),
-  updateProfile: (data) => api.put('/auth/profile', data)
+  updateProfile: (data) => api.put('/auth/profile', data),
+  changePassword: (data) => api.put('/auth/change-password', data),
+  
+  // Admin/Superadmin user management
+  getAllUsers: (params) => api.get('/auth/users', { params }),
+  getUser: (userId) => api.get(`/auth/users/${userId}`),
+  createUser: (userData) => api.post('/auth/users', userData),
+  updateUser: (userId, userData) => api.put(`/auth/users/${userId}`, userData),
+  deleteUser: (userId) => api.delete(`/auth/users/${userId}`),
+  getStats: () => api.get('/auth/stats')
 };
 
 export const cvAPI = {
@@ -192,6 +201,8 @@ export const analyticsAPI = {
   getDashboard: () => api.get('/analytics/dashboard'),
   getUserAnalytics: (params) => api.get('/analytics/users', { params }),
   getAgentAnalytics: (params) => api.get('/analytics/agents', { params }),
+  getCVAnalytics: (params) => api.get('/analytics/cv-intelligence', { params }),
+  getSystemAnalytics: (params) => api.get('/analytics/system', { params }),
   exportAnalytics: (params) => api.get('/analytics/export', { params })
 };
 
