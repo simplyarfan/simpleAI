@@ -9,10 +9,10 @@ const nextConfig = {
     scrollRestoration: true,
   },
   
-  // Image optimization
+  // Image optimization for static export
   images: {
+    unoptimized: true,
     domains: ['thesimpleai.netlify.app', 'thesimpleai.vercel.app'],
-    formats: ['image/webp', 'image/avif'],
   },
   
   // Environment variables
@@ -59,10 +59,7 @@ const nextConfig = {
   output: 'export',
   distDir: 'out',
   
-  // Disable server-side features for static export
-  images: {
-    unoptimized: true
-  }
+
 };
 
 module.exports = nextConfig;
