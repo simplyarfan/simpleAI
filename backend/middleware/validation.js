@@ -472,6 +472,27 @@ const validateEmailOnly = [
     .withMessage('Please provide a valid email address')
 ];
 
+// Password reset confirmation validation
+const validatePasswordResetConfirm = [
+  body('token')
+    .notEmpty()
+    .withMessage('Reset token is required'),
+  
+  body('new_password')
+    .isLength({ min: 8 })
+    .withMessage('Password must be at least 8 characters long')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'),
+  
+  body('confirm_password')
+    .custom((value, { req }) => {
+      if (value !== req.body.new_password) {
+        throw new Error('Password confirmation does not match new password');
+      }
+      return true;
+    })
+];
+
 module.exports = {
   validateLogin,
   validateRegistration,
@@ -492,5 +513,21 @@ module.exports = {
   validatePriority,
   validateCategory,
   validatePasswordChange,
-  validateEmailOnly
+  validateEmailOnly,
+  validateBatchCreation,
+  validateBatchId,
+  validateCandidateId,
+  validateExportFormat,
+  validateTimeframe,
+  validateEmailVerification,
+  validatePasswordResetRequest,
+  validateSearch,
+  validateSort,
+  validateUserCreation,
+  validateRole,
+  validateDateRange,
+  validateUserPreferences,
+  validateUUID,
+  validateId,
+  validateDateRange
 };
