@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import ProtectedRoute from '../components/ProtectedRoute';
 import { 
   Search, 
   Bell, 
@@ -50,8 +48,7 @@ import {
   ArrowUpRight, 
   Moon, 
   Sun, 
-  Sparkles,
-  User
+  Sparkles 
 } from 'lucide-react';
 
 const EnterpriseAIHub = () => {
@@ -474,7 +471,7 @@ const EnterpriseAIHub = () => {
             onClick={(e) => {
               e.stopPropagation();
               if (agent.status === 'active') {
-                window.open(`/agent/${agent.id}`, '_blank');
+                setCurrentPage(agent.id);
               }
             }}
             className={`
@@ -506,6 +503,17 @@ const EnterpriseAIHub = () => {
       `}>
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
+              <FileText className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                CV Intelligence
+              </h1>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                AI-powered resume parsing, analysis & ranking
+              </p>
+            </div>
           </div>
           
           <button
@@ -1052,10 +1060,10 @@ const EnterpriseAIHub = () => {
             {sidebarOpen && (
               <div>
                 <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  simpleAI
+                  AI Agent Hub
                 </h1>
                 <p className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                  AI Platform
+                  Enterprise Edition
                 </p>
               </div>
             )}
@@ -1063,45 +1071,69 @@ const EnterpriseAIHub = () => {
         </div>
         
         <nav className="p-4">
-          {/* Dashboard Tab */}
+          {/* Analytics Tab */}
           <button
-            onClick={() => setCurrentView('departments')}
+            onClick={() => setCurrentView('analytics')}
             className={`
               w-full flex items-center gap-3 p-3 rounded-xl mb-4
               transition-all duration-300 group relative
-              ${currentView === 'departments'
-                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+              ${currentView === 'analytics'
+                ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-lg'
                 : darkMode
                   ? 'hover:bg-gray-800 text-gray-400 hover:text-white'
                   : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
               }
             `}
           >
-            <Home className={`w-5 h-5 ${!sidebarOpen && 'mx-auto'}`} />
+            <BarChart3 className={`w-5 h-5 ${!sidebarOpen && 'mx-auto'}`} />
             {sidebarOpen && (
-              <span className="flex-1 text-left font-medium">Dashboard</span>
+              <span className="flex-1 text-left font-medium">Analytics</span>
             )}
           </button>
 
-          {/* Support Tab */}
-          <button
-            onClick={() => setCurrentView('support')}
-            className={`
-              w-full flex items-center gap-3 p-3 rounded-xl mb-4
-              transition-all duration-300 group relative
-              ${currentView === 'support'
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg'
-                : darkMode
-                  ? 'hover:bg-gray-800 text-gray-400 hover:text-white'
-                  : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
-              }
-            `}
-          >
-            <MessageSquare className={`w-5 h-5 ${!sidebarOpen && 'mx-auto'}`} />
-            {sidebarOpen && (
-              <span className="flex-1 text-left font-medium">Support</span>
-            )}
-          </button>
+          <div className={`text-xs font-semibold uppercase mb-4 ${darkMode ? 'text-gray-500' : 'text-gray-400'} ${!sidebarOpen && 'text-center'}`}>
+            {sidebarOpen ? 'Departments' : '—'}
+          </div>
+          {departments.map(dept => {
+            const DeptIcon = dept.icon;
+            return (
+              <button
+                key={dept.id}
+                onClick={() => {
+                  setSelectedDepartment(dept.id);
+                  setCurrentView('departments');
+                }}
+                className={`
+                  w-full flex items-center gap-3 p-3 rounded-xl mb-2
+                  transition-all duration-300 group relative
+                  ${selectedDepartment === dept.id && currentView === 'departments'
+                    ? `bg-gradient-to-r ${dept.color} text-white shadow-lg`
+                    : darkMode
+                      ? 'hover:bg-gray-800 text-gray-400 hover:text-white'
+                      : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'
+                  }
+                `}
+              >
+                <DeptIcon className={`w-5 h-5 ${!sidebarOpen && 'mx-auto'}`} />
+                {sidebarOpen && (
+                  <>
+                    <span className="flex-1 text-left font-medium">{dept.name}</span>
+                    <span className={`
+                      px-2 py-1 rounded-full text-xs font-medium
+                      ${selectedDepartment === dept.id && currentView === 'departments'
+                        ? 'bg-white/20 text-white'
+                        : darkMode
+                          ? 'bg-gray-800 text-gray-500'
+                          : 'bg-gray-200 text-gray-600'
+                      }
+                    `}>
+                      {dept.count}
+                    </span>
+                  </>
+                )}
+              </button>
+            );
+          })}
         </nav>
         
         <button
@@ -1797,14 +1829,4 @@ const EnterpriseAIHub = () => {
   );
 };
 
-const DashboardRegular = () => {
-  const { user } = useAuth();
-
-  return (
-    <ProtectedRoute>
-      <EnterpriseAIHub />
-    </ProtectedRoute>
-  );
-};
-
-export default DashboardRegular;
+export default EnterpriseAIHub;
