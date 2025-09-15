@@ -74,14 +74,14 @@ class CVController {
       // Create batch record
       await database.run(`
         INSERT INTO cv_batches (id, name, user_id, status, cv_count, jd_count)
-        VALUES ($1, $2, $3, 'processing', $4, $5)
+        VALUES ($1, $2, $3, 'processing', $4, $5) RETURNING id
       `, [batchId, batchName.trim(), req.user.id, cvFiles.length, jdFiles.length]);
 
       // Track agent usage
       await database.run(`
         INSERT INTO agent_usage_stats (user_id, agent_id, usage_count, total_time_spent, date)
         VALUES ($1, 'cv_intelligence', 
-          COALESCE((SELECT usage_count FROM agent_usage_stats WHERE user_id = $2 AND agent_id = 'cv_intelligence' AND date = CURRENT_DATE), 0) + 1,
+          COALESCE((SELECT usage_count FROM agent_usage_stats WHERE user_id = $2 AND agent_id = 'cv_intelligence' AND date = CURRENT_DATE) RETURNING id, 0) + 1,
           COALESCE((SELECT total_time_spent FROM agent_usage_stats WHERE user_id = $3 AND agent_id = 'cv_intelligence' AND date = CURRENT_DATE), 0),
           CURRENT_DATE
         )
@@ -94,7 +94,7 @@ class CVController {
       // Track analytics
       await database.run(`
         INSERT INTO user_analytics (user_id, action, agent_id, metadata, ip_address, user_agent)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
       `, [
         req.user.id,
         'cv_batch_created',
@@ -117,13 +117,12 @@ class CVController {
       // Update batch with results
       await database.run(`
         UPDATE cv_batches 
-        SET status = 'completed', candidate_count = ?, processing_time = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
+        SET status = 'completed', candidate_count = $1, processing_time = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3
       `, [candidates.length, processingTime, batchId]);
 
       // Get the completed batch
       const batch = await database.get(`
-        SELECT * FROM cv_batches WHERE id = ?
+        SELECT * FROM cv_batches WHERE id = $1
       `, [batchId]);
 
       res.status(201).json({
@@ -142,8 +141,7 @@ class CVController {
       if (req.body.batchId) {
         await database.run(`
           UPDATE cv_batches 
-          SET status = 'failed', updated_at = CURRENT_TIMESTAMP
-          WHERE id = ?
+          SET status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE id = $1
         `, [req.body.batchId]);
       }
 
@@ -337,7 +335,7 @@ class CVController {
       // Track deletion
       await database.run(`
         INSERT INTO user_analytics (user_id, action, agent_id, metadata, ip_address, user_agent)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
       `, [
         req.user.id,
         'cv_batch_deleted',
@@ -430,7 +428,7 @@ class CVController {
       await database.run(`
         INSERT INTO cv_candidates (
           id, batch_id, filename, name, email, phone, location, score, analysis_data
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id
       `, [
         candidate.id,
         candidate.batch_id,
@@ -477,7 +475,7 @@ class CVController {
           COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_batches,
           COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_batches
         FROM cv_batches 
-        WHERE created_at > datetime('now', '${sqlTimeFrame}')
+        WHERE created_at > NOW() - INTERVAL '30 days'
       `;
 
       const params = [];
@@ -491,19 +489,19 @@ class CVController {
       // Daily processing trends
       let trendQuery = `
         SELECT 
-          date(created_at) as date,
+          DATE(created_at) as date,
           COUNT(*) as batches_created,
           SUM(candidate_count) as candidates_processed,
           COUNT(DISTINCT user_id) as active_users
         FROM cv_batches 
-        WHERE created_at > datetime('now', '${sqlTimeFrame}')
+        WHERE created_at > NOW() - INTERVAL '30 days'
       `;
 
       if (user_id) {
         trendQuery += ' AND user_id = ?';
       }
 
-      trendQuery += ' GROUP BY date(created_at) ORDER BY date ASC';
+      trendQuery += ' GROUP BY DATE(created_at) ORDER BY date ASC';
 
       const trends = await database.all(trendQuery, user_id ? [user_id] : []);
 
@@ -520,7 +518,7 @@ class CVController {
           AVG(cb.processing_time) as avg_processing_time
         FROM users u
         JOIN cv_batches cb ON u.id = cb.user_id
-        WHERE cb.created_at > datetime('now', '${sqlTimeFrame}')
+        WHERE cb.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
         AND cb.status = 'completed'
         GROUP BY u.id
         ORDER BY batch_count DESC
@@ -599,9 +597,9 @@ class CVController {
           `"${candidate.phone || ''}"`,
           `"${candidate.location || ''}"`,
           candidate.score,
-          `"${candidate.analysis?.skills?.join(', ') || ''}"`,
+          `"${candidate.analysis$1.skills$2.join(', ') || ''}"`,
           candidate.analysis?.experience?.length || 0,
-          `"${candidate.analysis?.match_analysis?.recommendation || ''}"`
+          `"${candidate.analysis$1.match_analysis$2.recommendation || ''}"`
         ].join(',')).join('\n');
 
         const csv = `${headers}\n${csvData}`;
@@ -625,7 +623,7 @@ class CVController {
       // Track export
       await database.run(`
         INSERT INTO user_analytics (user_id, action, agent_id, metadata, ip_address, user_agent)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
       `, [
         req.user.id,
         'cv_batch_exported',

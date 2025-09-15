@@ -20,7 +20,7 @@ class AnalyticsController {
           AVG(usage_count) as avg_usage_per_user,
           SUM(total_time_spent) as total_time_spent
         FROM agent_usage_stats 
-        WHERE date > date('now', '-30 days')
+        WHERE date > DATE('now', '-30 days')
         GROUP BY agent_id 
         ORDER BY total_usage DESC
       `);
@@ -62,11 +62,11 @@ class AnalyticsController {
       // Daily active users (last 30 days)
       const dailyActiveUsers = await database.all(`
         SELECT 
-          date(created_at) as date,
+          DATE(created_at) as date,
           COUNT(DISTINCT user_id) as active_users
         FROM user_analytics 
-        WHERE created_at > datetime('now', '-30 days')
-        GROUP BY date(created_at)
+        WHERE created_at > NOW() - INTERVAL '30 days'
+        GROUP BY DATE(created_at)
         ORDER BY date ASC
       `);
       stats.dailyActiveUsers = dailyActiveUsers;
@@ -77,7 +77,7 @@ class AnalyticsController {
           action,
           COUNT(*) as count
         FROM user_analytics 
-        WHERE created_at > datetime('now', '-30 days')
+        WHERE created_at > NOW() - INTERVAL '30 days'
         GROUP BY action 
         ORDER BY count DESC
         LIMIT 10
@@ -140,7 +140,7 @@ class AnalyticsController {
           MAX(ua.created_at) as last_activity
         FROM users u
         LEFT JOIN user_analytics ua ON u.id = ua.user_id 
-          AND ua.created_at > datetime('now', '${sqlTimeFrame}')
+          AND ua.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
         WHERE u.is_active = true
         GROUP BY u.id
         ORDER BY total_actions DESC, last_activity DESC
@@ -149,7 +149,7 @@ class AnalyticsController {
 
       // Get total count for pagination
       const totalCount = await database.get(`
-        SELECT COUNT(*) as total FROM users WHERE is_active = 1
+        SELECT COUNT(*) as total FROM users WHERE is_active = true
       `);
 
       res.json({
@@ -197,7 +197,7 @@ class AnalyticsController {
           SUM(total_time_spent) as total_time_spent,
           MAX(last_used) as last_used
         FROM agent_usage_stats 
-        WHERE date > date('now', '${sqlTimeFrame}')
+        WHERE date > DATE('now', '${sqlTimeFrame}')
       `;
 
       const params = [];
@@ -219,7 +219,7 @@ class AnalyticsController {
           SUM(usage_count) as daily_usage,
           COUNT(DISTINCT user_id) as daily_users
         FROM agent_usage_stats 
-        WHERE date > date('now', '${sqlTimeFrame}')
+        WHERE date > DATE('now', '${sqlTimeFrame}')
       `;
 
       if (agent_id) {
@@ -273,7 +273,7 @@ class AnalyticsController {
           MIN(processing_time) as min_processing_time,
           MAX(processing_time) as max_processing_time
         FROM cv_batches 
-        WHERE created_at > datetime('now', '${sqlTimeFrame}')
+        WHERE created_at > NOW() - INTERVAL '${sqlTimeFrame}'
         AND status = 'completed'
       `;
 
@@ -288,12 +288,12 @@ class AnalyticsController {
       // Daily batch creation trends
       let dailyQuery = `
         SELECT 
-          date(created_at) as date,
+          DATE(created_at) as date,
           COUNT(*) as batches_created,
           SUM(candidate_count) as candidates_processed,
           COUNT(DISTINCT user_id) as active_users
         FROM cv_batches 
-        WHERE created_at > datetime('now', '${sqlTimeFrame}')
+        WHERE created_at > NOW() - INTERVAL '${sqlTimeFrame}'
       `;
 
       if (user_id) {
@@ -315,7 +315,7 @@ class AnalyticsController {
           SUM(cb.candidate_count) as total_candidates
         FROM users u
         JOIN cv_batches cb ON u.id = cb.user_id
-        WHERE cb.created_at > datetime('now', '${sqlTimeFrame}')
+        WHERE cb.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
         AND cb.status = 'completed'
         GROUP BY u.id
         ORDER BY batch_count DESC
@@ -460,26 +460,26 @@ class AnalyticsController {
       // Registration trends
       const registrationTrends = await database.all(`
         SELECT 
-          date(created_at) as date,
+          DATE(created_at) as date,
           COUNT(*) as new_users,
-          COUNT(CASE WHEN is_verified = 1 THEN 1 END) as verified_users
+          COUNT(CASE WHEN is_verified = true THEN 1 END) as verified_users
         FROM users 
-        WHERE created_at > datetime('now', '${sqlTimeFrame}')
-        AND is_active = 1
-        GROUP BY date(created_at)
+        WHERE created_at > NOW() - INTERVAL '${sqlTimeFrame}'
+        AND is_active = true
+        GROUP BY DATE(created_at)
         ORDER BY date ASC
       `);
 
       // Login trends
       const loginTrends = await database.all(`
         SELECT 
-          date(created_at) as date,
+          DATE(created_at) as date,
           COUNT(DISTINCT user_id) as unique_logins,
           COUNT(*) as total_logins
         FROM user_analytics 
         WHERE action = 'login'
-        AND created_at > datetime('now', '${sqlTimeFrame}')
-        GROUP BY date(created_at)
+        AND created_at > NOW() - INTERVAL '${sqlTimeFrame}'
+        GROUP BY DATE(created_at)
         ORDER BY date ASC
       `);
 
@@ -489,7 +489,7 @@ class AnalyticsController {
           COALESCE(department, 'Not specified') as department,
           COUNT(*) as user_count
         FROM users 
-        WHERE is_active = 1
+        WHERE is_active = true
         GROUP BY department
         ORDER BY user_count DESC
       `);
@@ -500,7 +500,7 @@ class AnalyticsController {
           role,
           COUNT(*) as user_count
         FROM users 
-        WHERE is_active = 1
+        WHERE is_active = true
         GROUP BY role
         ORDER BY user_count DESC
       `);
@@ -559,8 +559,8 @@ class AnalyticsController {
               COUNT(DISTINCT ua.agent_id) as agents_used
             FROM users u
             LEFT JOIN user_analytics ua ON u.id = ua.user_id 
-              AND ua.created_at > datetime('now', '${sqlTimeFrame}')
-            WHERE u.is_active = 1
+              AND ua.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
+            WHERE u.is_active = true
             GROUP BY u.id
             ORDER BY u.created_at DESC
           `);
@@ -578,7 +578,7 @@ class AnalyticsController {
               u.department
             FROM user_analytics ua
             JOIN users u ON ua.user_id = u.id
-            WHERE ua.created_at > datetime('now', '${sqlTimeFrame}')
+            WHERE ua.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
             ORDER BY ua.created_at DESC
           `);
           break;
@@ -592,7 +592,7 @@ class AnalyticsController {
               u.last_name
             FROM cv_batches cb
             JOIN users u ON cb.user_id = u.id
-            WHERE cb.created_at > datetime('now', '${sqlTimeFrame}')
+            WHERE cb.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
             ORDER BY cb.created_at DESC
           `);
           break;
@@ -606,7 +606,7 @@ class AnalyticsController {
               u.last_name
             FROM support_tickets st
             JOIN users u ON st.user_id = u.id
-            WHERE st.created_at > datetime('now', '${sqlTimeFrame}')
+            WHERE st.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
             ORDER BY st.created_at DESC
           `);
           break;
@@ -630,7 +630,7 @@ class AnalyticsController {
         const headers = Object.keys(data[0]).join(',');
         const csvData = data.map(row => 
           Object.values(row).map(value => 
-            typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value
+            typeof value === 'string' $1 `"${value.replace(/"/g, '""')}"` : value
           ).join(',')
         ).join('\n');
 

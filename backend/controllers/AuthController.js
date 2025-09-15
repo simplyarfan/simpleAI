@@ -91,7 +91,7 @@ class AuthController {
       const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
       await database.run(`
         INSERT INTO user_sessions (user_id, session_token, refresh_token, expires_at, ip_address, user_agent)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id
       `, [
         user.id,
         accessToken,
