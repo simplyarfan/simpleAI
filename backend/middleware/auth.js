@@ -18,9 +18,9 @@ const authenticateToken = async (req, res, next) => {
     // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Check if session exists and is valid
+    // Check if session exists and is valid (PostgreSQL syntax)
     const session = await database.get(
-      'SELECT * FROM user_sessions WHERE session_token = ? AND expires_at > datetime("now")',
+      'SELECT * FROM user_sessions WHERE session_token = $1 AND expires_at > NOW()',
       [token]
     );
 
@@ -41,7 +41,12 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
-    // Email verification check removed - users are auto-verified on registration
+    if (!user.is_active) {
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Account is deactivated' 
+      });
+    }
 
     // Add user to request object
     req.user = user;
@@ -163,7 +168,7 @@ const trackActivity = (action, agent_id = null) => {
 
         await database.run(`
           INSERT INTO user_analytics (user_id, action, agent_id, metadata, ip_address, user_agent)
-          VALUES (?, ?, ?, ?, ?, ?)
+          VALUES ($1, $2, $3, $4, $5, $6)
         `, [
           req.user.id,
           action,
@@ -184,7 +189,7 @@ const trackActivity = (action, agent_id = null) => {
 // Session cleanup middleware (removes expired sessions)
 const cleanupExpiredSessions = async (req, res, next) => {
   try {
-    await database.run('DELETE FROM user_sessions WHERE expires_at <= datetime("now")');
+    await database.run('DELETE FROM user_sessions WHERE expires_at <= NOW()');
     next();
   } catch (error) {
     console.error('Error cleaning up expired sessions:', error);
