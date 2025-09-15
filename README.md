@@ -1,5 +1,8 @@
 # Enterprise AI Hub
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/f84a352d-3432-4a52-ad32-15c7aaf4e5f8/deploy-status)](https://app.netlify.com/sites/thesimpleai/deploys)
+[![Vercel](https://therealsujitk-vercel-badge.vercel.app/?app=thesimpleai)](https://thesimpleai.vercel.app/)
+
 A comprehensive, production-ready AI platform for enterprise use with secure authentication, user management, and AI-powered tools.
 
 ## 🎯 Overview
