@@ -40,7 +40,7 @@ const SuperAdminDashboard = () => {
   const [pendingTickets, setPendingTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch real-time dashboard data
+  // Fetch dashboard data on component mount
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -64,7 +64,7 @@ const SuperAdminDashboard = () => {
         });
         
         // Set recent activity from analytics or use defaults
-        if (analyticsData.recentActivity) {
+        if (analyticsData.recentActivity && analyticsData.recentActivity.length > 0) {
           setRecentActivity(analyticsData.recentActivity);
         } else {
           setRecentActivity(defaultRecentActivity);
@@ -88,11 +88,6 @@ const SuperAdminDashboard = () => {
     };
 
     fetchDashboardData();
-    
-    // Refresh data every 30 seconds
-    const interval = setInterval(fetchDashboardData, 30000);
-    
-    return () => clearInterval(interval);
   }, []);
 
   const adminCards = [

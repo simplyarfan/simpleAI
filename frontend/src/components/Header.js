@@ -27,25 +27,22 @@ const Header = () => {
 
   const navigation = [
     { name: 'Dashboard', href: '/', current: router.pathname === '/' },
-    { name: 'CV Intelligence', href: '/cv-intelligence', current: router.pathname.startsWith('/cv-intelligence') },
-    { name: 'Support', href: '/support', current: router.pathname.startsWith('/support') },
   ];
 
-  // Add admin-only navigation items
-  if (user?.role === 'admin' || user?.role === 'superadmin') {
-    navigation.push({
-      name: 'Admin',
-      href: '/admin',
-      current: router.pathname.startsWith('/admin')
-    });
-  }
-
+  // Add navigation based on user role
   if (user?.role === 'superadmin') {
-    navigation.push({
-      name: 'Analytics',
-      href: '/analytics',
-      current: router.pathname.startsWith('/analytics')
-    });
+    // Superadmin gets different navigation
+    navigation.push(
+      { name: 'Support', href: '/support', current: router.pathname.startsWith('/support') },
+      { name: 'Admin', href: '/admin', current: router.pathname.startsWith('/admin') },
+      { name: 'Analytics', href: '/analytics', current: router.pathname.startsWith('/analytics') }
+    );
+  } else {
+    // Regular users get CV Intelligence
+    navigation.push(
+      { name: 'CV Intelligence', href: '/cv-intelligence', current: router.pathname.startsWith('/cv-intelligence') },
+      { name: 'Support', href: '/support', current: router.pathname.startsWith('/support') }
+    );
   }
 
   return (

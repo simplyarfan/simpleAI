@@ -21,19 +21,41 @@ class AnalyticsController {
       const totalTicketsResult = await database.get('SELECT COUNT(*) as count FROM support_tickets');
       const totalTickets = totalTicketsResult?.count || 0;
 
-      // Get recent activity (last 10 activities)
-      const recentActivity = await database.all(`
+      // Get recent activity from multiple sources
+      const recentUsers = await database.all(`
         SELECT 
           'user_registration' as type,
           'New user registered' as title,
-          CONCAT(first_name, ' ', last_name, ' (', email, ') joined the platform') as description,
+          first_name || ' ' || last_name || ' (' || email || ') joined the platform' as description,
           created_at as time,
           'info' as status
         FROM users 
-        WHERE created_at > CURRENT_TIMESTAMP - INTERVAL '7 days'
+        WHERE created_at > datetime('now', '-7 days')
         ORDER BY created_at DESC 
-        LIMIT 5
+        LIMIT 3
       `);
+
+      const recentTickets = await database.all(`
+        SELECT 
+          'support_ticket' as type,
+          'New support ticket #' || id as title,
+          'User reported: ' || subject as description,
+          created_at as time,
+          CASE priority 
+            WHEN 'high' THEN 'warning'
+            WHEN 'medium' THEN 'info'
+            ELSE 'completed'
+          END as status
+        FROM support_tickets 
+        WHERE created_at > datetime('now', '-7 days')
+        ORDER BY created_at DESC 
+        LIMIT 2
+      `);
+
+      // Combine and sort activities
+      const recentActivity = [...recentUsers, ...recentTickets]
+        .sort((a, b) => new Date(b.time) - new Date(a.time))
+        .slice(0, 5);
 
       res.json({
         success: true,

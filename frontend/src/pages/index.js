@@ -1,11 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
-import SuperAdminDashboard from '../components/SuperAdminDashboard';
 import RegularDashboard from '../components/RegularDashboard';
 import Login from './auth/login';
 
 const Dashboard = () => {
   const { user, loading, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  // Redirect superadmin users to /superadmin route
+  useEffect(() => {
+    if (!loading && isAuthenticated && user?.role === 'superadmin') {
+      router.push('/superadmin');
+    }
+  }, [user, loading, isAuthenticated, router]);
 
   // Show loading state
   if (loading) {
@@ -24,13 +32,7 @@ const Dashboard = () => {
     return <Login />;
   }
 
-  // Check if user is the specific superadmin
-  const isSuperAdmin = user?.email === 'syedarfan@securemaxtech.com';
-
-  if (isSuperAdmin) {
-    return <SuperAdminDashboard />;
-  }
-
+  // Regular users get the regular dashboard
   return <RegularDashboard />;
 };
 
