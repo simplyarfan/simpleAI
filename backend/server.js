@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
+const responseTime = require('response-time');
 const path = require('path');
 require('dotenv').config();
 
@@ -17,19 +18,27 @@ const supportRoutes = require('./routes/support');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-console.log('Starting Enterprise AI Hub Backend...');
+console.log('🚀 Starting Enterprise AI Hub Backend v2.0.0...');
+
+// Trust proxy for rate limiting and security
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false // Allow for development
 }));
 
-// CORS configuration - Fixed to include all necessary domains
+// Performance middleware
+app.use(compression());
+app.use(responseTime());
+
+// CORS configuration
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'https://thesimpleai.netlify.app',
-    'https://thesimpleai.vercel.app', // Primary Vercel domain
+    'https://thesimpleai.vercel.app',
     'http://localhost:3000'
   ],
   credentials: true,
@@ -37,20 +46,14 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Compression middleware
-app.use(compression());
-
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Trust proxy for rate limiting
-app.set('trust proxy', 1);
-
-// Apply general rate limiting
+// Apply rate limiting
 app.use(generalLimiter);
 
-// Static file serving for uploads
+// Static file serving
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check endpoint
@@ -59,71 +62,57 @@ app.get('/health', (req, res) => {
     success: true,
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: '1.0.4',
-    message: 'Backend is running successfully!',
-    frontend: 'https://thesimpleai.netlify.app',
-    cors_origins: [
-      'https://thesimpleai.netlify.app',
-      'https://thesimpleai.vercel.app'
-    ]
+    version: '2.0.0',
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
 // Root route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Enterprise AI Hub Backend API',
-    version: '1.0.4',
+    message: 'Enterprise AI Hub Backend API v2.0.0',
     status: 'running',
-    deployment: 'Vercel deployment successful',
     frontend: 'https://thesimpleai.netlify.app',
-    endpoints: {
-      health: '/health',
-      auth: '/api/auth',
-      analytics: '/api/analytics', 
-      support: '/api/support',
-      cvIntelligence: '/api/cv-intelligence'
-    }
+    documentation: '/api',
+    health: '/health'
   });
 });
 
-// Debug middleware to log all requests
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path} - Headers:`, req.headers);
-  next();
+// API documentation
+app.get('/api', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Enterprise AI Hub API v2.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      analytics: '/api/analytics',
+      support: '/api/support',
+      cvIntelligence: '/api/cv-intelligence'
+    },
+    documentation: 'https://github.com/simplyarfan/simpleAI'
+  });
 });
 
-// Mount routes
+// Mount API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/cv-intelligence', cvRoutes);
 app.use('/api/support', supportRoutes);
 
-// API documentation endpoint
-app.get('/api', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Enterprise AI Hub API Documentation',
-    version: '1.0.4',
-    endpoints: 'All endpoints available and working'
-  });
-});
-
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {
-  console.log('404 API route hit:', req.method, req.path);
   res.status(404).json({
     success: false,
     message: 'API endpoint not found',
     path: req.path,
-    method: req.method
+    availableEndpoints: ['/api/auth', '/api/analytics', '/api/support', '/api/cv-intelligence']
   });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('Global error handler:', err);
-
+  console.error('Error:', err.message);
+  
   const statusCode = err.statusCode || err.status || 500;
   const message = statusCode === 500 ? 'Internal server error' : err.message;
 
@@ -131,54 +120,39 @@ app.use((err, req, res, next) => {
     success: false,
     message,
     ...(process.env.NODE_ENV === 'development' && { 
-      stack: err.stack,
-      error: err 
+      stack: err.stack 
     })
   });
 });
 
-// Initialize database on startup
+// Initialize database
 const initializeDatabase = async () => {
   try {
-    console.log('🔗 [DATABASE] Starting database initialization...');
-    console.log('🔗 [DATABASE] Environment variables check:');
-    console.log('🔗 [DATABASE] POSTGRES_URL exists:', !!process.env.POSTGRES_URL);
-    console.log('🔗 [DATABASE] DATABASE_URL exists:', !!process.env.DATABASE_URL);
-    console.log('🔗 [DATABASE] NODE_ENV:', process.env.NODE_ENV);
-    
+    console.log('🔗 Initializing database connection...');
     await database.connect();
-    console.log('✅ [DATABASE] Database connected successfully');
-    
-    console.log('🔧 [DATABASE] Initializing tables...');
-    await database.initializeTables();
-    console.log('✅ [DATABASE] Database tables initialized successfully');
-    
-    // Test database with a simple query
-    console.log('🧪 [DATABASE] Testing database connection...');
-    const testResult = await database.all('SELECT COUNT(*) as count FROM users');
-    console.log('✅ [DATABASE] Test query successful. User count:', testResult[0]?.count || 0);
-    
+    console.log('✅ Database connected and tables initialized');
   } catch (error) {
-    console.error('❌ [DATABASE] Failed to initialize database:', error);
-    console.error('❌ [DATABASE] Error details:', {
-      message: error.message,
-      code: error.code,
-      stack: error.stack
-    });
+    console.error('❌ Database initialization failed:', error.message);
+    process.exit(1);
   }
 };
 
-// Initialize database
-initializeDatabase();
+// Start server
+const startServer = async () => {
+  await initializeDatabase();
+  
+  if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on http://localhost:${PORT}`);
+      console.log(`📖 API Documentation: http://localhost:${PORT}/api`);
+      console.log(`🔍 Health Check: http://localhost:${PORT}/health`);
+    });
+  } else {
+    console.log('✅ Running on Vercel serverless environment');
+  }
+};
 
-// Start server (only for local development)
-if (!process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-} else {
-  console.log('Running on Vercel serverless environment');
-}
+startServer().catch(console.error);
 
 // Export for Vercel
 module.exports = app;

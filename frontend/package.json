@@ -1,32 +1,27 @@
 {
   "name": "enterprise-ai-hub",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
+  "description": "Enterprise AI Hub - Modern AI Platform Frontend",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "analyze": "ANALYZE=true npm run build",
-    "build:analyze": "cross-env ANALYZE=true next build",
-    "export": "next export",
-    "serve": "next start"
+    "export": "next export"
   },
   "dependencies": {
-    "autoprefixer": "10.4.16",
+    "next": "14.0.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
     "axios": "^1.6.2",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^3.1.2",
     "lucide-react": "0.292.0",
-    "next": "14.0.3",
-    "postcss": "8.4.31",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.1",
     "tailwindcss": "3.3.5",
-    "@next/bundle-analyzer": "^14.0.3",
-    "next-pwa": "^5.6.0",
-    "next-seo": "^6.4.0"
+    "autoprefixer": "10.4.16",
+    "postcss": "8.4.31"
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
@@ -35,7 +30,9 @@
     "@types/react-dom": "18.2.17",
     "eslint": "8.54.0",
     "eslint-config-next": "14.0.3",
-    "typescript": "5.3.2",
-    "webpack-bundle-analyzer": "^4.10.1"
+    "typescript": "5.3.2"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

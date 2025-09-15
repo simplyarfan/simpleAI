@@ -1,5 +1,4 @@
 const { Pool } = require('pg');
-const fs = require('fs');
 require('dotenv').config();
 
 class Database {
@@ -8,70 +7,64 @@ class Database {
     this.isConnected = false;
   }
 
-  connect() {
-    return new Promise(async (resolve, reject) => {
-      if (this.isConnected && this.pool) {
-        return resolve(this.pool);
-      }
-
-      try {
-        // Use PostgreSQL for production (Vercel Postgres)
-        const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
-        
-        if (!connectionString) {
-          throw new Error('No database connection string found. Please set POSTGRES_URL or DATABASE_URL environment variable.');
-        }
-        
-        console.log('🔗 Connecting to database with connection string:', connectionString.replace(/:[^:@]*@/, ':****@'));
-        
-        
-    this.pool = new Pool({
-      connectionString,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-      max: 20,                    // Maximum number of clients in the pool
-      min: 2,                     // Minimum number of clients in the pool
-      idleTimeoutMillis: 30000,   // Close idle clients after 30 seconds
-      connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
-      acquireTimeoutMillis: 60000,   // Return an error after 60 seconds if a client could not be acquired
-      createTimeoutMillis: 30000,    // Return an error after 30 seconds if a new client could not be created
-      destroyTimeoutMillis: 5000,    // Return an error after 5 seconds if a client could not be destroyed
-      reapIntervalMillis: 1000,      // Check for idle clients every second
-      createRetryIntervalMillis: 200, // Retry creating a client every 200ms
-    });
-        
-        // Test connection
-        const testResult = await this.pool.query('SELECT NOW()');
-        console.log('✅ Connected to PostgreSQL database at:', testResult.rows[0].now);
-        this.isConnected = true;
-        
-        // Initialize tables
-        await this.initializeTables();
-        resolve(this.pool);
-        
-      } catch (error) {
-        console.error('Error connecting to database:', error.message);
-        reject(error);
-      }
-    });
-  }
-
-  async disconnect() {
-    if (!this.pool) {
-      return;
+  async connect() {
+    if (this.isConnected && this.pool) {
+      return this.pool;
     }
 
     try {
-      await this.pool.end();
-      console.log('Database connection closed');
-      this.pool = null;
-      this.isConnected = false;
+      const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+      
+      if (!connectionString) {
+        throw new Error('Database connection string not found. Set POSTGRES_URL or DATABASE_URL environment variable.');
+      }
+      
+      console.log('🔗 Connecting to PostgreSQL database...');
+      
+      this.pool = new Pool({
+        connectionString,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        max: 20,
+        min: 2,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 5000,
+        acquireTimeoutMillis: 60000,
+        createTimeoutMillis: 30000,
+        destroyTimeoutMillis: 5000,
+        reapIntervalMillis: 1000,
+        createRetryIntervalMillis: 200,
+      });
+        
+      // Test connection
+      const testResult = await this.pool.query('SELECT NOW() as current_time');
+      console.log('✅ Database connected successfully at:', testResult.rows[0].current_time);
+      this.isConnected = true;
+      
+      // Initialize tables
+      await this.initializeTables();
+      return this.pool;
+        
     } catch (error) {
-      console.error('Error closing database:', error.message);
+      console.error('❌ Database connection failed:', error.message);
       throw error;
     }
   }
 
-  // Utility method to run a query
+  async disconnect() {
+    if (this.pool) {
+      try {
+        await this.pool.end();
+        console.log('🔌 Database connection closed');
+        this.pool = null;
+        this.isConnected = false;
+      } catch (error) {
+        console.error('Error closing database:', error.message);
+        throw error;
+      }
+    }
+  }
+
+  // Query methods
   async run(sql, params = []) {
     try {
       const result = await this.pool.query(sql, params);
@@ -86,7 +79,6 @@ class Database {
     }
   }
 
-  // Utility method to get a single row
   async get(sql, params = []) {
     try {
       const result = await this.pool.query(sql, params);
@@ -97,7 +89,6 @@ class Database {
     }
   }
 
-  // Utility method to get all rows
   async all(sql, params = []) {
     try {
       const result = await this.pool.query(sql, params);
@@ -108,7 +99,6 @@ class Database {
     }
   }
 
-  // Transaction helper
   async transaction(callback) {
     const client = await this.pool.connect();
     try {
@@ -124,9 +114,10 @@ class Database {
     }
   }
 
-  // Initialize tables - this method is called from server.js
   async initializeTables() {
     try {
+      console.log('🔧 Initializing database tables...');
+
       // Users table
       await this.run(`
         CREATE TABLE IF NOT EXISTS users (
@@ -293,9 +284,7 @@ class Database {
       `);
 
       console.log('✅ Database tables initialized successfully');
-      
-      // Create admin user if it doesn't exist
-      await this.createAdminUser();
+      await this.createDefaultAdmin();
       
     } catch (error) {
       console.error('❌ Error initializing database tables:', error);
@@ -303,19 +292,15 @@ class Database {
     }
   }
 
-  // Create admin user for in-memory database
-  async createAdminUser() {
+  async createDefaultAdmin() {
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || 'syedarfan@securemaxtech.com';
+      const adminEmail = process.env.ADMIN_EMAIL || 'admin@securemaxtech.com';
       
-      // Check if admin user exists
       const existingAdmin = await this.get('SELECT id FROM users WHERE email = $1', [adminEmail]);
       
       if (!existingAdmin) {
-        const bcrypt = require('bcrypt');
-        const { v4: uuidv4 } = require('uuid');
-        
-        const hashedPassword = await bcrypt.hash('TempPassword123!', 10);
+        const bcrypt = require('bcryptjs');
+        const hashedPassword = await bcrypt.hash('AdminPassword123!', 12);
         
         await this.run(`
           INSERT INTO users (
@@ -330,14 +315,14 @@ class Database {
           'superadmin',
           'IT',
           'System Administrator',
-          true // Pre-verified
+          true
         ]);
         
-        console.log(`✅ Admin user created: ${adminEmail}`);
-        console.log('🔑 Default password: TempPassword123! (CHANGE IMMEDIATELY!)');
+        console.log(`✅ Default admin created: ${adminEmail}`);
+        console.log('🔑 Default password: AdminPassword123! (CHANGE IMMEDIATELY!)');
       }
     } catch (error) {
-      console.error('❌ Error creating admin user:', error);
+      console.error('❌ Error creating default admin:', error);
     }
   }
 }

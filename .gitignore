@@ -1,2 +1,89 @@
-# Local Netlify folder
-.netlify
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production builds
+.next/
+out/
+build/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database
+database/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# Cache
+.cache/
+.npm/
+.eslintcache
+
+# Vercel
+.vercel/
+
+# Netlify
+.netlify/
+
+# Local development
+.env.backup
+test-*.js
+benchmark-*.js
+cleanup-*.js
+optimize-*.js
+
+# Security
+*.pem
+*.key
+*.cert
+
+# Backup files
+*.backup
+*.bak
+*.old
