@@ -87,6 +87,12 @@ app.get('/', (req, res) => {
   });
 });
 
+// Debug middleware to log all requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path} - Headers:`, req.headers);
+  next();
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/analytics', analyticsRoutes);
@@ -105,6 +111,7 @@ app.get('/api', (req, res) => {
 
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {
+  console.log('404 API route hit:', req.method, req.path);
   res.status(404).json({
     success: false,
     message: 'API endpoint not found',
