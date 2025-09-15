@@ -17,19 +17,19 @@ const cvRoutes = require('./routes/cv-intelligence');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-console.log('🚀 Starting Enterprise AI Hub Backend...');
+console.log('Starting Enterprise AI Hub Backend...');
 
 // Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS configuration - Updated for new Netlify URL
+// CORS configuration - Fixed to include all necessary domains
 app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'https://thesimpleai.netlify.app',
-    'https://comfy-syrniki-164b7b.netlify.app', // Keep old URL during transition
+    'https://thesimpleai.vercel.app', // Primary Vercel domain
     'http://localhost:3000'
   ],
   credentials: true,
@@ -59,9 +59,13 @@ app.get('/health', (req, res) => {
     success: true,
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: '1.0.3',
+    version: '1.0.4',
     message: 'Backend is running successfully!',
-    frontend: 'https://thesimpleai.netlify.app'
+    frontend: 'https://thesimpleai.netlify.app',
+    cors_origins: [
+      'https://thesimpleai.netlify.app',
+      'https://thesimpleai.vercel.app'
+    ]
   });
 });
 
@@ -69,11 +73,12 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     message: 'Enterprise AI Hub Backend API',
-    version: '1.0.3',
+    version: '1.0.4',
     status: 'running',
-    deployment: 'Vercel deployment successful!',
+    deployment: 'Vercel deployment successful',
     frontend: 'https://thesimpleai.netlify.app',
     endpoints: {
+      health: '/health',
       auth: '/api/auth',
       analytics: '/api/analytics', 
       support: '/api/support',
@@ -93,8 +98,8 @@ app.get('/api', (req, res) => {
   res.json({
     success: true,
     message: 'Enterprise AI Hub API Documentation',
-    version: '1.0.3',
-    endpoints: 'All endpoints available and working!'
+    version: '1.0.4',
+    endpoints: 'All endpoints available and working'
   });
 });
 
