@@ -175,13 +175,27 @@ class AuthController {
         });
       }
 
-      // Simplified password verification with error handling
+      // Enhanced password verification with detailed debugging
       console.log('Verifying password...');
+      console.log('User password_hash length:', user.password_hash ? user.password_hash.length : 'none');
+      console.log('Password hash starts with $2b$:', user.password_hash ? user.password_hash.startsWith('$2b$') : false);
+      console.log('Input password:', password);
+      console.log('Input password length:', password ? password.length : 'none');
+      
       let isPasswordValid = false;
       try {
         if (user.password_hash) {
-          isPasswordValid = await user.verifyPassword(password);
-          console.log('Password verification result:', isPasswordValid);
+          // Direct bcrypt comparison for debugging
+          const bcrypt = require('bcryptjs');
+          isPasswordValid = await bcrypt.compare(password, user.password_hash);
+          console.log('Direct bcrypt.compare result:', isPasswordValid);
+          
+          // Also try the user method
+          const userMethodResult = await user.verifyPassword(password);
+          console.log('User.verifyPassword result:', userMethodResult);
+          
+          // Use the direct result
+          isPasswordValid = isPasswordValid || userMethodResult;
         } else {
           console.log('No password hash found for user');
         }
