@@ -82,7 +82,7 @@ const validatePasswordReset = [
 
 // Profile update validation
 const validateProfileUpdate = [
-  body('first_name')
+  body('firstName')
     .optional()
     .trim()
     .isLength({ min: 1, max: 50 })
@@ -90,7 +90,7 @@ const validateProfileUpdate = [
     .matches(/^[a-zA-Z\s]+$/)
     .withMessage('First name can only contain letters and spaces'),
   
-  body('last_name')
+  body('lastName')
     .optional()
     .trim()
     .isLength({ min: 1, max: 50 })
@@ -98,17 +98,21 @@ const validateProfileUpdate = [
     .matches(/^[a-zA-Z\s]+$/)
     .withMessage('Last name can only contain letters and spaces'),
   
-  body('department')
+  body('email')
     .optional()
-    .trim()
-    .isLength({ max: 100 })
-    .withMessage('Department must be less than 100 characters'),
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email address'),
   
-  body('job_title')
+  body('currentPassword')
     .optional()
-    .trim()
-    .isLength({ max: 100 })
-    .withMessage('Job title must be less than 100 characters')
+    .isLength({ min: 1 })
+    .withMessage('Current password is required when changing password'),
+  
+  body('newPassword')
+    .optional()
+    .isLength({ min: 8 })
+    .withMessage('New password must be at least 8 characters long')
 ];
 
 // Support ticket creation validation
