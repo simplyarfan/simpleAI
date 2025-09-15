@@ -141,10 +141,10 @@ class AnalyticsController {
         FROM users u
         LEFT JOIN user_analytics ua ON u.id = ua.user_id 
           AND ua.created_at > datetime('now', '${sqlTimeFrame}')
-        WHERE u.is_active = 1
+        WHERE u.is_active = true
         GROUP BY u.id
         ORDER BY total_actions DESC, last_activity DESC
-        LIMIT ? OFFSET ?
+        LIMIT $1 OFFSET $2
       `, [limit, offset]);
 
       // Get total count for pagination
@@ -203,7 +203,7 @@ class AnalyticsController {
       const params = [];
 
       if (agent_id) {
-        query += ' AND agent_id = ?';
+        query += ' AND agent_id = $' + (params.length + 1);
         params.push(agent_id);
       }
 
@@ -223,7 +223,7 @@ class AnalyticsController {
       `;
 
       if (agent_id) {
-        trendQuery += ' AND agent_id = ?';
+        trendQuery += ' AND agent_id = $1';
       }
 
       trendQuery += ' GROUP BY date, agent_id ORDER BY date ASC';
@@ -279,7 +279,7 @@ class AnalyticsController {
 
       const params = [];
       if (user_id) {
-        batchQuery += ' AND user_id = ?';
+        batchQuery += ' AND user_id = $' + (params.length + 1);
         params.push(user_id);
       }
 
@@ -297,10 +297,10 @@ class AnalyticsController {
       `;
 
       if (user_id) {
-        dailyQuery += ' AND user_id = ?';
+        dailyQuery += ' AND user_id = $1';
       }
 
-      dailyQuery += ' GROUP BY date(created_at) ORDER BY date ASC';
+      dailyQuery += ' GROUP BY DATE(created_at) ORDER BY date ASC';
 
       const dailyTrends = await database.all(dailyQuery, user_id ? [user_id] : []);
 
@@ -375,14 +375,14 @@ class AnalyticsController {
           user_agent,
           created_at
         FROM user_analytics 
-        WHERE user_id = ?
+        WHERE user_id = $1
         ORDER BY created_at DESC
-        LIMIT ? OFFSET ?
+        LIMIT $2 OFFSET $3
       `, [user_id, limit, offset]);
 
       // Get total count for pagination
       const totalCount = await database.get(
-        'SELECT COUNT(*) as total FROM user_analytics WHERE user_id = ?',
+        'SELECT COUNT(*) as total FROM user_analytics WHERE user_id = $1',
         [user_id]
       );
 

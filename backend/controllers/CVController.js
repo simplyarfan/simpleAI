@@ -74,23 +74,27 @@ class CVController {
       // Create batch record
       await database.run(`
         INSERT INTO cv_batches (id, name, user_id, status, cv_count, jd_count)
-        VALUES (?, ?, ?, 'processing', ?, ?)
+        VALUES ($1, $2, $3, 'processing', $4, $5)
       `, [batchId, batchName.trim(), req.user.id, cvFiles.length, jdFiles.length]);
 
       // Track agent usage
       await database.run(`
-        INSERT OR REPLACE INTO agent_usage_stats (user_id, agent_id, usage_count, total_time_spent, date)
-        VALUES (?, 'cv_intelligence', 
-          COALESCE((SELECT usage_count FROM agent_usage_stats WHERE user_id = ? AND agent_id = 'cv_intelligence' AND date = date('now')), 0) + 1,
-          COALESCE((SELECT total_time_spent FROM agent_usage_stats WHERE user_id = ? AND agent_id = 'cv_intelligence' AND date = date('now')), 0),
-          date('now')
+        INSERT INTO agent_usage_stats (user_id, agent_id, usage_count, total_time_spent, date)
+        VALUES ($1, 'cv_intelligence', 
+          COALESCE((SELECT usage_count FROM agent_usage_stats WHERE user_id = $2 AND agent_id = 'cv_intelligence' AND date = CURRENT_DATE), 0) + 1,
+          COALESCE((SELECT total_time_spent FROM agent_usage_stats WHERE user_id = $3 AND agent_id = 'cv_intelligence' AND date = CURRENT_DATE), 0),
+          CURRENT_DATE
         )
+        ON CONFLICT (user_id, agent_id, date) 
+        DO UPDATE SET 
+          usage_count = agent_usage_stats.usage_count + 1,
+          updated_at = CURRENT_TIMESTAMP
       `, [req.user.id, req.user.id, req.user.id]);
 
       // Track analytics
       await database.run(`
         INSERT INTO user_analytics (user_id, action, agent_id, metadata, ip_address, user_agent)
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES ($1, $2, $3, $4, $5, $6)
       `, [
         req.user.id,
         'cv_batch_created',
@@ -328,12 +332,12 @@ class CVController {
       }
 
       // Delete batch (candidates will be deleted due to foreign key cascade)
-      await database.run('DELETE FROM cv_batches WHERE id = ?', [batch_id]);
+      await database.run('DELETE FROM cv_batches WHERE id = $1', [batch_id]);
 
       // Track deletion
       await database.run(`
         INSERT INTO user_analytics (user_id, action, agent_id, metadata, ip_address, user_agent)
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES ($1, $2, $3, $4, $5, $6)
       `, [
         req.user.id,
         'cv_batch_deleted',
@@ -426,7 +430,7 @@ class CVController {
       await database.run(`
         INSERT INTO cv_candidates (
           id, batch_id, filename, name, email, phone, location, score, analysis_data
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       `, [
         candidate.id,
         candidate.batch_id,
@@ -621,7 +625,7 @@ class CVController {
       // Track export
       await database.run(`
         INSERT INTO user_analytics (user_id, action, agent_id, metadata, ip_address, user_agent)
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES ($1, $2, $3, $4, $5, $6)
       `, [
         req.user.id,
         'cv_batch_exported',
