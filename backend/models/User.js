@@ -27,6 +27,16 @@ class User {
   // Create a new user
   static async create(userData) {
     try {
+      console.log('👤 [USER] Creating user with data:', {
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        role: userData.role || 'user',
+        department: userData.department,
+        job_title: userData.job_title,
+        is_verified: userData.is_verified || true
+      });
+
       const sql = `
         INSERT INTO users (
           email, password_hash, first_name, last_name, role, 
@@ -45,10 +55,17 @@ class User {
         userData.is_verified || true // Default to verified
       ];
 
+      console.log('📝 [USER] Executing SQL:', sql);
+      console.log('📝 [USER] With params:', params.map((p, i) => i === 1 ? '[HASHED_PASSWORD]' : p));
+
       const result = await database.run(sql, params);
       
+      console.log('✅ [USER] SQL result:', result);
+      
       // Return the user ID from PostgreSQL RETURNING clause
-      return result.rows[0].id;
+      const userId = result.rows[0].id;
+      console.log('✅ [USER] User created successfully with ID:', userId);
+      return userId;
     } catch (error) {
       console.error('Error creating user:', error);
       throw error;

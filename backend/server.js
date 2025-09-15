@@ -140,14 +140,31 @@ app.use((err, req, res, next) => {
 // Initialize database on startup
 const initializeDatabase = async () => {
   try {
-    console.log('Connecting to database...');
-    await database.connect();
-    console.log('Database connected successfully');
+    console.log('🔗 [DATABASE] Starting database initialization...');
+    console.log('🔗 [DATABASE] Environment variables check:');
+    console.log('🔗 [DATABASE] POSTGRES_URL exists:', !!process.env.POSTGRES_URL);
+    console.log('🔗 [DATABASE] DATABASE_URL exists:', !!process.env.DATABASE_URL);
+    console.log('🔗 [DATABASE] NODE_ENV:', process.env.NODE_ENV);
     
+    await database.connect();
+    console.log('✅ [DATABASE] Database connected successfully');
+    
+    console.log('🔧 [DATABASE] Initializing tables...');
     await database.initializeTables();
-    console.log('Database tables initialized');
+    console.log('✅ [DATABASE] Database tables initialized successfully');
+    
+    // Test database with a simple query
+    console.log('🧪 [DATABASE] Testing database connection...');
+    const testResult = await database.all('SELECT COUNT(*) as count FROM users');
+    console.log('✅ [DATABASE] Test query successful. User count:', testResult[0]?.count || 0);
+    
   } catch (error) {
-    console.error('Failed to initialize database:', error);
+    console.error('❌ [DATABASE] Failed to initialize database:', error);
+    console.error('❌ [DATABASE] Error details:', {
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
   }
 };
 

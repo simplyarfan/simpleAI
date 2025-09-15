@@ -10,10 +10,12 @@ class AuthController {
   // Register new user
   static async register(req, res) {
     try {
-      console.log('Registration attempt started:', req.body.email);
+      console.log('🔐 [AUTH] Registration attempt started:', req.body.email);
       
       // Ensure database is connected and tables are initialized
+      console.log('🔗 [AUTH] Ensuring database connection...');
       await database.connect();
+      console.log('✅ [AUTH] Database connection confirmed');
       
       // Check for validation errors
       const errors = validationResult(req);
@@ -27,24 +29,27 @@ class AuthController {
       }
 
       const { email, password, first_name, last_name, department, job_title } = req.body;
-      console.log('Registration data validated for:', email);
+      console.log('🔐 [AUTH] Registration data validated for:', email);
 
       // Check if user already exists
-      console.log('Checking if user exists...');
+      console.log('🔍 [AUTH] Checking if user exists...');
       const existingUser = await User.findByEmail(email);
       if (existingUser) {
-        console.log('User already exists:', email);
+        console.log('⚠️ [AUTH] User already exists:', email);
         return res.status(400).json({
           success: false,
           message: 'An account with this email address already exists. Please try logging in instead.'
         });
       }
+      console.log('✅ [AUTH] User does not exist, proceeding with creation');
 
       // Hash password
+      console.log('🔒 [AUTH] Hashing password...');
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
+      console.log('✅ [AUTH] Password hashed successfully');
 
-      console.log('Creating new user account...');
+      console.log('👤 [AUTH] Creating new user account...');
 
       // Create user (verified by default since no email verification needed)
       const userId = await User.create({
@@ -57,14 +62,17 @@ class AuthController {
         is_verified: true // Auto-verify since no email verification
       });
 
-      console.log('User created with ID:', userId);
+      console.log('✅ [AUTH] User created with ID:', userId);
 
       // Get the created user
+      console.log('🔍 [AUTH] Fetching created user...');
       const user = await User.findById(userId);
       
       if (!user) {
+        console.error('❌ [AUTH] User not found after creation with ID:', userId);
         throw new Error(`User not found after creation with ID: ${userId}`);
       }
+      console.log('✅ [AUTH] User fetched successfully:', user.email);
 
       // Generate JWT tokens
       const accessToken = jwt.sign(
