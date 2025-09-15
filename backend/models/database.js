@@ -24,13 +24,20 @@ class Database {
         
         console.log('🔗 Connecting to database with connection string:', connectionString.replace(/:[^:@]*@/, ':****@'));
         
-        this.pool = new Pool({
-          connectionString,
-          ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-          max: 20,
-          idleTimeoutMillis: 30000,
-          connectionTimeoutMillis: 2000,
-        });
+        
+    this.pool = new Pool({
+      connectionString,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      max: 20,                    // Maximum number of clients in the pool
+      min: 2,                     // Minimum number of clients in the pool
+      idleTimeoutMillis: 30000,   // Close idle clients after 30 seconds
+      connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
+      acquireTimeoutMillis: 60000,   // Return an error after 60 seconds if a client could not be acquired
+      createTimeoutMillis: 30000,    // Return an error after 30 seconds if a new client could not be created
+      destroyTimeoutMillis: 5000,    // Return an error after 5 seconds if a client could not be destroyed
+      reapIntervalMillis: 1000,      // Check for idle clients every second
+      createRetryIntervalMillis: 200, // Retry creating a client every 200ms
+    });
         
         // Test connection
         const testResult = await this.pool.query('SELECT NOW()');
