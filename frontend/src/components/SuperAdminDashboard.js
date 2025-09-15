@@ -3,7 +3,6 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import ProtectedRoute from '../components/ProtectedRoute';
-import Header from '../components/Header';
 import { analyticsAPI, supportAPI } from '../utils/api';
 import {
   Brain,
@@ -230,8 +229,6 @@ const SuperAdminDashboard = () => {
           <title>Super Admin Dashboard - Enterprise AI Hub</title>
           <meta name="description" content="Super admin dashboard for Enterprise AI Hub" />
         </Head>
-
-        <Header />
 
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           {/* Welcome Section */}

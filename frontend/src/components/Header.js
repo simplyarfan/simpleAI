@@ -25,25 +25,7 @@ const Header = () => {
     router.push('/auth/login');
   };
 
-  const navigation = [
-    { name: 'Dashboard', href: '/', current: router.pathname === '/' },
-  ];
-
-  // Add navigation based on user role
-  if (user?.role === 'superadmin') {
-    // Superadmin gets different navigation
-    navigation.push(
-      { name: 'Support', href: '/support', current: router.pathname.startsWith('/support') },
-      { name: 'Admin', href: '/admin', current: router.pathname.startsWith('/admin') },
-      { name: 'Analytics', href: '/analytics', current: router.pathname.startsWith('/analytics') }
-    );
-  } else {
-    // Regular users get CV Intelligence
-    navigation.push(
-      { name: 'CV Intelligence', href: '/cv-intelligence', current: router.pathname.startsWith('/cv-intelligence') },
-      { name: 'Support', href: '/support', current: router.pathname.startsWith('/support') }
-    );
-  }
+  // Remove all navigation items - only keep logo and profile dropdown
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -62,24 +44,7 @@ const Header = () => {
               </Link>
             </div>
             
-            {/* Desktop navigation */}
-            {isAuthenticated && (
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`${
-                      item.current
-                        ? 'border-blue-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200`}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </div>
-            )}
+            {/* Desktop navigation - removed */}
           </div>
 
           {/* Right side - User menu or auth buttons */}
@@ -132,26 +97,6 @@ const Header = () => {
                       >
                         <User className="w-4 h-4 mr-2" />
                         Profile Settings
-                      </Link>
-
-                      {user?.role === 'superadmin' && (
-                        <Link
-                          href="/analytics"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          <BarChart3 className="w-4 h-4 mr-2" />
-                          Analytics Dashboard
-                        </Link>
-                      )}
-
-                      <Link
-                        href="/support"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Support Tickets
                       </Link>
 
                       <div className="border-t border-gray-100">

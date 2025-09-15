@@ -9,7 +9,7 @@ class AnalyticsController {
       const totalUsersResult = await database.get('SELECT COUNT(*) as count FROM users');
       const totalUsers = totalUsersResult?.count || 0;
 
-      // Get active users (logged in within last 30 days)
+      // Get active users (logged in within last 30 days) - PostgreSQL syntax
       const activeUsersResult = await database.get(`
         SELECT COUNT(DISTINCT user_id) as count 
         FROM user_sessions 
