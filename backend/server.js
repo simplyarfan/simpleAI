@@ -11,8 +11,8 @@ const { generalLimiter } = require('./middleware/rateLimiting');
 // Import routes
 const authRoutes = require('./routes/auth');
 const analyticsRoutes = require('./routes/analytics');
-const supportRoutes = require('./routes/support');
 const cvRoutes = require('./routes/cv-intelligence');
+const supportRoutes = require('./routes/support');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -93,11 +93,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// API routes
+// Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/analytics', analyticsRoutes);
-app.use('/api/support', supportRoutes);
 app.use('/api/cv-intelligence', cvRoutes);
+app.use('/api/support', supportRoutes);
 
 // API documentation endpoint
 app.get('/api', (req, res) => {
