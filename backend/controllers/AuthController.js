@@ -161,12 +161,23 @@ class AuthController {
 
       console.log('User found, verifying password...');
       
+      // Debug password verification
+      console.log('Attempting password verification for:', email);
+      console.log('Password provided length:', password ? password.length : 'undefined');
+      console.log('User has password_hash:', !!user.password_hash);
+      console.log('Password hash preview:', user.password_hash ? user.password_hash.substring(0, 20) + '...' : 'none');
+      
       // Verify password
       const isPasswordValid = await user.verifyPassword(password);
       console.log('Password verification result:', isPasswordValid);
       
       if (!isPasswordValid) {
-        console.log('Invalid password for user:', email);
+        console.log('AUTHENTICATION FAILED - Invalid password for user:', email);
+        console.log('This could be due to:');
+        console.log('1. Wrong password provided');
+        console.log('2. Password hash corruption during registration');
+        console.log('3. bcrypt comparison failure');
+        
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
