@@ -83,6 +83,11 @@ optimize-*.js
 *.key
 *.cert
 
+# Sensitive configuration files
+VERCEL_SETUP.md
+**/database-credentials.txt
+**/secrets.txt
+
 # Backup files
 *.backup
 *.bak

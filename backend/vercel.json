@@ -3,7 +3,7 @@
   "name": "enterprise-ai-hub-backend",
   "builds": [
     {
-      "src": "index.js",
+      "src": "server.js",
       "use": "@vercel/node@3",
       "config": {
         "maxLambdaSize": "50mb"
@@ -13,20 +13,20 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/index.js"
+      "dest": "/server.js"
     },
     {
       "src": "/health",
-      "dest": "/index.js"
+      "dest": "/server.js"
     },
     {
       "src": "/",
-      "dest": "/index.js"
+      "dest": "/server.js"
     }
   ],
   "env": {},
   "functions": {
-    "index.js": {
+    "server.js": {
       "maxDuration": 30
     }
   }

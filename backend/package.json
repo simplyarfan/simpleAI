@@ -1,6 +1,6 @@
 {
   "name": "ai-platform-backend",
-  "version": "2.0.0",
+  "version": "1.0.1",
   "description": "Production-ready backend API for Enterprise AI Hub",
   "main": "server.js",
   "scripts": {

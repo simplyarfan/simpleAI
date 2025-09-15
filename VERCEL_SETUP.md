@@ -6,11 +6,11 @@ Go to your Vercel project settings → Environment Variables and add these:
 
 ### Database Configuration
 ```
-DATABASE_URL=postgresql://neondb_owner:npg_U7DVSnPM9Bmr@ep-sweet-dust-adc4jjkh-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+DATABASE_URL=your_postgresql_connection_string_here
 
-POSTGRES_URL=postgresql://neondb_owner:npg_U7DVSnPM9Bmr@ep-sweet-dust-adc4jjkh-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+POSTGRES_URL=your_postgresql_connection_string_here
 
-DATABASE_URL_UNPOOLED=postgresql://neondb_owner:npg_U7DVSnPM9Bmr@ep-sweet-dust-adc4jjkh.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+DATABASE_URL_UNPOOLED=your_postgresql_unpooled_connection_string_here
 ```
 
 ### JWT Configuration (CRITICAL - CHANGE THESE!)
