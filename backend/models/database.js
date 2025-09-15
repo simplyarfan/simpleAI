@@ -16,14 +16,25 @@ class Database {
 
       try {
         // Use PostgreSQL for production (Vercel Postgres)
+        const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+        
+        if (!connectionString) {
+          throw new Error('No database connection string found. Please set POSTGRES_URL or DATABASE_URL environment variable.');
+        }
+        
+        console.log('🔗 Connecting to database with connection string:', connectionString.replace(/:[^:@]*@/, ':****@'));
+        
         this.pool = new Pool({
-          connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL,
-          ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+          connectionString,
+          ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+          max: 20,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 2000,
         });
         
         // Test connection
-        await this.pool.query('SELECT NOW()');
-        console.log('✅ Connected to PostgreSQL database');
+        const testResult = await this.pool.query('SELECT NOW()');
+        console.log('✅ Connected to PostgreSQL database at:', testResult.rows[0].now);
         this.isConnected = true;
         
         // Initialize tables

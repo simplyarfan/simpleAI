@@ -20,6 +20,8 @@
     "NODE_ENV": "production",
     "JWT_SECRET": "fallback-secret-key-change-in-production-vercel",
     "JWT_EXPIRES_IN": "7d",
-    "REFRESH_TOKEN_SECRET": "fallback-refresh-secret-change-in-production-vercel"
+    "REFRESH_TOKEN_SECRET": "fallback-refresh-secret-change-in-production-vercel",
+    "POSTGRES_URL": "@postgres_url",
+    "DATABASE_URL": "@database_url"
   }
 }
