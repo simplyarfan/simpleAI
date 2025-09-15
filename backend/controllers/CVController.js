@@ -81,7 +81,7 @@ class CVController {
       await database.run(`
         INSERT INTO agent_usage_stats (user_id, agent_id, usage_count, total_time_spent, date)
         VALUES ($1, 'cv_intelligence', 
-          COALESCE((SELECT usage_count FROM agent_usage_stats WHERE user_id = $2 AND agent_id = 'cv_intelligence' AND date = CURRENT_DATE) RETURNING id, 0) + 1,
+          COALESCE((SELECT usage_count FROM agent_usage_stats WHERE user_id = $2 AND agent_id = 'cv_intelligence' AND date = CURRENT_DATE), 0) + 1,
           COALESCE((SELECT total_time_spent FROM agent_usage_stats WHERE user_id = $3 AND agent_id = 'cv_intelligence' AND date = CURRENT_DATE), 0),
           CURRENT_DATE
         )
