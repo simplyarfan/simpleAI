@@ -62,25 +62,19 @@ const SuperAdminDashboard = () => {
           apiCalls: analyticsData.apiCalls || 0
         });
         
-        // Set recent activity from analytics or use defaults
-        if (analyticsData.recentActivity && analyticsData.recentActivity.length > 0) {
-          setRecentActivity(analyticsData.recentActivity);
-        } else {
-          setRecentActivity(defaultRecentActivity);
-        }
+        // Set recent activity from analytics
+        console.log('Analytics recent activity:', analyticsData.recentActivity);
+        setRecentActivity(analyticsData.recentActivity || []);
         
-        // Set pending tickets or use defaults
-        if (ticketsData.tickets) {
-          setPendingTickets(ticketsData.tickets.slice(0, 5)); // Show only first 5
-        } else {
-          setPendingTickets(defaultPendingTickets);
-        }
+        // Set pending tickets from real data
+        console.log('Support tickets data:', ticketsData.tickets);
+        setPendingTickets(ticketsData.tickets ? ticketsData.tickets.slice(0, 5) : []);
         
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        // Use fallback data on error
-        setRecentActivity(defaultRecentActivity);
-        setPendingTickets(defaultPendingTickets);
+        // Use empty arrays on error instead of fallback data
+        setRecentActivity([]);
+        setPendingTickets([]);
       } finally {
         setLoading(false);
       }

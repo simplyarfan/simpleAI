@@ -90,9 +90,25 @@ router.get('/check',
 );
 
 // Admin route to reset user password (for debugging)
-router.post('/admin/reset-user-password', 
-  AuthController.adminResetUserPassword
-);
+router.post('/admin/reset-password', authenticateToken, async (req, res) => {
+  try {
+    // Check if user is superadmin
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Superadmin role required.'
+      });
+    }
+
+    await AuthController.adminResetUserPassword(req, res);
+  } catch (error) {
+    console.error('Admin reset password route error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
 
 // Logout (current session)
 router.post('/logout', 

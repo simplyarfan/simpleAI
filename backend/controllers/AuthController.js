@@ -324,11 +324,85 @@ class AuthController {
 
       res.json({
         success: true,
-        message: 'Password reset email sent successfully'
+        message: 'Password reset successfully'
       });
 
     } catch (error) {
-      console.error('Password reset request error:', error);
+      console.error('Admin reset password error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Update user profile
+  static async updateProfile(req, res) {
+    try {
+      const { firstName, lastName, email, currentPassword, newPassword } = req.body;
+      const userId = req.user.id;
+
+      if (!firstName || !lastName || !email) {
+        return res.status(400).json({
+          success: false,
+          message: 'First name, last name, and email are required'
+        });
+      }
+
+      // Get current user data
+      const currentUser = await database.get(
+        'SELECT * FROM users WHERE id = $1',
+        [userId]
+      );
+
+      if (!currentUser) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      // If changing password, verify current password
+      if (newPassword) {
+        if (!currentPassword) {
+          return res.status(400).json({
+            success: false,
+            message: 'Current password is required to change password'
+          });
+        }
+
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.password_hash);
+        if (!isCurrentPasswordValid) {
+          return res.status(400).json({
+            success: false,
+            message: 'Current password is incorrect'
+          });
+        }
+
+        // Hash new password
+        const saltRounds = 12;
+        const hashedNewPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        // Update with new password
+        await database.run(
+          'UPDATE users SET first_name = $1, last_name = $2, email = $3, password_hash = $4, updated_at = CURRENT_TIMESTAMP WHERE id = $5',
+          [firstName, lastName, email, hashedNewPassword, userId]
+        );
+      } else {
+        // Update without password change
+        await database.run(
+          'UPDATE users SET first_name = $1, last_name = $2, email = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4',
+          [firstName, lastName, email, userId]
+        );
+      }
+
+      res.json({
+        success: true,
+        message: 'Profile updated successfully'
+      });
+
+    } catch (error) {
+      console.error('Update profile error:', error);
       res.status(500).json({
         success: false,
         message: 'Internal server error'

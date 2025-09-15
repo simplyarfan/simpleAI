@@ -142,15 +142,16 @@ api.interceptors.response.use(
 
 // API Endpoints
 export const authAPI = {
-  register: (userData) => api.post('/auth/register', userData),
   login: (credentials) => api.post('/auth/login', credentials),
+  register: (userData) => api.post('/auth/register', userData),
   logout: () => api.post('/auth/logout'),
   logoutAll: () => api.post('/auth/logout-all'),
+  checkAuth: () => api.get('/auth/check'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
-  getProfile: () => api.get('/auth/profile'),
-  updateProfile: (userData) => api.put('/auth/profile', userData),
-  checkAuth: () => api.get('/auth/check')
+  verifyEmail: (token) => api.post('/auth/verify-email', { token }),
+  resendVerification: (email) => api.post('/auth/resend-verification', { email }),
+  updateProfile: (data) => api.put('/auth/profile', data)
 };
 
 export const cvAPI = {
