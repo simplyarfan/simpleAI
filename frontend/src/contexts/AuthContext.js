@@ -19,6 +19,9 @@ export const AuthProvider = ({ children }) => {
 
   // Get the API base URL (without /api since we'll add the full path)
   const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+  
+  // Cache busting timestamp to force fresh deployments
+  const CACHE_BUSTER = Date.now();
 
   console.log('🔗 API Base URL:', API_BASE);
 
@@ -113,7 +116,8 @@ export const AuthProvider = ({ children }) => {
       console.log('🔐 Starting login...', { 
         email: credentials.email,
         apiBase: API_BASE,
-        endpoint: `${API_BASE}/api/auth/login`
+        endpoint: `${API_BASE}/api/auth/login`,
+        cacheBuster: CACHE_BUSTER
       });
 
       const response = await fetch(`${API_BASE}/api/auth/login`, {
