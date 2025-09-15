@@ -20,12 +20,6 @@ const getApiBaseUrl = () => {
 
 const API_BASE_URL = getApiBaseUrl();
 
-console.log('🔗 API Configuration:', {
-  baseUrl: API_BASE_URL,
-  environment: process.env.NODE_ENV,
-  hostname: typeof window !== 'undefined' ? window.location.hostname : 'server'
-});
-
 // Create optimized axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -98,7 +92,6 @@ api.interceptors.request.use(
     // Add request ID for tracking
     config.headers['X-Request-ID'] = Math.random().toString(36).substring(7);
     
-    console.log(`🌐 ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
   (error) => Promise.reject(error)
@@ -107,7 +100,6 @@ api.interceptors.request.use(
 // Response interceptor with token refresh
 api.interceptors.response.use(
   (response) => {
-    console.log(`✅ ${response.status} ${response.config.url}`);
     return response;
   },
   async (error) => {

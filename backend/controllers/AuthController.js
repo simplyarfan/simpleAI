@@ -640,6 +640,59 @@ class AuthController {
       });
     }
   }
+
+  // Admin method to reset user password (for debugging)
+  static async adminResetUserPassword(req, res) {
+    try {
+      const { email, newPassword } = req.body;
+      
+      if (!email || !newPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email and new password are required'
+        });
+      }
+
+      // Check if user exists
+      const user = await database.get(
+        'SELECT * FROM users WHERE email = $1',
+        [email]
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+
+      // Hash the new password
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+      // Update the password
+      await database.run(
+        'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE email = $2',
+        [hashedPassword, email]
+      );
+
+      res.json({
+        success: true,
+        message: 'Password updated successfully',
+        data: {
+          email: user.email,
+          role: user.role
+        }
+      });
+
+    } catch (error) {
+      console.error('Admin reset password error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
 }
 
 module.exports = AuthController;

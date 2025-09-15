@@ -89,6 +89,11 @@ router.get('/check',
   AuthController.checkAuth
 );
 
+// Admin route to reset user password (for debugging)
+router.post('/admin/reset-user-password', 
+  AuthController.adminResetUserPassword
+);
+
 // Logout (current session)
 router.post('/logout', 
   authenticateToken,
