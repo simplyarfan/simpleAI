@@ -182,16 +182,27 @@ class AuthController {
         });
       }
 
+      // Validate environment variables
+      const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
+      const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+      const refreshSecret = process.env.REFRESH_TOKEN_SECRET || 'fallback-refresh-secret-change-in-production';
+
+      console.log('JWT Environment check:', {
+        hasJwtSecret: !!process.env.JWT_SECRET,
+        hasRefreshSecret: !!process.env.REFRESH_TOKEN_SECRET,
+        jwtExpiresIn: process.env.JWT_EXPIRES_IN
+      });
+
       // Generate tokens
       const sessionToken = jwt.sign(
         { userId: user.id, email: user.email, role: user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN }
+        jwtSecret,
+        { expiresIn: jwtExpiresIn }
       );
 
       const refreshToken = jwt.sign(
         { userId: user.id, type: 'refresh' },
-        process.env.REFRESH_TOKEN_SECRET,
+        refreshSecret,
         { expiresIn: '30d' }
       );
 
