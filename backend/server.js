@@ -30,14 +30,39 @@ app.use(helmet({
 app.use(compression());
 app.use(responseTime());
 
-// CORS configuration
+// CORS configuration - Allow all Netlify and Vercel subdomains
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
-    'https://thesimpleai.netlify.app',
-    'https://thesimpleai.vercel.app',
-    'http://localhost:3000'
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost for development
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return callback(null, true);
+    }
+    
+    // Allow all Netlify deploy previews and production
+    if (origin.includes('netlify.app')) {
+      return callback(null, true);
+    }
+    
+    // Allow all Vercel deployments
+    if (origin.includes('vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // Allow specific production domains
+    const allowedOrigins = [
+      'https://thesimpleai.netlify.app',
+      'https://thesimpleai.vercel.app'
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
