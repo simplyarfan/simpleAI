@@ -302,7 +302,7 @@ class Database {
 
   async createDefaultAdmin() {
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || 'admin@securemaxtech.com';
+      const adminEmail = process.env.ADMIN_EMAIL || 'syedarfan@securemaxtech.com';
       
       const existingAdmin = await this.get('SELECT id FROM users WHERE email = $1', [adminEmail]);
       

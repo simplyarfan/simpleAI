@@ -36,7 +36,7 @@
     "EMAIL_HOST": "smtp.gmail.com",
     "EMAIL_PORT": "587",
     "EMAIL_SECURE": "false",
-    "EMAIL_USER": "@email_user",
+    "EMAIL_USER": "syedarfan@securemaxtech.com",
     "EMAIL_PASS": "@email_pass"
   },
   "functions": {
