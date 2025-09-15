@@ -302,7 +302,7 @@ class Database {
       const adminEmail = process.env.ADMIN_EMAIL || 'syedarfan@securemaxtech.com';
       
       // Check if admin user exists
-      const existingAdmin = await this.get('SELECT id FROM users WHERE email = ?', [adminEmail]);
+      const existingAdmin = await this.get('SELECT id FROM users WHERE email = $1', [adminEmail]);
       
       if (!existingAdmin) {
         const bcrypt = require('bcrypt');
@@ -314,7 +314,7 @@ class Database {
           INSERT INTO users (
             email, password_hash, first_name, last_name, role, 
             department, job_title, is_verified
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         `, [
           adminEmail,
           hashedPassword,
@@ -323,7 +323,7 @@ class Database {
           'superadmin',
           'IT',
           'System Administrator',
-          1 // Pre-verified
+          true // Pre-verified
         ]);
         
         console.log(`✅ Admin user created: ${adminEmail}`);

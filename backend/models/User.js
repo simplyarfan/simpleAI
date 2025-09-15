@@ -31,7 +31,7 @@ class User {
         INSERT INTO users (
           email, password_hash, first_name, last_name, role, 
           department, job_title, is_verified
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id
       `;
 
       const params = [
@@ -47,8 +47,8 @@ class User {
 
       const result = await database.run(sql, params);
       
-      // Return the user ID for the controller to fetch the user
-      return result.id;
+      // Return the user ID from PostgreSQL RETURNING clause
+      return result.rows[0].id;
     } catch (error) {
       console.error('Error creating user:', error);
       throw error;
@@ -58,7 +58,7 @@ class User {
   // Find user by ID
   static async findById(id) {
     try {
-      const sql = 'SELECT * FROM users WHERE id = ? AND is_active = 1';
+      const sql = 'SELECT * FROM users WHERE id = $1 AND is_active = true';
       const row = await database.get(sql, [id]);
       return row ? new User(row) : null;
     } catch (error) {
@@ -70,7 +70,7 @@ class User {
   // Find user by email
   static async findByEmail(email) {
     try {
-      const sql = 'SELECT * FROM users WHERE email = ? AND is_active = 1';
+      const sql = 'SELECT * FROM users WHERE email = $1 AND is_active = true';
       const row = await database.get(sql, [email.toLowerCase()]);
       return row ? new User(row) : null;
     } catch (error) {
