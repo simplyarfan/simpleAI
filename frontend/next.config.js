@@ -41,16 +41,7 @@ const nextConfig = {
             value: 'strict-origin-when-cross-origin'
           }
         ]
-      },
-      {
-        source: '/api/:path*',
-        headers: [
-          { key: 'Access-Control-Allow-Credentials', value: 'true' },
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT' },
-          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization' },
-        ],
-      },
+      }
     ];
   },
   
@@ -65,10 +56,21 @@ const nextConfig = {
     ];
   },
   
-  // Output configuration for Netlify
-  trailingSlash: true,
-  output: 'export',
-  distDir: 'out',
+  // Remove static export configuration - use standard Next.js build
+  trailingSlash: false,
+  
+  // Webpack configuration to handle potential module issues
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    // Handle potential module resolution issues
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    };
+    
+    return config;
+  },
 };
 
 module.exports = nextConfig;

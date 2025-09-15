@@ -30,7 +30,7 @@ app.use(helmet({
 app.use(compression());
 app.use(responseTime());
 
-// CORS configuration - Allow all Netlify and Vercel subdomains
+// Enhanced CORS configuration
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, etc.)
@@ -64,9 +64,25 @@ app.use(cors({
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With', 
+    'X-Request-ID',  // Add this header
+    'Accept',
+    'Accept-Version',
+    'Content-Length',
+    'Content-MD5',
+    'Date',
+    'X-Api-Version',
+    'X-CSRF-Token'
+  ],
+  exposedHeaders: ['X-Request-ID']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
