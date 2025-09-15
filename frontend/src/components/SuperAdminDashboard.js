@@ -47,28 +47,20 @@ const SuperAdminDashboard = () => {
         
         // Fetch analytics data
         const analyticsResponse = await analyticsAPI.getDashboard();
-        const analyticsData = analyticsResponse.data.data;
-        
-        // Fetch support tickets
-        const ticketsResponse = await supportAPI.getMyTickets({ status: 'open' });
-        const ticketsData = ticketsResponse.data.data;
-        
-        setStats({
-          totalUsers: analyticsData.totalUsers || 0,
-          activeUsers: analyticsData.activeUsers || 0,
-          totalTickets: analyticsData.totalTickets || 0,
-          pendingTickets: ticketsData.tickets?.length || 0,
-          systemHealth: analyticsData.systemHealth || 'Good',
-          apiCalls: analyticsData.apiCalls || 0
-        });
-        
-        // Set recent activity from analytics
-        console.log('Analytics recent activity:', analyticsData.recentActivity);
-        setRecentActivity(analyticsData.recentActivity || []);
-        
-        // Set pending tickets from real data
-        console.log('Support tickets data:', ticketsData.tickets);
-        setPendingTickets(ticketsData.tickets ? ticketsData.tickets.slice(0, 5) : []);
+        if (analyticsResponse.success) {
+          const analyticsData = analyticsResponse.data;
+          
+          setStats({
+            totalUsers: analyticsData.totalUsers || 0,
+            activeUsers: analyticsData.activeUsers || 0,
+            totalTickets: analyticsData.totalTickets || 0,
+            systemHealth: analyticsData.systemHealth || 'Good',
+            apiCalls: analyticsData.apiCalls || 0
+          });
+          
+          // Set recent activity from analytics
+          setRecentActivity(analyticsData.recentActivity || []);
+        }
         
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -314,70 +306,6 @@ const SuperAdminDashboard = () => {
             </div>
           </div>
 
-          {/* Recent Activity & Pending Tickets */}
-          <div className="px-4 py-6 sm:px-0">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Recent Activity */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">System Activity</h3>
-                  <Link href="/admin/activity" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
-                    View all
-                  </Link>
-                </div>
-
-                <div className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start space-x-3">
-                      <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                        activity.status === 'completed' ? 'bg-green-500' :
-                        activity.status === 'warning' ? 'bg-yellow-500' :
-                        activity.status === 'alert' ? 'bg-red-500' : 'bg-blue-500'
-                      }`} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {activity.title}
-                        </p>
-                        <p className="text-sm text-gray-500">{activity.description}</p>
-                        <p className="text-xs text-gray-400 mt-1">{activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Pending Tickets */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Pending Support Tickets</h3>
-                  <Link href="/admin/tickets" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
-                    View all
-                  </Link>
-                </div>
-                
-                <div className="space-y-3">
-                  {pendingTickets.map((ticket) => (
-                    <div key={ticket.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">#{ticket.id}</span>
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                          ticket.priority === 'High' ? 'bg-red-100 text-red-800' :
-                          ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {ticket.priority}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-900 font-medium">{ticket.subject}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {ticket.user} • {ticket.created}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
         </main>
       </div>
     </ProtectedRoute>

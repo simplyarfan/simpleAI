@@ -34,9 +34,12 @@ const CVIntelligence = () => {
 
   const fetchBatches = async () => {
     try {
-      const response = await fetch('/api/cv-intelligence/batches', {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+      const token = localStorage.getItem('accessToken');
+      
+      const response = await fetch(`${API_BASE}/cv-intelligence/batches`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${token}`
         }
       });
       
@@ -77,10 +80,13 @@ const CVIntelligence = () => {
     formData.append('jdFile', selectedFiles.jdFile);
 
     try {
-      const response = await fetch('/api/cv-intelligence/batches', {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+      const token = localStorage.getItem('accessToken');
+      
+      const response = await fetch(`${API_BASE}/cv-intelligence/batches`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${token}`
         },
         body: formData
       });
@@ -108,10 +114,13 @@ const CVIntelligence = () => {
     if (!confirm('Are you sure you want to delete this batch?')) return;
 
     try {
-      const response = await fetch(`/api/cv-intelligence/batches/${batchId}`, {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+      const token = localStorage.getItem('accessToken');
+      
+      const response = await fetch(`${API_BASE}/cv-intelligence/batches/${batchId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -341,7 +350,10 @@ const CVIntelligence = () => {
                                 <span>View</span>
                               </button>
                               <button
-                                onClick={() => window.open(`/api/cv-intelligence/batches/${batch.id}/export?format=csv`, '_blank')}
+                                onClick={() => {
+                                  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+                                  window.open(`${API_BASE}/cv-intelligence/batches/${batch.id}/export?format=csv`, '_blank');
+                                }}
                                 className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 py-2 px-4 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
                               >
                                 <Download className="w-4 h-4" />
