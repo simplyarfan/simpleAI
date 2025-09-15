@@ -60,7 +60,7 @@ const Header = () => {
                   <Brain className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-xl font-bold text-gray-900">
-                  Enterprise AI Hub
+                  simpleAI
                 </span>
               </Link>
             </div>
@@ -116,9 +116,13 @@ const Header = () => {
                         </p>
                         <p className="text-xs text-gray-500">{user?.email}</p>
                         {user?.role && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium mt-1 ${
+                            user.role === 'superadmin' 
+                              ? 'bg-red-100 text-red-800' 
+                              : 'bg-blue-100 text-blue-800'
+                          }`}>
                             <Shield className="w-3 h-3 mr-1" />
-                            {user.role}
+                            {user.role === 'superadmin' ? 'Superadmin' : user.role}
                           </span>
                         )}
                       </div>

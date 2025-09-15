@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/AuthContext';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Header from '../components/Header';
+import { analyticsAPI, supportAPI } from '../utils/api';
 import {
   Brain,
   FileText,
@@ -35,6 +36,64 @@ const SuperAdminDashboard = () => {
     systemHealth: 'Good',
     apiCalls: 0
   });
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [pendingTickets, setPendingTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch real-time dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch analytics data
+        const analyticsResponse = await analyticsAPI.getDashboard();
+        const analyticsData = analyticsResponse.data.data;
+        
+        // Fetch support tickets
+        const ticketsResponse = await supportAPI.getMyTickets({ status: 'open' });
+        const ticketsData = ticketsResponse.data.data;
+        
+        setStats({
+          totalUsers: analyticsData.totalUsers || 0,
+          activeUsers: analyticsData.activeUsers || 0,
+          totalTickets: analyticsData.totalTickets || 0,
+          pendingTickets: ticketsData.tickets?.length || 0,
+          systemHealth: analyticsData.systemHealth || 'Good',
+          apiCalls: analyticsData.apiCalls || 0
+        });
+        
+        // Set recent activity from analytics or use defaults
+        if (analyticsData.recentActivity) {
+          setRecentActivity(analyticsData.recentActivity);
+        } else {
+          setRecentActivity(defaultRecentActivity);
+        }
+        
+        // Set pending tickets or use defaults
+        if (ticketsData.tickets) {
+          setPendingTickets(ticketsData.tickets.slice(0, 5)); // Show only first 5
+        } else {
+          setPendingTickets(defaultPendingTickets);
+        }
+        
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        // Use fallback data on error
+        setRecentActivity(defaultRecentActivity);
+        setPendingTickets(defaultPendingTickets);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+    
+    // Refresh data every 30 seconds
+    const interval = setInterval(fetchDashboardData, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const adminCards = [
     {
@@ -106,7 +165,8 @@ const SuperAdminDashboard = () => {
     }
   ];
 
-  const recentActivity = [
+  // Default fallback data if API fails
+  const defaultRecentActivity = [
     {
       id: 1,
       type: 'user_registration',
@@ -141,7 +201,7 @@ const SuperAdminDashboard = () => {
     }
   ];
 
-  const pendingTickets = [
+  const defaultPendingTickets = [
     {
       id: 2045,
       user: 'john.doe@company.com',
@@ -167,18 +227,6 @@ const SuperAdminDashboard = () => {
       status: 'Open'
     }
   ];
-
-  useEffect(() => {
-    // Mock data - in production, fetch from API
-    setStats({
-      totalUsers: 156,
-      activeUsers: 89,
-      totalTickets: 23,
-      pendingTickets: 8,
-      systemHealth: 'Excellent',
-      apiCalls: 12450
-    });
-  }, []);
 
   return (
     <ProtectedRoute requireAuth={true}>

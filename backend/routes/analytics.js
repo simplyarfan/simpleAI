@@ -26,7 +26,7 @@ router.use(analyticsLimiter);
 // Dashboard overview statistics
 router.get('/dashboard',
   trackActivity('analytics_dashboard_viewed'),
-  AnalyticsController.getDashboardStats
+  AnalyticsController.getDashboard
 );
 
 // User analytics
