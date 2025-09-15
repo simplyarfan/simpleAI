@@ -13,8 +13,8 @@ class User {
     this.is_verified = userData?.is_verified || false;
     this.verification_token = userData?.verification_token;
     this.verification_expiry = userData?.verification_expiry;
-    this.password_reset_token = userData?.password_reset_token;
-    this.password_reset_expires = userData?.password_reset_expires;
+    this.reset_token = userData?.reset_token;
+    this.reset_token_expiry = userData?.reset_token_expiry;
     this.last_login = userData?.last_login;
     this.is_active = userData?.is_active !== undefined ? userData.is_active : true;
     this.profile_image = userData?.profile_image;
@@ -292,7 +292,7 @@ class User {
 
   // Convert to JSON (excluding sensitive data)
   toJSON() {
-    const { password_hash, verification_token, password_reset_token, ...safeUser } = this;
+    const { password_hash, verification_token, reset_token, ...safeUser } = this;
     return safeUser;
   }
 
