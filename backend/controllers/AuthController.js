@@ -205,20 +205,29 @@ class AuthController {
       await user.update({ last_login: new Date().toISOString() });
 
 
-      res.json({
+      // Prepare user data for response
+      const userResponse = {
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        role: user.role,
+        department: user.department || null,
+        job_title: user.job_title || null,
+        is_verified: user.is_verified || true,
+        created_at: user.created_at || new Date().toISOString()
+      };
+
+      // Log the response being sent
+      console.log('Sending login response for user:', user.email);
+
+      // Return success with tokens and user data
+      res.status(200).json({
         success: true,
         message: 'Login successful',
-        user: {
-          id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          department: user.department,
-          job_title: user.job_title,
-          role: user.role
-        },
         accessToken: sessionToken,
-        refreshToken: refreshToken
+        refreshToken: refreshToken,
+        user: userResponse
       });
 
     } catch (error) {

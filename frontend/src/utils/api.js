@@ -21,16 +21,20 @@ export const tokenManager = {
   getRefreshToken: () => Cookies.get('refreshToken'),
   
   setTokens: (accessToken, refreshToken) => {
-    const isProduction = window.location.protocol === 'https:';
-    Cookies.set('accessToken', accessToken, { 
-      expires: 7, 
-      secure: isProduction, 
-      sameSite: isProduction ? 'none' : 'lax' 
-    });
-    Cookies.set('refreshToken', refreshToken, { 
-      expires: 30, 
-      secure: isProduction, 
-      sameSite: isProduction ? 'none' : 'lax' 
+    const isProduction = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+    const cookieOptions = {
+      expires: 7, // 7 days
+      path: '/',
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax'
+    };
+    
+    console.log('Setting tokens with options:', cookieOptions);
+    
+    Cookies.set('accessToken', accessToken, cookieOptions);
+    Cookies.set('refreshToken', refreshToken, {
+      ...cookieOptions,
+      expires: 30 // 30 days for refresh token
     });
   },
   

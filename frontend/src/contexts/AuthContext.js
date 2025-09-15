@@ -110,37 +110,73 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      console.log('🔐 Starting login...', { email: credentials.email });
+      console.log('🔐 Starting login...', { 
+        email: credentials.email,
+        apiBase: API_BASE,
+        endpoint: `${API_BASE}/api/auth/login`
+      });
 
       const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        credentials: 'include',
+        credentials: 'include', // Important for cookies
         body: JSON.stringify(credentials),
       });
 
       console.log('🔐 Login response status:', response.status);
-      const data = await response.json();
+      
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      let data;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Invalid server response format');
+      }
+      
       console.log('🔐 Login response data:', data);
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        const errorMessage = data.message || `Login failed with status ${response.status}`;
+        console.error('Login failed:', { status: response.status, error: errorMessage });
+        throw new Error(errorMessage);
       }
 
       // Handle successful login
-      if (data.success && data.accessToken) {
-        // Store tokens
-        tokenManager.setTokens(data.accessToken, data.refreshToken);
+      if (data.success) {
+        // The backend returns sessionToken, not accessToken
+        const accessToken = data.sessionToken || data.accessToken;
+        
+        if (!accessToken) {
+          console.error('No access token in response:', data);
+          throw new Error('Authentication failed: No access token received');
+        }
 
-        // Update state
-        setUser(data.user);
+        // Store tokens
+        tokenManager.setTokens(accessToken, data.refreshToken);
+
+        // Update state with user data
+        const userData = data.user || data.data?.user;
+        if (!userData) {
+          console.error('No user data in response:', data);
+          throw new Error('Authentication failed: No user data received');
+        }
+
+        setUser(userData);
         setIsAuthenticated(true);
 
         toast.success('Login successful!');
-        console.log('✅ Login successful');
-        return { success: true, user: data.user };
+        console.log('✅ Login successful', { user: userData });
+        return { success: true, user: userData };
+      } else {
+        console.error('Login failed - success flag is false:', data);
+        throw new Error(data.message || 'Authentication failed');
       }
     } catch (error) {
       console.error('❌ Login error:', error);
