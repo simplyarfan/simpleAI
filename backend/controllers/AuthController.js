@@ -91,7 +91,7 @@ class AuthController {
       const sessionExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
       await database.run(`
         INSERT INTO user_sessions (user_id, session_token, refresh_token, expires_at, ip_address, user_agent)
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES ($1, $2, $3, $4, $5, $6)
       `, [
         user.id,
         accessToken,
@@ -318,8 +318,8 @@ class AuthController {
       
       await database.run(`
         UPDATE users 
-        SET password_reset_token = ?, password_reset_expiry = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
+        SET reset_token = $1, reset_token_expiry = $2, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
       `, [resetToken, resetExpiry.toISOString(), user.id]);
 
       res.json({
@@ -352,7 +352,7 @@ class AuthController {
 
       // Find user by reset token
       const user = await database.get(
-        'SELECT * FROM users WHERE password_reset_token = ? AND password_reset_expiry > datetime("now")',
+        'SELECT * FROM users WHERE reset_token = $1 AND reset_token_expiry > NOW()',
         [token]
       );
       
@@ -370,12 +370,12 @@ class AuthController {
       // Update password and clear reset token
       await database.run(`
         UPDATE users 
-        SET password_hash = ?, password_reset_token = NULL, password_reset_expiry = NULL, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
+        SET password_hash = $1, reset_token = NULL, reset_token_expiry = NULL, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $2
       `, [hashedPassword, user.id]);
 
       // Invalidate all sessions for this user (force re-login)
-      await database.run('DELETE FROM user_sessions WHERE user_id = ?', [user.id]);
+      await database.run('DELETE FROM user_sessions WHERE user_id = $1', [user.id]);
 
       res.json({
         success: true,
@@ -408,7 +408,7 @@ class AuthController {
       
       // Check if session exists
       const session = await database.get(
-        'SELECT * FROM user_sessions WHERE refresh_token = ? AND expires_at > datetime("now")',
+        'SELECT * FROM user_sessions WHERE refresh_token = $1 AND expires_at > NOW()',
         [refreshToken]
       );
 
@@ -437,7 +437,7 @@ class AuthController {
 
       // Update session with new access token
       await database.run(
-        'UPDATE user_sessions SET session_token = ? WHERE id = ?',
+        'UPDATE user_sessions SET session_token = $1 WHERE id = $2',
         [newAccessToken, session.id]
       );
 
@@ -474,7 +474,7 @@ class AuthController {
 
       if (token) {
         // Remove session from database
-        await database.run('DELETE FROM user_sessions WHERE session_token = ?', [token]);
+        await database.run('DELETE FROM user_sessions WHERE session_token = $1', [token]);
         
       }
 
@@ -503,7 +503,7 @@ class AuthController {
       }
 
       // Remove all sessions for this user
-      await database.run('DELETE FROM user_sessions WHERE user_id = ?', [req.user.id]);
+      await database.run('DELETE FROM user_sessions WHERE user_id = $1', [req.user.id]);
 
       res.json({
         success: true,
@@ -577,8 +577,8 @@ class AuthController {
       // Update user
       await database.run(`
         UPDATE users 
-        SET first_name = ?, last_name = ?, department = ?, job_title = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
+        SET first_name = $1, last_name = $2, department = $3, job_title = $4, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $5
       `, [first_name, last_name, department, job_title, req.user.id]);
 
       res.json({

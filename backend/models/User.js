@@ -128,11 +128,13 @@ class User {
       
       const updates = [];
       const params = [];
+      let paramIndex = 1;
       
       Object.keys(updateData).forEach(key => {
         if (allowedFields.includes(key)) {
-          updates.push(`${key} = ?`);
+          updates.push(`${key} = $${paramIndex}`);
           params.push(updateData[key]);
+          paramIndex++;
         }
       });
 
@@ -143,7 +145,7 @@ class User {
       updates.push('updated_at = CURRENT_TIMESTAMP');
       params.push(this.id);
 
-      const sql = `UPDATE users SET ${updates.join(', ')} WHERE id = ?`;
+      const sql = `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramIndex}`;
       await database.run(sql, params);
 
       // Refresh user data
@@ -165,8 +167,8 @@ class User {
       
       const sql = `
         UPDATE users 
-        SET password_hash = ?, password_reset_token = NULL, password_reset_expires = NULL, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
+        SET password_hash = $1, reset_token = NULL, reset_token_expiry = NULL, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $2
       `;
       
       await database.run(sql, [password_hash, this.id]);
@@ -186,36 +188,41 @@ class User {
       const { page = 1, limit = 20, role = null, search = null } = options;
       const offset = (page - 1) * limit;
       
-      let sql = 'SELECT id, email, first_name, last_name, role, is_verified, last_login, department, job_title, created_at FROM users WHERE is_active = 1';
+      let sql = 'SELECT id, email, first_name, last_name, role, is_verified, last_login, department, job_title, created_at FROM users WHERE is_active = true';
       const params = [];
+      let paramIndex = 1;
       
       if (role) {
-        sql += ' AND role = ?';
+        sql += ` AND role = $${paramIndex}`;
         params.push(role);
+        paramIndex++;
       }
       
       if (search) {
-        sql += ' AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)';
+        sql += ` AND (first_name ILIKE $${paramIndex} OR last_name ILIKE $${paramIndex + 1} OR email ILIKE $${paramIndex + 2})`;
         const searchTerm = `%${search}%`;
         params.push(searchTerm, searchTerm, searchTerm);
+        paramIndex += 3;
       }
       
-      sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      sql += ` ORDER BY created_at DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
       params.push(limit, offset);
       
       const rows = await database.all(sql, params);
       
       // Get total count
-      let countSql = 'SELECT COUNT(*) as total FROM users WHERE is_active = 1';
+      let countSql = 'SELECT COUNT(*) as total FROM users WHERE is_active = true';
       const countParams = [];
+      let countParamIndex = 1;
       
       if (role) {
-        countSql += ' AND role = ?';
+        countSql += ` AND role = $${countParamIndex}`;
         countParams.push(role);
+        countParamIndex++;
       }
       
       if (search) {
-        countSql += ' AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)';
+        countSql += ` AND (first_name ILIKE $${countParamIndex} OR last_name ILIKE $${countParamIndex + 1} OR email ILIKE $${countParamIndex + 2})`;
         const searchTerm = `%${search}%`;
         countParams.push(searchTerm, searchTerm, searchTerm);
       }
@@ -241,15 +248,15 @@ class User {
       const stats = {};
       
       // Total users
-      const totalResult = await database.get('SELECT COUNT(*) as total FROM users WHERE is_active = 1');
+      const totalResult = await database.get('SELECT COUNT(*) as total FROM users WHERE is_active = true');
       stats.total = totalResult.total;
       
       // Verified users
-      const verifiedResult = await database.get('SELECT COUNT(*) as verified FROM users WHERE is_active = 1 AND is_verified = 1');
+      const verifiedResult = await database.get('SELECT COUNT(*) as verified FROM users WHERE is_active = true AND is_verified = true');
       stats.verified = verifiedResult.verified;
       
       // Users by role
-      const roleStats = await database.all('SELECT role, COUNT(*) as count FROM users WHERE is_active = 1 GROUP BY role');
+      const roleStats = await database.all('SELECT role, COUNT(*) as count FROM users WHERE is_active = true GROUP BY role');
       stats.byRole = {};
       roleStats.forEach(row => {
         stats.byRole[row.role] = row.count;
@@ -259,7 +266,7 @@ class User {
       const recentResult = await database.get(`
         SELECT COUNT(*) as recent 
         FROM users 
-        WHERE is_active = 1 AND created_at > datetime('now', '-30 days')
+        WHERE is_active = true AND created_at > NOW() - INTERVAL '30 days'
       `);
       stats.recentRegistrations = recentResult.recent;
       
@@ -273,7 +280,7 @@ class User {
   // Delete user (soft delete)
   async delete() {
     try {
-      const sql = 'UPDATE users SET is_active = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+      const sql = 'UPDATE users SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1';
       await database.run(sql, [this.id]);
       this.is_active = false;
       return this;
