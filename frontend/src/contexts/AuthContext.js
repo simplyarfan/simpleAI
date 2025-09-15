@@ -150,8 +150,8 @@ export const AuthProvider = ({ children }) => {
 
       // Handle successful login
       if (data.success) {
-        // The backend returns sessionToken, not accessToken
-        const accessToken = data.sessionToken || data.accessToken;
+        // Backend returns accessToken, not sessionToken
+        const accessToken = data.accessToken;
         
         if (!accessToken) {
           console.error('No access token in response:', data);
@@ -161,8 +161,8 @@ export const AuthProvider = ({ children }) => {
         // Store tokens
         tokenManager.setTokens(accessToken, data.refreshToken);
 
-        // Update state with user data
-        const userData = data.user || data.data?.user;
+        // Update state with user data - backend returns user directly
+        const userData = data.user;
         if (!userData) {
           console.error('No user data in response:', data);
           throw new Error('Authentication failed: No user data received');
