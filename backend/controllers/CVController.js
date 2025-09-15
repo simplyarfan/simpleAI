@@ -80,16 +80,12 @@ class CVController {
       // Track agent usage
       await database.run(`
         INSERT INTO agent_usage_stats (user_id, agent_id, usage_count, total_time_spent, date)
-        VALUES ($1, 'cv_intelligence', 
-          COALESCE((SELECT usage_count FROM agent_usage_stats WHERE user_id = $2 AND agent_id = 'cv_intelligence' AND date = CURRENT_DATE), 0) + 1,
-          COALESCE((SELECT total_time_spent FROM agent_usage_stats WHERE user_id = $3 AND agent_id = 'cv_intelligence' AND date = CURRENT_DATE), 0),
-          CURRENT_DATE
-        )
+        VALUES ($1, 'cv_intelligence', 1, 0, CURRENT_DATE)
         ON CONFLICT (user_id, agent_id, date) 
         DO UPDATE SET 
           usage_count = agent_usage_stats.usage_count + 1,
           updated_at = CURRENT_TIMESTAMP
-      `, [req.user.id, req.user.id, req.user.id]);
+      `, [req.user.id]);
 
       // Track analytics
       await database.run(`
@@ -117,7 +113,8 @@ class CVController {
       // Update batch with results
       await database.run(`
         UPDATE cv_batches 
-        SET status = 'completed', candidate_count = $1, processing_time = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3
+        SET status = 'completed', candidate_count = $1, processing_time = $2, updated_at = CURRENT_TIMESTAMP 
+        WHERE id = $3
       `, [candidates.length, processingTime, batchId]);
 
       // Get the completed batch
@@ -163,27 +160,27 @@ class CVController {
           id, name, status, cv_count, jd_count, candidate_count, 
           processing_time, created_at, updated_at
         FROM cv_batches 
-        WHERE user_id = ?
+        WHERE user_id = $1
       `;
       
       const params = [req.user.id];
 
       if (status) {
-        query += ' AND status = ?';
+        query += ' AND status = $2';
         params.push(status);
       }
 
-      query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      query += ' ORDER BY created_at DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
       params.push(limit, offset);
 
       const batches = await database.all(query, params);
 
       // Get total count
-      let countQuery = 'SELECT COUNT(*) as total FROM cv_batches WHERE user_id = ?';
+      let countQuery = 'SELECT COUNT(*) as total FROM cv_batches WHERE user_id = $1';
       const countParams = [req.user.id];
 
       if (status) {
-        countQuery += ' AND status = ?';
+        countQuery += ' AND status = $2';
         countParams.push(status);
       }
 
@@ -219,7 +216,7 @@ class CVController {
       // Get batch details
       const batch = await database.get(`
         SELECT * FROM cv_batches 
-        WHERE id = ? AND user_id = ?
+        WHERE id = $1 AND user_id = $2
       `, [batch_id, req.user.id]);
 
       if (!batch) {
@@ -232,7 +229,7 @@ class CVController {
       // Get candidates for this batch
       const candidates = await database.all(`
         SELECT * FROM cv_candidates 
-        WHERE batch_id = ?
+        WHERE batch_id = $1
         ORDER BY score DESC
       `, [batch_id]);
 
@@ -259,58 +256,6 @@ class CVController {
     }
   }
 
-  // Get candidate details
-  static async getCandidateDetails(req, res) {
-    try {
-      const { candidate_id } = req.params;
-
-      // Get candidate with batch info to verify user access
-      const candidate = await database.get(`
-        SELECT 
-          cc.*,
-          cb.user_id as batch_user_id
-        FROM cv_candidates cc
-        JOIN cv_batches cb ON cc.batch_id = cb.id
-        WHERE cc.id = ?
-      `, [candidate_id]);
-
-      if (!candidate) {
-        return res.status(404).json({
-          success: false,
-          message: 'Candidate not found'
-        });
-      }
-
-      // Check user access
-      if (candidate.batch_user_id !== req.user.id && !req.user.isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Access denied'
-        });
-      }
-
-      // Parse analysis data
-      const candidateWithAnalysis = {
-        ...candidate,
-        analysis: candidate.analysis_data ? JSON.parse(candidate.analysis_data) : {}
-      };
-
-      delete candidateWithAnalysis.batch_user_id; // Remove internal field
-
-      res.json({
-        success: true,
-        data: { candidate: candidateWithAnalysis }
-      });
-
-    } catch (error) {
-      console.error('Get candidate details error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error'
-      });
-    }
-  }
-
   // Delete batch
   static async deleteBatch(req, res) {
     try {
@@ -319,7 +264,7 @@ class CVController {
       // Check if batch exists and user has access
       const batch = await database.get(`
         SELECT * FROM cv_batches 
-        WHERE id = ? AND user_id = ?
+        WHERE id = $1 AND user_id = $2
       `, [batch_id, req.user.id]);
 
       if (!batch) {
@@ -450,108 +395,6 @@ class CVController {
     return candidates.sort((a, b) => b.score - a.score);
   }
 
-  // Get CV Intelligence statistics (admin only)
-  static async getCVStats(req, res) {
-    try {
-      const { timeframe = '30d', user_id } = req.query;
-
-      const timeFrameMap = {
-        '7d': '-7 days',
-        '30d': '-30 days',
-        '90d': '-90 days',
-        '1y': '-1 year'
-      };
-
-      const sqlTimeFrame = timeFrameMap[timeframe] || '-30 days';
-
-      // Overall statistics
-      let query = `
-        SELECT 
-          COUNT(*) as total_batches,
-          COUNT(DISTINCT user_id) as unique_users,
-          SUM(candidate_count) as total_candidates,
-          AVG(candidate_count) as avg_candidates_per_batch,
-          AVG(processing_time) as avg_processing_time,
-          COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_batches,
-          COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_batches
-        FROM cv_batches 
-        WHERE created_at > NOW() - INTERVAL '30 days'
-      `;
-
-      const params = [];
-      if (user_id) {
-        query += ' AND user_id = ?';
-        params.push(user_id);
-      }
-
-      const stats = await database.get(query, params);
-
-      // Daily processing trends
-      let trendQuery = `
-        SELECT 
-          DATE(created_at) as date,
-          COUNT(*) as batches_created,
-          SUM(candidate_count) as candidates_processed,
-          COUNT(DISTINCT user_id) as active_users
-        FROM cv_batches 
-        WHERE created_at > NOW() - INTERVAL '30 days'
-      `;
-
-      if (user_id) {
-        trendQuery += ' AND user_id = ?';
-      }
-
-      trendQuery += ' GROUP BY DATE(created_at) ORDER BY date ASC';
-
-      const trends = await database.all(trendQuery, user_id ? [user_id] : []);
-
-      // Top users by batch count
-      const topUsers = await database.all(`
-        SELECT 
-          u.id,
-          u.email,
-          u.first_name,
-          u.last_name,
-          u.department,
-          COUNT(cb.id) as batch_count,
-          SUM(cb.candidate_count) as total_candidates,
-          AVG(cb.processing_time) as avg_processing_time
-        FROM users u
-        JOIN cv_batches cb ON u.id = cb.user_id
-        WHERE cb.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
-        AND cb.status = 'completed'
-        GROUP BY u.id
-        ORDER BY batch_count DESC
-        LIMIT 10
-      `);
-
-      res.json({
-        success: true,
-        data: {
-          stats: stats || {
-            total_batches: 0,
-            unique_users: 0,
-            total_candidates: 0,
-            avg_candidates_per_batch: 0,
-            avg_processing_time: 0,
-            completed_batches: 0,
-            failed_batches: 0
-          },
-          trends,
-          topUsers,
-          timeframe
-        }
-      });
-
-    } catch (error) {
-      console.error('CV stats error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error'
-      });
-    }
-  }
-
   // Export batch results
   static async exportBatch(req, res) {
     try {
@@ -561,7 +404,7 @@ class CVController {
       // Get batch details
       const batch = await database.get(`
         SELECT * FROM cv_batches 
-        WHERE id = ? AND user_id = ?
+        WHERE id = $1 AND user_id = $2
       `, [batch_id, req.user.id]);
 
       if (!batch) {
@@ -574,7 +417,7 @@ class CVController {
       // Get candidates
       const candidates = await database.all(`
         SELECT * FROM cv_candidates 
-        WHERE batch_id = ?
+        WHERE batch_id = $1
         ORDER BY score DESC
       `, [batch_id]);
 
@@ -597,9 +440,9 @@ class CVController {
           `"${candidate.phone || ''}"`,
           `"${candidate.location || ''}"`,
           candidate.score,
-          `"${candidate.analysis$1.skills$2.join(', ') || ''}"`,
+          `"${candidate.analysis?.skills?.join(', ') || ''}"`,
           candidate.analysis?.experience?.length || 0,
-          `"${candidate.analysis$1.match_analysis$2.recommendation || ''}"`
+          `"${candidate.analysis?.match_analysis?.recommendation || ''}"`
         ].join(',')).join('\n');
 
         const csv = `${headers}\n${csvData}`;

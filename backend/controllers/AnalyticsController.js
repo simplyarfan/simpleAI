@@ -20,7 +20,7 @@ class AnalyticsController {
           AVG(usage_count) as avg_usage_per_user,
           SUM(total_time_spent) as total_time_spent
         FROM agent_usage_stats 
-        WHERE date > DATE('now', '-30 days')
+        WHERE date > CURRENT_DATE - INTERVAL '30 days'
         GROUP BY agent_id 
         ORDER BY total_usage DESC
       `);
@@ -91,7 +91,7 @@ class AnalyticsController {
         totalBatches: cvStats?.total_batches || 0,
         totalCandidatesProcessed: cvStats?.total_candidates || 0,
         avgProcessingTime: cvStats?.avg_processing_time || 0,
-        activeTickets: stats.supportTickets.byStatus.open || 0 + stats.supportTickets.byStatus.in_progress || 0
+        activeTickets: (stats.supportTickets.byStatus.open || 0) + (stats.supportTickets.byStatus.in_progress || 0)
       };
       stats.systemMetrics = systemMetrics;
 
@@ -115,15 +115,15 @@ class AnalyticsController {
       const { page = 1, limit = 20, timeframe = '30d' } = req.query;
       const offset = (page - 1) * limit;
 
-      // Convert timeframe to SQL
+      // Convert timeframe to SQL interval
       const timeFrameMap = {
-        '7d': '-7 days',
-        '30d': '-30 days',
-        '90d': '-90 days',
-        '1y': '-1 year'
+        '7d': '7 days',
+        '30d': '30 days', 
+        '90d': '90 days',
+        '1y': '1 year'
       };
 
-      const sqlTimeFrame = timeFrameMap[timeframe] || '-30 days';
+      const sqlTimeFrame = timeFrameMap[timeframe] || '30 days';
 
       // Get user activity summary
       const userActivity = await database.all(`
@@ -142,7 +142,7 @@ class AnalyticsController {
         LEFT JOIN user_analytics ua ON u.id = ua.user_id 
           AND ua.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
         WHERE u.is_active = true
-        GROUP BY u.id
+        GROUP BY u.id, u.email, u.first_name, u.last_name, u.department, u.role, u.last_login
         ORDER BY total_actions DESC, last_activity DESC
         LIMIT $1 OFFSET $2
       `, [limit, offset]);
@@ -180,13 +180,13 @@ class AnalyticsController {
       const { timeframe = '30d', agent_id } = req.query;
 
       const timeFrameMap = {
-        '7d': '-7 days',
-        '30d': '-30 days',
-        '90d': '-90 days',
-        '1y': '-1 year'
+        '7d': '7 days',
+        '30d': '30 days',
+        '90d': '90 days', 
+        '1y': '1 year'
       };
 
-      const sqlTimeFrame = timeFrameMap[timeframe] || '-30 days';
+      const sqlTimeFrame = timeFrameMap[timeframe] || '30 days';
 
       let query = `
         SELECT 
@@ -195,15 +195,15 @@ class AnalyticsController {
           SUM(usage_count) as total_usage,
           AVG(usage_count) as avg_usage,
           SUM(total_time_spent) as total_time_spent,
-          MAX(last_used) as last_used
+          MAX(updated_at) as last_used
         FROM agent_usage_stats 
-        WHERE date > DATE('now', '${sqlTimeFrame}')
+        WHERE date > CURRENT_DATE - INTERVAL '${sqlTimeFrame}'
       `;
 
       const params = [];
 
       if (agent_id) {
-        query += ' AND agent_id = $' + (params.length + 1);
+        query += ' AND agent_id = $1';
         params.push(agent_id);
       }
 
@@ -219,7 +219,7 @@ class AnalyticsController {
           SUM(usage_count) as daily_usage,
           COUNT(DISTINCT user_id) as daily_users
         FROM agent_usage_stats 
-        WHERE date > DATE('now', '${sqlTimeFrame}')
+        WHERE date > CURRENT_DATE - INTERVAL '${sqlTimeFrame}'
       `;
 
       if (agent_id) {
@@ -241,107 +241,6 @@ class AnalyticsController {
 
     } catch (error) {
       console.error('Agent analytics error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error'
-      });
-    }
-  }
-
-  // Get CV Intelligence analytics
-  static async getCVAnalytics(req, res) {
-    try {
-      const { timeframe = '30d', user_id } = req.query;
-
-      const timeFrameMap = {
-        '7d': '-7 days',
-        '30d': '-30 days',
-        '90d': '-90 days',
-        '1y': '-1 year'
-      };
-
-      const sqlTimeFrame = timeFrameMap[timeframe] || '-30 days';
-
-      // CV batch statistics
-      let batchQuery = `
-        SELECT 
-          COUNT(*) as total_batches,
-          COUNT(DISTINCT user_id) as unique_users,
-          SUM(candidate_count) as total_candidates,
-          AVG(candidate_count) as avg_candidates_per_batch,
-          AVG(processing_time) as avg_processing_time,
-          MIN(processing_time) as min_processing_time,
-          MAX(processing_time) as max_processing_time
-        FROM cv_batches 
-        WHERE created_at > NOW() - INTERVAL '${sqlTimeFrame}'
-        AND status = 'completed'
-      `;
-
-      const params = [];
-      if (user_id) {
-        batchQuery += ' AND user_id = $' + (params.length + 1);
-        params.push(user_id);
-      }
-
-      const batchStats = await database.get(batchQuery, params);
-
-      // Daily batch creation trends
-      let dailyQuery = `
-        SELECT 
-          DATE(created_at) as date,
-          COUNT(*) as batches_created,
-          SUM(candidate_count) as candidates_processed,
-          COUNT(DISTINCT user_id) as active_users
-        FROM cv_batches 
-        WHERE created_at > NOW() - INTERVAL '${sqlTimeFrame}'
-      `;
-
-      if (user_id) {
-        dailyQuery += ' AND user_id = $1';
-      }
-
-      dailyQuery += ' GROUP BY DATE(created_at) ORDER BY date ASC';
-
-      const dailyTrends = await database.all(dailyQuery, user_id ? [user_id] : []);
-
-      // Top users by batch count
-      const topUsers = await database.all(`
-        SELECT 
-          u.id,
-          u.email,
-          u.first_name,
-          u.last_name,
-          COUNT(cb.id) as batch_count,
-          SUM(cb.candidate_count) as total_candidates
-        FROM users u
-        JOIN cv_batches cb ON u.id = cb.user_id
-        WHERE cb.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
-        AND cb.status = 'completed'
-        GROUP BY u.id
-        ORDER BY batch_count DESC
-        LIMIT 10
-      `);
-
-      res.json({
-        success: true,
-        data: {
-          batchStats: batchStats || {
-            total_batches: 0,
-            unique_users: 0,
-            total_candidates: 0,
-            avg_candidates_per_batch: 0,
-            avg_processing_time: 0,
-            min_processing_time: 0,
-            max_processing_time: 0
-          },
-          dailyTrends,
-          topUsers,
-          timeframe
-        }
-      });
-
-    } catch (error) {
-      console.error('CV analytics error:', error);
       res.status(500).json({
         success: false,
         message: 'Internal server error'
@@ -398,7 +297,7 @@ class AnalyticsController {
           processing_time,
           created_at
         FROM cv_batches 
-        WHERE user_id = ?
+        WHERE user_id = $1
         ORDER BY created_at DESC
         LIMIT 10
       `, [user_id]);
@@ -413,7 +312,7 @@ class AnalyticsController {
           category,
           created_at
         FROM support_tickets 
-        WHERE user_id = ?
+        WHERE user_id = $1
         ORDER BY created_at DESC
         LIMIT 10
       `, [user_id]);
@@ -443,101 +342,19 @@ class AnalyticsController {
     }
   }
 
-  // Get system analytics
-  static async getSystemAnalytics(req, res) {
-    try {
-      const { timeframe = '30d' } = req.query;
-
-      const timeFrameMap = {
-        '7d': '-7 days',
-        '30d': '-30 days',
-        '90d': '-90 days',
-        '1y': '-1 year'
-      };
-
-      const sqlTimeFrame = timeFrameMap[timeframe] || '-30 days';
-
-      // Registration trends
-      const registrationTrends = await database.all(`
-        SELECT 
-          DATE(created_at) as date,
-          COUNT(*) as new_users,
-          COUNT(CASE WHEN is_verified = true THEN 1 END) as verified_users
-        FROM users 
-        WHERE created_at > NOW() - INTERVAL '${sqlTimeFrame}'
-        AND is_active = true
-        GROUP BY DATE(created_at)
-        ORDER BY date ASC
-      `);
-
-      // Login trends
-      const loginTrends = await database.all(`
-        SELECT 
-          DATE(created_at) as date,
-          COUNT(DISTINCT user_id) as unique_logins,
-          COUNT(*) as total_logins
-        FROM user_analytics 
-        WHERE action = 'login'
-        AND created_at > NOW() - INTERVAL '${sqlTimeFrame}'
-        GROUP BY DATE(created_at)
-        ORDER BY date ASC
-      `);
-
-      // Department distribution
-      const departmentStats = await database.all(`
-        SELECT 
-          COALESCE(department, 'Not specified') as department,
-          COUNT(*) as user_count
-        FROM users 
-        WHERE is_active = true
-        GROUP BY department
-        ORDER BY user_count DESC
-      `);
-
-      // Role distribution
-      const roleStats = await database.all(`
-        SELECT 
-          role,
-          COUNT(*) as user_count
-        FROM users 
-        WHERE is_active = true
-        GROUP BY role
-        ORDER BY user_count DESC
-      `);
-
-      res.json({
-        success: true,
-        data: {
-          registrationTrends,
-          loginTrends,
-          departmentStats,
-          roleStats,
-          timeframe
-        }
-      });
-
-    } catch (error) {
-      console.error('System analytics error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Internal server error'
-      });
-    }
-  }
-
   // Export analytics data
   static async exportAnalytics(req, res) {
     try {
       const { type, timeframe = '30d', format = 'json' } = req.query;
 
       const timeFrameMap = {
-        '7d': '-7 days',
-        '30d': '-30 days',
-        '90d': '-90 days',
-        '1y': '-1 year'
+        '7d': '7 days',
+        '30d': '30 days',
+        '90d': '90 days',
+        '1y': '1 year'
       };
 
-      const sqlTimeFrame = timeFrameMap[timeframe] || '-30 days';
+      const sqlTimeFrame = timeFrameMap[timeframe] || '30 days';
 
       let data = {};
 
@@ -561,7 +378,7 @@ class AnalyticsController {
             LEFT JOIN user_analytics ua ON u.id = ua.user_id 
               AND ua.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
             WHERE u.is_active = true
-            GROUP BY u.id
+            GROUP BY u.id, u.email, u.first_name, u.last_name, u.department, u.job_title, u.role, u.is_verified, u.last_login, u.created_at
             ORDER BY u.created_at DESC
           `);
           break;
@@ -630,7 +447,7 @@ class AnalyticsController {
         const headers = Object.keys(data[0]).join(',');
         const csvData = data.map(row => 
           Object.values(row).map(value => 
-            typeof value === 'string' $1 `"${value.replace(/"/g, '""')}"` : value
+            typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value
           ).join(',')
         ).join('\n');
 
