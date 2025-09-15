@@ -396,9 +396,18 @@ class AuthController {
         );
       }
 
+      // Get updated user data
+      const updatedUser = await database.get(
+        'SELECT id, email, first_name, last_name, role, department, job_title, created_at FROM users WHERE id = $1',
+        [userId]
+      );
+
       res.json({
         success: true,
-        message: 'Profile updated successfully'
+        message: 'Profile updated successfully',
+        data: {
+          user: updatedUser
+        }
       });
 
     } catch (error) {

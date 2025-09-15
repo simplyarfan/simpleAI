@@ -88,11 +88,25 @@ export const AuthProvider = ({ children }) => {
 
       // Handle successful registration
       if (data.success) {
-        toast.success(data.message || 'Registration successful! Please check your email for verification.');
+        // Registration now includes automatic login
+        if (data.accessToken && data.user) {
+          // Store tokens
+          tokenManager.setTokens(data.accessToken, data.refreshToken);
+          
+          // Update state with user data
+          setUser(data.user);
+          setIsAuthenticated(true);
+          
+          toast.success(data.message || 'Registration successful! You are now logged in.');
+        } else {
+          toast.success(data.message || 'Registration successful!');
+        }
+        
         return {
           success: true,
           message: data.message,
-          requiresVerification: data.requiresVerification
+          user: data.user,
+          autoLogin: !!(data.accessToken && data.user)
         };
       }
 
@@ -274,6 +288,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+  };
+
   const value = {
     user,
     loading,
@@ -283,7 +301,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     verifyEmail,
     resendVerification,
-    checkAuthStatus
+    checkAuthStatus,
+    updateUser
   };
 
   return (

@@ -324,7 +324,8 @@ class Database {
       
       if (!existingAdmin) {
         const bcrypt = require('bcryptjs');
-        const hashedPassword = await bcrypt.hash('AdminPassword123!', 12);
+        const defaultPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'ChangeThisPassword123!';
+        const hashedPassword = await bcrypt.hash(defaultPassword, 12);
         
         await this.run(`
           INSERT INTO users (
@@ -343,7 +344,7 @@ class Database {
         ]);
         
         console.log(`✅ Default admin created: ${adminEmail}`);
-        console.log('🔑 Default password: AdminPassword123! (CHANGE IMMEDIATELY!)');
+        console.log('🔑 IMPORTANT: Change the default admin password immediately after first login!');
       } else {
         console.log('✅ Admin user already exists');
       }

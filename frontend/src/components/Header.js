@@ -156,20 +156,7 @@ const Header = () => {
           <div className="pt-2 pb-3 space-y-1">
             {isAuthenticated ? (
               <>
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`${
-                      item.current
-                        ? 'bg-blue-50 border-blue-500 text-blue-700'
-                        : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
-                    } block pl-3 pr-4 py-2 border-l-4 text-base font-medium`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
+                {/* Navigation items removed for simplicity */}
                 
                 {/* Mobile user info */}
                 <div className="border-t border-gray-200 pt-4 pb-3">
