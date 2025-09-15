@@ -37,7 +37,6 @@ router.post('/register',
 router.post('/login', 
   authLimiter,
   validateLogin,
-  cleanupExpiredSessions,
   trackActivity('login_attempt'),
   AuthController.login
 );
