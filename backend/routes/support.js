@@ -52,7 +52,7 @@ router.get('/:ticket_id',
   generalLimiter,
   validateTicketId,
   trackActivity('ticket_details_viewed'),
-  SupportController.getTicket
+  SupportController.getTicketDetails
 );
 
 // Add comment to ticket

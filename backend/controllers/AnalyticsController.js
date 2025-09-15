@@ -478,6 +478,107 @@ class AnalyticsController {
       });
     }
   }
+
+  // Get CV Intelligence analytics
+  static async getCVAnalytics(req, res) {
+    try {
+      const { timeframe = '30d' } = req.query;
+      
+      // Calculate date range
+      let dateFilter = '';
+      switch (timeframe) {
+        case '7d':
+          dateFilter = "WHERE created_at > CURRENT_DATE - INTERVAL '7 days'";
+          break;
+        case '30d':
+          dateFilter = "WHERE created_at > CURRENT_DATE - INTERVAL '30 days'";
+          break;
+        case '90d':
+          dateFilter = "WHERE created_at > CURRENT_DATE - INTERVAL '90 days'";
+          break;
+        default:
+          dateFilter = "WHERE created_at > CURRENT_DATE - INTERVAL '30 days'";
+      }
+
+      // CV batch statistics
+      const batchStats = await database.get(`
+        SELECT 
+          COUNT(*) as total_batches,
+          SUM(cv_count) as total_cvs,
+          AVG(cv_count) as avg_cvs_per_batch,
+          SUM(candidate_count) as total_candidates,
+          AVG(processing_time) as avg_processing_time
+        FROM cv_batches 
+        ${dateFilter}
+      `);
+
+      res.json({
+        success: true,
+        data: {
+          timeframe,
+          batchStats: batchStats || {}
+        }
+      });
+
+    } catch (error) {
+      console.error('CV analytics error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Get system analytics
+  static async getSystemAnalytics(req, res) {
+    try {
+      const { timeframe = '30d' } = req.query;
+      
+      // Calculate date range
+      let dateFilter = '';
+      switch (timeframe) {
+        case '7d':
+          dateFilter = "WHERE created_at > CURRENT_DATE - INTERVAL '7 days'";
+          break;
+        case '30d':
+          dateFilter = "WHERE created_at > CURRENT_DATE - INTERVAL '30 days'";
+          break;
+        case '90d':
+          dateFilter = "WHERE created_at > CURRENT_DATE - INTERVAL '90 days'";
+          break;
+        default:
+          dateFilter = "WHERE created_at > CURRENT_DATE - INTERVAL '30 days'";
+      }
+
+      // System activity statistics
+      const activityStats = await database.all(`
+        SELECT 
+          action,
+          COUNT(*) as count,
+          COUNT(DISTINCT user_id) as unique_users
+        FROM user_analytics 
+        ${dateFilter}
+        GROUP BY action 
+        ORDER BY count DESC
+        LIMIT 10
+      `);
+
+      res.json({
+        success: true,
+        data: {
+          timeframe,
+          activityStats: activityStats || []
+        }
+      });
+
+    } catch (error) {
+      console.error('System analytics error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
 }
 
 module.exports = AnalyticsController;

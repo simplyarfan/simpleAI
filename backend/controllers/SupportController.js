@@ -650,6 +650,40 @@ class SupportController {
       });
     }
   }
+
+  // Delete ticket (admin only)
+  static async deleteTicket(req, res) {
+    try {
+      const { ticket_id } = req.params;
+
+      // Check if ticket exists
+      const ticket = await database.get(`
+        SELECT * FROM support_tickets WHERE id = $1
+      `, [ticket_id]);
+
+      if (!ticket) {
+        return res.status(404).json({
+          success: false,
+          message: 'Ticket not found'
+        });
+      }
+
+      // Delete ticket and its comments (CASCADE should handle comments)
+      await database.run('DELETE FROM support_tickets WHERE id = $1', [ticket_id]);
+
+      res.json({
+        success: true,
+        message: 'Ticket deleted successfully'
+      });
+
+    } catch (error) {
+      console.error('Delete ticket error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
 }
 
 module.exports = SupportController;

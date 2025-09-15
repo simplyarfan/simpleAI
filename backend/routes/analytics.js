@@ -40,7 +40,6 @@ router.get('/users',
 // Agent usage analytics
 router.get('/agents',
   validateTimeframe,
-  validateAgentId,
   trackActivity('agent_analytics_viewed'),
   AnalyticsController.getAgentAnalytics
 );

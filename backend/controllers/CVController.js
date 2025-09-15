@@ -492,6 +492,103 @@ class CVController {
       { name: 'jdFile', maxCount: 5 }
     ]);
   }
+
+  // Get candidate details
+  static async getCandidateDetails(req, res) {
+    try {
+      const { candidate_id } = req.params;
+
+      // Get candidate details
+      const candidate = await database.get(`
+        SELECT 
+          c.*,
+          b.name as batch_name,
+          b.user_id as batch_owner
+        FROM cv_candidates c
+        JOIN cv_batches b ON c.batch_id = b.id
+        WHERE c.id = $1
+      `, [candidate_id]);
+
+      if (!candidate) {
+        return res.status(404).json({
+          success: false,
+          message: 'Candidate not found'
+        });
+      }
+
+      // Check if user has access to this candidate
+      if (candidate.batch_owner !== req.user.id && req.user.role !== 'superadmin') {
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: {
+          candidate
+        }
+      });
+
+    } catch (error) {
+      console.error('Get candidate details error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Get CV statistics
+  static async getCVStats(req, res) {
+    try {
+      const userId = req.user.role === 'superadmin' ? null : req.user.id;
+      
+      let userFilter = '';
+      let params = [];
+      
+      if (userId) {
+        userFilter = 'WHERE user_id = $1';
+        params.push(userId);
+      }
+
+      // Get batch statistics
+      const batchStats = await database.get(`
+        SELECT 
+          COUNT(*) as total_batches,
+          SUM(cv_count) as total_cvs,
+          SUM(candidate_count) as total_candidates,
+          AVG(processing_time) as avg_processing_time
+        FROM cv_batches 
+        ${userFilter}
+      `, params);
+
+      // Get recent activity
+      const recentBatches = await database.all(`
+        SELECT id, name, status, cv_count, candidate_count, created_at
+        FROM cv_batches 
+        ${userFilter}
+        ORDER BY created_at DESC 
+        LIMIT 5
+      `, params);
+
+      res.json({
+        success: true,
+        data: {
+          stats: batchStats || {},
+          recentBatches: recentBatches || []
+        }
+      });
+
+    } catch (error) {
+      console.error('Get CV stats error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
 }
 
 module.exports = CVController;
