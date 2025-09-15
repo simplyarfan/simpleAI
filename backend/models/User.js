@@ -36,13 +36,13 @@ class User {
 
       const params = [
         userData.email.toLowerCase(),
-        userData.password, // Password should already be hashed in controller
+        userData.password_hash, // Use password_hash instead of password
         userData.first_name,
         userData.last_name,
         userData.role || 'user',
         userData.department || null,
         userData.job_title || null,
-        userData.is_verified || false
+        userData.is_verified || true // Default to verified
       ];
 
       const result = await database.run(sql, params);
@@ -82,7 +82,23 @@ class User {
 
   // Verify password
   async verifyPassword(password) {
-    return await bcrypt.compare(password, this.password_hash);
+    try {
+      console.log('Verifying password for user:', this.email);
+      console.log('Provided password length:', password ? password.length : 'undefined');
+      console.log('Stored hash exists:', !!this.password_hash);
+      
+      if (!this.password_hash) {
+        console.error('No password hash found for user:', this.email);
+        return false;
+      }
+      
+      const isMatch = await bcrypt.compare(password, this.password_hash);
+      console.log('Password match result:', isMatch);
+      return isMatch;
+    } catch (error) {
+      console.error('Error in verifyPassword:', error);
+      return false;
+    }
   }
 
   // Update user

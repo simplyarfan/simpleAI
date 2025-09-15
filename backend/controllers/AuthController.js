@@ -51,7 +51,7 @@ class AuthController {
         first_name,
         last_name,
         email,
-        password: hashedPassword,
+        password_hash: hashedPassword, // Changed from password to password_hash to match the schema
         department: department || null,
         job_title: job_title || null,
         is_verified: true // Auto-verify since no email verification
@@ -133,8 +133,11 @@ class AuthController {
   // Login user
   static async login(req, res) {
     try {
+      console.log('Login attempt:', { email: req.body.email });
+      
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('Validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           message: 'Validation errors',
@@ -145,17 +148,25 @@ class AuthController {
       const { email, password } = req.body;
 
       // Find user
+      console.log('Looking up user by email:', email);
       const user = await User.findByEmail(email);
+      
       if (!user) {
+        console.log('User not found for email:', email);
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
         });
       }
 
+      console.log('User found, verifying password...');
+      
       // Verify password
       const isPasswordValid = await user.verifyPassword(password);
+      console.log('Password verification result:', isPasswordValid);
+      
       if (!isPasswordValid) {
+        console.log('Invalid password for user:', email);
         return res.status(401).json({
           success: false,
           message: 'Invalid email or password'
