@@ -84,39 +84,39 @@ const SystemHealthPage = () => {
 
   if (loading) {
     return (
-      <div className=\"min-h-screen flex items-center justify-center bg-gray-50\">
-        <div className=\"text-center\">
-          <div className=\"animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto\"></div>
-          <p className=\"mt-4 text-gray-600\">Loading system health...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading system health...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <ProtectedRoute requireAuth={true} requireRole=\"superadmin\">
-      <div className=\"min-h-screen bg-gray-50 py-8\">
-        <div className=\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8\">
+    <ProtectedRoute requireAuth={true} requireRole="superadmin">
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
-          <div className=\"mb-8\">
-            <h1 className=\"text-3xl font-bold text-gray-900\">System Health</h1>
-            <p className=\"mt-2 text-gray-600\">Monitor system performance and health</p>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">System Health</h1>
+            <p className="mt-2 text-gray-600">Monitor system performance and health</p>
           </div>
 
           {/* System Status Cards */}
-          <div className=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8\">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {Object.entries(systemStatus).map(([key, status]) => (
-              <div key={key} className=\"bg-white rounded-lg shadow p-6\">
-                <div className=\"flex items-center justify-between\">
+              <div key={key} className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h3 className=\"text-sm font-medium text-gray-500 capitalize\">
+                    <h3 className="text-sm font-medium text-gray-500 capitalize">
                       {key.replace(/([A-Z])/g, ' $1').trim()}
                     </h3>
                     <p className={`text-lg font-semibold ${getStatusColor(status)}`}>
                       {status}
                     </p>
                   </div>
-                  <div className=\"text-2xl\">
+                  <div className="text-2xl">
                     {getStatusIcon(status)}
                   </div>
                 </div>
@@ -126,57 +126,57 @@ const SystemHealthPage = () => {
 
           {/* System Analytics */}
           {analytics && (
-            <div className=\"bg-white rounded-lg shadow mb-8\">
-              <div className=\"px-6 py-4 border-b border-gray-200\">
-                <h2 className=\"text-lg font-semibold text-gray-900\">System Activity (Last 7 Days)</h2>
+            <div className="bg-white rounded-lg shadow mb-8">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">System Activity (Last 7 Days)</h2>
               </div>
-              <div className=\"p-6\">
+              <div className="p-6">
                 {analytics.data?.activityStats?.length > 0 ? (
-                  <div className=\"space-y-4\">
+                  <div className="space-y-4">
                     {analytics.data.activityStats.map((stat, index) => (
-                      <div key={index} className=\"flex justify-between items-center p-4 bg-gray-50 rounded-lg\">
+                      <div key={index} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                         <div>
-                          <p className=\"font-medium text-gray-900 capitalize\">
+                          <p className="font-medium text-gray-900 capitalize">
                             {stat.action.replace(/_/g, ' ')}
                           </p>
-                          <p className=\"text-sm text-gray-600\">
+                          <p className="text-sm text-gray-600">
                             {stat.unique_users} unique users
                           </p>
                         </div>
-                        <div className=\"text-right\">
-                          <p className=\"text-2xl font-bold text-blue-600\">{stat.count}</p>
-                          <p className=\"text-sm text-gray-500\">total actions</p>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold text-blue-600">{stat.count}</p>
+                          <p className="text-sm text-gray-500">total actions</p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className=\"text-gray-500 text-center py-8\">No recent system activity data available</p>
+                  <p className="text-gray-500 text-center py-8">No recent system activity data available</p>
                 )}
               </div>
             </div>
           )}
 
           {/* Performance Alerts */}
-          <div className=\"bg-white rounded-lg shadow\">
-            <div className=\"px-6 py-4 border-b border-gray-200\">
-              <h2 className=\"text-lg font-semibold text-gray-900\">Performance Alerts</h2>
+          <div className="bg-white rounded-lg shadow">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Performance Alerts</h2>
             </div>
-            <div className=\"p-6\">
-              <div className=\"space-y-4\">
-                <div className=\"flex items-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg\">
-                  <div className=\"text-yellow-600 mr-4\">⚠️</div>
+            <div className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="text-yellow-600 mr-4">⚠️</div>
                   <div>
-                    <p className=\"font-medium text-yellow-800\">Email Service Degraded</p>
-                    <p className=\"text-sm text-yellow-700\">Some email notifications may be delayed</p>
+                    <p className="font-medium text-yellow-800">Email Service Degraded</p>
+                    <p className="text-sm text-yellow-700">Some email notifications may be delayed</p>
                   </div>
                 </div>
                 
-                <div className=\"flex items-center p-4 bg-green-50 border border-green-200 rounded-lg\">
-                  <div className=\"text-green-600 mr-4\">✅</div>
+                <div className="flex items-center p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="text-green-600 mr-4">✅</div>
                   <div>
-                    <p className=\"font-medium text-green-800\">All Other Services Operational</p>
-                    <p className=\"text-sm text-green-700\">API, Database, and CV Processing are running normally</p>
+                    <p className="font-medium text-green-800">All Other Services Operational</p>
+                    <p className="text-sm text-green-700">API, Database, and CV Processing are running normally</p>
                   </div>
                 </div>
               </div>
