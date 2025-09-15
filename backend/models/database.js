@@ -13,21 +13,27 @@ class Database {
     }
 
     try {
-      const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+      // Use Vercel's database environment variables
+      const connectionString = process.env.DATABASE_URL || 
+                              process.env.POSTGRES_URL || 
+                              process.env.DATABASE_URL_UNPOOLED;
       
       if (!connectionString) {
-        throw new Error('Database connection string not found. Set POSTGRES_URL or DATABASE_URL environment variable.');
+        throw new Error('No database connection string found. Please set DATABASE_URL or POSTGRES_URL environment variable.');
       }
       
-      console.log('🔗 Connecting to PostgreSQL database...');
+      console.log('🔗 Connecting to Neon PostgreSQL database...');
+      console.log('🔗 Connection string format:', connectionString.substring(0, 20) + '...');
       
       this.pool = new Pool({
         connectionString,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+        ssl: {
+          rejectUnauthorized: false // Required for Neon and most cloud PostgreSQL services
+        },
         max: 20,
         min: 2,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 5000,
+        connectionTimeoutMillis: 10000,
         acquireTimeoutMillis: 60000,
         createTimeoutMillis: 30000,
         destroyTimeoutMillis: 5000,
@@ -36,8 +42,9 @@ class Database {
       });
         
       // Test connection
-      const testResult = await this.pool.query('SELECT NOW() as current_time');
-      console.log('✅ Database connected successfully at:', testResult.rows[0].current_time);
+      const testResult = await this.pool.query('SELECT NOW() as current_time, version() as pg_version');
+      console.log('✅ Connected to PostgreSQL at:', testResult.rows[0].current_time);
+      console.log('✅ PostgreSQL version:', testResult.rows[0].pg_version);
       this.isConnected = true;
       
       // Initialize tables
@@ -46,6 +53,7 @@ class Database {
         
     } catch (error) {
       console.error('❌ Database connection failed:', error.message);
+      console.error('❌ Full error:', error);
       throw error;
     }
   }
@@ -116,7 +124,7 @@ class Database {
 
   async initializeTables() {
     try {
-      console.log('🔧 Initializing database tables...');
+      console.log('🔧 Initializing PostgreSQL tables...');
 
       // Users table
       await this.run(`
@@ -283,7 +291,7 @@ class Database {
         )
       `);
 
-      console.log('✅ Database tables initialized successfully');
+      console.log('✅ All PostgreSQL tables initialized successfully');
       await this.createDefaultAdmin();
       
     } catch (error) {
@@ -320,6 +328,8 @@ class Database {
         
         console.log(`✅ Default admin created: ${adminEmail}`);
         console.log('🔑 Default password: AdminPassword123! (CHANGE IMMEDIATELY!)');
+      } else {
+        console.log('✅ Admin user already exists');
       }
     } catch (error) {
       console.error('❌ Error creating default admin:', error);

@@ -63,7 +63,8 @@ app.get('/health', (req, res) => {
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '2.0.0',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    database: database.isConnected ? 'connected' : 'connecting...'
   });
 });
 
@@ -74,7 +75,8 @@ app.get('/', (req, res) => {
     status: 'running',
     frontend: 'https://thesimpleai.netlify.app',
     documentation: '/api',
-    health: '/health'
+    health: '/health',
+    database: database.isConnected ? 'connected' : 'connecting...'
   });
 });
 
@@ -125,20 +127,29 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Initialize database
+// Initialize database with Neon PostgreSQL
 const initializeDatabase = async () => {
   try {
-    console.log('🔗 Initializing database connection...');
+    console.log('🔗 Connecting to Neon PostgreSQL database...');
+    console.log('🔗 Database URL available:', !!process.env.DATABASE_URL);
+    console.log('🔗 Postgres URL available:', !!process.env.POSTGRES_URL);
+    
     await database.connect();
-    console.log('✅ Database connected and tables initialized');
+    console.log('✅ Neon PostgreSQL database connected and tables initialized');
   } catch (error) {
     console.error('❌ Database initialization failed:', error.message);
-    process.exit(1);
+    console.error('❌ Stack trace:', error.stack);
+    
+    // Don't exit in production - let Vercel handle the error
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
   }
 };
 
 // Start server
 const startServer = async () => {
+  // Initialize database first
   await initializeDatabase();
   
   if (!process.env.VERCEL) {
@@ -148,9 +159,17 @@ const startServer = async () => {
       console.log(`🔍 Health Check: http://localhost:${PORT}/health`);
     });
   } else {
-    console.log('✅ Running on Vercel serverless environment');
+    console.log('✅ Running on Vercel serverless environment with Neon PostgreSQL');
   }
 };
+
+// For Vercel serverless
+if (process.env.VERCEL) {
+  // Initialize database immediately for serverless
+  initializeDatabase().catch(error => {
+    console.error('Vercel database initialization error:', error);
+  });
+}
 
 startServer().catch(console.error);
 

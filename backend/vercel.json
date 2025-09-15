@@ -25,7 +25,15 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "JWT_SECRET": "@jwt_secret",
+    "REFRESH_TOKEN_SECRET": "@refresh_token_secret",
+    "ADMIN_EMAIL": "syedarfan@securemaxtech.com",
+    "COMPANY_DOMAIN": "securemaxtech.com",
+    "FRONTEND_URL": "https://thesimpleai.netlify.app",
+    "EMAIL_HOST": "smtp.gmail.com",
+    "EMAIL_PORT": "587",
+    "EMAIL_SECURE": "false"
   },
   "functions": {
     "server.js": {
