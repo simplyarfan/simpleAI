@@ -1,0 +1,18 @@
+[build]
+  base = "frontend"
+  publish = "frontend/out"
+  command = "npm run build && npm run export"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  NEXT_PUBLIC_API_URL = "https://thesimpleai.vercel.app"
+  NEXT_PUBLIC_APP_NAME = "Enterprise AI Hub"
+  NEXT_PUBLIC_COMPANY_DOMAIN = "securemaxtech.com"
