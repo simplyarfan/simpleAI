@@ -94,11 +94,11 @@ const SuperAdminDashboard = () => {
       features: ['User accounts', 'Role management', 'Access control', 'Activity logs']
     },
     {
-      id: 'analytics',
+      id: 'analytics-reports',
       title: 'Analytics & Reports',
       description: 'System analytics and usage reports',
       icon: BarChart3,
-      href: '/admin/analytics',
+      href: '/analytics',
       color: 'from-green-500 to-teal-600',
       features: ['Usage statistics', 'Performance metrics', 'User behavior', 'Export reports']
     },
@@ -254,36 +254,11 @@ const SuperAdminDashboard = () => {
             </div>
           </div>
 
-          {/* Quick Stats */}
-          <div className="px-4 py-6 sm:px-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {quickStats.map((stat) => (
-                <div
-                  key={stat.name}
-                  className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`p-2 rounded-lg bg-gray-50`}>
-                        <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                        <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                        stat.change.startsWith('+') ? 'bg-green-100 text-green-800' :
-                        stat.change.startsWith('-') ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {stat.change}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {/* Simplified Stats Overview - No Analytics */}
+          <div className="mb-8">
+            <div className="text-center py-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">System Overview</h2>
+              <p className="text-gray-600">Use the admin tools below to manage your system</p>
             </div>
           </div>
 

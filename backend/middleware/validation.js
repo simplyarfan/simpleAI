@@ -115,6 +115,13 @@ const validateProfileUpdate = [
     .withMessage('New password must be at least 8 characters long')
 ];
 
+// Notification validation
+const validateNotificationId = [
+  param('notification_id')
+    .isInt({ min: 1 })
+    .withMessage('Valid notification ID is required')
+];
+
 // Support ticket creation validation
 const validateTicketCreation = [
   body('subject')
@@ -466,29 +473,18 @@ const validateEmailOnly = [
 ];
 
 module.exports = {
-  validateRegistration,
   validateLogin,
-  validateEmailVerification,
-  validatePasswordResetRequest,
+  validateRegistration,
   validatePasswordReset,
+  validatePasswordResetConfirm,
   validateProfileUpdate,
+  validateNotificationId,
   validateTicketCreation,
   validateTicketComment,
   validateTicketUpdate,
-  validateBatchCreation,
+  validateTicketId,
   validatePagination,
-  validateId,
-  validateUUID,
-  validateTimeframe,
-  validateUserPreferences,
-  validateSearch,
   validateStatus,
-  validateSort,
-  validateExportFormat,
-  validateDateRange,
-  validateRole,
-  validateUserCreation,
-  validateBatchId,
   validateCandidateId,
   validateTicketId,
   validateUserId,

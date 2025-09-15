@@ -268,6 +268,16 @@ class SupportController {
         WHERE tc.id = $1
       `, [result.rows[0].id]);
 
+      // Create notification for ticket owner if comment is from admin
+      if (req.user.isAdmin && ticket.user_id !== req.user.id && !isInternalComment) {
+        const NotificationController = require('./NotificationController');
+        await NotificationController.createTicketResponseNotification(
+          ticket_id, 
+          req.user.id, 
+          comment
+        );
+      }
+
       // Track comment activity
       await database.run(`
         INSERT INTO user_analytics (user_id, action, metadata, ip_address, user_agent)
@@ -400,6 +410,16 @@ class SupportController {
         LEFT JOIN users assigned_user ON st.assigned_to = assigned_user.id
         WHERE st.id = $1
       `, [ticket_id]);
+
+      // Create notification for ticket owner if status changed
+      if (status !== undefined && status !== ticket.status) {
+        const NotificationController = require('./NotificationController');
+        await NotificationController.createTicketStatusNotification(
+          ticket_id,
+          status,
+          req.user.id
+        );
+      }
 
       // Track ticket update activity
       await database.run(`

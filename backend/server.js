@@ -10,10 +10,7 @@ const database = require('./models/database');
 const { generalLimiter } = require('./middleware/rateLimiting');
 
 // Import routes
-const authRoutes = require('./routes/auth');
-const analyticsRoutes = require('./routes/analytics');
 const cvRoutes = require('./routes/cv-intelligence');
-const supportRoutes = require('./routes/support');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -96,10 +93,11 @@ app.get('/api', (req, res) => {
 });
 
 // Mount API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/analytics', analyticsRoutes);
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/cv-intelligence', cvRoutes);
-app.use('/api/support', supportRoutes);
+app.use('/api/support', require('./routes/support'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {
@@ -107,7 +105,7 @@ app.use('/api/*', (req, res) => {
     success: false,
     message: 'API endpoint not found',
     path: req.path,
-    availableEndpoints: ['/api/auth', '/api/analytics', '/api/support', '/api/cv-intelligence']
+    availableEndpoints: ['/api/auth', '/api/analytics', '/api/support', '/api/notifications', '/api/cv-intelligence']
   });
 });
 

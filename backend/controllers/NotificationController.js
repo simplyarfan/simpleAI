@@ -1,0 +1,311 @@
+const database = require('../models/database');
+const { validationResult } = require('express-validator');
+
+class NotificationController {
+  // Get user notifications
+  static async getUserNotifications(req, res) {
+    try {
+      const { page = 1, limit = 20, unread_only = false } = req.query;
+      const offset = (page - 1) * limit;
+
+      let query = `
+        SELECT 
+          n.*,
+          CASE 
+            WHEN n.type = 'ticket_response' THEN 
+              json_build_object(
+                'ticket_id', st.id,
+                'ticket_subject', st.subject,
+                'responder_name', u.first_name || ' ' || u.last_name
+              )
+            ELSE n.metadata
+          END as enriched_metadata
+        FROM notifications n
+        LEFT JOIN support_tickets st ON n.type = 'ticket_response' AND (n.metadata->>'ticket_id')::int = st.id
+        LEFT JOIN users u ON n.type = 'ticket_response' AND (n.metadata->>'responder_id')::int = u.id
+        WHERE n.user_id = ?
+      `;
+      
+      const params = [req.user.id];
+
+      if (unread_only === 'true') {
+        query += ` AND n.is_read = false`;
+      }
+
+      query += `
+        ORDER BY n.created_at DESC
+        LIMIT ? OFFSET ?
+      `;
+      
+      params.push(limit, offset);
+
+      const notifications = await database.all(query, params);
+
+      // Get total count for pagination
+      let countQuery = 'SELECT COUNT(*) as total FROM notifications WHERE user_id = ?';
+      const countParams = [req.user.id];
+
+      if (unread_only === 'true') {
+        countQuery += ` AND is_read = false`;
+      }
+
+      const totalCount = await database.get(countQuery, countParams);
+
+      res.json({
+        success: true,
+        data: {
+          notifications,
+          pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total: totalCount.total,
+            totalPages: Math.ceil(totalCount.total / limit)
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('Get notifications error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Mark notification as read
+  static async markAsRead(req, res) {
+    try {
+      const { notification_id } = req.params;
+
+      // Check if notification exists and belongs to user
+      const notification = await database.get(`
+        SELECT * FROM notifications WHERE id = ? AND user_id = ?
+      `, [notification_id, req.user.id]);
+
+      if (!notification) {
+        return res.status(404).json({
+          success: false,
+          message: 'Notification not found'
+        });
+      }
+
+      // Mark as read
+      await database.run(`
+        UPDATE notifications 
+        SET is_read = true, read_at = CURRENT_TIMESTAMP 
+        WHERE id = ?
+      `, [notification_id]);
+
+      res.json({
+        success: true,
+        message: 'Notification marked as read'
+      });
+
+    } catch (error) {
+      console.error('Mark notification as read error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Mark all notifications as read
+  static async markAllAsRead(req, res) {
+    try {
+      await database.run(`
+        UPDATE notifications 
+        SET is_read = true, read_at = CURRENT_TIMESTAMP 
+        WHERE user_id = ? AND is_read = false
+      `, [req.user.id]);
+
+      res.json({
+        success: true,
+        message: 'All notifications marked as read'
+      });
+
+    } catch (error) {
+      console.error('Mark all notifications as read error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Get unread notification count
+  static async getUnreadCount(req, res) {
+    try {
+      const result = await database.get(`
+        SELECT COUNT(*) as count FROM notifications 
+        WHERE user_id = ? AND is_read = false
+      `, [req.user.id]);
+
+      res.json({
+        success: true,
+        data: {
+          unread_count: result.count || 0
+        }
+      });
+
+    } catch (error) {
+      console.error('Get unread count error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+
+  // Create notification (internal use)
+  static async createNotification(userId, type, title, message, metadata = {}) {
+    try {
+      const result = await database.run(`
+        INSERT INTO notifications (user_id, type, title, message, metadata)
+        VALUES (?, ?, ?, ?, ?)
+      `, [userId, type, title, message, JSON.stringify(metadata)]);
+
+      return result.lastID;
+    } catch (error) {
+      console.error('Create notification error:', error);
+      throw error;
+    }
+  }
+
+  // Create ticket response notification
+  static async createTicketResponseNotification(ticketId, responderId, message) {
+    try {
+      // Get ticket details
+      const ticket = await database.get(`
+        SELECT st.*, u.first_name, u.last_name 
+        FROM support_tickets st
+        JOIN users u ON st.user_id = u.id
+        WHERE st.id = ?
+      `, [ticketId]);
+
+      if (!ticket) {
+        throw new Error('Ticket not found');
+      }
+
+      // Get responder details
+      const responder = await database.get(`
+        SELECT first_name, last_name FROM users WHERE id = ?
+      `, [responderId]);
+
+      if (!responder) {
+        throw new Error('Responder not found');
+      }
+
+      const title = `Response to your ticket: ${ticket.subject}`;
+      const notificationMessage = `${responder.first_name} ${responder.last_name} responded to your support ticket.`;
+      
+      const metadata = {
+        ticket_id: ticketId,
+        responder_id: responderId,
+        response_message: message,
+        ticket_subject: ticket.subject
+      };
+
+      return await this.createNotification(
+        ticket.user_id,
+        'ticket_response',
+        title,
+        notificationMessage,
+        metadata
+      );
+
+    } catch (error) {
+      console.error('Create ticket response notification error:', error);
+      throw error;
+    }
+  }
+
+  // Create ticket status change notification
+  static async createTicketStatusNotification(ticketId, newStatus, updatedBy) {
+    try {
+      // Get ticket details
+      const ticket = await database.get(`
+        SELECT st.*, u.first_name, u.last_name 
+        FROM support_tickets st
+        JOIN users u ON st.user_id = u.id
+        WHERE st.id = ?
+      `, [ticketId]);
+
+      if (!ticket) {
+        throw new Error('Ticket not found');
+      }
+
+      // Get updater details
+      const updater = await database.get(`
+        SELECT first_name, last_name FROM users WHERE id = ?
+      `, [updatedBy]);
+
+      const statusMessages = {
+        'open': 'reopened',
+        'in_progress': 'is now being worked on',
+        'resolved': 'has been resolved',
+        'closed': 'has been closed'
+      };
+
+      const title = `Ticket Status Update: ${ticket.subject}`;
+      const notificationMessage = `Your support ticket ${statusMessages[newStatus] || `status changed to ${newStatus}`}.`;
+      
+      const metadata = {
+        ticket_id: ticketId,
+        old_status: ticket.status,
+        new_status: newStatus,
+        updated_by: updatedBy,
+        ticket_subject: ticket.subject
+      };
+
+      return await this.createNotification(
+        ticket.user_id,
+        'ticket_status_change',
+        title,
+        notificationMessage,
+        metadata
+      );
+
+    } catch (error) {
+      console.error('Create ticket status notification error:', error);
+      throw error;
+    }
+  }
+
+  // Delete notification
+  static async deleteNotification(req, res) {
+    try {
+      const { notification_id } = req.params;
+
+      // Check if notification exists and belongs to user
+      const notification = await database.get(`
+        SELECT * FROM notifications WHERE id = ? AND user_id = ?
+      `, [notification_id, req.user.id]);
+
+      if (!notification) {
+        return res.status(404).json({
+          success: false,
+          message: 'Notification not found'
+        });
+      }
+
+      // Delete notification
+      await database.run('DELETE FROM notifications WHERE id = ?', [notification_id]);
+
+      res.json({
+        success: true,
+        message: 'Notification deleted successfully'
+      });
+
+    } catch (error) {
+      console.error('Delete notification error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error'
+      });
+    }
+  }
+}
+
+module.exports = NotificationController;

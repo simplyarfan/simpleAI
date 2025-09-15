@@ -646,14 +646,48 @@ class AuthController {
         });
       }
 
-      const { first_name, last_name, department, job_title } = req.body;
+      const { firstName, lastName, email, currentPassword, newPassword } = req.body;
+      
+      // Convert frontend field names to database field names
+      const first_name = firstName;
+      const last_name = lastName;
 
-      // Update user
-      await database.run(`
-        UPDATE users 
-        SET first_name = $1, last_name = $2, department = $3, job_title = $4, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $5
-      `, [first_name, last_name, department, job_title, req.user.id]);
+      // Handle password change if provided
+      if (currentPassword && newPassword) {
+        // Verify current password
+        const user = await database.get('SELECT * FROM users WHERE id = ?', [req.user.id]);
+        if (!user) {
+          return res.status(404).json({
+            success: false,
+            message: 'User not found'
+          });
+        }
+
+        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isCurrentPasswordValid) {
+          return res.status(400).json({
+            success: false,
+            message: 'Current password is incorrect'
+          });
+        }
+
+        // Hash new password
+        const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+        
+        // Update user with new password
+        await database.run(`
+          UPDATE users 
+          SET first_name = ?, last_name = ?, email = ?, password = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `, [first_name, last_name, email, hashedNewPassword, req.user.id]);
+      } else {
+        // Update user without password change
+        await database.run(`
+          UPDATE users 
+          SET first_name = ?, last_name = ?, email = ?, updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `, [first_name, last_name, email, req.user.id]);
+      }
 
       res.json({
         success: true,
@@ -663,9 +697,7 @@ class AuthController {
             id: req.user.id,
             first_name,
             last_name,
-            email: req.user.email,
-            department,
-            job_title,
+            email: email || req.user.email,
             role: req.user.role
           }
         }

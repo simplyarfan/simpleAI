@@ -169,11 +169,23 @@ export const cvAPI = {
 export const supportAPI = {
   createTicket: (ticketData) => api.post('/support', ticketData),
   getMyTickets: (params) => api.get('/support/my-tickets', { params }),
+  getAllTickets: (params) => api.get('/support', { params }),
   getTicket: (ticketId) => api.get(`/support/${ticketId}`),
   addComment: (ticketId, comment, isInternal = false) => api.post(`/support/${ticketId}/comments`, {
     comment,
     is_internal: isInternal
-  })
+  }),
+  updateTicket: (ticketId, updateData) => api.put(`/support/${ticketId}`, updateData),
+  deleteTicket: (ticketId) => api.delete(`/support/${ticketId}`),
+  getStats: (timeframe = '30d') => api.get(`/support/admin/stats?timeframe=${timeframe}`)
+};
+
+export const notificationsAPI = {
+  getNotifications: (params) => api.get('/notifications', { params }),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  markAsRead: (notificationId) => api.put(`/notifications/${notificationId}/read`),
+  markAllAsRead: () => api.put('/notifications/mark-all-read'),
+  deleteNotification: (notificationId) => api.delete(`/notifications/${notificationId}`)
 };
 
 export const analyticsAPI = {
