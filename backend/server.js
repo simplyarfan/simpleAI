@@ -27,30 +27,9 @@ app.use(helmet({
 app.use(compression());
 app.use(responseTime());
 
-// Enhanced CORS configuration
+// Enhanced CORS configuration - TEMPORARY: Allow all origins for debugging
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    
-    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      return callback(null, true);
-    }
-    
-    if (origin.includes('netlify.app') || origin.includes('vercel.app')) {
-      return callback(null, true);
-    }
-    
-    const allowedOrigins = [
-      'https://thesimpleai.netlify.app',
-      'https://thesimpleai.vercel.app'
-    ];
-    
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    
-    callback(new Error('Not allowed by CORS'));
-  },
+  origin: true, // Allow all origins temporarily
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
