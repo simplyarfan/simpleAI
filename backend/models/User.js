@@ -63,7 +63,7 @@ class User {
       console.log('✅ [USER] SQL result:', result);
       
       // Return the user ID from PostgreSQL RETURNING clause
-      const userId = result.rows[0].id;
+      const userId = result.rows?.[0]?.id || result.id;
       console.log('✅ [USER] User created successfully with ID:', userId);
       return userId;
     } catch (error) {
