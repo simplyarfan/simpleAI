@@ -475,6 +475,58 @@
             }
         }
 
+        async function testUserManagement() {
+            addLog('👥 Testing user management...', 'info');
+            updateProgress(70, 'Testing user management system...');
+            
+            try {
+                const response = await fetch('https://thesimpleai.vercel.app/api/users-simple');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const userCount = data.data?.users?.length || 0;
+                    const totalUsers = data.data?.pagination?.total || 0;
+                    
+                    addLog(`✅ User management working - Found ${userCount} users`, 'success');
+                    
+                    // Update metrics
+                    document.getElementById('total-users').textContent = totalUsers;
+                    
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                addLog(`❌ User management failed: ${error.message}`, 'error');
+                issuesCount++;
+                return false;
+            }
+        }
+        
+        async function testProfile(token) {
+            addLog('👤 Testing profile system...', 'info');
+            
+            try {
+                const response = await fetch('https://thesimpleai.vercel.app/api/profile-simple', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addLog(`✅ Profile system working - User: ${data.data?.user?.email}`, 'success');
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                addLog(`❌ Profile system failed: ${error.message}`, 'error');
+                issuesCount++;
+                return false;
+            }
+        }
         async function testAuth() {
             addLog('🔐 Testing authentication...', 'info');
             updateProgress(40, 'Testing login system...');
@@ -572,13 +624,24 @@
             
             updateTimelineStep(4, 'active');
             const token = await testAuth();
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test user management
+            const userMgmtOk = await testUserManagement();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Test profile system if we have a token
+            let profileOk = true;
+            if (token) {
+                profileOk = await testProfile(token);
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
             
             updateTimelineStep(5, 'active');
             updateProgress(80, 'Finalizing system check...');
             
             // Final status
-            const allSystemsOk = backendOk && frontendOk && token && passwordReset;
+            const allSystemsOk = backendOk && frontendOk && token && passwordReset && userMgmtOk && profileOk;
             
             if (allSystemsOk) {
                 updateStatus('system', 'success');

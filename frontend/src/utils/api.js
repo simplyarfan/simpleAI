@@ -204,20 +204,6 @@ export const cvAPI = {
   deleteBatch: (batchId) => api.delete(`/cv-intelligence/batches/${batchId}`)
 };
 
-export const supportAPI = {
-  createTicket: (ticketData) => api.post('/support', ticketData),
-  getMyTickets: (params) => api.get('/support/my-tickets', { params }),
-  getAllTickets: (params) => api.get('/support', { params }),
-  getTicket: (ticketId) => api.get(`/support/${ticketId}`),
-  addComment: (ticketId, comment, isInternal = false) => api.post(`/support/${ticketId}/comments`, {
-    comment,
-    is_internal: isInternal
-  }),
-  updateTicket: (ticketId, updateData) => api.put(`/support/${ticketId}`, updateData),
-  deleteTicket: (ticketId) => api.delete(`/support/${ticketId}`),
-  getStats: (timeframe = '30d') => api.get(`/support/admin/stats?timeframe=${timeframe}`)
-};
-
 export const notificationsAPI = {
   getNotifications: (params) => api.get('/notifications', { params }),
   getUnreadCount: () => api.get('/notifications/unread-count'),
@@ -228,11 +214,32 @@ export const notificationsAPI = {
 
 export const analyticsAPI = {
   getDashboard: () => api.get('/analytics/dashboard-simple'), // TEMPORARY: Use simple endpoint
+  getDetailedAnalytics: () => api.get('/analytics-detailed-simple'), // TEMPORARY: Use simple endpoint
   getUserAnalytics: (params) => api.get('/analytics/users', { params }),
   getAgentAnalytics: (params) => api.get('/analytics/agents', { params }),
   getCVAnalytics: (params) => api.get('/analytics/cv-intelligence', { params }),
   getSystemAnalytics: (params) => api.get('/analytics/system', { params }),
   exportAnalytics: (params) => api.get('/analytics/export', { params })
+};
+
+export const systemAPI = {
+  getHealth: () => api.get('/system-health-simple'), // TEMPORARY: Use simple endpoint
+  getMetrics: () => api.get('/system-health-simple'), // TEMPORARY: Use simple endpoint
+  getServices: () => api.get('/system-health-simple') // TEMPORARY: Use simple endpoint
+};
+
+export const supportAPI = {
+  createTicket: (ticketData) => api.post('/support', ticketData),
+  getMyTickets: (params) => api.get('/support/my-tickets', { params }),
+  getAllTickets: (params) => api.get('/support-tickets-simple', { params }), // TEMPORARY: Use simple endpoint
+  getTicket: (ticketId) => api.get(`/support/${ticketId}`),
+  addComment: (ticketId, comment, isInternal = false) => api.post(`/support/${ticketId}/comments`, {
+    comment,
+    is_internal: isInternal
+  }),
+  updateTicket: (ticketId, updateData) => api.put(`/support/${ticketId}`, updateData),
+  deleteTicket: (ticketId) => api.delete(`/support/${ticketId}`),
+  getStats: (timeframe = '30d') => api.get('/support-tickets-simple') // TEMPORARY: Use simple endpoint
 };
 
 export const healthAPI = {
