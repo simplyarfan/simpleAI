@@ -175,6 +175,53 @@ app.get('/api/test-auth', async (req, res) => {
     });
   }
 });
+
+// Test analytics WITHOUT middleware
+app.get('/api/test-analytics', async (req, res) => {
+  try {
+    console.log('📈 [TEST-ANALYTICS] Direct analytics test');
+    await database.connect();
+    
+    // Test basic analytics data
+    const userCount = await database.get('SELECT COUNT(*) as count FROM users');
+    const superAdminCount = await database.get('SELECT COUNT(*) as count FROM users WHERE role = $1', ['superadmin']);
+    
+    res.json({
+      success: true,
+      message: 'Direct analytics test successful',
+      data: {
+        totalUsers: userCount?.count || 0,
+        activeUsers: Math.floor((userCount?.count || 0) * 0.8),
+        agentUsage: 5,
+        systemHealth: 'Good',
+        userGrowth: '+15% from last month',
+        activeGrowth: '+8% from last month',
+        agentGrowth: '+50% from last month',
+        systemStatus: 'Stable from last month',
+        recentActivity: [
+          {
+            action: 'User Login',
+            user: 'System Administrator',
+            email: 'syedarfan@securemaxtech.com',
+            time: new Date().toISOString(),
+            status: 'Success'
+          }
+        ],
+        debug: {
+          superadminCount: superAdminCount?.count || 0,
+          requestTime: new Date().toISOString()
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ [TEST-ANALYTICS] Analytics test error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Analytics test failed',
+      error: error.message
+    });
+  }
+});
 app.get('/api', (req, res) => {
   res.json({
     success: true,
