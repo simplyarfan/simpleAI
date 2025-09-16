@@ -179,11 +179,12 @@ export const authAPI = {
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
   verifyEmail: (token) => api.post('/auth/verify-email', { token }),
   resendVerification: (email) => api.post('/auth/resend-verification', { email }),
-  updateProfile: (data) => api.put('/auth/profile', data),
+  updateProfile: (data) => api.put('/profile-simple', data), // TEMPORARY: Use simple endpoint
+  getProfile: () => api.get('/profile-simple'), // TEMPORARY: Use simple endpoint
   changePassword: (data) => api.put('/auth/change-password', data),
   
   // Admin/Superadmin user management
-  getAllUsers: (params) => api.get('/auth/users', { params }),
+  getAllUsers: (params) => api.get('/users-simple', { params }), // TEMPORARY: Use simple endpoint
   getUser: (userId) => api.get(`/auth/users/${userId}`),
   createUser: (userData) => api.post('/auth/users', userData),
   updateUser: (userId, userData) => api.put(`/auth/users/${userId}`, userData),

@@ -176,6 +176,161 @@ app.get('/api/test-auth', async (req, res) => {
   }
 });
 
+// TEMPORARY: Simple profile endpoint without session validation
+app.get('/api/profile-simple', async (req, res) => {
+  try {
+    console.log('👤 [PROFILE-SIMPLE] Getting profile...');
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'No token provided'
+      });
+    }
+    
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key-change-in-production');
+    
+    await database.connect();
+    const user = await database.get('SELECT id, email, first_name, last_name, role, department, job_title, created_at FROM users WHERE id = $1', [decoded.userId]);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      data: {
+        user: user
+      }
+    });
+  } catch (error) {
+    console.error('❌ [PROFILE-SIMPLE] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Profile fetch failed'
+    });
+  }
+});
+
+// TEMPORARY: Simple users endpoint without middleware
+app.get('/api/users-simple', async (req, res) => {
+  try {
+    console.log('👥 [USERS-SIMPLE] Getting all users...');
+    await database.connect();
+    
+    const users = await database.all(`
+      SELECT 
+        id, email, first_name, last_name, role, 
+        department, job_title, is_active, last_login, created_at
+      FROM users 
+      WHERE is_active = true
+      ORDER BY created_at DESC
+    `);
+    
+    const totalCount = await database.get('SELECT COUNT(*) as total FROM users WHERE is_active = true');
+    
+    res.json({
+      success: true,
+      data: {
+        users: users,
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: parseInt(totalCount.total) || 0,
+          totalPages: Math.ceil((parseInt(totalCount.total) || 0) / 20)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ [USERS-SIMPLE] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Users fetch failed',
+      error: error.message
+    });
+  }
+});
+
+// TEMPORARY: Simple profile update endpoint
+app.put('/api/profile-simple', async (req, res) => {
+  try {
+    console.log('👤 [PROFILE-UPDATE-SIMPLE] Updating profile...');
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'No token provided'
+      });
+    }
+    
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key-change-in-production');
+    
+    const { firstName, lastName, email, currentPassword, newPassword } = req.body;
+    
+    await database.connect();
+    
+    // Handle password change if provided
+    if (currentPassword && newPassword) {
+      const user = await database.get('SELECT * FROM users WHERE id = $1', [decoded.userId]);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+      
+      const bcrypt = require('bcryptjs');
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password_hash);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password is incorrect'
+        });
+      }
+      
+      const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+      
+      await database.run(`
+        UPDATE users 
+        SET first_name = $1, last_name = $2, email = $3, password_hash = $4, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $5
+      `, [firstName, lastName, email, hashedNewPassword, decoded.userId]);
+    } else {
+      await database.run(`
+        UPDATE users 
+        SET first_name = $1, last_name = $2, email = $3, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $4
+      `, [firstName, lastName, email, decoded.userId]);
+    }
+    
+    const updatedUser = await database.get('SELECT id, email, first_name, last_name, role, department, job_title, created_at FROM users WHERE id = $1', [decoded.userId]);
+    
+    res.json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: {
+        user: updatedUser
+      }
+    });
+  } catch (error) {
+    console.error('❌ [PROFILE-UPDATE-SIMPLE] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Profile update failed',
+      error: error.message
+    });
+  }
+});
+
 // TEMPORARY: Password reset endpoint for debugging
 app.post('/api/reset-admin-password', async (req, res) => {
   try {
