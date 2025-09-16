@@ -40,22 +40,15 @@ export default function AnalyticsPage() {
   const fetchAnalyticsData = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching analytics data...');
+      console.log('Fetching detailed analytics data...');
       
-      // Fetch dashboard data
-      const dashboardResponse = await analyticsAPI.getDashboard();
-      console.log('Dashboard response:', dashboardResponse);
+      // Fetch detailed analytics data for analytics page
+      const detailedResponse = await analyticsAPI.getDetailedAnalytics();
+      console.log('Detailed analytics response:', detailedResponse);
       
-      if (dashboardResponse.data?.success) {
-        setDashboardData(dashboardResponse.data.data);
-      }
-
-      // Fetch user analytics
-      const userResponse = await analyticsAPI.getUserAnalytics({ timeframe });
-      console.log('User analytics response:', userResponse);
-      
-      if (userResponse.data?.success) {
-        setUserAnalytics(userResponse.data.data);
+      if (detailedResponse.data?.success) {
+        setDashboardData(detailedResponse.data.data.overview);
+        setUserAnalytics(detailedResponse.data.data);
       }
 
     } catch (error) {

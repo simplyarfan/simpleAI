@@ -24,6 +24,8 @@ export default function UserManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [editingUser, setEditingUser] = useState(null);
+  const [deletingUser, setDeletingUser] = useState(null);
 
   useEffect(() => {
     if (!loading) {
@@ -62,6 +64,53 @@ export default function UserManagementPage() {
     }
   };
 
+  const handleEditUser = (selectedUser) => {
+    console.log('Edit user:', selectedUser.email);
+    setEditingUser(selectedUser);
+    // For now, just show an alert - we can implement a proper edit modal later
+    alert(`Edit functionality for ${selectedUser.email} will be implemented. For now, use the profile settings to edit your own account.`);
+  };
+
+  const handleDeleteUser = (selectedUser) => {
+    console.log('Delete user requested:', selectedUser.email);
+    setDeletingUser(selectedUser);
+  };
+  
+  const confirmDelete = async () => {
+    if (!deletingUser) return;
+    
+    // Double confirmation as requested
+    const firstConfirm = window.confirm(
+      `⚠️ FIRST CONFIRMATION: Are you sure you want to delete user "${deletingUser.email}"?\n\nThis action cannot be undone.`
+    );
+    
+    if (!firstConfirm) {
+      setDeletingUser(null);
+      return;
+    }
+    
+    const secondConfirm = window.confirm(
+      `🚨 FINAL CONFIRMATION: This will permanently delete "${deletingUser.email}" from the system.\n\nType the user's email in your mind: ${deletingUser.email}\n\nAre you absolutely certain?`
+    );
+    
+    if (!secondConfirm) {
+      setDeletingUser(null);
+      return;
+    }
+    
+    try {
+      console.log('Deleting user:', deletingUser.id);
+      // TODO: Implement actual delete API call
+      // await authAPI.deleteUser(deletingUser.id);
+      
+      alert(`User ${deletingUser.email} would be deleted here. Delete API not implemented yet for safety.`);
+      setDeletingUser(null);
+      // fetchUsers(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Failed to delete user. Please try again.');
+    }
+  };
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          `${u.first_name} ${u.last_name}`.toLowerCase().includes(searchTerm.toLowerCase());
@@ -97,6 +146,44 @@ export default function UserManagementPage() {
               Back to Dashboard
             </button>
           </div>
+        
+        {/* Delete Confirmation Modal */}
+        {deletingUser && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3 text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                  <Trash2 className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mt-5">Delete User</h3>
+                <div className="mt-2 px-7 py-3">
+                  <p className="text-sm text-gray-500">
+                    Are you sure you want to delete <strong>{deletingUser.email}</strong>?
+                  </p>
+                  <p className="text-sm text-red-600 mt-2">
+                    This action cannot be undone.
+                  </p>
+                </div>
+                <div className="items-center px-4 py-3">
+                  <div className="flex justify-center space-x-3">
+                    <button
+                      onClick={() => setDeletingUser(null)}
+                      className="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmDelete}
+                      className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                      Delete User
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
           <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
           <p className="mt-2 text-gray-600">
             Manage user accounts, roles, and permissions
@@ -224,10 +311,18 @@ export default function UserManagementPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
-                          <button className="text-blue-600 hover:text-blue-900">
+                          <button 
+                            onClick={() => handleEditUser(u)}
+                            className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                            title={`Edit ${u.email}`}
+                          >
                             <Edit className="h-4 w-4" />
                           </button>
-                          <button className="text-red-600 hover:text-red-900">
+                          <button 
+                            onClick={() => handleDeleteUser(u)}
+                            className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                            title={`Delete ${u.email}`}
+                          >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>

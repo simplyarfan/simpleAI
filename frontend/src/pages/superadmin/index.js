@@ -234,32 +234,8 @@ export default function SuperAdminDashboard() {
               </div>
             </div>
 
-            {/* Recent Activity Section */}
-            {dashboardData?.recentActivity && dashboardData.recentActivity.length > 0 && (
-              <div className="bg-white rounded-lg shadow">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
-                </div>
-                <div className="divide-y divide-gray-200">
-                  {dashboardData.recentActivity.slice(0, 5).map((activity, index) => (
-                    <div key={index} className="px-6 py-4 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0">
-                          <div className="h-2 w-2 bg-green-400 rounded-full"></div>
-                        </div>
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                          <p className="text-sm text-gray-500">{activity.user}</p>
-                        </div>
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {new Date(activity.time).toLocaleString()}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Recent Activity Section - REMOVED */}
+            {/* This should only appear on Analytics page */}
 
             {/* Debug Information */}
             {!dashboardData && (

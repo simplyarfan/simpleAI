@@ -227,7 +227,8 @@ app.get('/api/users-simple', async (req, res) => {
     const users = await database.all(`
       SELECT 
         id, email, first_name, last_name, role, 
-        department, job_title, is_active, last_login, created_at
+        department, job_title, is_active, 
+        last_login, created_at, updated_at
       FROM users 
       WHERE is_active = true
       ORDER BY created_at DESC
