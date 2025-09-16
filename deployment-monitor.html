@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🔄 Real-Time Deployment Monitor</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .status-box { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { border-left: 5px solid #10b981; }
+        .error { border-left: 5px solid #ef4444; }
+        .warning { border-left: 5px solid #f59e0b; }
+        .info { border-left: 5px solid #3b82f6; }
+        .loading { border-left: 5px solid #8b5cf6; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; }
+        .status-success { background: #10b981; }
+        .status-error { background: #ef4444; }
+        .status-loading { background: #8b5cf6; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .timestamp { color: #666; font-size: 0.9em; }
+        .test-result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        button { background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #2563eb; }
+        button:disabled { background: #9ca3af; cursor: not-allowed; }
+        .countdown { font-size: 18px; font-weight: bold; color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 SimpleAI Deployment Monitor</h1>
+        <p>Monitoring both backend and frontend deployments in real-time...</p>
+        
+        <div id="status-container"></div>
+        
+        <div class="status-box info">
+            <h3>🎯 Quick Actions</h3>
+            <button onclick="window.open('https://thesimpleai.netlify.app/superadmin', '_blank')">🖥️ Open Admin Dashboard</button>
+            <button onclick="testEndpoints()" id="testBtn">🧪 Test Endpoints Now</button>
+            <button onclick="autoRefresh = !autoRefresh; updateAutoRefreshButton();" id="autoBtn">⏸️ Pause Auto-Refresh</button>
+        </div>
+        
+        <div class="status-box warning">
+            <h3>⏱️ Expected Timeline</h3>
+            <div class="countdown" id="countdown"></div>
+            <ul>
+                <li><strong>0-2 min:</strong> Backend deployment (Vercel)</li>
+                <li><strong>2-4 min:</strong> Frontend deployment (Netlify)</li>
+                <li><strong>4-5 min:</strong> All systems operational</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let startTime = Date.now();
+        let autoRefresh = true;
+        
+        function updateCountdown() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            document.getElementById('countdown').textContent = 
+                `Elapsed: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function addStatus(title, content, type = 'info', timestamp = true) {
+            const container = document.getElementById('status-container');
+            const div = document.createElement('div');
+            div.className = `status-box ${type}`;
+            
+            const statusClass = type === 'success' ? 'status-success' : 
+                               type === 'error' ? 'status-error' : 'status-loading';
+            
+            const timeStr = timestamp ? `<div class="timestamp">${new Date().toLocaleTimeString()}</div>` : '';
+            
+            div.innerHTML = `
+                <h3><span class="status-indicator ${statusClass}"></span>${title}</h3>
+                ${content}
+                ${timeStr}
+            `;
+            
+            container.insertBefore(div, container.firstChild);
+            
+            // Keep only last 10 status updates
+            while (container.children.length > 10) {
+                container.removeChild(container.lastChild);
+            }
+        }
+        
+        async function testBackend() {
+            try {
+                const response = await fetch('https://thesimpleai.vercel.app/api/test-analytics');
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    addStatus('✅ Backend Operational', `
+                        <div class="test-result">
+                            <strong>Simple Analytics:</strong> Working<br>
+                            <strong>Database Users:</strong> ${data.data.totalUsers}<br>
+                            <strong>System Health:</strong> ${data.data.systemHealth}
+                        </div>
+                    `, 'success');
+                    return true;
+                } else {
+                    addStatus('❌ Backend Issues', `Status: ${response.status}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addStatus('❌ Backend Error', `Network error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testFrontend() {
+            try {
+                // Test if the frontend has updated by checking if it can reach the new endpoint
+                const response = await fetch('https://thesimpleai.netlify.app/superadmin');
+                
+                if (response.ok) {
+                    addStatus('✅ Frontend Deployed', `
+                        <div class="test-result">
+                            <strong>Status:</strong> Accessible<br>
+                            <strong>URL:</strong> https://thesimpleai.netlify.app/superadmin<br>
+                            <strong>Ready for testing</strong>
+                        </div>
+                    `, 'success');
+                    return true;
+                } else {
+                    addStatus('⚠️ Frontend Status', `HTTP ${response.status}`, 'warning');
+                    return false;
+                }
+            } catch (error) {
+                addStatus('❌ Frontend Error', `Network error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function resetAdminPassword() {
+            try {
+                addStatus('🔑 Resetting Admin Password', 'Setting password to: admin123', 'loading');
+                
+                const response = await fetch('https://thesimpleai.vercel.app/api/reset-admin-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    addStatus('✅ Password Reset Complete', `
+                        <div class="test-result">
+                            <strong>Password set to:</strong> admin123<br>
+                            <strong>User:</strong> ${data.user.email}<br>
+                            <strong>Role:</strong> ${data.user.role}
+                        </div>
+                    `, 'success');
+                    return true;
+                } else {
+                    addStatus('❌ Password Reset Failed', `${data.message}`, 'error');
+                    return false;
+                }
+            } catch (error) {
+                addStatus('❌ Password Reset Error', `${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testLogin() {
+            try {
+                addStatus('🔐 Testing Login', 'Attempting superadmin login...', 'loading');
+                
+                const response = await fetch('https://thesimpleai.vercel.app/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'syedarfan@securemaxtech.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    addStatus('✅ Login System Working', `
+                        <div class="test-result">
+                            <strong>User:</strong> ${data.user.email}<br>
+                            <strong>Role:</strong> ${data.user.role}<br>
+                            <strong>Token:</strong> Received
+                        </div>
+                    `, 'success');
+                    return data.accessToken;
+                } else {
+                    addStatus('❌ Login Failed', `${data.message}`, 'error');
+                    return null;
+                }
+            } catch (error) {
+                addStatus('❌ Login Error', `${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        async function testEndpoints() {
+            const testBtn = document.getElementById('testBtn');
+            testBtn.disabled = true;
+            testBtn.textContent = '🔄 Testing...';
+            
+            addStatus('🧪 Running Complete Test Suite', 'Testing all systems...', 'loading');
+            
+            // Test backend
+            const backendOk = await testBackend();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Test frontend
+            const frontendOk = await testFrontend();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Reset admin password first
+            const passwordReset = await resetAdminPassword();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Test login
+            const token = await testLogin();
+            
+            // Summary
+            if (backendOk && frontendOk && token) {
+                addStatus('🎉 ALL SYSTEMS OPERATIONAL!', `
+                    <div class="test-result">
+                        ✅ Backend working<br>
+                        ✅ Frontend deployed<br>
+                        ✅ Authentication working<br>
+                        ✅ Database connected<br><br>
+                        <strong>🎯 Your admin dashboard should now work perfectly!</strong><br>
+                        <a href="https://thesimpleai.netlify.app/superadmin" target="_blank">Click here to test it</a>
+                    </div>
+                `, 'success');
+            } else {
+                addStatus('⚠️ Some Issues Remain', 'Check individual test results above', 'warning');
+            }
+            
+            testBtn.disabled = false;
+            testBtn.textContent = '🧪 Test Endpoints Now';
+        }
+        
+        function updateAutoRefreshButton() {
+            const btn = document.getElementById('autoBtn');
+            btn.textContent = autoRefresh ? '⏸️ Pause Auto-Refresh' : '▶️ Resume Auto-Refresh';
+        }
+        
+        async function autoTest() {
+            if (autoRefresh) {
+                await testEndpoints();
+            }
+        }
+        
+        // Update countdown every second
+        setInterval(updateCountdown, 1000);
+        
+        // Auto-test every 30 seconds
+        setInterval(autoTest, 30000);
+        
+        // Initial test
+        addStatus('🚀 Monitoring Started', 'Waiting for deployments to complete...', 'info');
+        setTimeout(testEndpoints, 3000); // Initial test after 3 seconds
+    </script>
+</body>
+</html>

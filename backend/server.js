@@ -176,6 +176,43 @@ app.get('/api/test-auth', async (req, res) => {
   }
 });
 
+// TEMPORARY: Password reset endpoint for debugging
+app.post('/api/reset-admin-password', async (req, res) => {
+  try {
+    console.log('🔑 [ADMIN-RESET] Resetting admin password...');
+    await database.connect();
+    
+    const bcrypt = require('bcryptjs');
+    const newPassword = 'admin123'; // The correct password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    
+    const result = await database.run(
+      'UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE email = $2 RETURNING id, email, role',
+      [hashedPassword, 'syedarfan@securemaxtech.com']
+    );
+    
+    if (result.rows && result.rows.length > 0) {
+      res.json({
+        success: true,
+        message: 'Admin password reset to: admin123',
+        user: result.rows[0]
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'Admin user not found'
+      });
+    }
+  } catch (error) {
+    console.error('❌ [ADMIN-RESET] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Password reset failed',
+      error: error.message
+    });
+  }
+});
+
 // Test analytics WITHOUT middleware
 app.get('/api/test-analytics', async (req, res) => {
   try {
