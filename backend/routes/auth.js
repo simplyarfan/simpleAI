@@ -105,7 +105,6 @@ router.get('/check',
   AuthController.checkAuth
 );
 
-// Admin/Superadmin User Management Routes
 // Get all users (superadmin only)
 router.get('/users',
   authenticateToken,
@@ -125,10 +124,10 @@ router.get('/stats',
   AuthController.getUserStats
 );
 
-// Get specific user (admin/superadmin only)
+// Get specific user (superadmin only)
 router.get('/users/:user_id',
   authenticateToken,
-  requireAdmin,
+  requireSuperAdmin,
   validateUserId,
   trackActivity('user_details_viewed'),
   AuthController.getUser
@@ -143,10 +142,10 @@ router.post('/users',
   AuthController.createUser
 );
 
-// Update user (admin/superadmin only)
+// Update user (superadmin only)
 router.put('/users/:user_id',
   authenticateToken,
-  requireAdmin,
+  requireSuperAdmin,
   validateUserId,
   trackActivity('user_updated'),
   AuthController.updateUser
