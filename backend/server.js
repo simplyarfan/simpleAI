@@ -9,9 +9,6 @@ require('dotenv').config();
 const database = require('./models/database');
 const { generalLimiter } = require('./middleware/rateLimiting');
 
-// Import routes
-const cvRoutes = require('./routes/cv-intelligence');
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -23,7 +20,7 @@ app.set('trust proxy', 1);
 // Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
-  contentSecurityPolicy: false // Allow for development
+  contentSecurityPolicy: false
 }));
 
 // Performance middleware
@@ -33,25 +30,16 @@ app.use(responseTime());
 // Enhanced CORS configuration
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
     
-    // Allow localhost for development
     if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
       return callback(null, true);
     }
     
-    // Allow all Netlify deploy previews and production
-    if (origin.includes('netlify.app')) {
+    if (origin.includes('netlify.app') || origin.includes('vercel.app')) {
       return callback(null, true);
     }
     
-    // Allow all Vercel deployments
-    if (origin.includes('vercel.app')) {
-      return callback(null, true);
-    }
-    
-    // Allow specific production domains
     const allowedOrigins = [
       'https://thesimpleai.netlify.app',
       'https://thesimpleai.vercel.app'
@@ -69,7 +57,7 @@ app.use(cors({
     'Content-Type', 
     'Authorization', 
     'X-Requested-With', 
-    'X-Request-ID',  // Add this header
+    'X-Request-ID',
     'Accept',
     'Accept-Version',
     'Content-Length',
@@ -90,9 +78,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Apply rate limiting
 app.use(generalLimiter);
-
-// Static file serving
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -133,26 +118,54 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Mount API routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/analytics', require('./routes/analytics'));
+// DEBUG: Add logging middleware to track all requests
+app.use('/api', (req, res, next) => {
+  console.log(`🔍 [DEBUG] API Request: ${req.method} ${req.path}`);
+  console.log(`🔍 [DEBUG] Headers:`, req.headers.authorization ? 'Bearer token present' : 'No token');
+  next();
+});
+
+// Import routes
+console.log('📦 Loading route handlers...');
+const authRoutes = require('./routes/auth');
+const analyticsRoutes = require('./routes/analytics');
+const cvRoutes = require('./routes/cv-intelligence');
+const supportRoutes = require('./routes/support');
+const notificationRoutes = require('./routes/notifications');
+
+// Mount API routes with enhanced logging
+app.use('/api/auth', (req, res, next) => {
+  console.log(`🔐 [AUTH] ${req.method} ${req.path}`);
+  next();
+}, authRoutes);
+
+app.use('/api/analytics', (req, res, next) => {
+  console.log(`📊 [ANALYTICS] ${req.method} ${req.path}`);
+  next();
+}, analyticsRoutes);
+
 app.use('/api/cv-intelligence', cvRoutes);
-app.use('/api/support', require('./routes/support'));
-app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/support', supportRoutes);
+app.use('/api/notifications', notificationRoutes);
+
+console.log('✅ All routes mounted successfully');
 
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {
+  console.log(`❌ [404] API endpoint not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({
     success: false,
     message: 'API endpoint not found',
-    path: req.path,
+    path: req.originalUrl,
+    method: req.method,
     availableEndpoints: ['/api/auth', '/api/analytics', '/api/support', '/api/notifications', '/api/cv-intelligence']
   });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err.message);
+  console.error('❌ [ERROR]:', err.message);
+  console.error('❌ Stack:', err.stack);
   
   const statusCode = err.statusCode || err.status || 500;
   const message = statusCode === 500 ? 'Internal server error' : err.message;
@@ -166,20 +179,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Initialize database with Neon PostgreSQL
+// Initialize database
 const initializeDatabase = async () => {
   try {
     console.log('🔗 Connecting to Neon PostgreSQL database...');
-    console.log('🔗 Database URL available:', !!process.env.DATABASE_URL);
-    console.log('🔗 Postgres URL available:', !!process.env.POSTGRES_URL);
-    
     await database.connect();
-    console.log('✅ Neon PostgreSQL database connected and tables initialized');
+    console.log('✅ Database connected and initialized');
   } catch (error) {
     console.error('❌ Database initialization failed:', error.message);
-    console.error('❌ Stack trace:', error.stack);
-    
-    // Don't exit in production - let Vercel handle the error
     if (process.env.NODE_ENV !== 'production') {
       process.exit(1);
     }
@@ -188,7 +195,6 @@ const initializeDatabase = async () => {
 
 // Start server
 const startServer = async () => {
-  // Initialize database first
   await initializeDatabase();
   
   if (!process.env.VERCEL) {
@@ -198,13 +204,12 @@ const startServer = async () => {
       console.log(`🔍 Health Check: http://localhost:${PORT}/health`);
     });
   } else {
-    console.log('✅ Running on Vercel serverless environment with Neon PostgreSQL');
+    console.log('✅ Running on Vercel serverless environment');
   }
 };
 
 // For Vercel serverless
 if (process.env.VERCEL) {
-  // Initialize database immediately for serverless
   initializeDatabase().catch(error => {
     console.error('Vercel database initialization error:', error);
   });
@@ -212,5 +217,4 @@ if (process.env.VERCEL) {
 
 startServer().catch(console.error);
 
-// Export for Vercel
 module.exports = app;
