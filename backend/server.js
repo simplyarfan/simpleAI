@@ -109,26 +109,93 @@ app.get('/api/test', async (req, res) => {
     console.log('🧪 [TEST] Test endpoint accessed');
     await database.connect();
     
+    // Check users table
     const userCount = await database.get('SELECT COUNT(*) as count FROM users');
+    const users = await database.all('SELECT id, email, first_name, last_name, role, created_at FROM users LIMIT 5');
+    
+    // Check if tables exist
+    const tables = await database.all(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      ORDER BY table_name
+    `);
+    
+    // Test auth endpoint directly
+    let authTestResult;
+    try {
+      const authUsers = await database.all('SELECT COUNT(*) as count FROM users WHERE role = $1', ['superadmin']);
+      authTestResult = { success: true, superadmins: authUsers[0]?.count || 0 };
+    } catch (authError) {
+      authTestResult = { success: false, error: authError.message };
+    }
     
     res.json({
       success: true,
-      message: 'Test endpoint working',
+      message: 'Comprehensive database test',
       database: 'connected',
-      userCount: userCount?.count || 0,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      data: {
+        userCount: userCount?.count || 0,
+        users: users || [],
+        tables: tables.map(t => t.table_name),
+        authTest: authTestResult,
+        environment: process.env.NODE_ENV || 'unknown'
+      }
     });
   } catch (error) {
     console.error('❌ [TEST] Test endpoint error:', error);
     res.status(500).json({
       success: false,
       message: 'Test failed',
-      error: error.message
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
 
-// API documentation
+// Test auth endpoint directly
+app.get('/api/test-auth', async (req, res) => {
+  try {
+    console.log('🧪 [TEST-AUTH] Direct auth test endpoint accessed');
+    
+    // Simulate what the auth endpoint does
+    await database.connect();
+    
+    const users = await database.all(`
+      SELECT 
+        id, email, first_name, last_name, role, 
+        department, job_title, is_active, last_login, created_at
+      FROM users 
+      ORDER BY created_at DESC
+      LIMIT 10
+    `);
+    
+    const totalCount = await database.get('SELECT COUNT(*) as total FROM users');
+    
+    res.json({
+      success: true,
+      message: 'Direct auth test successful',
+      data: {
+        users,
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: totalCount.total,
+          totalPages: Math.ceil(totalCount.total / 10)
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ [TEST-AUTH] Auth test error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Auth test failed',
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
 app.get('/api', (req, res) => {
   res.json({
     success: true,
