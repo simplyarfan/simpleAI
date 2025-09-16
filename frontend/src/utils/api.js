@@ -37,10 +37,23 @@ const api = axios.create({
 
 // Token management utility
 export const tokenManager = {
-  getAccessToken: () => Cookies.get('accessToken'),
-  getRefreshToken: () => Cookies.get('refreshToken'),
+  getAccessToken: () => {
+    const token = Cookies.get('accessToken');
+    console.log('🔍 [TOKEN] Retrieved access token:', token ? 'present' : 'missing');
+    return token;
+  },
+  getRefreshToken: () => {
+    const token = Cookies.get('refreshToken');
+    console.log('🔍 [TOKEN] Retrieved refresh token:', token ? 'present' : 'missing');
+    return token;
+  },
   
   setTokens: (accessToken, refreshToken) => {
+    console.log('🍪 [TOKENS] Setting tokens:', {
+      accessToken: accessToken ? 'present' : 'missing',
+      refreshToken: refreshToken ? 'present' : 'missing'
+    });
+    
     const isProduction = typeof window !== 'undefined' && 
       window.location.hostname !== 'localhost' && 
       window.location.hostname !== '127.0.0.1';
@@ -57,6 +70,8 @@ export const tokenManager = {
       ...cookieOptions,
       expires: 30
     });
+    
+    console.log('🍪 [TOKENS] Tokens saved to cookies');
   },
   
   clearTokens: () => {
@@ -88,8 +103,14 @@ export const tokenManager = {
 api.interceptors.request.use(
   (config) => {
     const token = tokenManager.getAccessToken();
+    console.log('🔍 [API] Request interceptor - Token exists:', !!token);
+    console.log('🔍 [API] Request to:', config.url);
+    
     if (token && !tokenManager.isTokenExpired(token)) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('🔍 [API] Added Bearer token to request');
+    } else {
+      console.log('🔍 [API] No token or token expired');
     }
     
     // Add request ID for tracking
@@ -97,7 +118,10 @@ api.interceptors.request.use(
     
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('🔍 [API] Request interceptor error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Response interceptor with token refresh
