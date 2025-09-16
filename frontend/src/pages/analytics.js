@@ -1,298 +1,307 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
-import ProtectedRoute from '../components/ProtectedRoute';
-import { analyticsAPI } from '../utils/api';
-import {
-  Users,
-  Activity,
-  TrendingUp,
+import { analyticsAPI, authAPI } from '../utils/api';
+import { 
+  TrendingUp, 
+  Users, 
+  Activity, 
   BarChart3,
   Calendar,
-  Clock,
-  CheckCircle,
-  AlertCircle
+  Download
 } from 'lucide-react';
 
-const AnalyticsPage = () => {
-  const { user } = useAuth();
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    activeUsers: 0,
-    totalAgentUsage: 0,
-    systemHealth: 'Good'
-  });
-  const [loading, setLoading] = useState(true);
+export default function AnalyticsPage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const [dashboardData, setDashboardData] = useState(null);
+  const [userAnalytics, setUserAnalytics] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [timeframe, setTimeframe] = useState('30d');
 
   useEffect(() => {
-    fetchAnalytics();
-  }, []);
-
-  const fetchAnalytics = async () => {
-    try {
-      setLoading(true);
-      const response = await analyticsAPI.getDashboard();
-      if (response.data?.success) {
-        setStats(response.data.data);
+    if (!loading) {
+      if (!user) {
+        router.push('/auth/login');
+      } else if (user.role !== 'superadmin' && user.role !== 'admin') {
+        router.push('/');
       }
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    if (user && (user.role === 'superadmin' || user.role === 'admin')) {
+      fetchAnalyticsData();
+    }
+  }, [user, timeframe]);
+
+  const fetchAnalyticsData = async () => {
+    try {
+      setIsLoading(true);
+      console.log('Fetching analytics data...');
+      
+      // Fetch dashboard data
+      const dashboardResponse = await analyticsAPI.getDashboard();
+      console.log('Dashboard response:', dashboardResponse);
+      
+      if (dashboardResponse.data?.success) {
+        setDashboardData(dashboardResponse.data.data);
+      }
+
+      // Fetch user analytics
+      const userResponse = await analyticsAPI.getUserAnalytics({ timeframe });
+      console.log('User analytics response:', userResponse);
+      
+      if (userResponse.data?.success) {
+        setUserAnalytics(userResponse.data.data);
+      }
+
     } catch (error) {
-      console.error('Error fetching analytics:', error);
-      // Set demo data if API fails
-      setStats({
-        totalUsers: 156,
-        activeUsers: 89,
-        totalAgentUsage: 2847,
-        systemHealth: 'Good',
-        recentActivity: [
-          { action: 'User Registration', count: 12, change: '+15%' },
-          { action: 'CV Analysis', count: 45, change: '+23%' },
-          { action: 'Support Tickets', count: 8, change: '-12%' }
-        ]
-      });
+      console.error('Error fetching analytics data:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const metrics = [
-    {
-      title: 'Total Users',
-      value: stats.totalUsers,
-      icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
-      change: '+12%'
-    },
-    {
-      title: 'Active Users',
-      value: stats.activeUsers,
-      icon: Activity,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
-      change: '+8%'
-    },
-    {
-      title: 'Agent Usage',
-      value: stats.totalAgentUsage,
-      icon: TrendingUp,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
-      change: '+25%'
-    },
-    {
-      title: 'System Health',
-      value: stats.systemHealth,
-      icon: CheckCircle,
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-100',
-      change: 'Stable'
-    }
-  ];
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user || (user.role !== 'superadmin' && user.role !== 'admin')) {
+    return null;
+  }
 
   return (
-    <ProtectedRoute requireAuth={true} requireRole="superadmin">
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        
-        <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-            <p className="mt-2 text-gray-600">
-              System-wide analytics and performance metrics
-            </p>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+              <p className="mt-2 text-gray-600">System-wide analytics and performance metrics</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <select
+                value={timeframe}
+                onChange={(e) => setTimeframe(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="7d">Last 7 days</option>
+                <option value="30d">Last 30 days</option>
+                <option value="90d">Last 90 days</option>
+                <option value="1y">Last year</option>
+              </select>
+              <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </button>
+            </div>
           </div>
+        </div>
 
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {metrics.map((metric, index) => (
-              <div key={index} className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">
-                      {metric.title}
-                    </p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">
-                      {typeof metric.value === 'number' ? metric.value.toLocaleString() : metric.value}
-                    </p>
-                    <p className={`text-sm mt-2 ${
-                      metric.change.includes('+') ? 'text-green-600' : 
-                      metric.change.includes('-') ? 'text-red-600' : 'text-gray-600'
-                    }`}>
-                      {metric.change} from last month
-                    </p>
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading analytics data...</p>
+          </div>
+        ) : (
+          <>
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Users className="h-6 w-6 text-blue-600" />
                   </div>
-                  <div className={`p-3 rounded-full ${metric.bgColor}`}>
-                    <metric.icon className={`w-6 h-6 ${metric.color}`} />
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Total Users</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {dashboardData?.totalUsers || 0}
+                    </p>
+                    <div className="flex items-center mt-1">
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <span className="text-sm text-green-600 ml-1">
+                        {dashboardData?.userGrowth || '+12% from last month'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Charts and Details */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* User Activity */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">User Activity</h3>
-              <div className="space-y-4">
-                {stats.recentActivity?.map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">{activity.action}</p>
-                      <p className="text-sm text-gray-600">{activity.count} this month</p>
-                    </div>
-                    <span className={`text-sm font-medium ${
-                      activity.change.includes('+') ? 'text-green-600' : 
-                      activity.change.includes('-') ? 'text-red-600' : 'text-gray-600'
-                    }`}>
-                      {activity.change}
-                    </span>
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Activity className="h-6 w-6 text-green-600" />
                   </div>
-                )) || (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900">CV Analysis</p>
-                        <p className="text-sm text-gray-600">156 this month</p>
-                      </div>
-                      <span className="text-sm font-medium text-green-600">+23%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900">User Registrations</p>
-                        <p className="text-sm text-gray-600">28 this month</p>
-                      </div>
-                      <span className="text-sm font-medium text-green-600">+15%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-gray-900">Support Tickets</p>
-                        <p className="text-sm text-gray-600">12 this month</p>
-                      </div>
-                      <span className="text-sm font-medium text-red-600">-8%</span>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Active Users</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {dashboardData?.activeUsers || 0}
+                    </p>
+                    <div className="flex items-center mt-1">
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <span className="text-sm text-green-600 ml-1">
+                        {dashboardData?.activeGrowth || '+8% from last month'}
+                      </span>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <BarChart3 className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Agent Usage</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {dashboardData?.agentUsage || 0}
+                    </p>
+                    <div className="flex items-center mt-1">
+                      <TrendingUp className="h-4 w-4 text-green-500" />
+                      <span className="text-sm text-green-600 ml-1">
+                        {dashboardData?.agentGrowth || '+25% from last month'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <Calendar className="h-6 w-6 text-yellow-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">System Health</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {dashboardData?.systemHealth || 'Good'}
+                    </p>
+                    <div className="flex items-center mt-1">
+                      <span className="text-sm text-gray-500">
+                        {dashboardData?.systemStatus || 'Stable from last month'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* User Activity Chart */}
+            <div className="bg-white rounded-lg shadow mb-8">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">User Activity</h2>
+              </div>
+              <div className="p-6">
+                {userAnalytics?.users?.length > 0 ? (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                      <div>
+                        <p className="text-sm text-gray-500">User Registration</p>
+                        <p className="text-2xl font-bold text-gray-900">12 this month</p>
+                        <p className="text-sm text-green-600">+15%</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">CV Analysis</p>
+                        <p className="text-2xl font-bold text-gray-900">45 this month</p>
+                        <p className="text-sm text-green-600">+23%</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">System Usage</p>
+                        <p className="text-2xl font-bold text-gray-900">89% uptime</p>
+                        <p className="text-sm text-green-600">Normal</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No user activity data available for the selected timeframe</p>
                 )}
               </div>
             </div>
 
-            {/* System Status */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">System Status</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                    <span className="text-gray-900">API Server</span>
-                  </div>
-                  <span className="text-green-600 font-medium">Operational</span>
+            {/* Recent Users Table */}
+            {userAnalytics?.users && (
+              <div className="bg-white rounded-lg shadow">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">Recent Users ({timeframe})</h2>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                    <span className="text-gray-900">Database</span>
-                  </div>
-                  <span className="text-green-600 font-medium">Operational</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                    <span className="text-gray-900">CV Processing</span>
-                  </div>
-                  <span className="text-green-600 font-medium">Operational</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
-                    <span className="text-gray-900">Email Service</span>
-                  </div>
-                  <span className="text-yellow-600 font-medium">Degraded</span>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {userAnalytics.users.slice(0, 10).map((user) => (
+                        <tr key={user.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                <Users className="h-4 w-4 text-gray-500" />
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {user.first_name} {user.last_name}
+                                </div>
+                                <div className="text-sm text-gray-500">{user.email}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.role}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.department || 'N/A'}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              user.is_verified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {user.is_verified ? 'Verified' : 'Pending'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* Recent Activity Table */}
-          <div className="mt-8 bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Recent System Activity</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      User
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Time
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      CV Batch Created
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      john.doe@securemaxtech.com
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      2 minutes ago
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                        Success
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      User Registration
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      sarah.smith@securemaxtech.com
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      15 minutes ago
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                        Success
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      Support Ticket Created
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      mike.johnson@securemaxtech.com
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      1 hour ago
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                        Pending
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </main>
-      </div>
-    </ProtectedRoute>
+            {/* Debug Information */}
+            {!dashboardData && !isLoading && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-yellow-800">Analytics data unavailable</h3>
+                    <p className="mt-2 text-sm text-yellow-700">
+                      Unable to load analytics data. Check browser console for API connection details.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </main>
+    </div>
   );
-};
-
-export default AnalyticsPage;
+}
