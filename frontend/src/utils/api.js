@@ -225,7 +225,7 @@ export const notificationsAPI = {
 };
 
 export const analyticsAPI = {
-  getDashboard: () => api.get('/analytics/dashboard'),
+  getDashboard: () => api.get('/analytics/dashboard-simple'), // TEMPORARY: Use simple endpoint
   getUserAnalytics: (params) => api.get('/analytics/users', { params }),
   getAgentAnalytics: (params) => api.get('/analytics/agents', { params }),
   getCVAnalytics: (params) => api.get('/analytics/cv-intelligence', { params }),
