@@ -9,16 +9,17 @@ const directAxios = axios.create();
 const getApiBaseUrl = () => {
   if (typeof window === 'undefined') {
     // Server-side rendering
-    return process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+    return 'https://thesimpleai.vercel.app/api'; // HARDCODED FOR NOW
   }
   
   // Client-side
   const hostname = window.location.hostname;
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return process.env.NEXT_PUBLIC_API_URL_LOCAL || 'http://localhost:5000/api';
+    return 'http://localhost:5000/api';
   }
   
-  return process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+  // HARDCODED FOR PRODUCTION - bypasses env var issues
+  return 'https://thesimpleai.vercel.app/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
