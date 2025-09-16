@@ -2,6 +2,9 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import jwtDecode from 'jwt-decode';
 
+// Import axios directly for non-API calls
+const directAxios = axios.create();
+
 // Environment-based API URL configuration
 const getApiBaseUrl = () => {
   if (typeof window === 'undefined') {
@@ -207,7 +210,11 @@ export const analyticsAPI = {
 };
 
 export const healthAPI = {
-  check: () => api.get('/health')
+  check: () => directAxios.get('https://thesimpleai.vercel.app/health', {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
 };
 
 // Error handling utility
