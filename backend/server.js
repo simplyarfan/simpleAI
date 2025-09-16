@@ -103,6 +103,31 @@ app.get('/', (req, res) => {
   });
 });
 
+// Test endpoint for debugging
+app.get('/api/test', async (req, res) => {
+  try {
+    console.log('🧪 [TEST] Test endpoint accessed');
+    await database.connect();
+    
+    const userCount = await database.get('SELECT COUNT(*) as count FROM users');
+    
+    res.json({
+      success: true,
+      message: 'Test endpoint working',
+      database: 'connected',
+      userCount: userCount?.count || 0,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ [TEST] Test endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Test failed',
+      error: error.message
+    });
+  }
+});
+
 // API documentation
 app.get('/api', (req, res) => {
   res.json({
@@ -120,8 +145,10 @@ app.get('/api', (req, res) => {
 
 // DEBUG: Add logging middleware to track all requests
 app.use('/api', (req, res, next) => {
-  console.log(`🔍 [DEBUG] API Request: ${req.method} ${req.path}`);
+  console.log(`🔍 [DEBUG] API Request: ${req.method} ${req.originalUrl}`);
   console.log(`🔍 [DEBUG] Headers:`, req.headers.authorization ? 'Bearer token present' : 'No token');
+  console.log(`🔍 [DEBUG] Full path: ${req.path}`);
+  console.log(`🔍 [DEBUG] Query:`, req.query);
   next();
 });
 
