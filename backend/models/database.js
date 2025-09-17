@@ -143,13 +143,20 @@ class Database {
           verification_expiry TIMESTAMP,
           reset_token VARCHAR(255),
           reset_token_expiry TIMESTAMP,
-          failed_login_attempts INTEGER DEFAULT 0,
-          account_locked_until TIMESTAMP,
           last_login TIMESTAMP,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
+
+      // Add missing columns if they don't exist
+      try {
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER DEFAULT 0`);
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS account_locked_until TIMESTAMP`);
+        console.log('✅ Added missing columns to users table');
+      } catch (error) {
+        console.log('ℹ️ Columns may already exist:', error.message);
+      }
 
       // User sessions table
       await this.run(`

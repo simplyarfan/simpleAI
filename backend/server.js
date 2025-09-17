@@ -68,28 +68,84 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Test endpoint
+// Test endpoint - comprehensive health check
 app.get('/api/test', async (req, res) => {
+  const results = {
+    success: true,
+    message: 'API Health Check',
+    timestamp: new Date().toISOString(),
+    checks: {}
+  };
+
+  try {
+    // Test 1: Database connection
+    await database.connect();
+    results.checks.database_connection = { status: 'OK', message: 'Connected' };
+
+    // Test 2: Users table exists and has data
+    const userCount = await database.get('SELECT COUNT(*) as count FROM users');
+    results.checks.users_table = { 
+      status: 'OK', 
+      count: parseInt(userCount.count),
+      message: `${userCount.count} users found`
+    };
+
+    // Test 3: Admin user exists
+    const adminUser = await database.get('SELECT email, role, first_name, last_name FROM users WHERE role = $1', ['superadmin']);
+    results.checks.admin_user = adminUser ? {
+      status: 'OK',
+      email: adminUser.email,
+      name: `${adminUser.first_name} ${adminUser.last_name}`,
+      message: 'Admin user found'
+    } : {
+      status: 'MISSING',
+      message: 'No admin user found'
+    };
+
+    // Test 4: Check if new columns exist
+    try {
+      await database.get('SELECT failed_login_attempts, account_locked_until FROM users LIMIT 1');
+      results.checks.table_schema = { status: 'OK', message: 'All required columns exist' };
+    } catch (error) {
+      results.checks.table_schema = { status: 'ERROR', message: error.message };
+    }
+
+    // Test 5: Routes loaded
+    results.checks.routes = {
+      status: authRoutes ? 'OK' : 'ERROR',
+      auth: !!authRoutes,
+      analytics: !!analyticsRoutes,
+      support: !!supportRoutes,
+      cv: !!cvRoutes,
+      notifications: !!notificationRoutes
+    };
+
+  } catch (error) {
+    results.success = false;
+    results.checks.database_connection = { status: 'ERROR', message: error.message };
+  }
+
+  res.json(results);
+});
+
+// Manual admin creation endpoint (for debugging)
+app.post('/api/create-admin', async (req, res) => {
   try {
     await database.connect();
-    const userCount = await database.get('SELECT COUNT(*) as count FROM users');
-    const adminUser = await database.get('SELECT email, role FROM users WHERE role = $1', ['superadmin']);
+    await database.createDefaultAdmin();
     
     res.json({
       success: true,
-      message: 'API is working!',
-      timestamp: new Date().toISOString(),
-      database: {
-        connected: true,
-        userCount: userCount.count,
-        adminUser: adminUser ? adminUser.email : 'Not found'
+      message: 'Admin user creation attempted',
+      credentials: {
+        email: 'syedarfan@securemaxtech.com',
+        password: 'admin123'
       }
     });
   } catch (error) {
-    res.json({
+    res.status(500).json({
       success: false,
-      message: 'API working but database issue',
-      timestamp: new Date().toISOString(),
+      message: 'Failed to create admin user',
       error: error.message
     });
   }
