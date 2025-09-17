@@ -207,9 +207,6 @@ export default function AnalyticsPage() {
                   <dt className="text-sm font-medium text-gray-500 truncate">Support Tickets</dt>
                   <dd className="flex items-baseline">
                     <div className="text-2xl font-semibold text-gray-900">{analytics.totalTickets}</div>
-                    <div className="ml-2 flex items-baseline text-sm font-semibold text-blue-600">
-                      <span className="text-xs">({analytics.openTickets} open)</span>
-                    </div>
                   </dd>
                 </dl>
               </div>

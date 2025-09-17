@@ -312,7 +312,7 @@ export default function SystemHealth() {
             </div>
           </div>
 
-          {/* System Components */}
+          {/* System Components and Recent Events */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-6">System Components</h3>
@@ -340,10 +340,8 @@ export default function SystemHealth() {
               </div>
             </div>
 
-          </div>
-
-          {/* Recent Events */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            {/* Recent Events */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-medium text-gray-900 mb-6">Recent System Events</h3>
             
             <div className="space-y-4">
@@ -387,6 +385,7 @@ export default function SystemHealth() {
                   No recent system events
                 </div>
               )}
+            </div>
             </div>
           </div>
         </main>
