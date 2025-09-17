@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useAuth } from '../contexts/AuthContext';
-import Header from '../components/Header';
+import Header from '../components/shared/Header';
 import {
   Upload,
   FileText,

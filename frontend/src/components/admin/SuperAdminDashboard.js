@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useAuth } from '../contexts/AuthContext';
-import { analyticsAPI, supportAPI } from '../utils/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { analyticsAPI, supportAPI } from '../../utils/api';
 import {
   Brain,
   FileText,

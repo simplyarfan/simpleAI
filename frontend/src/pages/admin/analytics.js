@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
+import { analyticsAPI } from '../../utils/api';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -16,6 +17,27 @@ import {
   Zap
 } from 'lucide-react';
 
+// Dynamic data generation functions
+const generateMockChartData = () => {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  return days.map(day => ({
+    name: day,
+    users: Math.floor(Math.random() * 50) + 20 // Random users between 20-70
+  }));
+};
+
+const generateUserAnalytics = (totalUsers) => {
+  const superadminCount = Math.floor(totalUsers * 0.05) || 1;
+  const adminCount = Math.floor(totalUsers * 0.15) || 2;
+  const userCount = totalUsers - superadminCount - adminCount;
+  
+  return [
+    { role: 'superadmin', count: superadminCount },
+    { role: 'admin', count: adminCount },
+    { role: 'user', count: userCount }
+  ];
+};
+
 export default function AnalyticsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -28,6 +50,10 @@ export default function AnalyticsPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('7d');
+
+  // Generate dynamic data
+  const mockChartData = generateMockChartData();
+  const userAnalytics = generateUserAnalytics(analytics.totalUsers);
 
   useEffect(() => {
     if (!loading) {
