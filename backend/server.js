@@ -722,12 +722,22 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Initialize database
-const initializeDatabase = async () => {
+// Initialize database and start server
+const initializeApp = async () => {
   try {
     console.log('🔗 Connecting to Neon PostgreSQL database...');
     await database.connect();
     console.log('✅ Database connected and initialized');
+    
+    if (!process.env.VERCEL) {
+      app.listen(PORT, () => {
+        console.log(`✅ Server running on http://localhost:${PORT}`);
+        console.log(`📖 API Documentation: http://localhost:${PORT}/api`);
+        console.log(`🔍 Health Check: http://localhost:${PORT}/health`);
+      });
+    } else {
+      console.log('✅ Running on Vercel serverless environment');
+    }
   } catch (error) {
     console.error('❌ Database initialization failed:', error.message);
     if (process.env.NODE_ENV !== 'production') {
@@ -736,28 +746,28 @@ const initializeDatabase = async () => {
   }
 };
 
-// Start server
-const startServer = async () => {
-  await initializeDatabase();
-  
-  if (!process.env.VERCEL) {
-    app.listen(PORT, () => {
-      console.log(`✅ Server running on http://localhost:${PORT}`);
-      console.log(`📖 API Documentation: http://localhost:${PORT}/api`);
-      console.log(`🔍 Health Check: http://localhost:${PORT}/health`);
-    });
-  } else {
-    console.log('✅ Running on Vercel serverless environment');
-  }
-};
-
-// For Vercel serverless
+// Initialize for both local and serverless
 if (process.env.VERCEL) {
-  initializeDatabase().catch(error => {
-    console.error('Vercel database initialization error:', error);
+  // For Vercel, initialize on first request
+  let initialized = false;
+  const originalApp = app;
+  
+  app.use(async (req, res, next) => {
+    if (!initialized) {
+      try {
+        await database.connect();
+        initialized = true;
+        console.log('✅ Vercel serverless database initialized');
+      } catch (error) {
+        console.error('❌ Vercel database init error:', error);
+      }
+    }
+    next();
   });
+} else {
+  // For local development
+  initializeApp();
 }
 
-startServer().catch(console.error);
-
+// For Vercel serverless - Export the app
 module.exports = app;
