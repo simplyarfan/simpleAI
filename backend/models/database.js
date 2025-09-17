@@ -143,6 +143,8 @@ class Database {
           verification_expiry TIMESTAMP,
           reset_token VARCHAR(255),
           reset_token_expiry TIMESTAMP,
+          failed_login_attempts INTEGER DEFAULT 0,
+          account_locked_until TIMESTAMP,
           last_login TIMESTAMP,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

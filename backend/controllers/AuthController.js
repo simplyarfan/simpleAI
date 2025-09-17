@@ -100,17 +100,8 @@ const register = async (req, res) => {
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
     ]);
 
-    // Log successful registration
-    await database.run(`
-      INSERT INTO audit_logs (user_id, action, resource_type, ip_address, user_agent)
-      VALUES ($1, $2, $3, $4, $5)
-    `, [
-      newUser.id,
-      'user_registered',
-      'user',
-      req.ip,
-      req.get('User-Agent') || 'Unknown'
-    ]);
+    // Log successful registration (simplified)
+    console.log(`✅ User registered: ${newUser.email}`);
 
     res.status(201).json({
       success: true,
@@ -240,28 +231,18 @@ const login = async (req, res) => {
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     ]);
 
-    // Log successful login
-    await database.run(`
-      INSERT INTO audit_logs (user_id, action, resource_type, ip_address, user_agent)
-      VALUES ($1, $2, $3, $4, $5)
-    `, [
-      user.id,
-      'user_login',
-      'user',
-      req.ip,
-      req.get('User-Agent') || 'Unknown'
-    ]);
+    // Log successful login (simplified)
+    console.log(`✅ User login: ${user.email} (${user.role})`);
 
     res.json({
       success: true,
       message: 'Login successful',
-      accessToken,
+      token: accessToken,
       refreshToken,
       user: {
         id: user.id,
         email: user.email,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        name: `${user.first_name} ${user.last_name}`,
         role: user.role,
         department: user.department,
         job_title: user.job_title
@@ -292,18 +273,9 @@ const logout = async (req, res) => {
         UPDATE user_sessions SET is_active = false WHERE session_token = $1
       `, [token]);
       
-      // Log logout
+      // Log logout (simplified)
       if (req.user) {
-        await database.run(`
-          INSERT INTO audit_logs (user_id, action, resource_type, ip_address, user_agent)
-          VALUES ($1, $2, $3, $4, $5)
-        `, [
-          req.user.id,
-          'user_logout',
-          'user',
-          req.ip,
-          req.get('User-Agent') || 'Unknown'
-        ]);
+        console.log(`✅ User logout: ${req.user.email}`);
       }
     }
 
