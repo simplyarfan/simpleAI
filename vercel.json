@@ -15,7 +15,11 @@
       "dest": "/backend/server.js"
     },
     {
-      "src": "/(.*)",
+      "src": "/health",
+      "dest": "/backend/server.js"
+    },
+    {
+      "src": "/",
       "dest": "/backend/server.js"
     }
   ],
