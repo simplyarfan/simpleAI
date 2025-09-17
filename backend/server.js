@@ -267,11 +267,7 @@ app.get('/api/system/metrics', async (req, res) => {
         cpuUsage: Math.floor(Math.random() * 30) + 15,
         memoryUsage: Math.floor((memUsage.heapUsed / memUsage.heapTotal) * 100),
         diskUsage: Math.floor(Math.random() * 20) + 25,
-        recentEvents: [
-          { type: 'info', message: 'System backup completed successfully', time: '5 minutes ago' },
-          { type: 'warning', message: 'High memory usage detected (85%)', time: '15 minutes ago' },
-          { type: 'info', message: 'Database optimization completed', time: '1 hour ago' }
-        ]
+        recentEvents: []
       }
     });
   } catch (error) {

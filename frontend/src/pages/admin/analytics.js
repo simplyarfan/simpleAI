@@ -200,16 +200,15 @@ export default function AnalyticsPage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <Eye className="h-8 w-8 text-purple-600" />
+                <MessageSquare className="h-8 w-8 text-orange-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">CV Batches</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Support Tickets</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">{analytics.totalBatches}</div>
-                    <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                      <TrendingUp className="w-3 h-3 mr-1" />
-                      +15%
+                    <div className="text-2xl font-semibold text-gray-900">{analytics.totalTickets}</div>
+                    <div className="ml-2 flex items-baseline text-sm font-semibold text-blue-600">
+                      <span className="text-xs">({analytics.openTickets} open)</span>
                     </div>
                   </dd>
                 </dl>

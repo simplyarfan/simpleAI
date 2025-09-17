@@ -408,26 +408,46 @@ export default function SystemHealth() {
             <h3 className="text-lg font-medium text-gray-900 mb-6">Recent System Events</h3>
             
             <div className="space-y-4">
-              {[
-                { type: 'info', message: 'System backup completed successfully', time: '5 minutes ago', icon: CheckCircle, color: 'text-green-600' },
-                { type: 'warning', message: 'High memory usage detected (85%)', time: '15 minutes ago', icon: AlertTriangle, color: 'text-yellow-600' },
-                { type: 'info', message: 'Database optimization completed', time: '1 hour ago', icon: Database, color: 'text-blue-600' },
-                { type: 'info', message: 'SSL certificate renewed', time: '2 hours ago', icon: Wifi, color: 'text-green-600' },
-                { type: 'error', message: 'Temporary API slowdown resolved', time: '4 hours ago', icon: Server, color: 'text-red-600' }
-              ].map((event, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 border border-gray-200 rounded-lg">
-                  <div className={`flex-shrink-0 ${event.color}`}>
-                    <event.icon className="w-5 h-5" />
+              {Array.isArray(recentEvents) && recentEvents.length > 0 ? recentEvents.map((event, index) => {
+                const getEventIcon = (type) => {
+                  switch (type) {
+                    case 'info': return CheckCircle;
+                    case 'warning': return AlertTriangle;
+                    case 'error': return AlertTriangle;
+                    default: return CheckCircle;
+                  }
+                };
+                
+                const getEventColor = (type) => {
+                  switch (type) {
+                    case 'info': return 'text-blue-600';
+                    case 'warning': return 'text-yellow-600';
+                    case 'error': return 'text-red-600';
+                    default: return 'text-gray-600';
+                  }
+                };
+                
+                const EventIcon = getEventIcon(event.type);
+                
+                return (
+                  <div key={index} className="flex items-start space-x-3 p-3 border border-gray-200 rounded-lg">
+                    <div className={`flex-shrink-0 ${getEventColor(event.type)}`}>
+                      <EventIcon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-900">{event.message}</p>
+                      <p className="text-xs text-gray-500 mt-1 flex items-center">
+                        <Clock className="w-3 h-3 mr-1" />
+                        {event.time}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900">{event.message}</p>
-                    <p className="text-xs text-gray-500 mt-1 flex items-center">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {event.time}
-                    </p>
-                  </div>
+                );
+              }) : (
+                <div className="text-center text-gray-500 py-8">
+                  No recent system events
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </main>

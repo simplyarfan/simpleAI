@@ -14,7 +14,7 @@ class AnalyticsController {
       const stats = await database.get(`
         SELECT 
           (SELECT COUNT(*) FROM users) as total_users,
-          (SELECT COUNT(*) FROM users WHERE is_active = true) as active_users,
+          (SELECT COUNT(*) FROM users WHERE last_login >= CURRENT_DATE - INTERVAL '30 days') as active_users,
           (SELECT COUNT(*) FROM cv_batches) as total_batches,
           (SELECT COUNT(*) FROM support_tickets) as total_tickets,
           (SELECT COUNT(*) FROM support_tickets WHERE status = 'open') as open_tickets
