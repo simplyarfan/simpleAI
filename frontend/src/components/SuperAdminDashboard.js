@@ -244,13 +244,6 @@ const SuperAdminDashboard = () => {
             </div>
           </div>
 
-          {/* Simplified Stats Overview - No Analytics */}
-          <div className="mb-8">
-            <div className="text-center py-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">System Overview</h2>
-              <p className="text-gray-600">Use the admin tools below to manage your system</p>
-            </div>
-          </div>
 
           {/* Admin Tools */}
           <div className="px-4 py-6 sm:px-0">

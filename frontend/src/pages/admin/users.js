@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import Header from '../../components/Header';
+import Head from 'next/head';
 import { authAPI } from '../../utils/api';
+import toast from 'react-hot-toast';
 import { 
   Users, 
   UserPlus, 
@@ -15,7 +16,13 @@ import {
   CheckCircle,
   XCircle,
   Mail,
-  Calendar
+  Calendar,
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Building2,
+  Briefcase,
+  X
 } from 'lucide-react';
 
 export default function UsersManagement() {
@@ -27,6 +34,25 @@ export default function UsersManagement() {
   const [filterRole, setFilterRole] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  
+  // Modal states
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  
+  // Form states
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    first_name: '',
+    last_name: '',
+    department: '',
+    job_title: '',
+    role: 'user'
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!loading) {
@@ -34,45 +60,152 @@ export default function UsersManagement() {
         router.push('/auth/login');
       } else if (user.role !== 'superadmin') {
         router.push('/');
+      } else {
+        fetchUsers();
       }
     }
   }, [user, loading, router]);
-
-  useEffect(() => {
-    fetchUsers();
-  }, [currentPage, searchTerm, filterRole]);
 
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
       const response = await authAPI.getAllUsers({
         page: currentPage,
-        limit: 20,
         search: searchTerm,
         role: filterRole === 'all' ? undefined : filterRole
       });
-
-      if (response.data?.success) {
-        setUsers(response.data.data.users || []);
-        setTotalPages(response.data.data.pagination?.totalPages || 1);
+      
+      if (response.data.success) {
+        setUsers(response.data.users || []);
+        setTotalPages(response.data.totalPages || 1);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error('Failed to fetch users:', error);
+      toast.error('Failed to load users');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      try {
-        await authAPI.deleteUser(userId);
-        fetchUsers(); // Refresh the list
-      } catch (error) {
-        console.error('Error deleting user:', error);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      email: '',
+      password: '',
+      first_name: '',
+      last_name: '',
+      department: '',
+      job_title: '',
+      role: 'user'
+    });
+    setShowPassword(false);
+  };
+
+  const handleAddUser = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      // Validate email domain
+      if (!formData.email.endsWith('@securemaxtech.com')) {
+        toast.error('Email must be from @securemaxtech.com domain');
+        return;
       }
+
+      const response = await authAPI.createUser(formData);
+      
+      if (response.data.success) {
+        toast.success('User created successfully!');
+        setShowAddModal(false);
+        resetForm();
+        fetchUsers();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to create user');
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const handleEditUser = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      const updateData = { ...formData };
+      delete updateData.password; // Don't update password in edit
+      
+      const response = await authAPI.updateUser(selectedUser.id, updateData);
+      
+      if (response.data.success) {
+        toast.success('User updated successfully!');
+        setShowEditModal(false);
+        setSelectedUser(null);
+        resetForm();
+        fetchUsers();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update user');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      setIsSubmitting(true);
+      
+      const response = await authAPI.deleteUser(selectedUser.id);
+      
+      if (response.data.success) {
+        toast.success('User deleted successfully!');
+        setShowDeleteModal(false);
+        setSelectedUser(null);
+        fetchUsers();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete user');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openEditModal = (userToEdit) => {
+    setSelectedUser(userToEdit);
+    setFormData({
+      email: userToEdit.email,
+      password: '',
+      first_name: userToEdit.first_name,
+      last_name: userToEdit.last_name,
+      department: userToEdit.department || '',
+      job_title: userToEdit.job_title || '',
+      role: userToEdit.role
+    });
+    setShowEditModal(true);
+  };
+
+  const openDeleteModal = (userToDelete) => {
+    setSelectedUser(userToDelete);
+    setShowDeleteModal(true);
+  };
+
+  // Filter users based on search and role
+  const filteredUsers = users.filter(u => {
+    const matchesSearch = !searchTerm || 
+      u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = filterRole === 'all' || u.role === filterRole;
+    
+    return matchesSearch && matchesRole;
+  });
+
+  useEffect(() => {
+    fetchUsers();
+  }, [currentPage, searchTerm, filterRole]);
 
   if (loading || !user) {
     return (
@@ -88,28 +221,43 @@ export default function UsersManagement() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Head>
+        <title>User Management - Enterprise AI Hub</title>
+        <meta name="description" content="Manage user accounts, roles, and permissions" />
+      </Head>
       
-      <main className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <Users className="w-8 h-8 mr-3 text-blue-600" />
-                  User Management
-                </h1>
-                <p className="mt-2 text-gray-600">
-                  Manage user accounts, roles, and permissions
-                </p>
-              </div>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Add User
-              </button>
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* Back to Dashboard Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/superadmin')}
+            className="flex items-center text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </button>
+        </div>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                <Users className="w-8 h-8 mr-3 text-blue-600" />
+                User Management
+              </h1>
+              <p className="mt-2 text-gray-600">
+                Manage user accounts, roles, and permissions
+              </p>
             </div>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Add User
+            </button>
           </div>
+        </div>
 
           {/* Filters */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
