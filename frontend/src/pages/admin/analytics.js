@@ -17,26 +17,7 @@ import {
   Zap
 } from 'lucide-react';
 
-// Dynamic data generation functions
-const generateMockChartData = () => {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  return days.map(day => ({
-    name: day,
-    users: Math.floor(Math.random() * 50) + 20 // Random users between 20-70
-  }));
-};
-
-const generateUserAnalytics = (totalUsers) => {
-  const superadminCount = Math.floor(totalUsers * 0.05) || 1;
-  const adminCount = Math.floor(totalUsers * 0.15) || 2;
-  const userCount = totalUsers - superadminCount - adminCount;
-  
-  return [
-    { role: 'superadmin', count: superadminCount },
-    { role: 'admin', count: adminCount },
-    { role: 'user', count: userCount }
-  ];
-};
+// Dynamic data will be fetched from API
 
 export default function AnalyticsPage() {
   const { user, loading } = useAuth();
@@ -50,10 +31,8 @@ export default function AnalyticsPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [timeframe, setTimeframe] = useState('7d');
-
-  // Generate dynamic data
-  const mockChartData = generateMockChartData();
-  const userAnalytics = generateUserAnalytics(analytics.totalUsers);
+  const [chartData, setChartData] = useState([]);
+  const [userAnalytics, setUserAnalytics] = useState([]);
 
   useEffect(() => {
     if (!loading) {
@@ -70,21 +49,47 @@ export default function AnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       setIsLoading(true);
-      const response = await analyticsAPI.getDashboard();
       
-      if (response.data.success) {
-        setAnalytics(response.data.data);
+      // Fetch multiple analytics endpoints
+      const [dashboardResponse, userAnalyticsResponse, chartDataResponse] = await Promise.all([
+        analyticsAPI.getDashboard(),
+        analyticsAPI.getUserAnalytics({ timeframe }),
+        analyticsAPI.getCVAnalytics({ timeframe })
+      ]);
+      
+      if (dashboardResponse.data.success) {
+        const data = dashboardResponse.data.data;
+        setAnalytics({
+          totalUsers: data.totalUsers || 0,
+          activeUsers: data.activeUsers || 0,
+          totalBatches: data.totalBatches || 0,
+          systemHealth: data.systemHealth || 'Good',
+          usageData: data.usageData || [],
+          recentActivity: data.recentActivity || []
+        });
       }
+      
+      if (userAnalyticsResponse.data.success) {
+        setUserAnalytics(userAnalyticsResponse.data.data || []);
+      }
+      
+      if (chartDataResponse.data.success) {
+        setChartData(chartDataResponse.data.data || []);
+      }
+      
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
-      // Set default/empty data on error
+      // Set fallback data on error
       setAnalytics({
         totalUsers: 0,
         activeUsers: 0,
+        totalBatches: 0,
         systemHealth: 'Unknown',
         usageData: [],
         recentActivity: []
       });
+      setUserAnalytics([]);
+      setChartData([]);
     } finally {
       setIsLoading(false);
     }
@@ -249,7 +254,7 @@ export default function AnalyticsPage() {
             
             {/* Simple Bar Chart Representation */}
             <div className="space-y-4">
-              {mockChartData.map((day, index) => (
+              {chartData.map((day, index) => (
                 <div key={day.name} className="flex items-center space-x-4">
                   <div className="w-8 text-sm text-gray-600">{day.name}</div>
                   <div className="flex-1 flex items-center space-x-2">

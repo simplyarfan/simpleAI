@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
+import { systemAPI } from '../../utils/api';
 import Head from 'next/head';
 import { 
   Activity, 
@@ -31,17 +32,17 @@ export default function SystemHealth() {
     storage: 'healthy',
     memory: 'healthy'
   });
-  const [systemHealth, setSystemHealth] = useState({
-    status: 'healthy',
-    uptime: '99.9%',
-    responseTime: '120ms',
-    apiCalls: 15420,
-    errorRate: '0.1%',
-    activeUsers: 89,
-    components: [],
-    metrics: {},
-    recentEvents: []
+  const [metrics, setMetrics] = useState({
+    uptime: '0.0 days',
+    responseTime: '0ms',
+    apiCalls: 0,
+    errorRate: '0%',
+    activeUsers: 0,
+    cpuUsage: 0,
+    memoryUsage: 0,
+    diskUsage: 0
   });
+  const [recentEvents, setRecentEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
@@ -64,25 +65,43 @@ export default function SystemHealth() {
   const fetchSystemHealth = async () => {
     try {
       setIsLoading(true);
-      const response = await systemAPI.getHealth();
       
-      if (response.data?.success) {
-        // Update system status based on API response
+      // Fetch multiple system metrics
+      const [healthResponse, metricsResponse] = await Promise.all([
+        systemAPI.getHealth(),
+        systemAPI.getMetrics()
+      ]);
+      
+      if (healthResponse.data?.success) {
+        const healthData = healthResponse.data.data;
         setSystemStatus({
-          overall: response.data.status === 'healthy' ? 'healthy' : 'warning',
-          api: 'healthy',
-          database: response.data.database === 'connected' ? 'healthy' : 'error',
-          storage: 'healthy',
-          memory: 'healthy'
+          overall: healthData.overall || 'healthy',
+          api: healthData.api || 'healthy',
+          database: healthData.database || 'healthy',
+          storage: healthData.storage || 'healthy',
+          memory: healthData.memory || 'healthy'
+        });
+      }
+      
+      if (metricsResponse.data?.success) {
+        const metricsData = metricsResponse.data.data;
+        setMetrics({
+          uptime: metricsData.uptime || '0.0 days',
+          responseTime: metricsData.responseTime || '0ms',
+          apiCalls: metricsData.apiCalls || 0,
+          errorRate: metricsData.errorRate || '0%',
+          activeUsers: metricsData.activeUsers || 0,
+          cpuUsage: metricsData.cpuUsage || 0,
+          memoryUsage: metricsData.memoryUsage || 0,
+          diskUsage: metricsData.diskUsage || 0
         });
         
-        setMetrics(prev => ({
-          ...prev,
-          uptime: response.data.uptime ? `${(response.data.uptime / 86400).toFixed(1)} days` : prev.uptime
-        }));
+        setRecentEvents(metricsData.recentEvents || []);
       }
+      
     } catch (error) {
       console.error('Error fetching system health:', error);
+      // Set error status for API
       setSystemStatus(prev => ({
         ...prev,
         overall: 'warning',
