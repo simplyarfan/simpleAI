@@ -4,23 +4,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = path.join(process.env.UPLOAD_PATH || './uploads', 'cv_batches');
-    // Create directory if it doesn't exist
-    fs.mkdir(uploadPath, { recursive: true }).then(() => {
-      cb(null, uploadPath);
-    }).catch(err => {
-      console.error('Error creating upload directory:', err);
-      cb(err);
-    });
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configure multer for file uploads (memory storage for serverless)
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
