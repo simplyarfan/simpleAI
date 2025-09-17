@@ -6,25 +6,34 @@ require('dotenv').config();
 // Import database
 const database = require('./models/database');
 
-// Import routes
-const authRoutes = require('./routes/auth');
-const analyticsRoutes = require('./routes/analytics');
-const supportRoutes = require('./routes/support');
-const cvRoutes = require('./routes/cv-intelligence');
-const notificationRoutes = require('./routes/notifications');
+// Import routes (with error handling)
+let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes;
+try {
+  authRoutes = require('./routes/auth');
+  analyticsRoutes = require('./routes/analytics');
+  supportRoutes = require('./routes/support');
+  cvRoutes = require('./routes/cv-intelligence');
+  notificationRoutes = require('./routes/notifications');
+  console.log('✅ All routes loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading routes:', error.message);
+}
 
-// Import middleware
-const { performanceMonitor } = require('./middleware/performance');
+// Simple request logger middleware
+const requestLogger = (req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+};
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 console.log('🚀 Starting SimpleAI Enterprise Backend...');
 
-// Initialize database connection
+// Initialize database connection (non-blocking)
 database.connect().catch(error => {
-  console.error('❌ Failed to connect to database:', error);
-  process.exit(1);
+  console.error('❌ Database connection failed:', error);
+  // Don't exit process, let it continue for health checks
 });
 
 // CORS Configuration
@@ -42,7 +51,7 @@ app.use(cors({
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use(performanceMonitor);
+app.use(requestLogger);
 
 // Trust proxy for accurate IP addresses
 app.set('trust proxy', true);
@@ -76,12 +85,12 @@ app.get('/', (req, res) => {
   });
 });
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/support', supportRoutes);
-app.use('/api/cv-intelligence', cvRoutes);
-app.use('/api/notifications', notificationRoutes);
+// API Routes (conditional)
+if (authRoutes) app.use('/api/auth', authRoutes);
+if (analyticsRoutes) app.use('/api/analytics', analyticsRoutes);
+if (supportRoutes) app.use('/api/support', supportRoutes);
+if (cvRoutes) app.use('/api/cv-intelligence', cvRoutes);
+if (notificationRoutes) app.use('/api/notifications', notificationRoutes);
 
 // Simple endpoints for basic functionality (fallback)
 app.get('/api/users', async (req, res) => {
