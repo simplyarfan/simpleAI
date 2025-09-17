@@ -77,17 +77,7 @@ export default function AnalyticsPage() {
       }
       
       if (chartDataResponse.data.success) {
-        // Generate mock chart data for now
-        const mockChartData = [
-          { name: 'Mon', users: 45 },
-          { name: 'Tue', users: 52 },
-          { name: 'Wed', users: 61 },
-          { name: 'Thu', users: 38 },
-          { name: 'Fri', users: 55 },
-          { name: 'Sat', users: 42 },
-          { name: 'Sun', users: 48 }
-        ];
-        setChartData(mockChartData);
+        setChartData(chartDataResponse.data.data || []);
       }
       
     } catch (error) {
@@ -329,51 +319,41 @@ export default function AnalyticsPage() {
           <h3 className="text-lg font-medium text-gray-900 mb-6">Recent Activity</h3>
           
           <div className="flow-root">
-            <ul className="-mb-8">
-              {[
-                { action: 'New user registered', user: 'john@securemaxtech.com', time: '2 minutes ago', type: 'user' },
-                { action: 'CV batch processed', user: 'jane@securemaxtech.com', time: '15 minutes ago', type: 'cv' },
-                { action: 'Support ticket created', user: 'mike@securemaxtech.com', time: '1 hour ago', type: 'ticket' },
-                { action: 'Analytics report generated', user: 'admin@securemaxtech.com', time: '2 hours ago', type: 'report' },
-                { action: 'System backup completed', user: 'System', time: '4 hours ago', type: 'system' }
-              ].map((activity, index) => (
-                <li key={index}>
-                  <div className="relative pb-8">
-                    {index !== 4 && (
-                      <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"></span>
-                    )}
-                    <div className="relative flex space-x-3">
-                      <div>
-                        <span className={`h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white ${
-                          activity.type === 'user' ? 'bg-blue-500' :
-                          activity.type === 'cv' ? 'bg-green-500' :
-                          activity.type === 'ticket' ? 'bg-orange-500' :
-                          activity.type === 'report' ? 'bg-purple-500' :
-                          'bg-gray-500'
-                        }`}>
-                          {activity.type === 'user' && <Users className="w-4 h-4 text-white" />}
-                          {activity.type === 'cv' && <Eye className="w-4 h-4 text-white" />}
-                          {activity.type === 'ticket' && <MousePointer className="w-4 h-4 text-white" />}
-                          {activity.type === 'report' && <BarChart3 className="w-4 h-4 text-white" />}
-                          {activity.type === 'system' && <Activity className="w-4 h-4 text-white" />}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+            {Array.isArray(analytics.recentActivity) && analytics.recentActivity.length > 0 ? (
+              <ul className="-mb-8">
+                {analytics.recentActivity.map((activity, index) => (
+                  <li key={index}>
+                    <div className="relative pb-8">
+                      {index !== analytics.recentActivity.length - 1 && (
+                        <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"></span>
+                      )}
+                      <div className="relative flex space-x-3">
                         <div>
-                          <p className="text-sm text-gray-500">
-                            {activity.action} by <span className="font-medium text-gray-900">{activity.user}</span>
-                          </p>
+                          <span className="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white bg-blue-500">
+                            <Activity className="w-4 h-4 text-white" />
+                          </span>
                         </div>
-                        <div className="text-right text-sm whitespace-nowrap text-gray-500 flex items-center">
-                          <Clock className="w-3 h-3 mr-1" />
-                          {activity.time}
+                        <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                          <div>
+                            <p className="text-sm text-gray-500">
+                              {activity.action} by <span className="font-medium text-gray-900">{activity.details}</span>
+                            </p>
+                          </div>
+                          <div className="text-right text-sm whitespace-nowrap text-gray-500 flex items-center">
+                            <Clock className="w-3 h-3 mr-1" />
+                            {new Date(activity.timestamp).toLocaleString()}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-center text-gray-500 py-8">
+                No recent activity data available
+              </div>
+            )}
           </div>
         </div>
       </main>

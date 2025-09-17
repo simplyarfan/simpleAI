@@ -268,6 +268,7 @@ export default function TicketsManagement() {
                   <dt className="text-sm font-medium text-gray-500 truncate">In Progress</dt>
                   <dd className="text-lg font-medium text-gray-900">{stats.inProgress}</dd>
                 </dl>
+              </div>
             </div>
           </div>
 
@@ -282,9 +283,9 @@ export default function TicketsManagement() {
                   <dd className="text-lg font-medium text-gray-900">{stats.closed}</dd>
                 </dl>
               </div>
-              </div>
             </div>
           </div>
+        </div>
 
           {/* Filters */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -440,7 +441,6 @@ export default function TicketsManagement() {
               </table>
             </div>
           </div>
-        </div>
 
         {/* Response Modal */}
         {showResponseModal && selectedTicket && (
