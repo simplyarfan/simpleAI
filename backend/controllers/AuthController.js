@@ -133,25 +133,33 @@ const register = async (req, res) => {
 // Login user - Enterprise Grade
 const login = async (req, res) => {
   try {
+    console.log('🔐 Login attempt received:', { email: req.body.email, hasPassword: !!req.body.password });
+    
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.log('❌ Missing email or password');
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
       });
     }
 
+    console.log('🔗 Connecting to database...');
     await database.connect();
+    console.log('✅ Database connected');
 
     // Get user with security checks
+    console.log('🔍 Looking for user:', email.toLowerCase());
     const user = await database.get(`
       SELECT id, email, password_hash, first_name, last_name, role, 
              department, job_title, is_active, failed_login_attempts, account_locked_until
       FROM users WHERE email = $1
     `, [email.toLowerCase()]);
 
+    console.log('👤 User found:', user ? 'YES' : 'NO');
     if (!user) {
+      console.log('❌ User not found in database');
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -175,9 +183,12 @@ const login = async (req, res) => {
     }
 
     // Verify password
+    console.log('🔐 Verifying password...');
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    console.log('🔐 Password valid:', isPasswordValid);
     
     if (!isPasswordValid) {
+      console.log('❌ Invalid password for user:', email);
       // Increment failed login attempts
       const newFailedAttempts = (user.failed_login_attempts || 0) + 1;
       let lockUntil = null;
@@ -250,7 +261,11 @@ const login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     res.status(500).json({
       success: false,
       message: 'Login failed',

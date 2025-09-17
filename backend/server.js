@@ -68,6 +68,33 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Test endpoint
+app.get('/api/test', async (req, res) => {
+  try {
+    await database.connect();
+    const userCount = await database.get('SELECT COUNT(*) as count FROM users');
+    const adminUser = await database.get('SELECT email, role FROM users WHERE role = $1', ['superadmin']);
+    
+    res.json({
+      success: true,
+      message: 'API is working!',
+      timestamp: new Date().toISOString(),
+      database: {
+        connected: true,
+        userCount: userCount.count,
+        adminUser: adminUser ? adminUser.email : 'Not found'
+      }
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: 'API working but database issue',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
