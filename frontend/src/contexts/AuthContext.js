@@ -69,8 +69,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       console.log('📝 Starting registration...', { email: userData.email });
 
-      // Use the working simple registration endpoint
-      const response = await fetch(`${API_BASE}/api/register-simple`, {
+      // Use the proper authentication endpoint
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -139,8 +139,8 @@ export const AuthProvider = ({ children }) => {
         cacheBuster: CACHE_BUSTER
       });
 
-      // Use the working simple login endpoint
-      const response = await fetch(`${API_BASE}/api/login-simple`, {
+      // Use the proper authentication endpoint
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

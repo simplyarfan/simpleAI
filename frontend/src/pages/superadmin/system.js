@@ -134,18 +134,32 @@ const SystemHealthPage = () => {
         {/* System Status Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {Object.entries(systemStatus).map(([key, status]) => (
-            <div key={key} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 capitalize">
-                    {key.replace(/([A-Z])/g, ' $1').trim()}
-                  </h3>
-                  <p className={`text-lg font-semibold ${getStatusColor(status)}`}>
-                    {status}
-                  </p>
-                </div>
-                <div className="text-2xl">
-                  {getStatusIcon(status)}
+            <div key={key} className="bg-white overflow-hidden shadow-lg rounded-lg">
+              <div className="p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      status.toLowerCase() === 'operational' ? 'bg-green-100' :
+                      status.toLowerCase() === 'degraded' ? 'bg-yellow-100' : 'bg-red-100'
+                    }`}>
+                      <div className={`text-lg ${
+                        status.toLowerCase() === 'operational' ? 'text-green-600' :
+                        status.toLowerCase() === 'degraded' ? 'text-yellow-600' : 'text-red-600'
+                      }`}>
+                        {getStatusIcon(status)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="ml-5 w-0 flex-1">
+                    <dl>
+                      <dt className="text-sm font-medium text-gray-500 truncate">
+                        {key.replace(/([A-Z])/g, ' $1').trim()}
+                      </dt>
+                      <dd className={`text-lg font-semibold ${getStatusColor(status)}`}>
+                        {status}
+                      </dd>
+                    </dl>
+                  </div>
                 </div>
               </div>
             </div>

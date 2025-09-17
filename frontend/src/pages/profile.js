@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/Header';
 import { authAPI } from '../utils/api';
-import { User, Mail, Lock, Save, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Save, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, loading, updateUser } = useAuth();
@@ -138,6 +138,17 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Back to Dashboard Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push(user?.role === 'superadmin' ? '/superadmin' : '/')}
+            className="flex items-center text-gray-600 hover:text-gray-900 transition-colors duration-200"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Dashboard
+          </button>
+        </div>
+
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
             <div className="mb-6">

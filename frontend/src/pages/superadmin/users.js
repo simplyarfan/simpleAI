@@ -48,15 +48,14 @@ export default function UserManagementPage() {
       setIsLoading(true);
       console.log('Fetching users list...');
       
-      // Use the working simple endpoint instead of broken middleware endpoint
-      const response = await fetch('/api/users-simple');
-      const data = await response.json();
-      console.log('Users API response:', data);
+      // Use the proper authAPI endpoint
+      const response = await authAPI.getAllUsers();
+      console.log('Users API response:', response);
       
-      if (data?.success) {
-        setUsers(data.data?.users || []);
+      if (response.data?.success) {
+        setUsers(response.data.data?.users || []);
       } else {
-        console.error('Failed to fetch users:', data);
+        console.error('Failed to fetch users:', response.data);
         setUsers([]);
       }
     } catch (error) {
