@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
-import RegularDashboard from '../components/RegularDashboard';
+import RegularDashboard from '../components/user/RegularDashboard';
 import Login from './auth/login';
 
 const Dashboard = () => {

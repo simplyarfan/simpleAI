@@ -1,7 +1,7 @@
 import '../styles/globals.css'
 import { AuthProvider } from '../contexts/AuthContext'
 import { Toaster } from 'react-hot-toast'
-import ErrorBoundary from '../components/ErrorBoundary'
+import ErrorBoundary from '../components/shared/ErrorBoundary'
 
 export default function App({ Component, pageProps }) {
   return (

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
+import { supportAPI } from '../../utils/api';
+import toast from 'react-hot-toast';
 import { 
   MessageSquare, 
   Plus, 
@@ -193,19 +195,13 @@ export default function TicketsManagement() {
               <p className="mt-2 text-gray-600">
                 Manage user support requests and tickets
               </p>
-                  <MessageSquare className="w-8 h-8 mr-3 text-orange-600" />
-                  Support Tickets
-                </h1>
-                <p className="mt-2 text-gray-600">
-                  Manage user support requests and tickets
-                </p>
-              </div>
-              <button className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center">
-                <Plus className="w-4 h-4 mr-2" />
-                New Ticket
-              </button>
             </div>
+            <button className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center">
+              <Plus className="w-4 h-4 mr-2" />
+              New Ticket
+            </button>
           </div>
+        </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

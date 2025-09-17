@@ -204,8 +204,10 @@ export default function UsersManagement() {
   });
 
   useEffect(() => {
-    fetchUsers();
-  }, [currentPage, searchTerm, filterRole]);
+    if (user && user.role === 'superadmin') {
+      fetchUsers();
+    }
+  }, [currentPage, searchTerm, filterRole, user]);
 
   if (loading || !user) {
     return (

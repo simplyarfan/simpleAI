@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
-import SuperAdminDashboard from '../components/SuperAdminDashboard';
-import Header from '../components/Header';
+import SuperAdminDashboard from '../components/admin/SuperAdminDashboard';
+import Header from '../components/shared/Header';
 
 export default function SuperAdminPage() {
   const { user, loading } = useAuth();
