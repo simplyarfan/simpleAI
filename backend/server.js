@@ -180,15 +180,18 @@ app.get('/api/debug/user', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.json({ success: false, message: 'No auth header' });
+      return res.json({ success: false, message: 'No auth header', headers: req.headers });
     }
     
     const token = authHeader.split(' ')[1];
     if (!token) {
-      return res.json({ success: false, message: 'No token' });
+      return res.json({ success: false, message: 'No token', authHeader });
     }
     
     const jwt = require('jsonwebtoken');
+    console.log('🔍 [DEBUG] Token received:', token.substring(0, 20) + '...');
+    console.log('🔍 [DEBUG] JWT_SECRET:', process.env.JWT_SECRET ? 'present' : 'missing');
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     
     await database.connect();
@@ -198,7 +201,60 @@ app.get('/api/debug/user', async (req, res) => {
       success: true,
       decoded,
       user,
-      hasRequiredRole: ['admin', 'superadmin'].includes(user?.role)
+      hasRequiredRole: ['admin', 'superadmin'].includes(user?.role),
+      tokenPreview: token.substring(0, 20) + '...'
+    });
+  } catch (error) {
+    console.log('🔍 [DEBUG] JWT Error:', error.message);
+    res.json({ 
+      success: false, 
+      error: error.message,
+      tokenPreview: req.headers.authorization ? req.headers.authorization.substring(0, 30) + '...' : 'none'
+    });
+  }
+});
+
+// Debug endpoint to force re-login and get fresh token
+app.post('/api/debug/refresh-token', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.json({ success: false, message: 'Email required' });
+    }
+    
+    await database.connect();
+    const user = await database.get('SELECT * FROM users WHERE email = $1', [email]);
+    
+    if (!user) {
+      return res.json({ success: false, message: 'User not found' });
+    }
+    
+    const jwt = require('jsonwebtoken');
+    const accessToken = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+    
+    const refreshToken = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '7d' }
+    );
+    
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role: user.role
+      },
+      tokens: {
+        accessToken,
+        refreshToken
+      }
     });
   } catch (error) {
     res.json({ success: false, error: error.message });
