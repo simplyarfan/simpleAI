@@ -208,26 +208,44 @@ const SuperAdminDashboard = () => {
   ];
 
   return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-32 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
+        </div>
+
         <Head>
-          <title>Super Admin Dashboard - Enterprise AI Hub</title>
-          <meta name="description" content="Super admin dashboard for Enterprise AI Hub" />
+          <title>Super Admin Dashboard - simpleAI</title>
+          <meta name="description" content="Super admin dashboard for simpleAI" />
         </Head>
 
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <main className="relative z-10 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           {/* Welcome Section */}
           <div className="px-4 py-6 sm:px-0">
-            <div className="bg-gradient-to-r from-purple-600 to-blue-700 rounded-2xl shadow-xl overflow-hidden">
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
               <div className="px-6 py-8 sm:px-8 sm:py-12">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-3xl font-bold text-white">
+                    <div className="flex items-center mb-4">
+                      <div className="relative mr-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                          <Brain className="w-7 h-7 text-white" />
+                        </div>
+                        <div className="absolute -inset-1 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 rounded-xl blur opacity-30 animate-pulse"></div>
+                      </div>
+                      <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        simpleAI
+                      </h1>
+                    </div>
+                    <h2 className="text-2xl font-bold text-white mb-2">
                       Super Admin Dashboard
-                    </h1>
-                    <p className="mt-2 text-purple-100 text-lg">
+                    </h2>
+                    <p className="text-gray-300 text-lg">
                       Welcome back, {user?.first_name}! 
                     </p>
-                    <div className="mt-4 flex items-center text-purple-100">
+                    <div className="mt-4 flex items-center text-gray-300">
                       <Clock className="w-4 h-4 mr-2" />
                       <span className="text-sm">
                         Last login: {new Date().toLocaleDateString()}
@@ -235,8 +253,8 @@ const SuperAdminDashboard = () => {
                     </div>
                   </div>
                   <div className="hidden sm:block">
-                    <div className="w-32 h-32 bg-white bg-opacity-10 rounded-full flex items-center justify-center">
-                      <Settings className="w-16 h-16 text-white" />
+                    <div className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
+                      <Settings className="w-16 h-16 text-white animate-spin-slow" />
                     </div>
                   </div>
                 </div>
@@ -247,38 +265,41 @@ const SuperAdminDashboard = () => {
 
           {/* Admin Tools */}
           <div className="px-4 py-6 sm:px-0">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Admin Tools</h2>
-              <span className="text-sm text-gray-500">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold text-white">Admin Tools</h2>
+              <span className="text-sm text-gray-300 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full border border-white/20">
                 {adminModules.length} tools available
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
               {adminModules.map((tool) => (
                 <div
                   key={tool.id}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105"
+                  className="group bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:bg-white/15"
                 >
                   {/* Card Header */}
-                  <div className={`bg-gradient-to-r ${tool.color} p-6 text-white`}>
-                    <div className="flex items-center">
-                      <div className="p-3 bg-white bg-opacity-20 rounded-xl">
-                        <tool.icon className="w-8 h-8" />
+                  <div className={`bg-gradient-to-r ${tool.color} p-6 text-white relative overflow-hidden`}>
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+                    <div className="relative flex items-center">
+                      <div className="p-4 bg-white/20 backdrop-blur-sm rounded-2xl border border-white/30">
+                        <tool.icon className="w-10 h-10" />
                       </div>
-                      <div className="ml-4">
-                        <h3 className="text-xl font-bold">{tool.title}</h3>
-                        <p className="text-sm opacity-90 mt-1">{tool.description}</p>
+                      <div className="ml-6">
+                        <h3 className="text-2xl font-bold">{tool.title}</h3>
+                        <p className="text-sm opacity-90 mt-2">{tool.description}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Card Content */}
-                  <div className="p-6">
-                    <ul className="space-y-2 mb-6">
+                  <div className="p-8">
+                    <ul className="space-y-3 mb-8">
                       {tool.features.map((feature, index) => (
-                        <li key={index} className="flex items-center text-sm text-gray-600">
-                          <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                        <li key={index} className="flex items-center text-sm text-gray-300">
+                          <div className="w-5 h-5 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                            <CheckCircle className="w-3 h-3 text-white" />
+                          </div>
                           {feature}
                         </li>
                       ))}
@@ -286,10 +307,10 @@ const SuperAdminDashboard = () => {
 
                     <Link
                       href={tool.href}
-                      className="group w-full bg-gradient-to-r from-gray-900 to-gray-700 hover:from-gray-800 hover:to-gray-600 text-white py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center"
+                      className="group/btn w-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white py-4 px-6 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl"
                     >
                       Access Tool
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+                      <ArrowRight className="w-5 h-5 ml-2 group-hover/btn:translate-x-1 transition-transform duration-200" />
                     </Link>
                   </div>
                 </div>

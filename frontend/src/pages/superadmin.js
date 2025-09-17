@@ -32,11 +32,9 @@ export default function SuperAdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Header />
-      <main className="py-8">
-        <SuperAdminDashboard />
-      </main>
+      <SuperAdminDashboard />
     </div>
   );
 }
