@@ -1,82 +1,3 @@
-// TEMPORARY: Simple registration endpoint for debugging
-app.post('/api/register-simple', async (req, res) => {
-  try {
-    console.log('📝 [REGISTER-SIMPLE] Registration attempt...');
-    const { email, password, first_name, last_name, department, job_title } = req.body;
-    
-    if (!email || !password || !first_name || !last_name) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email, password, first name, and last name are required'
-      });
-    }
-    
-    await database.connect();
-    
-    // Check if user already exists
-    const existingUser = await database.get('SELECT id FROM users WHERE email = $1', [email]);
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'User already exists with this email'
-      });
-    }
-    
-    // Hash password
-    const bcrypt = require('bcryptjs');
-    const hashedPassword = await bcrypt.hash(password, 12);
-    
-    // Create user
-    const result = await database.run(`
-      INSERT INTO users (
-        email, password_hash, first_name, last_name, 
-        department, job_title, role, is_active, 
-        created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      RETURNING id, email, first_name, last_name, role
-    `, [
-      email, hashedPassword, first_name, last_name,
-      department || null, job_title || null, 'user', true
-    ]);
-    
-    if (result.rows && result.rows.length > 0) {
-      const newUser = result.rows[0];
-      
-      // Generate JWT token
-      const jwt = require('jsonwebtoken');
-      const token = jwt.sign(
-        { userId: newUser.id, email: newUser.email, role: newUser.role },
-        process.env.JWT_SECRET || 'fallback-secret-key-change-in-production',
-        { expiresIn: '24h' }
-      );
-      
-      res.json({
-        success: true,
-        message: 'Registration successful',
-        data: {
-          user: {
-            id: newUser.id,
-            email: newUser.email,
-            first_name: newUser.first_name,
-            last_name: newUser.last_name,
-            role: newUser.role
-          },
-          token: token
-        }
-      });
-    } else {
-      throw new Error('Failed to create user');
-    }
-  } catch (error) {
-    console.error('❌ [REGISTER-SIMPLE] Error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Registration failed',
-      error: error.message
-    });
-  }
-});
-
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -147,6 +68,154 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
     database: database.isConnected ? 'connected' : 'connecting...'
   });
+});
+
+// TEMPORARY: Simple registration endpoint - CORRECTLY POSITIONED
+app.post('/api/register-simple', async (req, res) => {
+  try {
+    console.log('📝 Registration attempt...');
+    const { email, password, first_name, last_name, department, job_title } = req.body;
+    
+    if (!email || !password || !first_name || !last_name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, password, first name, and last name are required'
+      });
+    }
+    
+    await database.connect();
+    
+    // Check if user already exists
+    const existingUser = await database.get('SELECT id FROM users WHERE email = $1', [email]);
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
+    }
+    
+    // Hash password
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 12);
+    
+    // Create user
+    const result = await database.run(`
+      INSERT INTO users (
+        email, password_hash, first_name, last_name, 
+        department, job_title, role, is_active, 
+        created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      RETURNING id, email, first_name, last_name, role
+    `, [
+      email, hashedPassword, first_name, last_name,
+      department || null, job_title || null, 'user', true
+    ]);
+    
+    if (result.rows && result.rows.length > 0) {
+      const newUser = result.rows[0];
+      
+      // Generate JWT token
+      const jwt = require('jsonwebtoken');
+      const token = jwt.sign(
+        { userId: newUser.id, email: newUser.email, role: newUser.role },
+        process.env.JWT_SECRET || 'fallback-secret-key-change-in-production',
+        { expiresIn: '24h' }
+      );
+      
+      res.json({
+        success: true,
+        message: 'Registration successful',
+        data: {
+          user: {
+            id: newUser.id,
+            email: newUser.email,
+            first_name: newUser.first_name,
+            last_name: newUser.last_name,
+            role: newUser.role
+          },
+          token: token
+        }
+      });
+    } else {
+      throw new Error('Failed to create user');
+    }
+  } catch (error) {
+    console.error('❌ Registration error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Registration failed',
+      error: error.message
+    });
+  }
+});
+
+// TEMPORARY: Simple login endpoint - CORRECTLY POSITIONED
+app.post('/api/login-simple', async (req, res) => {
+  try {
+    console.log('🔐 Login attempt...');
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+    
+    await database.connect();
+    
+    // Find user
+    const user = await database.get('SELECT * FROM users WHERE email = $1', [email]);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+    
+    // Check password
+    const bcrypt = require('bcryptjs');
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+    
+    // Update last login
+    await database.run('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+    
+    // Generate JWT token
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign(
+      { userId: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || 'fallback-secret-key-change-in-production',
+      { expiresIn: '24h' }
+    );
+    
+    res.json({
+      success: true,
+      message: 'Login successful',
+      accessToken: token,
+      user: {
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        role: user.role,
+        department: user.department,
+        job_title: user.job_title
+      }
+    });
+  } catch (error) {
+    console.error('❌ Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Login failed',
+      error: error.message
+    });
+  }
 });
 
 // Root route

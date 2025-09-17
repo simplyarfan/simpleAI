@@ -135,11 +135,12 @@ export const AuthProvider = ({ children }) => {
       console.log('🔐 Starting login...', { 
         email: credentials.email,
         apiBase: API_BASE,
-        endpoint: `${API_BASE}/api/auth/login`,
+        endpoint: `${API_BASE}/api/login-simple`,
         cacheBuster: CACHE_BUSTER
       });
 
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      // Use the working simple login endpoint
+      const response = await fetch(`${API_BASE}/api/login-simple`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
