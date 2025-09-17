@@ -29,6 +29,8 @@ export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState({
     totalUsers: 0,
     activeUsers: 0,
+    totalTickets: 0,
+    openTickets: 0,
     systemHealth: 'Good',
     usageData: [],
     recentActivity: []
@@ -66,7 +68,8 @@ export default function AnalyticsPage() {
         setAnalytics({
           totalUsers: data.totalUsers || 0,
           activeUsers: data.activeUsers || 0,
-          totalBatches: data.totalBatches || 0,
+          totalTickets: data.totalTickets || 0,
+          openTickets: data.openTickets || 0,
           systemHealth: data.systemHealth || 'Good',
           usageData: data.usageData || [],
           recentActivity: data.recentActivity || []
