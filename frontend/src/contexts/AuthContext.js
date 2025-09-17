@@ -135,7 +135,7 @@ export const AuthProvider = ({ children }) => {
       console.log('🔐 Starting login...', { 
         email: credentials.email,
         apiBase: API_BASE,
-        endpoint: `${API_BASE}/api/login-simple`,
+        endpoint: `${API_BASE}/api/auth/login`,
         cacheBuster: CACHE_BUSTER
       });
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const AuthController = require('../controllers/AuthController');
+const AuthController = require('../controllers/authController');
 const { 
   authenticateToken, 
   validateCompanyDomain, 
@@ -34,18 +34,13 @@ const {
 
 // User registration
 router.post('/register', 
-  authLimiter,
-  validateCompanyDomain,
   validateRegistration,
-  trackActivity('registration_attempt'),
   AuthController.register
 );
 
 // User login
 router.post('/login', 
-  authLimiter,
   validateLogin,
-  trackActivity('login_attempt'),
   AuthController.login
 );
 
