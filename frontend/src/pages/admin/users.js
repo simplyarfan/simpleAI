@@ -78,8 +78,8 @@ export default function UsersManagement() {
       });
       
       if (response.data.success) {
-        setUsers(response.data.users || []);
-        setTotalPages(response.data.totalPages || 1);
+        setUsers(response.data.data?.users || []);
+        setTotalPages(response.data.data?.totalPages || 1);
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);

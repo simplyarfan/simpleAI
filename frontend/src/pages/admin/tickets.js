@@ -303,8 +303,8 @@ export default function TicketsManagement() {
               </div>
               <div className="sm:w-48">
                 <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   <option value="all">All Status</option>
@@ -315,8 +315,8 @@ export default function TicketsManagement() {
               </div>
               <div className="sm:w-48">
                 <select
-                  value={filterPriority}
-                  onChange={(e) => setFilterPriority(e.target.value)}
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   <option value="all">All Priority</option>

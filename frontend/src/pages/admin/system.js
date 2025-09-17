@@ -243,51 +243,15 @@ export default function SystemHealth() {
                   {systemStatus.overall === 'healthy' ? 'All systems operational' : 
                    systemStatus.overall === 'warning' ? 'Some issues detected' : 
                    'Critical issues detected'}
-                  <Activity className="w-8 h-8 mr-3 text-purple-600" />
-                  System Health
-                </p>
-                <p className="mt-2 text-gray-600">
-                  Monitor system performance and health status
                 </p>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="text-sm text-gray-500 flex items-center">
-                  <Clock className="w-4 h-4 mr-1" />
-                  Last updated: {lastUpdated.toLocaleTimeString()}
-                </div>
-                <button 
-                  onClick={fetchSystemHealth}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center"
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh
-                </button>
-              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-gray-900">{metrics.uptime}</div>
+              <div className="text-sm text-gray-500">Uptime</div>
             </div>
           </div>
-
-          {/* Overall Status */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className={`p-3 rounded-full ${getStatusColor(systemStatus.overall)}`}>
-                  {getStatusIcon(systemStatus.overall)}
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900">System Status</h2>
-                  <p className="text-gray-600">
-                    {systemStatus.overall === 'healthy' ? 'All systems operational' : 
-                     systemStatus.overall === 'warning' ? 'Some issues detected' : 
-                     'Critical issues detected'}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-gray-900">{metrics.uptime}</div>
-                <div className="text-sm text-gray-500">Uptime</div>
-              </div>
-            </div>
-          </div>
+        </div>
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -466,9 +430,8 @@ export default function SystemHealth() {
               ))}
             </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
     </ErrorBoundary>
   );
 }
