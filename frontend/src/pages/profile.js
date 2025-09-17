@@ -176,7 +176,7 @@ export default function ProfileSettings() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Profile Information */}
           <div className="lg:col-span-2">
-            <div className="bg-white shadow rounded-lg">
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-medium text-gray-900">Profile Information</h2>
@@ -289,7 +289,7 @@ export default function ProfileSettings() {
             </div>
 
             {/* Password Change Section */}
-            <div className="mt-8 bg-white shadow rounded-lg">
+            <div className="mt-8 bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-medium text-gray-900">Password & Security</h2>
@@ -388,21 +388,33 @@ export default function ProfileSettings() {
           </div>
 
           {/* Account Summary */}
-          <div>
-            <div className="bg-white shadow rounded-lg">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Account Summary</h2>
-              </div>
-              <div className="px-6 py-6">
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Account Type</p>
-                    <p className="text-sm text-gray-900 capitalize">{user?.role || 'User'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Member Since</p>
-                    <p className="text-sm text-gray-900">
-                      {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-medium text-gray-900">Account Summary</h2>
+            </div>
+            <div className="px-6 py-6">
+              <div className="space-y-6">
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Account Type</p>
+                  <p className="text-sm text-gray-900 capitalize">{user?.role || 'User'}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Member Since</p>
+                  <p className="text-sm text-gray-900">
+                    {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Last Login</p>
+                  <p className="text-sm text-gray-900">
+                    {user?.last_login ? new Date(user.last_login).toLocaleDateString() : 'Today'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Status</p>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Active
+                  </span>
                     </p>
                   </div>
                   <div>
