@@ -257,12 +257,12 @@ const SuperAdminDashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Admin Tools</h2>
               <span className="text-sm text-gray-500">
-                {adminCards.length} tools available
+                {adminModules.length} tools available
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-              {adminCards.map((tool) => (
+              {adminModules.map((tool) => (
                 <div
                   key={tool.id}
                   className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105"
