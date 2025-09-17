@@ -624,7 +624,7 @@ const createUser = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { user_id } = req.params;
-    const { firstName, lastName, email, role, department, jobTitle, isActive } = req.body;
+    const { first_name, last_name, email, role, department, job_title, is_active } = req.body;
 
     await database.connect();
 
@@ -644,10 +644,10 @@ const updateUser = async (req, res) => {
         role = $4,
         department = $5,
         job_title = $6,
-        is_active = $7,
+        is_active = COALESCE($7, is_active),
         updated_at = CURRENT_TIMESTAMP
       WHERE id = $8
-    `, [firstName, lastName, email, role, department, jobTitle, isActive, user_id]);
+    `, [first_name, last_name, email, role, department, job_title, is_active, user_id]);
 
     const updatedUser = await database.get(
       'SELECT id, email, first_name, last_name, role, department, job_title, is_active FROM users WHERE id = $1',

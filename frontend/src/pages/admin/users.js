@@ -51,7 +51,8 @@ export default function UsersManagement() {
     last_name: '',
     department: '',
     job_title: '',
-    role: 'user'
+    role: 'user',
+    is_active: true
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -184,7 +185,8 @@ export default function UsersManagement() {
       last_name: userToEdit.last_name,
       department: userToEdit.department || '',
       job_title: userToEdit.job_title || '',
-      role: userToEdit.role
+      role: userToEdit.role,
+      is_active: userToEdit.is_active
     });
     setShowEditModal(true);
   };
