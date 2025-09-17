@@ -241,20 +241,27 @@ export default function UsersManagement() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-32 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
+        </div>
+
         <Head>
-          <title>User Management - Enterprise AI Hub</title>
+          <title>User Management - simpleAI</title>
           <meta name="description" content="Manage user accounts, roles and permissions" />
         </Head>
         
         <Header />
         
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <main className="relative z-10 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Back to Dashboard Button */}
         <div className="mb-6">
           <button
             onClick={() => router.push('/superadmin')}
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -263,23 +270,27 @@ export default function UsersManagement() {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <Users className="w-8 h-8 mr-3 text-blue-600" />
-                User Management
-              </h1>
-              <p className="mt-2 text-gray-600">
-                Manage user accounts, roles and permissions
-              </p>
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-white flex items-center mb-4">
+                  <div className="p-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-2xl mr-4">
+                    <Users className="w-8 h-8 text-white" />
+                  </div>
+                  User Management
+                </h1>
+                <p className="text-gray-300 text-lg">
+                  Manage user accounts, roles and permissions
+                </p>
+              </div>
+              <button 
+                onClick={() => setShowAddModal(true)}
+                className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-xl flex items-center font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                <UserPlus className="w-5 h-5 mr-2" />
+                Add User
+              </button>
             </div>
-            <button 
-              onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
-            >
-              <UserPlus className="w-4 h-4 mr-2" />
-              Add User
-            </button>
           </div>
         </div>
 

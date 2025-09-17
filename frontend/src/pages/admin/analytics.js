@@ -255,10 +255,10 @@ export default function AnalyticsPage() {
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Usage Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-medium text-gray-900">Usage Overview</h3>
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <h3 className="text-lg font-medium text-white">Usage Overview</h3>
+              <div className="flex items-center space-x-2 text-sm text-gray-300">
                 <Calendar className="w-4 h-4" />
                 <span>Last 7 days</span>
               </div>
@@ -268,33 +268,33 @@ export default function AnalyticsPage() {
             <div className="space-y-4">
               {Array.isArray(chartData) && chartData.length > 0 ? chartData.map((day, index) => (
                 <div key={day.name} className="flex items-center space-x-4">
-                  <div className="w-8 text-sm text-gray-600">{day.name}</div>
+                  <div className="w-8 text-sm text-gray-300">{day.name}</div>
                   <div className="flex-1 flex items-center space-x-2">
-                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                    <div className="flex-1 bg-white/20 rounded-full h-2">
                       <div 
-                        className="bg-blue-600 h-2 rounded-full" 
+                        className="bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full" 
                         style={{ width: `${(day.users / Math.max(...chartData.map(d => d.users))) * 100}%` }}
                       ></div>
                     </div>
-                    <span className="text-sm text-gray-600 w-8">{day.users}</span>
+                    <span className="text-sm text-gray-300 w-8">{day.users}</span>
                   </div>
                 </div>
               )) : (
-                <div className="text-center text-gray-500 py-8">
+                <div className="text-center text-gray-300 py-8">
                   No usage data available
                 </div>
               )}
             </div>
             
-            <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+            <div className="mt-4 flex items-center justify-between text-sm text-gray-300">
               <span>Users per day</span>
               <span>Peak: {Array.isArray(chartData) && chartData.length > 0 ? Math.max(...chartData.map(d => d.users)) : 0} users</span>
             </div>
           </div>
 
           {/* User Roles Distribution */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-6">User Distribution</h3>
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
+            <h3 className="text-lg font-medium text-white mb-6">User Distribution</h3>
             
             <div className="space-y-4">
               {Array.isArray(userAnalytics) && userAnalytics.length > 0 ? userAnalytics.map((roleData, index) => {
@@ -305,27 +305,27 @@ export default function AnalyticsPage() {
                   <div key={roleData.role} className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className={`w-3 h-3 rounded-full ${colors[index % colors.length]}`}></div>
-                      <span className="text-sm font-medium text-gray-900 capitalize">
+                      <span className="text-sm font-medium text-white capitalize">
                         {roleData.role}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-600">{roleData.count}</span>
-                      <span className="text-xs text-gray-500">({percentage.toFixed(1)}%)</span>
+                      <span className="text-sm text-gray-300">{roleData.count}</span>
+                      <span className="text-xs text-gray-400">({percentage.toFixed(1)}%)</span>
                     </div>
                   </div>
                 );
               }) : (
-                <div className="text-center text-gray-500 py-4">
+                <div className="text-center text-gray-300 py-4">
                   No user analytics data available
                 </div>
               )}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-gray-200">
+            <div className="mt-6 pt-4 border-t border-white/20">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Active Rate</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-gray-300">Active Rate</span>
+                <span className="font-medium text-white">
                   {analytics.totalUsers > 0 ? ((analytics.activeUsers / analytics.totalUsers) * 100).toFixed(1) : 0}%
                 </span>
               </div>
@@ -334,8 +334,8 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-6">Recent Activity</h3>
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
+          <h3 className="text-lg font-medium text-white mb-6">Recent Activity</h3>
           
           <div className="flow-root">
             {Array.isArray(analytics.recentActivity) && analytics.recentActivity.length > 0 ? (
@@ -344,21 +344,21 @@ export default function AnalyticsPage() {
                   <li key={index}>
                     <div className="relative pb-8">
                       {index !== analytics.recentActivity.length - 1 && (
-                        <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"></span>
+                        <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-white/20"></span>
                       )}
                       <div className="relative flex space-x-3">
                         <div>
-                          <span className="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white bg-blue-500">
+                          <span className="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-transparent bg-gradient-to-r from-blue-400 to-purple-500">
                             <Activity className="w-4 h-4 text-white" />
                           </span>
                         </div>
                         <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                           <div>
-                            <p className="text-sm text-gray-500">
-                              {activity.action} by <span className="font-medium text-gray-900">{activity.details}</span>
+                            <p className="text-sm text-gray-300">
+                              {activity.action} by <span className="font-medium text-white">{activity.details}</span>
                             </p>
                           </div>
-                          <div className="text-right text-sm whitespace-nowrap text-gray-500 flex items-center">
+                          <div className="text-right text-sm whitespace-nowrap text-gray-300 flex items-center">
                             <Clock className="w-3 h-3 mr-1" />
                             {new Date(activity.timestamp).toLocaleString()}
                           </div>
@@ -369,7 +369,7 @@ export default function AnalyticsPage() {
                 ))}
               </ul>
             ) : (
-              <div className="text-center text-gray-500 py-8">
+              <div className="text-center text-gray-300 py-8">
                 No recent activity data available
               </div>
             )}
