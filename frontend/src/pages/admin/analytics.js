@@ -17,7 +17,8 @@ import {
   MousePointer,
   ArrowLeft,
   Clock,
-  Zap
+  Zap,
+  MessageSquare
 } from 'lucide-react';
 
 // Dynamic data will be fetched from API

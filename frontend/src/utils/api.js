@@ -235,7 +235,7 @@ export const systemAPI = {
 export const supportAPI = {
   createTicket: (ticketData) => api.post('/support', ticketData),
   getMyTickets: (params) => api.get('/support/my-tickets', { params }),
-  getAllTickets: (params) => api.get('/support', { params }),
+  getAllTickets: (params) => api.get('/support/admin/all', { params }),
   getTicket: (ticketId) => api.get(`/support/${ticketId}`),
   addComment: (ticketId, comment, isInternal = false) => api.post(`/support/${ticketId}/comments`, {
     comment,

@@ -76,7 +76,7 @@ router.put('/:ticket_id',
 // Admin routes (manage all tickets)
 
 // Get all tickets (admin only)
-router.get('/',
+router.get('/admin/all',
   requireAdmin,
   generalLimiter,
   validatePagination,

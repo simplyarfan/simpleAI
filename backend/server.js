@@ -254,7 +254,7 @@ app.get('/api/system/metrics', async (req, res) => {
     const uptimeDays = (uptime / (24 * 60 * 60)).toFixed(1);
     
     // Get user count for active users metric
-    const userCount = await database.get('SELECT COUNT(*) as count FROM users WHERE is_active = 1');
+    const userCount = await database.get('SELECT COUNT(*) as count FROM users WHERE is_active = true');
     
     res.json({
       success: true,
