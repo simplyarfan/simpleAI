@@ -225,7 +225,7 @@ const SuperAdminDashboard = () => {
                       Super Admin Dashboard
                     </h1>
                     <p className="mt-2 text-purple-100 text-lg">
-                      Welcome back, {user?.first_name}!
+                      Welcome back, {user?.first_name}! 
                     </p>
                     <div className="mt-4 flex items-center text-purple-100">
                       <Clock className="w-4 h-4 mr-2" />
