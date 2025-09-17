@@ -108,20 +108,27 @@ export default function AnalyticsPage() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-32 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
+        </div>
+
         <Head>
-          <title>Analytics & Reports - Enterprise AI Hub</title>
+          <title>Analytics & Reports - simpleAI</title>
           <meta name="description" content="View detailed analytics and generate reports" />
         </Head>
         
         <Header />
         
-        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <main className="relative z-10 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Back to Dashboard Button */}
         <div className="mb-6">
           <button
             onClick={() => router.push('/superadmin')}
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -130,45 +137,51 @@ export default function AnalyticsPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <BarChart3 className="w-8 h-8 mr-3 text-green-600" />
-                Analytics & Reports
-              </h1>
-              <p className="mt-2 text-gray-600">
-                View detailed analytics and generate reports
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <select
-                value={timeframe}
-                onChange={(e) => setTimeframe(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="24h">Last 24 Hours</option>
-                <option value="7d">Last 7 Days</option>
-                <option value="30d">Last 30 Days</option>
-                <option value="90d">Last 90 Days</option>
-              </select>
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold text-white flex items-center mb-4">
+                  <div className="p-3 bg-gradient-to-r from-green-400 to-emerald-500 rounded-2xl mr-4">
+                    <BarChart3 className="w-8 h-8 text-white" />
+                  </div>
+                  Analytics & Reports
+                </h1>
+                <p className="text-gray-300 text-lg">
+                  View detailed analytics and generate reports
+                </p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <select
+                  value={timeframe}
+                  onChange={(e) => setTimeframe(e.target.value)}
+                  className="px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="24h">Last 24 Hours</option>
+                  <option value="7d">Last 7 Days</option>
+                  <option value="30d">Last 30 Days</option>
+                  <option value="90d">Last 90 Days</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300 group">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <Users className="h-8 w-8 text-blue-600" />
+                <div className="p-3 bg-gradient-to-r from-blue-400 to-blue-600 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Users</dt>
+                  <dt className="text-sm font-medium text-gray-300 truncate">Total Users</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">{analytics.totalUsers}</div>
-                    <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
-                      <TrendingUp className="w-3 h-3 mr-1" />
+                    <div className="text-2xl font-semibold text-white">{analytics.totalUsers}</div>
+                    <div className="ml-2 flex items-baseline text-sm font-semibold text-green-400">
+                      <TrendingUp className="w-4 h-4 mr-1" />
                       +12%
                     </div>
                   </dd>
@@ -177,17 +190,19 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300 group">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <Activity className="h-8 w-8 text-green-600" />
+                <div className="p-3 bg-gradient-to-r from-green-400 to-green-600 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <Activity className="h-6 w-6 text-white" />
+                </div>
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Active Users</dt>
+                  <dt className="text-sm font-medium text-gray-300 truncate">Active Users</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">{analytics.activeUsers}</div>
-                    <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                    <div className="text-2xl font-semibold text-white">{analytics.activeUsers}</div>
+                    <div className="ml-2 flex items-baseline text-sm font-semibold text-green-400">
                       <TrendingUp className="w-3 h-3 mr-1" />
                       +8%
                     </div>
@@ -197,33 +212,37 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300 group">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <MessageSquare className="h-8 w-8 text-orange-600" />
+                <div className="p-3 bg-gradient-to-r from-orange-400 to-orange-600 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <MessageSquare className="h-6 w-6 text-white" />
+                </div>
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Support Tickets</dt>
+                  <dt className="text-sm font-medium text-gray-300 truncate">Support Tickets</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">{analytics.totalTickets}</div>
+                    <div className="text-2xl font-semibold text-white">{analytics.totalTickets}</div>
                   </dd>
                 </dl>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300 group">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <Zap className="h-8 w-8 text-yellow-600" />
+                <div className="p-3 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                  <Zap className="h-6 w-6 text-white" />
+                </div>
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">System Health</dt>
+                  <dt className="text-sm font-medium text-gray-300 truncate">System Health</dt>
                   <dd className="flex items-baseline">
-                    <div className="text-2xl font-semibold text-gray-900">{analytics.systemHealth}</div>
-                    <div className="ml-2 flex items-baseline text-sm font-semibold text-green-600">
+                    <div className="text-2xl font-semibold text-white">{analytics.systemHealth}</div>
+                    <div className="ml-2 flex items-baseline text-sm font-semibold text-green-400">
                       99.9%
                     </div>
                   </dd>
