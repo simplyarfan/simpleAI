@@ -75,28 +75,28 @@ const SuperAdminDashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const adminCards = [
+  const adminModules = [
     {
       id: 'user-management',
       title: 'User Management',
       description: 'Manage users, roles, and permissions',
       icon: Users,
       href: '/admin/users',
-      color: 'from-blue-500 to-purple-600',
-      features: ['User accounts', 'Role management', 'Access control', 'Activity logs']
+      color: 'from-blue-500 to-indigo-600',
+      features: ['User accounts', 'Role assignment', 'Access control', 'Activity monitoring']
     },
     {
-      id: 'analytics-reports',
+      id: 'analytics',
       title: 'Analytics & Reports',
-      description: 'System analytics and usage reports',
+      description: 'View detailed analytics and generate reports',
       icon: BarChart3,
-      href: '/analytics',
+      href: '/admin/analytics',
       color: 'from-green-500 to-teal-600',
-      features: ['Usage statistics', 'Performance metrics', 'User behavior', 'Export reports']
+      features: ['Usage analytics', 'Performance metrics', 'Custom reports', 'Data insights']
     },
     {
       id: 'support-tickets',
-      title: 'Support Tickets',
+      title: 'Support Management',
       description: 'Manage user support requests and tickets',
       icon: MessageSquare,
       href: '/admin/tickets',
