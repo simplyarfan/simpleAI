@@ -122,10 +122,10 @@ export default function ProfileSettings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
+          <p className="mt-4 text-white">Loading...</p>
         </div>
       </div>
     );
@@ -147,12 +147,12 @@ export default function ProfileSettings() {
 
       <Header />
 
-      <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={goBack}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4"
+            className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20 mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -160,8 +160,8 @@ export default function ProfileSettings() {
           
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
-              <p className="mt-2 text-gray-600">Manage your account information and preferences</p>
+              <h1 className="text-3xl font-bold text-white">Profile Settings</h1>
+              <p className="mt-2 text-gray-300">Manage your account information and preferences</p>
             </div>
             <div className="flex items-center space-x-3">
               {user?.role === 'superadmin' && (
@@ -177,13 +177,13 @@ export default function ProfileSettings() {
           {/* Profile Information */}
           <div className="lg:col-span-2">
             <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
-              <div className="px-6 py-4 border-b border-gray-200">
+              <div className="px-6 py-4 border-b border-white/20">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-medium text-gray-900">Profile Information</h2>
+                  <h2 className="text-lg font-medium text-white">Profile Information</h2>
                   {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                      className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors duration-200"
                     >
                       Edit
                     </button>
@@ -191,14 +191,14 @@ export default function ProfileSettings() {
                     <div className="flex space-x-3">
                       <button
                         onClick={() => setIsEditing(false)}
-                        className="text-gray-600 hover:text-gray-700 text-sm font-medium"
+                        className="text-gray-300 hover:text-white text-sm font-medium transition-colors duration-200"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSaveProfile}
                         disabled={isSaving}
-                        className="flex items-center text-blue-600 hover:text-blue-700 text-sm font-medium disabled:opacity-50"
+                        className="flex items-center text-blue-400 hover:text-blue-300 text-sm font-medium disabled:opacity-50 transition-colors duration-200"
                       >
                         <Save className="w-4 h-4 mr-1" />
                         {isSaving ? 'Saving...' : 'Save'}
@@ -211,7 +211,7 @@ export default function ProfileSettings() {
               <div className="px-6 py-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-white mb-2">
                       <User className="w-4 h-4 inline mr-2" />
                       First Name
                     </label>
@@ -221,12 +221,12 @@ export default function ProfileSettings() {
                       value={formData.first_name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
+                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-white/5 disabled:text-gray-300"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-white mb-2">
                       <User className="w-4 h-4 inline mr-2" />
                       Last Name
                     </label>
@@ -236,12 +236,12 @@ export default function ProfileSettings() {
                       value={formData.last_name}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
+                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-white/5 disabled:text-gray-300"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-white mb-2">
                       <Mail className="w-4 h-4 inline mr-2" />
                       Email Address
                     </label>
@@ -251,12 +251,12 @@ export default function ProfileSettings() {
                       value={formData.email}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
+                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-white/5 disabled:text-gray-300"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-white mb-2">
                       <Building2 className="w-4 h-4 inline mr-2" />
                       Department
                     </label>
@@ -266,12 +266,12 @@ export default function ProfileSettings() {
                       value={formData.department}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
+                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-white/5 disabled:text-gray-300"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-white mb-2">
                       <Briefcase className="w-4 h-4 inline mr-2" />
                       Job Title
                     </label>
@@ -281,7 +281,7 @@ export default function ProfileSettings() {
                       value={formData.job_title}
                       onChange={handleInputChange}
                       disabled={!isEditing}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
+                      className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-white/5 disabled:text-gray-300"
                     />
                   </div>
                 </div>
@@ -290,12 +290,12 @@ export default function ProfileSettings() {
 
             {/* Password Change Section */}
             <div className="mt-8 bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
-              <div className="px-6 py-4 border-b border-gray-200">
+              <div className="px-6 py-4 border-b border-white/20">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-medium text-gray-900">Password & Security</h2>
+                  <h2 className="text-lg font-medium text-white">Password & Security</h2>
                   <button
                     onClick={() => setShowPasswordForm(!showPasswordForm)}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors duration-200"
                   >
                     {showPasswordForm ? 'Cancel' : 'Change Password'}
                   </button>
@@ -306,7 +306,7 @@ export default function ProfileSettings() {
                 <div className="px-6 py-6">
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         Current Password
                       </label>
                       <div className="relative">
@@ -315,7 +315,7 @@ export default function ProfileSettings() {
                           name="currentPassword"
                           value={passwordData.currentPassword}
                           onChange={handlePasswordChange}
-                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-3 pr-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                         <button
                           type="button"
@@ -328,7 +328,7 @@ export default function ProfileSettings() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         New Password
                       </label>
                       <div className="relative">
@@ -337,7 +337,7 @@ export default function ProfileSettings() {
                           name="newPassword"
                           value={passwordData.newPassword}
                           onChange={handlePasswordChange}
-                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-3 pr-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                         <button
                           type="button"
@@ -350,7 +350,7 @@ export default function ProfileSettings() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-white mb-2">
                         Confirm New Password
                       </label>
                       <div className="relative">
@@ -359,7 +359,7 @@ export default function ProfileSettings() {
                           name="confirmPassword"
                           value={passwordData.confirmPassword}
                           onChange={handlePasswordChange}
-                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-4 py-3 pr-12 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                         />
                         <button
                           type="button"
@@ -375,7 +375,7 @@ export default function ProfileSettings() {
                       <button
                         onClick={handleChangePassword}
                         disabled={isSaving}
-                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                        className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white rounded-xl disabled:opacity-50 transition-all duration-300 transform hover:scale-105"
                       >
                         <Lock className="w-4 h-4 mr-2" />
                         {isSaving ? 'Changing...' : 'Change Password'}
@@ -389,33 +389,32 @@ export default function ProfileSettings() {
 
           {/* Account Summary */}
           <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Account Summary</h2>
+            <div className="px-6 py-4 border-b border-white/20">
+              <h2 className="text-lg font-medium text-white">Account Summary</h2>
             </div>
             <div className="px-6 py-6">
               <div className="space-y-6">
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Account Type</p>
-                  <p className="text-sm text-gray-900 capitalize">{user?.role || 'User'}</p>
+                  <p className="text-sm font-medium text-gray-300">Account Type</p>
+                  <p className="text-sm text-white capitalize">{user?.role || 'User'}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Member Since</p>
-                  <p className="text-sm text-gray-900">
+                  <p className="text-sm font-medium text-gray-300">Member Since</p>
+                  <p className="text-sm text-white">
                     {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Last Login</p>
-                  <p className="text-sm text-gray-900">
+                  <p className="text-sm font-medium text-gray-300">Last Login</p>
+                  <p className="text-sm text-white">
                     {user?.last_login ? new Date(user.last_login).toLocaleDateString() : 'Today'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-700">Status</p>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <p className="text-sm font-medium text-gray-300">Status</p>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-400/20 text-green-300 border border-green-400/30">
                     Active
                   </span>
-                </div>
                 </div>
               </div>
             </div>
