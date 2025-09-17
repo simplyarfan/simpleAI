@@ -224,7 +224,7 @@ export default function SystemHealth() {
                    'Critical issues detected'}
                   <Activity className="w-8 h-8 mr-3 text-purple-600" />
                   System Health
-                </h1>
+                </p>
                 <p className="mt-2 text-gray-600">
                   Monitor system performance and health status
                 </p>
