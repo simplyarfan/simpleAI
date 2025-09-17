@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
 import { analyticsAPI } from '../../utils/api';
+import Header from '../../components/shared/Header';
+import toast from 'react-hot-toast';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -81,15 +83,31 @@ export default function AnalyticsPage() {
       console.error('Failed to fetch analytics:', error);
       // Set fallback data on error
       setAnalytics({
-        totalUsers: 0,
-        activeUsers: 0,
-        totalBatches: 0,
-        systemHealth: 'Unknown',
+        totalUsers: 3,
+        activeUsers: 2,
+        totalBatches: 5,
+        systemHealth: 'Good',
         usageData: [],
-        recentActivity: []
+        recentActivity: [
+          { action: 'New user registered', user: 'john@securemaxtech.com', time: '2 minutes ago', type: 'user' },
+          { action: 'CV batch processed', user: 'jane@securemaxtech.com', time: '15 minutes ago', type: 'cv' }
+        ]
       });
-      setUserAnalytics([]);
-      setChartData([]);
+      setUserAnalytics([
+        { role: 'superadmin', count: 1 },
+        { role: 'admin', count: 0 },
+        { role: 'user', count: 2 }
+      ]);
+      setChartData([
+        { name: 'Mon', users: 45 },
+        { name: 'Tue', users: 52 },
+        { name: 'Wed', users: 48 },
+        { name: 'Thu', users: 61 },
+        { name: 'Fri', users: 55 },
+        { name: 'Sat', users: 38 },
+        { name: 'Sun', users: 29 }
+      ]);
+      toast.error('Failed to load analytics from API, showing test data');
     } finally {
       setIsLoading(false);
     }
@@ -114,6 +132,8 @@ export default function AnalyticsPage() {
         <title>Analytics & Reports - Enterprise AI Hub</title>
         <meta name="description" content="View detailed analytics and generate reports" />
       </Head>
+      
+      <Header />
       
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Back to Dashboard Button */}

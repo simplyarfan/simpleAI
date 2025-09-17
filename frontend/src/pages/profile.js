@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import Head from 'next/head';
+import Header from '../components/shared/Header';
 import { 
   User, 
   Mail, 
@@ -136,6 +137,8 @@ export default function ProfileSettings() {
         <title>Profile Settings - Enterprise AI Hub</title>
         <meta name="description" content="Manage your profile settings" />
       </Head>
+
+      <Header />
 
       <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Header */}

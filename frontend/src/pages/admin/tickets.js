@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
 import { supportAPI } from '../../utils/api';
+import Header from '../../components/shared/Header';
 import toast from 'react-hot-toast';
 import { 
   MessageSquare, 
@@ -219,6 +220,8 @@ export default function TicketsManagement() {
         <title>Support Tickets - Enterprise AI Hub</title>
         <meta name="description" content="Manage user support requests and tickets" />
       </Head>
+      
+      <Header />
       
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Back to Dashboard Button */}
