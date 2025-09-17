@@ -40,17 +40,19 @@ export default function AnalyticsPage() {
   const fetchAnalyticsData = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching detailed analytics data...');
+      console.log('Fetching real-time analytics data...');
       
-      // Fetch detailed analytics data for analytics page
-      const detailedResponse = await analyticsAPI.getDetailedAnalytics();
-      console.log('Detailed analytics response:', detailedResponse);
+      // Use the working simple analytics endpoint for real-time data
+      const response = await fetch('/api/analytics-detailed-simple');
+      const data = await response.json();
+      console.log('Analytics response:', data);
       
-      if (detailedResponse.data?.success) {
-        setDashboardData(detailedResponse.data.data.overview);
-        setUserAnalytics(detailedResponse.data.data);
+      if (data?.success) {
+        setDashboardData(data.data.overview);
+        setUserAnalytics(data.data);
+      } else {
+        throw new Error('Analytics API returned error');
       }
-
     } catch (error) {
       console.error('Error fetching analytics data:', error);
     } finally {

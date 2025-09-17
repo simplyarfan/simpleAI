@@ -69,7 +69,8 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       console.log('📝 Starting registration...', { email: userData.email });
 
-      const response = await fetch(`${API_BASE}/api/auth/register`, {
+      // Use the working simple registration endpoint
+      const response = await fetch(`${API_BASE}/api/register-simple`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -89,24 +90,28 @@ export const AuthProvider = ({ children }) => {
       // Handle successful registration
       if (data.success) {
         // Registration now includes automatic login
-        if (data.accessToken && data.user) {
+        if (data.data?.token && data.data?.user) {
           // Store tokens
-          tokenManager.setTokens(data.accessToken, data.refreshToken);
+          tokenManager.setTokens(data.data.token, null);
           
           // Update state with user data
-          setUser(data.user);
+          setUser(data.data.user);
           setIsAuthenticated(true);
           
           toast.success(data.message || 'Registration successful! You are now logged in.');
+          return {
+            success: true,
+            message: data.message,
+            user: data.data.user,
+            autoLogin: true
+          };
         } else {
           toast.success(data.message || 'Registration successful!');
         }
         
         return {
           success: true,
-          message: data.message,
-          user: data.user,
-          autoLogin: !!(data.accessToken && data.user)
+          message: data.message
         };
       }
 

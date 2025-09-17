@@ -104,7 +104,7 @@ export default function SuperAdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
               <div
                 onClick={() => router.push('/superadmin/users')}
-                className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-8 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 cursor-pointer"
+                className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-8 shadow-lg cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-6">
                   <Users className="h-12 w-12" />
@@ -119,7 +119,7 @@ export default function SuperAdminDashboard() {
 
               <div
                 onClick={() => router.push('/superadmin/analytics')}
-                className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-8 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 cursor-pointer"
+                className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg p-8 shadow-lg cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-6">
                   <BarChart3 className="h-12 w-12" />
@@ -134,7 +134,7 @@ export default function SuperAdminDashboard() {
 
               <div
                 onClick={() => router.push('/superadmin/system')}
-                className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-8 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 cursor-pointer"
+                className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-8 shadow-lg cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-6">
                   <Settings className="h-12 w-12" />
@@ -149,7 +149,7 @@ export default function SuperAdminDashboard() {
 
               <div
                 onClick={() => router.push('/superadmin/support')}
-                className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg p-8 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 cursor-pointer"
+                className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg p-8 shadow-lg cursor-pointer"
               >
                 <div className="flex items-center justify-between mb-6">
                   <PieChart className="h-12 w-12" />

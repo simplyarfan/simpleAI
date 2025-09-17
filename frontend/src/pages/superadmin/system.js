@@ -112,9 +112,10 @@ const SystemHealthPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center mb-4">
@@ -209,7 +210,7 @@ const SystemHealthPage = () => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

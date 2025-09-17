@@ -47,13 +47,16 @@ export default function UserManagementPage() {
     try {
       setIsLoading(true);
       console.log('Fetching users list...');
-      const response = await authAPI.getAllUsers();
-      console.log('Users API response:', response);
       
-      if (response.data?.success) {
-        setUsers(response.data.data?.users || []);
+      // Use the working simple endpoint instead of broken middleware endpoint
+      const response = await fetch('/api/users-simple');
+      const data = await response.json();
+      console.log('Users API response:', data);
+      
+      if (data?.success) {
+        setUsers(data.data?.users || []);
       } else {
-        console.error('Failed to fetch users:', response.data);
+        console.error('Failed to fetch users:', data);
         setUsers([]);
       }
     } catch (error) {
