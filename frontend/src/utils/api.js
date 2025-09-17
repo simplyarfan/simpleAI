@@ -2,23 +2,27 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import jwtDecode from 'jwt-decode';
 
-// Import axios directly for non-API calls
-const directAxios = axios.create();
+// Direct axios for health checks (used once)
 
 // Environment-based API URL configuration
 const getApiBaseUrl = () => {
-  if (typeof window === 'undefined') {
-    // Server-side rendering
-    return 'https://thesimpleai.vercel.app/api'; // HARDCODED FOR NOW
+  // Use environment variable if available
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
   }
   
-  // Client-side
+  if (typeof window === 'undefined') {
+    // Server-side rendering fallback
+    return 'https://thesimpleai.vercel.app/api';
+  }
+  
+  // Client-side fallback
   const hostname = window.location.hostname;
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return 'http://localhost:5000/api';
   }
   
-  // HARDCODED FOR PRODUCTION - bypasses env var issues
+  // Production fallback
   return 'https://thesimpleai.vercel.app/api';
 };
 
@@ -214,7 +218,7 @@ export const notificationsAPI = {
 
 export const analyticsAPI = {
   getDashboard: () => api.get('/analytics/dashboard'),
-  getDetailedAnalytics: () => api.get('/analytics/dashboard'),
+  getDetailedAnalytics: () => api.get('/analytics/detailed'),
   getUserAnalytics: (params) => api.get('/analytics/users', { params }),
   getAgentAnalytics: (params) => api.get('/analytics/agents', { params }),
   getCVAnalytics: (params) => api.get('/analytics/cv-intelligence', { params }),
@@ -224,8 +228,8 @@ export const analyticsAPI = {
 
 export const systemAPI = {
   getHealth: () => api.get('/system/health'),
-  getMetrics: () => api.get('/system/health'),
-  getServices: () => api.get('/system/health')
+  getMetrics: () => api.get('/system/metrics'),
+  getServices: () => api.get('/system/services')
 };
 
 export const supportAPI = {
@@ -243,7 +247,7 @@ export const supportAPI = {
 };
 
 export const healthAPI = {
-  check: () => directAxios.get('https://thesimpleai.vercel.app/health', {
+  check: () => axios.get('https://thesimpleai.vercel.app/health', {
     headers: {
       'Content-Type': 'application/json'
     }

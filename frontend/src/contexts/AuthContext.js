@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { tokenManager } from '../utils/api';
 import toast from 'react-hot-toast';
 
@@ -17,13 +17,16 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Get the API base URL (without /api since we'll add the full path)
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+  // Get the API base URL
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
   
-  // Cache busting timestamp to force fresh deployments
-  const CACHE_BUSTER = Date.now();
+  // Development logging helper
+  const isDev = process.env.NODE_ENV === 'development';
+  const log = (message, data) => {
+    if (isDev) console.log(message, data);
+  };
 
-  console.log('🔗 API Base URL:', API_BASE);
+  log('🔗 API Base URL:', API_BASE);
 
   // Check authentication status on mount
   useEffect(() => {
@@ -38,10 +41,10 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      console.log('🔐 Token exists, verifying with server...');
+      log('🔐 Token exists, verifying with server...');
       
       // Verify token with server and get real user data
-      const response = await fetch(`${API_BASE}/api/auth/check`, {
+      const response = await fetch(`${API_BASE}/auth/check`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -54,7 +57,7 @@ export const AuthProvider = ({ children }) => {
         if (data.success && data.user) {
           setUser(data.user);
           setIsAuthenticated(true);
-          console.log('✅ User verified:', data.user);
+          log('✅ User verified:', data.user);
         } else {
           // Invalid token, clear it
           tokenManager.clearTokens();
@@ -67,9 +70,9 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setIsAuthenticated(false);
       }
-      console.log('✅ Auth check successful');
+      log('✅ Auth check successful');
     } catch (error) {
-      console.error('❌ Auth check failed:', error);
+      if (isDev) console.error('❌ Auth check failed:', error);
       tokenManager.clearTokens();
     } finally {
       setLoading(false);
@@ -79,9 +82,9 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setLoading(true);
-      console.log('📝 Starting registration...', { email: userData.email });
+      log('📝 Starting registration...', { email: userData.email });
 
-      const response = await fetch(`${API_BASE}/api/auth/register`, {
+      const response = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -90,18 +93,18 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify(userData),
       });
 
-      console.log('📝 Registration response status:', response.status);
+      log('📝 Registration response status:', response.status);
       const data = await response.json();
-      console.log('📝 Registration response data:', data);
+      log('📝 Registration response data:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
       }
 
       if (data.success) {
-        // Store token and auto-login
+        // Store tokens and auto-login
         if (data.token && data.user) {
-          tokenManager.setTokens(data.token, null);
+          tokenManager.setTokens(data.token, data.refreshToken);
           setUser(data.user);
           setIsAuthenticated(true);
           toast.success(data.message || 'Registration successful! You are now logged in.');
@@ -138,10 +141,10 @@ export const AuthProvider = ({ children }) => {
       console.log('🔐 Starting login...', { 
         email: credentials.email,
         apiBase: API_BASE,
-        endpoint: `${API_BASE}/api/auth/login`
+        endpoint: `${API_BASE}/auth/login`
       });
 
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,10 +163,11 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data.success) {
-        // Store token from our simplified backend
+        // Store tokens from backend
         const token = data.token;
+        const refreshToken = data.refreshToken;
         if (token) {
-          tokenManager.setTokens(token, null);
+          tokenManager.setTokens(token, refreshToken);
         }
 
         // Update state with user data
@@ -191,7 +195,7 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = async (token) => {
     try {
       console.log('📧 Verifying email with token...');
-      const response = await fetch(`${API_BASE}/api/auth/verify-email`, {
+      const response = await fetch(`${API_BASE}/auth/verify-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -220,7 +224,7 @@ export const AuthProvider = ({ children }) => {
   const resendVerification = async (email) => {
     try {
       console.log('📧 Resending verification email...');
-      const response = await fetch(`${API_BASE}/api/auth/resend-verification`, {
+      const response = await fetch(`${API_BASE}/auth/resend-verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -248,7 +252,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async (logoutAll = false) => {
     try {
       const token = tokenManager.getAccessToken();
-      const endpoint = logoutAll ? '/api/auth/logout-all' : '/api/auth/logout';
+      const endpoint = logoutAll ? '/auth/logout-all' : '/auth/logout';
       
       await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
