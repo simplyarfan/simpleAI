@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useAuth } from '../contexts/AuthContext';
-import ProtectedRoute from '../components/ProtectedRoute';
 import Header from '../components/Header';
 import {
   Upload,
@@ -151,7 +150,6 @@ const CVIntelligence = () => {
   };
 
   return (
-    <ProtectedRoute requireAuth={true}>
       <div className="min-h-screen bg-gray-50">
         <Head>
           <title>CV Intelligence - Enterprise AI Hub</title>
@@ -377,7 +375,6 @@ const CVIntelligence = () => {
           </div>
         </main>
       </div>
-    </ProtectedRoute>
   );
 };
 

@@ -208,7 +208,6 @@ const SuperAdminDashboard = () => {
   ];
 
   return (
-    <ProtectedRoute requireAuth={true}>
       <div className="min-h-screen bg-gray-50">
         <Head>
           <title>Super Admin Dashboard - Enterprise AI Hub</title>
@@ -307,7 +306,6 @@ const SuperAdminDashboard = () => {
 
         </main>
       </div>
-    </ProtectedRoute>
   );
 };
 
