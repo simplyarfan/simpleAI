@@ -164,7 +164,8 @@ class SupportController {
       }
 
       // Check access permissions
-      if (ticket.user_id !== req.user.id && !req.user.isAdmin) {
+      const isAdmin = ['admin', 'superadmin'].includes(req.user.role);
+      if (ticket.user_id !== req.user.id && !isAdmin) {
         return res.status(403).json({
           success: false,
           message: 'Access denied'
@@ -184,7 +185,7 @@ class SupportController {
         WHERE tc.ticket_id = $1
         AND (tc.is_internal = false OR $2 = true)
         ORDER BY tc.created_at ASC
-      `, [ticket_id, req.user.isAdmin]);
+      `, [ticket_id, isAdmin]);
 
       res.json({
         success: true,
@@ -231,7 +232,8 @@ class SupportController {
       }
 
       // Check access permissions
-      if (ticket.user_id !== req.user.id && !req.user.isAdmin) {
+      const isAdmin = ['admin', 'superadmin'].includes(req.user.role);
+      if (ticket.user_id !== req.user.id && !isAdmin) {
         return res.status(403).json({
           success: false,
           message: 'Access denied'
@@ -239,7 +241,7 @@ class SupportController {
       }
 
       // Only admins can add internal comments
-      const isInternalComment = is_internal && req.user.isAdmin;
+      const isInternalComment = is_internal && isAdmin;
 
       // Add comment
       const result = await database.run(`
@@ -268,7 +270,7 @@ class SupportController {
       `, [result.rows[0].id]);
 
       // Create notification for ticket owner if comment is from admin
-      if (req.user.isAdmin && ticket.user_id !== req.user.id && !isInternalComment) {
+      if (isAdmin && ticket.user_id !== req.user.id && !isInternalComment) {
         const NotificationController = require('./NotificationController');
         await NotificationController.createTicketResponseNotification(
           ticket_id, 
@@ -311,13 +313,8 @@ class SupportController {
   // Update ticket (admin only)
   static async updateTicket(req, res) {
     try {
-      // Check admin permissions
-      if (!req.user.isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Admin access required'
-        });
-      }
+      // Admin permissions already checked by requireAdmin middleware
+      // No additional check needed here
 
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -453,13 +450,8 @@ class SupportController {
   // Get all tickets (admin only)
   static async getAllTickets(req, res) {
     try {
-      // Check admin permissions
-      if (!req.user.isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Admin access required'
-        });
-      }
+      // Admin permissions already checked by requireAdmin middleware
+      // No additional check needed here
 
       const { page = 1, limit = 20, status, priority, assigned_to } = req.query;
       const offset = (page - 1) * limit;
@@ -553,13 +545,8 @@ class SupportController {
   // Get support statistics (admin only)
   static async getSupportStats(req, res) {
     try {
-      // Check admin permissions
-      if (!req.user.isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Admin access required'
-        });
-      }
+      // Admin permissions already checked by requireAdmin middleware
+      // No additional check needed here
 
       const { timeframe = '30d' } = req.query;
 
