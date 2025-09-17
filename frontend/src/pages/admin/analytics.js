@@ -151,10 +151,6 @@ export default function AnalyticsPage() {
                 <option value="30d">Last 30 Days</option>
                 <option value="90d">Last 90 Days</option>
               </select>
-              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center">
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </button>
             </div>
           </div>
         </div>

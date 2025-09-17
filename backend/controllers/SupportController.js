@@ -631,20 +631,27 @@ class SupportController {
       res.json({
         success: true,
         data: {
-          overallStats: overallStats || {
-            total_tickets: 0,
-            open_tickets: 0,
-            in_progress_tickets: 0,
-            resolved_tickets: 0,
-            closed_tickets: 0,
-            unique_users: 0,
-            avg_resolution_time_hours: 0
-          },
-          priorityStats,
-          categoryStats,
-          dailyTrends,
-          activeUsers,
-          timeframe
+          total: parseInt(overallStats?.total_tickets) || 0,
+          open: parseInt(overallStats?.open_tickets) || 0,
+          inProgress: parseInt(overallStats?.in_progress_tickets) || 0,
+          closed: parseInt(overallStats?.closed_tickets) || 0,
+          // Additional detailed stats for future use
+          detailed: {
+            overallStats: overallStats || {
+              total_tickets: 0,
+              open_tickets: 0,
+              in_progress_tickets: 0,
+              resolved_tickets: 0,
+              closed_tickets: 0,
+              unique_users: 0,
+              avg_resolution_time_hours: 0
+            },
+            priorityStats,
+            categoryStats,
+            dailyTrends,
+            activeUsers,
+            timeframe
+          }
         }
       });
 

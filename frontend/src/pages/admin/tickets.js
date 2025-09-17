@@ -71,18 +71,8 @@ export default function TicketsManagement() {
       });
 
       if (response.data?.success) {
-        const ticketsData = response.data.data.tickets || [];
-        setTickets(ticketsData);
+        setTickets(response.data.data.tickets || []);
         setTotalPages(response.data.data.pagination?.totalPages || 1);
-        
-        // Calculate stats from tickets data as fallback
-        const calculatedStats = {
-          total: ticketsData.length,
-          open: ticketsData.filter(t => t.status === 'open').length,
-          inProgress: ticketsData.filter(t => t.status === 'in_progress').length,
-          closed: ticketsData.filter(t => t.status === 'closed').length
-        };
-        setStats(calculatedStats);
       }
     } catch (error) {
       console.error('Error fetching tickets:', error);
@@ -101,19 +91,8 @@ export default function TicketsManagement() {
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
-      // Set fallback stats based on current tickets data
-      calculateStatsFromTickets();
+      // Don't set fallback stats, let the API work properly
     }
-  };
-
-  const calculateStatsFromTickets = () => {
-    const stats = {
-      total: tickets.length,
-      open: tickets.filter(t => t.status === 'open').length,
-      inProgress: tickets.filter(t => t.status === 'in_progress').length,
-      closed: tickets.filter(t => t.status === 'closed').length
-    };
-    setStats(stats);
   };
 
   const getStatusColor = (status) => {

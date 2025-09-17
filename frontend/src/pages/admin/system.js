@@ -340,67 +340,6 @@ export default function SystemHealth() {
               </div>
             </div>
 
-            {/* Resource Usage */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">Resource Usage</h3>
-              
-              <div className="space-y-6">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <Cpu className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-medium text-gray-900">CPU Usage</span>
-                    </div>
-                    <span className="text-sm text-gray-600">{metrics.cpuUsage}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                      style={{ width: `${metrics.cpuUsage}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <MemoryStick className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-medium text-gray-900">Memory Usage</span>
-                    </div>
-                    <span className="text-sm text-gray-600">{metrics.memoryUsage}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-green-600 h-2 rounded-full transition-all duration-300" 
-                      style={{ width: `${metrics.memoryUsage}%` }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-2">
-                      <HardDrive className="w-4 h-4 text-purple-600" />
-                      <span className="text-sm font-medium text-gray-900">Disk Usage</span>
-                    </div>
-                    <span className="text-sm text-gray-600">{metrics.diskUsage}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
-                      style={{ width: `${metrics.diskUsage}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-gray-200">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Overall Performance</span>
-                  <span className="font-medium text-green-600">Excellent</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Recent Events */}
