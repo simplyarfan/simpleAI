@@ -135,9 +135,9 @@ export default function ProfileSettings() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-32 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
+        <div className="absolute -top-40 -right-32 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
+        <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
       </div>
 
       <Head>
@@ -158,24 +158,15 @@ export default function ProfileSettings() {
             Back to Dashboard
           </button>
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">Profile Settings</h1>
-              <p className="mt-2 text-gray-300">Manage your account information and preferences</p>
-            </div>
-            <div className="flex items-center space-x-3">
-              {user?.role === 'superadmin' && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                  Superadmin
-                </span>
-              )}
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-white">Profile Settings</h1>
+            <p className="mt-2 text-gray-300">Manage your account information and preferences</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Profile Information */}
-          <div className="lg:col-span-2">
+          <div>
             <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
               <div className="px-6 py-4 border-b border-white/20">
                 <div className="flex items-center justify-between">
@@ -288,8 +279,11 @@ export default function ProfileSettings() {
               </div>
             </div>
 
-            {/* Password Change Section */}
-            <div className="mt-8 bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
+          </div>
+
+          {/* Password Change Section */}
+          <div>
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
               <div className="px-6 py-4 border-b border-white/20">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-medium text-white">Password & Security</h2>
@@ -384,39 +378,6 @@ export default function ProfileSettings() {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Account Summary */}
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
-            <div className="px-6 py-4 border-b border-white/20">
-              <h2 className="text-lg font-medium text-white">Account Summary</h2>
-            </div>
-            <div className="px-6 py-6">
-              <div className="space-y-6">
-                <div>
-                  <p className="text-sm font-medium text-gray-300">Account Type</p>
-                  <p className="text-sm text-white capitalize">{user?.role || 'User'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-300">Member Since</p>
-                  <p className="text-sm text-white">
-                    {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-300">Last Login</p>
-                  <p className="text-sm text-white">
-                    {user?.last_login ? new Date(user.last_login).toLocaleDateString() : 'Today'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-300">Status</p>
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-400/20 text-green-300 border border-green-400/30">
-                    Active
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
