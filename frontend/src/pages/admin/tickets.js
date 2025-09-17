@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import Header from '../../components/Header';
-import { supportAPI } from '../../utils/api';
+import Head from 'next/head';
 import { 
   MessageSquare, 
   Plus, 
@@ -12,6 +11,7 @@ import {
   AlertCircle,
   CheckCircle,
   User,
+  ArrowLeft,
   Calendar,
   Tag,
   Eye,
@@ -24,8 +24,12 @@ export default function TicketsManagement() {
   const [tickets, setTickets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterPriority, setFilterPriority] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [showResponseModal, setShowResponseModal] = useState(false);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [responseText, setResponseText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [stats, setStats] = useState({
@@ -162,15 +166,33 @@ export default function TicketsManagement() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Head>
+        <title>Support Tickets - Enterprise AI Hub</title>
+        <meta name="description" content="Manage user support requests and tickets" />
+      </Head>
       
-      <main className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* Back to Dashboard Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/superadmin')}
+            className="flex items-center text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </button>
+        </div>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                <MessageSquare className="w-8 h-8 mr-3 text-orange-600" />
+                Support Tickets
+              </h1>
+              <p className="mt-2 text-gray-600">
+                Manage user support requests and tickets
+              </p>
                   <MessageSquare className="w-8 h-8 mr-3 text-orange-600" />
                   Support Tickets
                 </h1>

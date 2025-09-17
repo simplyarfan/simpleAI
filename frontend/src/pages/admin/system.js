@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import Header from '../../components/Header';
-import { systemAPI } from '../../utils/api';
+import Head from 'next/head';
 import { 
   Activity, 
   Server, 
@@ -12,6 +11,7 @@ import {
   Cpu,
   MemoryStick,
   AlertTriangle,
+  ArrowLeft,
   CheckCircle,
   Clock,
   RefreshCw,
@@ -31,15 +31,16 @@ export default function SystemHealth() {
     storage: 'healthy',
     memory: 'healthy'
   });
-  const [metrics, setMetrics] = useState({
+  const [systemHealth, setSystemHealth] = useState({
+    status: 'healthy',
     uptime: '99.9%',
     responseTime: '120ms',
-    activeUsers: 89,
     apiCalls: 15420,
     errorRate: '0.1%',
-    cpuUsage: 45,
-    memoryUsage: 62,
-    diskUsage: 34
+    activeUsers: 89,
+    components: [],
+    metrics: {},
+    recentEvents: []
   });
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -164,15 +165,63 @@ export default function SystemHealth() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Head>
+        <title>System Health - Enterprise AI Hub</title>
+        <meta name="description" content="Monitor system performance and health status" />
+      </Head>
       
-      <main className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* Back to Dashboard Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/superadmin')}
+            className="flex items-center text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </button>
+        </div>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                <Activity className="w-8 h-8 mr-3 text-purple-600" />
+                System Health
+              </h1>
+              <p className="mt-2 text-gray-600">
+                Monitor system performance and health status
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-500 flex items-center">
+                <Clock className="w-4 h-4 mr-1" />
+                Last updated: {lastUpdated.toLocaleTimeString()}
+              </div>
+              <button 
+                onClick={fetchSystemHealth}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Overall Status */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className={`p-3 rounded-full ${getStatusColor(systemStatus.overall)}`}>
+                {getStatusIcon(systemStatus.overall)}
+              </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                <h2 className="text-xl font-semibold text-gray-900">System Status</h2>
+                <p className="text-gray-600">
+                  {systemStatus.overall === 'healthy' ? 'All systems operational' : 
+                   systemStatus.overall === 'warning' ? 'Some issues detected' : 
+                   'Critical issues detected'}
                   <Activity className="w-8 h-8 mr-3 text-purple-600" />
                   System Health
                 </h1>
