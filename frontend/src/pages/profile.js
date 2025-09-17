@@ -415,20 +415,7 @@ export default function ProfileSettings() {
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     Active
                   </span>
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Last Login</p>
-                    <p className="text-sm text-gray-900">
-                      {user?.last_login ? new Date(user.last_login).toLocaleDateString() : 'Today'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-700">Status</p>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Active
-                    </span>
-                  </div>
+                </div>
                 </div>
               </div>
             </div>

@@ -383,7 +383,14 @@ export default function UsersManagement() {
                             </div>
                           </div>
                         </div>
-{{ ... }}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.role === 'superadmin' 
+                            ? 'bg-red-100 text-red-800' 
+                            : user.role === 'admin'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-gray-100 text-gray-800'
                         }`}>
                           <Shield className="w-3 h-3 mr-1" />
                           {user.role}
@@ -395,7 +402,6 @@ export default function UsersManagement() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                           user.is_active 
-{{ ... }}
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
                         }`}>
@@ -412,7 +418,7 @@ export default function UsersManagement() {
                           )}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                         {user.last_login ? (
                           <div className="flex items-center">
                             <Calendar className="w-3 h-3 mr-1" />
@@ -426,13 +432,13 @@ export default function UsersManagement() {
                         <div className="flex items-center justify-end space-x-2">
                           <button 
                             onClick={() => openEditModal(user)}
-                            className="text-blue-600 hover:text-blue-900"
+                            className="text-blue-400 hover:text-blue-300 transition-colors duration-200"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button 
                             onClick={() => openDeleteModal(user)}
-                            className="text-red-600 hover:text-red-900"
+                            className="text-red-400 hover:text-red-300 transition-colors duration-200"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
