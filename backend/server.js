@@ -228,7 +228,11 @@ app.get('/api/users-simple', async (req, res) => {
       SELECT 
         id, email, first_name, last_name, role, 
         department, job_title, is_active, 
-        last_login, created_at, updated_at
+        last_login, created_at, updated_at,
+        CASE 
+          WHEN last_login IS NOT NULL AND last_login > datetime('now', '-30 minutes') THEN 1
+          ELSE 0
+        END as is_currently_active
       FROM users 
       WHERE is_active = true
       ORDER BY created_at DESC
