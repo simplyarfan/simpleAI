@@ -313,7 +313,7 @@ export default function UsersManagement() {
               <select
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="all">All Roles</option>
                 <option value="superadmin">Superadmin</option>
@@ -325,10 +325,10 @@ export default function UsersManagement() {
         </div>
 
         {/* Users Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-white/5">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     User
@@ -365,7 +365,7 @@ export default function UsersManagement() {
                   </tr>
                 ) : (
                   users.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
+                    <tr key={user.id} className="hover:bg-white/5 transition-colors duration-200">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
@@ -503,16 +503,16 @@ export default function UsersManagement() {
 
       {/* Add User Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-gray-900">Add New User</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-6 w-96 bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-white">Add New User</h3>
               <button
                 onClick={() => {
                   setShowAddModal(false);
                   resetForm();
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-white transition-colors duration-200"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -520,31 +520,31 @@ export default function UsersManagement() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <label className="block text-sm font-medium text-white mb-2">Email</label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="user@securemaxtech.com"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <label className="block text-sm font-medium text-white mb-2">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="block w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -553,56 +553,56 @@ export default function UsersManagement() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">First Name</label>
+                  <label className="block text-sm font-medium text-white mb-2">First Name</label>
                   <input
                     type="text"
                     name="first_name"
                     value={formData.first_name}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="block w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                  <label className="block text-sm font-medium text-white mb-2">Last Name</label>
                   <input
                     type="text"
                     name="last_name"
                     value={formData.last_name}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="block w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700">Department</label>
+                <label className="block text-sm font-medium text-white mb-2">Department</label>
                 <input
                   type="text"
                   name="department"
                   value={formData.department}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700">Job Title</label>
+                <label className="block text-sm font-medium text-white mb-2">Job Title</label>
                 <input
                   type="text"
                   name="job_title"
                   value={formData.job_title}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700">Role</label>
+                <label className="block text-sm font-medium text-white mb-2">Role</label>
                 <select
                   name="role"
                   value={formData.role}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="block w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
                   <option value="user">User</option>
                   <option value="admin">Admin</option>
@@ -617,14 +617,14 @@ export default function UsersManagement() {
                   setShowAddModal(false);
                   resetForm();
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                className="px-6 py-3 text-sm font-medium text-gray-300 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-200"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddUser}
                 disabled={isSubmitting}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="px-6 py-3 text-sm font-medium text-white bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 rounded-xl disabled:opacity-50 transition-all duration-300 transform hover:scale-105"
               >
                 {isSubmitting ? 'Creating...' : 'Create User'}
               </button>
