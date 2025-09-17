@@ -175,6 +175,36 @@ if (supportRoutes) app.use('/api/support', supportRoutes);
 if (cvRoutes) app.use('/api/cv-intelligence', cvRoutes);
 if (notificationRoutes) app.use('/api/notifications', notificationRoutes);
 
+// Debug endpoint to check user authentication
+app.get('/api/debug/user', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.json({ success: false, message: 'No auth header' });
+    }
+    
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.json({ success: false, message: 'No token' });
+    }
+    
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    
+    await database.connect();
+    const user = await database.get('SELECT id, email, role FROM users WHERE id = $1', [decoded.userId]);
+    
+    res.json({
+      success: true,
+      decoded,
+      user,
+      hasRequiredRole: ['admin', 'superadmin'].includes(user?.role)
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // Simple endpoints for basic functionality (fallback)
 app.get('/api/users', async (req, res) => {
   try {
@@ -201,6 +231,36 @@ app.get('/api/users', async (req, res) => {
       success: false,
       message: 'Failed to fetch users'
     });
+  }
+});
+
+// Debug endpoint to check support tickets table
+app.get('/api/debug/support-tickets', async (req, res) => {
+  try {
+    await database.connect();
+    
+    // Check if table exists
+    const tableExists = await database.get(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'support_tickets'
+      );
+    `);
+    
+    let ticketCount = 0;
+    if (tableExists.exists) {
+      const count = await database.get('SELECT COUNT(*) as count FROM support_tickets');
+      ticketCount = count.count;
+    }
+    
+    res.json({
+      success: true,
+      tableExists: tableExists.exists,
+      ticketCount
+    });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
   }
 });
 
@@ -260,13 +320,13 @@ app.get('/api/system/metrics', async (req, res) => {
       success: true,
       data: {
         uptime: `${uptimeDays} days`,
-        responseTime: '45ms',
-        apiCalls: Math.floor(Math.random() * 10000) + 5000,
-        errorRate: '0.1%',
+        responseTime: null,
+        apiCalls: 0,
+        errorRate: null,
         activeUsers: userCount?.count || 0,
-        cpuUsage: Math.floor(Math.random() * 30) + 15,
+        cpuUsage: 0,
         memoryUsage: Math.floor((memUsage.heapUsed / memUsage.heapTotal) * 100),
-        diskUsage: Math.floor(Math.random() * 20) + 25,
+        diskUsage: 0,
         recentEvents: []
       }
     });
