@@ -254,25 +254,29 @@ export default function AnalyticsPage() {
             
             {/* Simple Bar Chart Representation */}
             <div className="space-y-4">
-              {Array.isArray(chartData) && chartData.map((day, index) => (
+              {Array.isArray(chartData) && chartData.length > 0 ? chartData.map((day, index) => (
                 <div key={day.name} className="flex items-center space-x-4">
                   <div className="w-8 text-sm text-gray-600">{day.name}</div>
                   <div className="flex-1 flex items-center space-x-2">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div 
                         className="bg-blue-600 h-2 rounded-full" 
-                        style={{ width: `${(day.users / 70) * 100}%` }}
+                        style={{ width: `${(day.users / Math.max(...chartData.map(d => d.users))) * 100}%` }}
                       ></div>
                     </div>
                     <span className="text-sm text-gray-600 w-8">{day.users}</span>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center text-gray-500 py-8">
+                  No usage data available
+                </div>
+              )}
             </div>
             
             <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
               <span>Users per day</span>
-              <span>Peak: 61 users</span>
+              <span>Peak: {Array.isArray(chartData) && chartData.length > 0 ? Math.max(...chartData.map(d => d.users)) : 0} users</span>
             </div>
           </div>
 
