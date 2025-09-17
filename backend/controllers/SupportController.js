@@ -1,5 +1,4 @@
 const database = require('../models/database');
-const User = require('../models/User');
 const { validationResult } = require('express-validator');
 
 class SupportController {

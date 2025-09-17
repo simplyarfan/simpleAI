@@ -179,12 +179,12 @@ export const authAPI = {
   resetPassword: (token, password) => api.post('/auth/reset-password', { token, password }),
   verifyEmail: (token) => api.post('/auth/verify-email', { token }),
   resendVerification: (email) => api.post('/auth/resend-verification', { email }),
-  updateProfile: (data) => api.put('/profile-simple', data), // TEMPORARY: Use simple endpoint
-  getProfile: () => api.get('/profile-simple'), // TEMPORARY: Use simple endpoint
+  updateProfile: (data) => api.put('/auth/profile', data),
+  getProfile: () => api.get('/auth/profile'),
   changePassword: (data) => api.put('/auth/change-password', data),
   
   // Admin/Superadmin user management
-  getAllUsers: (params) => api.get('/users-simple', { params }), // TEMPORARY: Use simple endpoint
+  getAllUsers: (params) => api.get('/auth/users', { params }),
   getUser: (userId) => api.get(`/auth/users/${userId}`),
   createUser: (userData) => api.post('/auth/users', userData),
   updateUser: (userId, userData) => api.put(`/auth/users/${userId}`, userData),
@@ -213,8 +213,8 @@ export const notificationsAPI = {
 };
 
 export const analyticsAPI = {
-  getDashboard: () => api.get('/analytics/dashboard-simple'), // TEMPORARY: Use simple endpoint
-  getDetailedAnalytics: () => api.get('/analytics-detailed-simple'), // TEMPORARY: Use simple endpoint
+  getDashboard: () => api.get('/analytics/dashboard'),
+  getDetailedAnalytics: () => api.get('/analytics/dashboard'),
   getUserAnalytics: (params) => api.get('/analytics/users', { params }),
   getAgentAnalytics: (params) => api.get('/analytics/agents', { params }),
   getCVAnalytics: (params) => api.get('/analytics/cv-intelligence', { params }),
@@ -223,15 +223,15 @@ export const analyticsAPI = {
 };
 
 export const systemAPI = {
-  getHealth: () => api.get('/system-health-simple'), // TEMPORARY: Use simple endpoint
-  getMetrics: () => api.get('/system-health-simple'), // TEMPORARY: Use simple endpoint
-  getServices: () => api.get('/system-health-simple') // TEMPORARY: Use simple endpoint
+  getHealth: () => api.get('/system/health'),
+  getMetrics: () => api.get('/system/health'),
+  getServices: () => api.get('/system/health')
 };
 
 export const supportAPI = {
   createTicket: (ticketData) => api.post('/support', ticketData),
   getMyTickets: (params) => api.get('/support/my-tickets', { params }),
-  getAllTickets: (params) => api.get('/support-tickets-simple', { params }), // TEMPORARY: Use simple endpoint
+  getAllTickets: (params) => api.get('/support', { params }),
   getTicket: (ticketId) => api.get(`/support/${ticketId}`),
   addComment: (ticketId, comment, isInternal = false) => api.post(`/support/${ticketId}/comments`, {
     comment,
@@ -239,7 +239,7 @@ export const supportAPI = {
   }),
   updateTicket: (ticketId, updateData) => api.put(`/support/${ticketId}`, updateData),
   deleteTicket: (ticketId) => api.delete(`/support/${ticketId}`),
-  getStats: (timeframe = '30d') => api.get('/support-tickets-simple') // TEMPORARY: Use simple endpoint
+  getStats: (timeframe = '30d') => api.get('/support/admin/stats', { params: { timeframe } })
 };
 
 export const healthAPI = {
