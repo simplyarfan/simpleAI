@@ -64,26 +64,6 @@ export default function AnalyticsPage() {
     }
   };
 
-      });
-      setUserAnalytics([
-        { role: 'user', count: 120, active_count: 75 },
-        { role: 'admin', count: 25, active_count: 12 },
-        { role: 'superadmin', count: 11, active_count: 2 }
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const mockChartData = [
-    { name: 'Mon', users: 45, sessions: 120, cvs: 23 },
-    { name: 'Tue', users: 52, sessions: 145, cvs: 31 },
-    { name: 'Wed', users: 48, sessions: 132, cvs: 28 },
-    { name: 'Thu', users: 61, sessions: 167, cvs: 42 },
-    { name: 'Fri', users: 55, sessions: 151, cvs: 35 },
-    { name: 'Sat', users: 32, sessions: 89, cvs: 18 },
-    { name: 'Sun', users: 28, sessions: 76, cvs: 15 }
-  ];
 
   if (loading || !user) {
     return (
@@ -99,28 +79,40 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Head>
+        <title>Analytics & Reports - Enterprise AI Hub</title>
+        <meta name="description" content="View detailed analytics and generate reports" />
+      </Head>
       
-      <main className="py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <BarChart3 className="w-8 h-8 mr-3 text-green-600" />
-                  Analytics & Reports
-                </h1>
-                <p className="mt-2 text-gray-600">
-                  View detailed analytics and generate reports
-                </p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <select
-                  value={timeRange}
-                  onChange={(e) => setTimeRange(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* Back to Dashboard Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => router.push('/superadmin')}
+            className="flex items-center text-gray-600 hover:text-gray-900"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </button>
+        </div>
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+                <BarChart3 className="w-8 h-8 mr-3 text-green-600" />
+                Analytics & Reports
+              </h1>
+              <p className="mt-2 text-gray-600">
+                View detailed analytics and generate reports
+              </p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <select
+                value={timeframe}
+                onChange={(e) => setTimeframe(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
                   <option value="24h">Last 24 Hours</option>
                   <option value="7d">Last 7 Days</option>
                   <option value="30d">Last 30 Days</option>
