@@ -218,14 +218,27 @@ export default function UsersManagement() {
   }
 
   if (user.role !== 'superadmin') {
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h2>
+          <p>You don't have permission to access this page.</p>
+          <button 
+            onClick={() => router.push('/')}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Head>
         <title>User Management - Enterprise AI Hub</title>
-        <meta name="description" content="Manage user accounts, roles, and permissions" />
+        <meta name="description" content="Manage user accounts, roles and permissions" />
       </Head>
       
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -239,6 +252,7 @@ export default function UsersManagement() {
             Back to Dashboard
           </button>
         </div>
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -248,7 +262,7 @@ export default function UsersManagement() {
                 User Management
               </h1>
               <p className="mt-2 text-gray-600">
-                Manage user accounts, roles, and permissions
+                Manage user accounts, roles and permissions
               </p>
             </div>
             <button 
@@ -265,377 +279,376 @@ export default function UsersManagement() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="text"
-                    placeholder="Search users..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-              <div className="sm:w-48">
-                <select
-                  value={filterRole}
-                  onChange={(e) => setFilterRole(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="all">All Roles</option>
-                  <option value="superadmin">Superadmin</option>
-                  <option value="admin">Admin</option>
-                  <option value="user">User</option>
-                </select>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
             </div>
-          </div>
-
-          {/* Users Table */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      User
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Role
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Department
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Last Login
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {isLoading ? (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-12 text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                      </td>
-                    </tr>
-                  ) : users.length === 0 ? (
-                    <tr>
-                      <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
-                        No users found
-                      </td>
-                    </tr>
-                  ) : (
-                    users.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                              <span className="text-white font-medium text-sm">
-                                {user.first_name?.[0]}{user.last_name?.[0]}
-                              </span>
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {user.first_name} {user.last_name}
-                              </div>
-                              <div className="text-sm text-gray-500 flex items-center">
-                                <Mail className="w-3 h-3 mr-1" />
-                                {user.email}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            user.role === 'superadmin' 
-                              ? 'bg-red-100 text-red-800' 
-                              : user.role === 'admin'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            <Shield className="w-3 h-3 mr-1" />
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {user.department || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            user.is_active 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {user.is_active ? (
-                              <>
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Active
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="w-3 h-3 mr-1" />
-                                Inactive
-                              </>
-                            )}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {user.last_login ? (
-                            <div className="flex items-center">
-                              <Calendar className="w-3 h-3 mr-1" />
-                              {new Date(user.last_login).toLocaleDateString()}
-                            </div>
-                          ) : (
-                            'Never'
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-2">
-                            <button 
-                              onClick={() => openEditModal(user)}
-                              className="text-blue-600 hover:text-blue-900"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button 
-                              onClick={() => openDeleteModal(user)}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+            <div className="sm:w-48">
+              <select
+                value={filterRole}
+                onChange={(e) => setFilterRole(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="all">All Roles</option>
+                <option value="superadmin">Superadmin</option>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+              </select>
             </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <div className="flex-1 flex justify-between sm:hidden">
-                  <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Page <span className="font-medium">{currentPage}</span> of{' '}
-                      <span className="font-medium">{totalPages}</span>
-                    </p>
-                  </div>
-                  <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                      <button
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                      >
-                        Previous
-                      </button>
-                      <button
-                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                        disabled={currentPage === totalPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                      >
-                        Next
-                      </button>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Add User Modal */}
-        {showAddModal && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Add New User</h3>
+        {/* Users Table */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Department
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Last Login
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                    </td>
+                  </tr>
+                ) : users.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                      No users found
+                    </td>
+                  </tr>
+                ) : (
+                  users.map((user) => (
+                    <tr key={user.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-medium text-sm">
+                              {user.first_name?.[0]}{user.last_name?.[0]}
+                            </span>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {user.first_name} {user.last_name}
+                            </div>
+                            <div className="text-sm text-gray-500 flex items-center">
+                              <Mail className="w-3 h-3 mr-1" />
+                              {user.email}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.role === 'superadmin' 
+                            ? 'bg-red-100 text-red-800' 
+                            : user.role === 'admin'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          <Shield className="w-3 h-3 mr-1" />
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {user.department || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          user.is_active 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {user.is_active ? (
+                            <>
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Active
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="w-3 h-3 mr-1" />
+                              Inactive
+                            </>
+                          )}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.last_login ? (
+                          <div className="flex items-center">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            {new Date(user.last_login).toLocaleDateString()}
+                          </div>
+                        ) : (
+                          'Never'
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end space-x-2">
+                          <button 
+                            onClick={() => openEditModal(user)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => openDeleteModal(user)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
                 <button
-                  onClick={() => {
-                    setShowAddModal(false);
-                    resetForm();
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
-                  <X className="w-5 h-5" />
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Next
                 </button>
               </div>
-              
-              <div className="space-y-4">
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="user@securemaxtech.com"
-                  />
+                  <p className="text-sm text-gray-700">
+                    Page <span className="font-medium">{currentPage}</span> of{' '}
+                    <span className="font-medium">{totalPages}</span>
+                  </p>
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Password</label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                     <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      Previous
                     </button>
-                  </div>
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Next
+                    </button>
+                  </nav>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">First Name</label>
-                    <input
-                      type="text"
-                      name="first_name"
-                      value={formData.first_name}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                    <input
-                      type="text"
-                      name="last_name"
-                      value={formData.last_name}
-                      onChange={handleInputChange}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Department</label>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Add User Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Add New User</h3>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  resetForm();
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="user@securemaxtech.com"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <div className="relative">
                   <input
-                    type="text"
-                    name="department"
-                    value={formData.department}
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Job Title</label>
-                  <input
-                    type="text"
-                    name="job_title"
-                    value={formData.job_title}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Role</label>
-                  <select
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                    <option value="superadmin">Superadmin</option>
-                  </select>
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
               
-              <div className="flex justify-end space-x-3 mt-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">First Name</label>
+                  <input
+                    type="text"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                  <input
+                    type="text"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Department</label>
+                <input
+                  type="text"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Job Title</label>
+                <input
+                  type="text"
+                  name="job_title"
+                  value={formData.job_title}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Role</label>
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                  <option value="superadmin">Superadmin</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  resetForm();
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddUser}
+                disabled={isSubmitting}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isSubmitting ? 'Creating...' : 'Create User'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && selectedUser && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <Trash2 className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Delete User</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Are you sure you want to delete <strong>{selectedUser.first_name} {selectedUser.last_name}</strong>? 
+                This action cannot be undone and will remove all user data from the database.
+              </p>
+              <div className="flex justify-center space-x-3">
                 <button
                   onClick={() => {
-                    setShowAddModal(false);
-                    resetForm();
+                    setShowDeleteModal(false);
+                    setSelectedUser(null);
                   }}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={handleAddUser}
+                  onClick={handleDeleteUser}
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Creating...' : 'Create User'}
+                  {isSubmitting ? 'Deleting...' : 'Delete User'}
                 </button>
               </div>
             </div>
           </div>
-        )}
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteModal && selectedUser && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="text-center">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
-                  <Trash2 className="h-6 w-6 text-red-600" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Delete User</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Are you sure you want to delete <strong>{selectedUser.first_name} {selectedUser.last_name}</strong>? 
-                  This action cannot be undone and will remove all user data from the database.
-                </p>
-                <div className="flex justify-center space-x-3">
-                  <button
-                    onClick={() => {
-                      setShowDeleteModal(false);
-                      setSelectedUser(null);
-                    }}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleDeleteUser}
-                    disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {isSubmitting ? 'Deleting...' : 'Delete User'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
+        </div>
+      )}
     </div>
   );
 }

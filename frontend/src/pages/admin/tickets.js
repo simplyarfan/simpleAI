@@ -206,58 +206,57 @@ export default function TicketsManagement() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <MessageSquare className="h-8 w-8 text-blue-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Tickets</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.total}</dd>
-                  </dl>
-                </div>
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <MessageSquare className="h-8 w-8 text-blue-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total Tickets</dt>
+                  <dd className="text-lg font-medium text-gray-900">{stats.total}</dd>
+                </dl>
               </div>
             </div>
+          </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <AlertCircle className="h-8 w-8 text-red-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Open</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.open}</dd>
-                  </dl>
-                </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <AlertCircle className="h-8 w-8 text-red-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Open</dt>
+                  <dd className="text-lg font-medium text-gray-900">{stats.open}</dd>
+                </dl>
               </div>
             </div>
+          </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <Clock className="h-8 w-8 text-yellow-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">In Progress</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.inProgress}</dd>
-                  </dl>
-                </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <Clock className="h-8 w-8 text-yellow-600" />
               </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">In Progress</dt>
+                  <dd className="text-lg font-medium text-gray-900">{stats.inProgress}</dd>
+                </dl>
             </div>
+          </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0">
-                  <CheckCircle className="h-8 w-8 text-green-600" />
-                </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Closed</dt>
-                    <dd className="text-lg font-medium text-gray-900">{stats.closed}</dd>
-                  </dl>
-                </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Closed</dt>
+                  <dd className="text-lg font-medium text-gray-900">{stats.closed}</dd>
+                </dl>
+              </div>
               </div>
             </div>
           </div>
