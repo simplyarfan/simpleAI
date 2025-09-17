@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import Header from '../../components/Header';
-import { analyticsAPI } from '../../utils/api';
+import Head from 'next/head';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -12,6 +11,7 @@ import {
   Calendar,
   Eye,
   MousePointer,
+  ArrowLeft,
   Clock,
   Zap
 } from 'lucide-react';
@@ -22,13 +22,12 @@ export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState({
     totalUsers: 0,
     activeUsers: 0,
-    totalBatches: 0,
-    totalTickets: 0,
-    systemHealth: 'Good'
+    systemHealth: 'Good',
+    usageData: [],
+    recentActivity: []
   });
-  const [userAnalytics, setUserAnalytics] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('7d');
+  const [timeframe, setTimeframe] = useState('7d');
 
   useEffect(() => {
     if (!loading) {
@@ -36,38 +35,35 @@ export default function AnalyticsPage() {
         router.push('/auth/login');
       } else if (user.role !== 'superadmin') {
         router.push('/');
+      } else {
+        fetchAnalytics();
       }
     }
-  }, [user, loading, router]);
-
-  useEffect(() => {
-    fetchAnalytics();
-  }, [timeRange]);
+  }, [user, loading, router, timeframe]);
 
   const fetchAnalytics = async () => {
     try {
       setIsLoading(true);
+      const response = await analyticsAPI.getDashboard();
       
-      // Fetch dashboard analytics
-      const dashboardResponse = await analyticsAPI.getDashboard();
-      if (dashboardResponse.data?.success) {
-        setAnalytics(dashboardResponse.data.data);
-      }
-
-      // Fetch user analytics
-      const userResponse = await analyticsAPI.getUserAnalytics({ timeframe: timeRange });
-      if (userResponse.data?.success) {
-        setUserAnalytics(userResponse.data.data.userStats || []);
+      if (response.data.success) {
+        setAnalytics(response.data.data);
       }
     } catch (error) {
-      console.error('Error fetching analytics:', error);
-      // Mock data for demonstration
+      console.error('Failed to fetch analytics:', error);
+      // Set default/empty data on error
       setAnalytics({
-        totalUsers: 156,
-        activeUsers: 89,
-        totalBatches: 45,
-        totalTickets: 23,
-        systemHealth: 'Good'
+        totalUsers: 0,
+        activeUsers: 0,
+        systemHealth: 'Unknown',
+        usageData: [],
+        recentActivity: []
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
       });
       setUserAnalytics([
         { role: 'user', count: 120, active_count: 75 },
