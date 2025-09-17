@@ -38,17 +38,35 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      console.log('🔐 Token exists, user authenticated');
-      // For our simplified backend, if token exists, assume user is authenticated
-      // In a real app, you'd verify the token with the server
-      setIsAuthenticated(true);
-      // Set a mock user for demo purposes
-      setUser({
-        id: 1,
-        email: 'admin@securemaxtech.com',
-        name: 'Super Admin',
-        role: 'superadmin'
+      console.log('🔐 Token exists, verifying with server...');
+      
+      // Verify token with server and get real user data
+      const response = await fetch(`${API_BASE}/api/auth/check`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.user) {
+          setUser(data.user);
+          setIsAuthenticated(true);
+          console.log('✅ User verified:', data.user);
+        } else {
+          // Invalid token, clear it
+          tokenManager.clearTokens();
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      } else {
+        // Token invalid, clear it
+        tokenManager.clearTokens();
+        setUser(null);
+        setIsAuthenticated(false);
+      }
       console.log('✅ Auth check successful');
     } catch (error) {
       console.error('❌ Auth check failed:', error);

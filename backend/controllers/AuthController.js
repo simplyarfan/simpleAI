@@ -309,6 +309,7 @@ const logout = async (req, res) => {
   }
 };
 
+
 // Get current user profile
 const getCurrentUser = async (req, res) => {
   try {
@@ -426,14 +427,16 @@ const checkAuth = async (req, res) => {
 
     res.json({
       success: true,
-      data: {
-        user: {
-          id: req.user.id,
-          email: req.user.email,
-          firstName: req.user.first_name,
-          lastName: req.user.last_name,
-          role: req.user.role
-        }
+      user: {
+        id: req.user.id,
+        email: req.user.email,
+        first_name: req.user.first_name,
+        last_name: req.user.last_name,
+        name: `${req.user.first_name} ${req.user.last_name}`,
+        role: req.user.role,
+        department: req.user.department,
+        job_title: req.user.job_title,
+        is_active: req.user.is_active
       }
     });
   } catch (error) {
