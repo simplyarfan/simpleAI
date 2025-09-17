@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
 import { supportAPI } from '../../utils/api';
 import Header from '../../components/shared/Header';
+import ErrorBoundary from '../../components/ErrorBoundary';
 import toast from 'react-hot-toast';
 import { 
   MessageSquare, 
@@ -75,31 +76,8 @@ export default function TicketsManagement() {
       }
     } catch (error) {
       console.error('Error fetching tickets:', error);
-      // Mock data for now
-      setTickets([
-        {
-          id: 1,
-          subject: 'Login Issues',
-          description: 'Unable to login to the platform',
-          status: 'open',
-          priority: 'high',
-          user_name: 'John Doe',
-          user_email: 'john@securemaxtech.com',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          subject: 'Feature Request',
-          description: 'Need new analytics dashboard',
-          status: 'in_progress',
-          priority: 'medium',
-          user_name: 'Jane Smith',
-          user_email: 'jane@securemaxtech.com',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ]);
+      // Throw error to trigger error boundary
+      throw new Error('Failed to load tickets data');
     } finally {
       setIsLoading(false);
     }
@@ -113,7 +91,7 @@ export default function TicketsManagement() {
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
-      setStats({ total: 2, open: 1, inProgress: 1, closed: 0 });
+      // Don't set fallback stats, let it fail gracefully
     }
   };
 
@@ -215,15 +193,16 @@ export default function TicketsManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Head>
-        <title>Support Tickets - Enterprise AI Hub</title>
-        <meta name="description" content="Manage user support requests and tickets" />
-      </Head>
-      
-      <Header />
-      
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <Head>
+          <title>Support Tickets - Enterprise AI Hub</title>
+          <meta name="description" content="Manage user support requests and tickets" />
+        </Head>
+        
+        <Header />
+        
+        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Back to Dashboard Button */}
         <div className="mb-6">
           <button
@@ -522,5 +501,6 @@ export default function TicketsManagement() {
         )}
       </main>
     </div>
+    </ErrorBoundary>
   );
 }

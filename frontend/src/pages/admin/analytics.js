@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
 import { analyticsAPI } from '../../utils/api';
 import Header from '../../components/shared/Header';
+import ErrorBoundary from '../../components/ErrorBoundary';
 import toast from 'react-hot-toast';
 import { 
   BarChart3, 
@@ -81,33 +82,8 @@ export default function AnalyticsPage() {
       
     } catch (error) {
       console.error('Failed to fetch analytics:', error);
-      // Set fallback data on error
-      setAnalytics({
-        totalUsers: 3,
-        activeUsers: 2,
-        totalBatches: 5,
-        systemHealth: 'Good',
-        usageData: [],
-        recentActivity: [
-          { action: 'New user registered', user: 'john@securemaxtech.com', time: '2 minutes ago', type: 'user' },
-          { action: 'CV batch processed', user: 'jane@securemaxtech.com', time: '15 minutes ago', type: 'cv' }
-        ]
-      });
-      setUserAnalytics([
-        { role: 'superadmin', count: 1 },
-        { role: 'admin', count: 0 },
-        { role: 'user', count: 2 }
-      ]);
-      setChartData([
-        { name: 'Mon', users: 45 },
-        { name: 'Tue', users: 52 },
-        { name: 'Wed', users: 48 },
-        { name: 'Thu', users: 61 },
-        { name: 'Fri', users: 55 },
-        { name: 'Sat', users: 38 },
-        { name: 'Sun', users: 29 }
-      ]);
-      toast.error('Failed to load analytics from API, showing test data');
+      // Throw error to trigger error boundary
+      throw new Error('Failed to load analytics data');
     } finally {
       setIsLoading(false);
     }
@@ -127,15 +103,16 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Head>
-        <title>Analytics & Reports - Enterprise AI Hub</title>
-        <meta name="description" content="View detailed analytics and generate reports" />
-      </Head>
-      
-      <Header />
-      
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <Head>
+          <title>Analytics & Reports - Enterprise AI Hub</title>
+          <meta name="description" content="View detailed analytics and generate reports" />
+        </Head>
+        
+        <Header />
+        
+        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Back to Dashboard Button */}
         <div className="mb-6">
           <button
@@ -274,7 +251,7 @@ export default function AnalyticsPage() {
             
             {/* Simple Bar Chart Representation */}
             <div className="space-y-4">
-              {chartData.map((day, index) => (
+              {Array.isArray(chartData) && chartData.map((day, index) => (
                 <div key={day.name} className="flex items-center space-x-4">
                   <div className="w-8 text-sm text-gray-600">{day.name}</div>
                   <div className="flex-1 flex items-center space-x-2">
@@ -387,5 +364,6 @@ export default function AnalyticsPage() {
         </div>
       </main>
     </div>
+    </ErrorBoundary>
   );
 }

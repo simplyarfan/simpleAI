@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
 import { authAPI } from '../../utils/api';
 import Header from '../../components/shared/Header';
+import ErrorBoundary from '../../components/ErrorBoundary';
 import toast from 'react-hot-toast';
 import { 
   Users, 
@@ -82,46 +83,8 @@ export default function UsersManagement() {
       }
     } catch (error) {
       console.error('Failed to fetch users:', error);
-      // Set fallback users data for testing
-      setUsers([
-        {
-          id: 1,
-          email: 'test1@securemaxtech.com',
-          first_name: 'Test1',
-          last_name: 'User',
-          role: 'user',
-          department: 'IT',
-          job_title: 'Developer',
-          is_active: true,
-          last_login: new Date().toISOString(),
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          email: 'test2@securemaxtech.com', 
-          first_name: 'Test2',
-          last_name: 'User',
-          role: 'user',
-          department: 'IT',
-          job_title: 'Analyst',
-          is_active: true,
-          last_login: new Date().toISOString(),
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 3,
-          email: user?.email || 'syedarfan@securemaxtech.com',
-          first_name: user?.first_name || 'Syed Arfan',
-          last_name: user?.last_name || 'Hussain',
-          role: 'superadmin',
-          department: 'IT',
-          job_title: 'System Administrator',
-          is_active: true,
-          last_login: new Date().toISOString(),
-          created_at: new Date().toISOString()
-        }
-      ]);
-      toast.error('Failed to load users from API, showing test data');
+      // Throw error to trigger error boundary
+      throw new Error('Failed to load users data');
     } finally {
       setIsLoading(false);
     }
@@ -275,15 +238,16 @@ export default function UsersManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Head>
-        <title>User Management - Enterprise AI Hub</title>
-        <meta name="description" content="Manage user accounts, roles and permissions" />
-      </Head>
-      
-      <Header />
-      
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gray-50">
+        <Head>
+          <title>User Management - Enterprise AI Hub</title>
+          <meta name="description" content="Manage user accounts, roles and permissions" />
+        </Head>
+        
+        <Header />
+        
+        <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Back to Dashboard Button */}
         <div className="mb-6">
           <button
@@ -692,5 +656,6 @@ export default function UsersManagement() {
         </div>
       )}
     </div>
+    </ErrorBoundary>
   );
 }
