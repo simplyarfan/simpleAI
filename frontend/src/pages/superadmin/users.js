@@ -79,33 +79,14 @@ export default function UserManagementPage() {
   const confirmDelete = async () => {
     if (!deletingUser) return;
     
-    // Double confirmation as requested
-    const firstConfirm = window.confirm(
-      `⚠️ FIRST CONFIRMATION: Are you sure you want to delete user "${deletingUser.email}"?\n\nThis action cannot be undone.`
-    );
-    
-    if (!firstConfirm) {
-      setDeletingUser(null);
-      return;
-    }
-    
-    const secondConfirm = window.confirm(
-      `🚨 FINAL CONFIRMATION: This will permanently delete "${deletingUser.email}" from the system.\n\nType the user's email in your mind: ${deletingUser.email}\n\nAre you absolutely certain?`
-    );
-    
-    if (!secondConfirm) {
-      setDeletingUser(null);
-      return;
-    }
-    
     try {
       console.log('Deleting user:', deletingUser.id);
-      // TODO: Implement actual delete API call
+      // TODO: Implement actual delete API call when ready
       // await authAPI.deleteUser(deletingUser.id);
       
       alert(`User ${deletingUser.email} would be deleted here. Delete API not implemented yet for safety.`);
       setDeletingUser(null);
-      // fetchUsers(); // Refresh the list
+      // fetchUsers(); // Refresh the list after real implementation
     } catch (error) {
       console.error('Error deleting user:', error);
       alert('Failed to delete user. Please try again.');

@@ -61,8 +61,7 @@ export default function SupportTicketsPage() {
   };
 
   const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter;
     return matchesSearch && matchesStatus && matchesPriority;
@@ -218,7 +217,7 @@ export default function SupportTicketsPage() {
                             #{ticket.id}: {ticket.subject}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {ticket.description.substring(0, 100)}...
+                            Created by: {ticket.first_name} {ticket.last_name} ({ticket.email})
                           </div>
                         </div>
                       </td>

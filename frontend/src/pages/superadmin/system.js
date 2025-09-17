@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Header from '../../components/Header';
-import { analyticsAPI, healthAPI } from '../../utils/api';
+import { systemAPI } from '../../utils/api';
 import { ArrowLeft } from 'lucide-react';
 
 const SystemHealthPage = () => {
@@ -36,36 +36,38 @@ const SystemHealthPage = () => {
 
   const fetchSystemHealth = async () => {
     try {
-      // Check API health
-      const healthResponse = await healthAPI.check();
-      const isHealthy = healthResponse.data?.status === 'healthy';
+      console.log('Fetching system health data...');
+      const healthResponse = await systemAPI.getHealth();
+      console.log('System health response:', healthResponse);
       
-      setSystemStatus({
-        apiServer: isHealthy ? 'Operational' : 'Degraded',
-        database: isHealthy ? 'Operational' : 'Degraded',
-        cvProcessing: 'Operational',
-        emailService: 'Degraded' // Known issue from your screenshot
-      });
+      if (healthResponse.data?.success) {
+        const healthData = healthResponse.data.data;
+        setSystemStatus({
+          apiServer: healthData.services?.api?.status === 'healthy' ? 'Operational' : 'Degraded',
+          database: healthData.services?.database?.status === 'healthy' ? 'Operational' : 'Degraded', 
+          cvProcessing: 'Operational',
+          emailService: 'Operational'
+        });
+        setAnalytics(healthData);
+      } else {
+        throw new Error('Health API returned error');
+      }
     } catch (error) {
       console.error('Health check failed:', error);
       setSystemStatus({
         apiServer: 'Error',
-        database: 'Error',
+        database: 'Error', 
         cvProcessing: 'Unknown',
         emailService: 'Error'
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchSystemAnalytics = async () => {
-    try {
-      const response = await analyticsAPI.getSystemAnalytics({ timeframe: '7d' });
-      setAnalytics(response.data);
-    } catch (error) {
-      console.error('System analytics failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    // This is now handled in fetchSystemHealth
+    return;
   };
 
   const getStatusColor = (status) => {

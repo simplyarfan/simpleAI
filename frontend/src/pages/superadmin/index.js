@@ -96,82 +96,11 @@ export default function SuperAdminDashboard() {
         {isLoading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading dashboard data...</p>
+            <p className="mt-4 text-gray-600">Loading dashboard...</p>
           </div>
         ) : (
           <>
-            {/* Metrics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Users className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Total Users</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {dashboardData?.totalUsers || 0}
-                    </p>
-                    <p className="text-sm text-green-600">
-                      {dashboardData?.userGrowth || '+0% from last month'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <Activity className="h-8 w-8 text-green-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Active Users</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {dashboardData?.activeUsers || 0}
-                    </p>
-                    <p className="text-sm text-green-600">
-                      {dashboardData?.activeGrowth || '+0% from last month'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <TrendingUp className="h-8 w-8 text-purple-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Agent Usage</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {dashboardData?.agentUsage || 0}
-                    </p>
-                    <p className="text-sm text-green-600">
-                      {dashboardData?.agentGrowth || '+0% from last month'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center">
-                  <div className="p-3 bg-yellow-100 rounded-full">
-                    <Shield className="h-8 w-8 text-yellow-600" />
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">System Health</p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      {dashboardData?.systemHealth || 'Good'}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {dashboardData?.systemStatus || 'Stable from last month'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Admin Tools Grid */}
+            {/* Admin Tools Grid - Simple Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
               <div
                 onClick={() => router.push('/superadmin/users')}
