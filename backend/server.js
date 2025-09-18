@@ -7,13 +7,14 @@ require('dotenv').config();
 const database = require('./models/database');
 
 // Import routes (with error handling)
-let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes;
+let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes, initRoutes;
 try {
   authRoutes = require('./routes/auth');
   analyticsRoutes = require('./routes/analytics');
   supportRoutes = require('./routes/support');
   cvRoutes = require('./routes/cv-intelligence');
   notificationRoutes = require('./routes/notifications');
+  initRoutes = require('./routes/init');
   console.log('✅ All routes loaded successfully');
 } catch (error) {
   console.error('❌ Error loading routes:', error.message);
@@ -174,6 +175,7 @@ if (analyticsRoutes) app.use('/api/analytics', analyticsRoutes);
 if (supportRoutes) app.use('/api/support', supportRoutes);
 if (cvRoutes) app.use('/api/cv-intelligence', cvRoutes);
 if (notificationRoutes) app.use('/api/notifications', notificationRoutes);
+if (initRoutes) app.use('/api/init', initRoutes);
 
 // Debug endpoint to check user authentication
 app.get('/api/debug/user', async (req, res) => {
