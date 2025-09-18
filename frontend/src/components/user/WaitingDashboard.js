@@ -479,9 +479,12 @@ const WaitingDashboard = () => {
             <p className="text-gray-300 mb-4">
               If you have any questions or need assistance, feel free to contact our support team.
             </p>
-            <button className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all">
+            <button 
+              onClick={() => window.location.href = '/support/create-ticket'}
+              className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all"
+            >
               <MessageSquare className="w-5 h-5 mr-2" />
-              Contact Support
+              Raise Support Ticket
             </button>
           </div>
         </div>

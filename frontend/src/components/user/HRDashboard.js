@@ -197,7 +197,10 @@ const HRDashboard = () => {
               <p className="text-gray-300 mb-4">
                 Having issues or need assistance with HR processes? Our support team is here to help.
               </p>
-              <button className="flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all">
+              <button 
+                onClick={() => window.location.href = '/support/create-ticket'}
+                className="flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all"
+              >
                 <MessageSquare className="w-5 h-5 mr-2" />
                 Raise Support Ticket
               </button>
