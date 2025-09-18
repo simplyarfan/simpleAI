@@ -221,16 +221,16 @@ export default function TicketsManagement() {
           </button>
         </div>
         {/* Header */}
-        <div className="mb-8">
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white flex items-center">
-                <MessageSquare className="w-8 h-8 mr-3 text-orange-400" />
-                Support Tickets
-              </h1>
-              <p className="mt-2 text-gray-300">
-                Manage user support requests and tickets
-              </p>
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mr-4">
+                <MessageSquare className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Support Tickets</h1>
+                <p className="text-gray-300">Manage user support requests and tickets</p>
+              </div>
             </div>
           </div>
         </div>

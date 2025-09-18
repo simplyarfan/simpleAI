@@ -203,7 +203,7 @@ export default function SystemHealth() {
         <div className="mb-6">
           <button
             onClick={() => router.push('/superadmin')}
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -213,22 +213,22 @@ export default function SystemHealth() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <Activity className="w-8 h-8 mr-3 text-purple-600" />
+              <h1 className="text-3xl font-bold text-white flex items-center">
+                <Activity className="w-8 h-8 mr-3 text-green-400" />
                 System Health
               </h1>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-gray-300">
                 Monitor system performance and health status
               </p>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500 flex items-center">
+              <div className="text-sm text-gray-300 flex items-center">
                 <Clock className="w-4 h-4 mr-1" />
                 Last updated: {lastUpdated.toLocaleTimeString()}
               </div>
               <button 
                 onClick={fetchSystemHealth}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-xl flex items-center transition-all duration-300 transform hover:scale-105"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Refresh
@@ -238,15 +238,15 @@ export default function SystemHealth() {
         </div>
 
         {/* Overall Status */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className={`p-3 rounded-full ${getStatusColor(systemStatus.overall)}`}>
                 {getStatusIcon(systemStatus.overall)}
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">System Status</h2>
-                <p className="text-gray-600">
+                <h2 className="text-xl font-semibold text-white">System Status</h2>
+                <p className="text-gray-300">
                   {systemStatus.overall === 'healthy' ? 'All systems operational' : 
                    systemStatus.overall === 'warning' ? 'Some issues detected' : 
                    'Critical issues detected'}
@@ -254,65 +254,65 @@ export default function SystemHealth() {
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-gray-900">{metrics.uptime}</div>
-              <div className="text-sm text-gray-500">Uptime</div>
+              <div className="text-2xl font-bold text-white">{metrics.uptime}</div>
+              <div className="text-sm text-gray-300">Uptime</div>
             </div>
           </div>
         </div>
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <Zap className="h-8 w-8 text-blue-600" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Response Time</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{metrics.responseTime || 'N/A'}</dd>
+                    <dt className="text-sm font-medium text-gray-300 truncate">Response Time</dt>
+                    <dd className="text-2xl font-semibold text-white">{metrics.responseTime || 'N/A'}</dd>
                   </dl>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <Globe className="h-8 w-8 text-green-600" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">API Calls</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{metrics.apiCalls.toLocaleString()}</dd>
+                    <dt className="text-sm font-medium text-gray-300 truncate">API Calls</dt>
+                    <dd className="text-2xl font-semibold text-white">{metrics.apiCalls.toLocaleString()}</dd>
                   </dl>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <AlertTriangle className="h-8 w-8 text-yellow-600" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Error Rate</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{metrics.errorRate || 'N/A'}</dd>
+                    <dt className="text-sm font-medium text-gray-300 truncate">Error Rate</dt>
+                    <dd className="text-2xl font-semibold text-white">{metrics.errorRate || 'N/A'}</dd>
                   </dl>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <Monitor className="h-8 w-8 text-purple-600" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Active Users</dt>
-                    <dd className="text-2xl font-semibold text-gray-900">{metrics.activeUsers}</dd>
+                    <dt className="text-sm font-medium text-gray-300 truncate">Active Users</dt>
+                    <dd className="text-2xl font-semibold text-white">{metrics.activeUsers}</dd>
                   </dl>
                 </div>
               </div>
@@ -321,19 +321,19 @@ export default function SystemHealth() {
 
           {/* System Components and Recent Events */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">System Components</h3>
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
+              <h3 className="text-lg font-medium text-white mb-6">System Components</h3>
               
               <div className="space-y-4">
                 {systemComponents.map((component, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-4 border border-white/20 rounded-xl bg-white/5">
                     <div className="flex items-center space-x-4">
                       <div className={`p-2 rounded-lg ${getStatusColor(component.status)}`}>
                         <component.icon className="w-5 h-5" />
                       </div>
                       <div>
-                        <div className="font-medium text-gray-900">{component.name}</div>
-                        <div className="text-sm text-gray-500">{component.description}</div>
+                        <h4 className="text-sm font-medium text-white">{component.name}</h4>
+                        <p className="text-sm text-gray-300">{component.description}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -348,8 +348,8 @@ export default function SystemHealth() {
             </div>
 
             {/* Recent Events */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-6">Recent System Events</h3>
+            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
+            <h3 className="text-lg font-medium text-white mb-6">Recent System Events</h3>
             
             <div className="space-y-4">
               {Array.isArray(recentEvents) && recentEvents.length > 0 ? recentEvents.map((event, index) => {
@@ -388,9 +388,7 @@ export default function SystemHealth() {
                   </div>
                 );
               }) : (
-                <div className="text-center text-gray-500 py-8">
-                  No recent system events
-                </div>
+                <p className="text-center text-gray-300 py-8">No recent system events</p>
               )}
             </div>
             </div>
