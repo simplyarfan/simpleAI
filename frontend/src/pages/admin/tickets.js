@@ -214,7 +214,7 @@ export default function TicketsManagement() {
         <div className="mb-6">
           <button
             onClick={() => router.push('/superadmin')}
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -224,11 +224,11 @@ export default function TicketsManagement() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <MessageSquare className="w-8 h-8 mr-3 text-orange-600" />
+              <h1 className="text-3xl font-bold text-white flex items-center">
+                <MessageSquare className="w-8 h-8 mr-3 text-orange-400" />
                 Support Tickets
               </h1>
-              <p className="mt-2 text-gray-600">
+              <p className="mt-2 text-gray-300">
                 Manage user support requests and tickets
               </p>
             </div>
@@ -237,57 +237,57 @@ export default function TicketsManagement() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <MessageSquare className="h-8 w-8 text-blue-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Tickets</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.total}</dd>
+                  <dt className="text-sm font-medium text-gray-300 truncate">Total Tickets</dt>
+                  <dd className="text-lg font-medium text-white">{stats.total}</dd>
                 </dl>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <AlertCircle className="h-8 w-8 text-red-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Open</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.open}</dd>
+                  <dt className="text-sm font-medium text-gray-300 truncate">Open</dt>
+                  <dd className="text-lg font-medium text-white">{stats.open}</dd>
                 </dl>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">In Progress</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.inProgress}</dd>
+                  <dt className="text-sm font-medium text-gray-300 truncate">In Progress</dt>
+                  <dd className="text-lg font-medium text-white">{stats.inProgress}</dd>
                 </dl>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Closed</dt>
-                  <dd className="text-lg font-medium text-gray-900">{stats.closed}</dd>
+                  <dt className="text-sm font-medium text-gray-300 truncate">Closed</dt>
+                  <dd className="text-lg font-medium text-white">{stats.closed}</dd>
                 </dl>
               </div>
             </div>
@@ -295,7 +295,7 @@ export default function TicketsManagement() {
         </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 mb-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
@@ -305,7 +305,7 @@ export default function TicketsManagement() {
                     placeholder="Search tickets..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="pl-10 pr-4 py-2 w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -313,7 +313,7 @@ export default function TicketsManagement() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   <option value="all">All Status</option>
                   <option value="open">Open</option>
@@ -325,7 +325,7 @@ export default function TicketsManagement() {
                 <select
                   value={priorityFilter}
                   onChange={(e) => setPriorityFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   <option value="all">All Priority</option>
                   <option value="high">High</option>
@@ -337,32 +337,32 @@ export default function TicketsManagement() {
           </div>
 
           {/* Tickets Table */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-white/10">
+                <thead className="bg-white/5">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Ticket
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       User
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Priority
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Created
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-transparent divide-y divide-white/10">
                   {isLoading ? (
                     <tr>
                       <td colSpan="6" className="px-6 py-12 text-center">
@@ -371,13 +371,13 @@ export default function TicketsManagement() {
                     </tr>
                   ) : tickets.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan="6" className="px-6 py-12 text-center text-gray-300">
                         No tickets found
                       </td>
                     </tr>
                   ) : (
                     tickets.map((ticket) => (
-                      <tr key={ticket.id} className="hover:bg-gray-50">
+                      <tr key={ticket.id} className="hover:bg-white/5">
                         <td className="px-6 py-4">
                           <div>
                             <div className="text-sm font-medium text-gray-900">
