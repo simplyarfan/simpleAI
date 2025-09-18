@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
 
@@ -13,13 +14,13 @@ const api = axios.create({
 
 // Add auth token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  console.log('🔍 [INTERCEPTOR] Token from localStorage:', token ? token.substring(0, 20) + '...' : 'null');
+  const token = Cookies.get('accessToken');
+  console.log('🔍 [INTERCEPTOR] Token from cookies:', token ? token.substring(0, 20) + '...' : 'null');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
     console.log('🔍 [INTERCEPTOR] Authorization header set:', config.headers.Authorization ? 'YES' : 'NO');
   } else {
-    console.log('🔍 [INTERCEPTOR] No token found in localStorage');
+    console.log('🔍 [INTERCEPTOR] No token found in cookies');
   }
   console.log('🔍 [INTERCEPTOR] Final headers:', config.headers);
   return config;
