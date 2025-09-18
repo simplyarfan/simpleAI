@@ -210,16 +210,16 @@ export default function SystemHealth() {
           </button>
         </div>
         {/* Header */}
-        <div className="mb-8">
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white flex items-center">
-                <Activity className="w-8 h-8 mr-3 text-green-400" />
-                System Health
-              </h1>
-              <p className="mt-2 text-gray-300">
-                Monitor system performance and health status
-              </p>
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mr-4">
+                <Activity className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">System Health</h1>
+                <p className="text-gray-300">Monitor system performance and health status</p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-300 flex items-center">
