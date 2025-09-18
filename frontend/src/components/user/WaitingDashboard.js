@@ -197,7 +197,7 @@ const WaitingDashboard = () => {
       id: 'memory',
       name: 'Memory Match',
       description: 'Match pairs of cards to test your memory',
-      icon: Brain,
+      icon: Sparkles,
       color: 'from-blue-500 to-purple-600',
       bgColor: 'bg-blue-500/10'
     },
@@ -272,10 +272,10 @@ const WaitingDashboard = () => {
         {memoryCards.map((card) => (
           <div
             key={card.id}
-            className={`aspect-square rounded-xl cursor-pointer transition-all duration-300 flex items-center justify-center text-2xl ${
+            className={`w-16 h-16 rounded-xl cursor-pointer transition-all duration-300 flex items-center justify-center text-xl ${
               flippedCards.includes(card.id) || matchedCards.includes(card.id)
-                ? 'bg-white text-gray-800 transform scale-105'
-                : 'bg-gray-700 hover:bg-gray-600'
+                ? 'bg-white/20 backdrop-blur-sm border border-white/30 text-white transform scale-105 shadow-lg'
+                : 'bg-white/10 backdrop-blur-sm border border-white/20 text-gray-400 hover:bg-white/15 hover:border-white/30'
             }`}
             onClick={() => handleMemoryCardClick(card.id)}
           >
@@ -284,7 +284,7 @@ const WaitingDashboard = () => {
         ))}
       </div>
       
-      {!memoryGameActive && matchedCards.length === memoryCards.length && (
+      {!memoryGameActive && matchedCards.length === memoryCards.length && memoryCards.length > 0 && (
         <div className="text-center">
           <p className="text-green-400 text-lg font-semibold">
             Congratulations! You completed it in {memoryMoves} moves!
