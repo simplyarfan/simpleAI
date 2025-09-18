@@ -107,25 +107,27 @@ const Header = () => {
                         Profile Settings
                       </Link>
 
-                      {/* Support Tickets Section */}
-                      <div className="border-t border-white/10 mt-2 pt-2">
-                        <Link
-                          href="/support/create-ticket"
-                          className="flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          <Plus className="w-4 h-4 mr-3" />
-                          Create Ticket
-                        </Link>
-                        <Link
-                          href="/support/my-tickets"
-                          className="flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          <Eye className="w-4 h-4 mr-3" />
-                          View My Tickets
-                        </Link>
-                      </div>
+                      {/* Support Tickets Section - Only for regular users */}
+                      {user?.role === 'user' && (
+                        <div className="border-t border-white/10 mt-2 pt-2">
+                          <Link
+                            href="/support/create-ticket"
+                            className="flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            <Plus className="w-4 h-4 mr-3" />
+                            Create Ticket
+                          </Link>
+                          <Link
+                            href="/support/my-tickets"
+                            className="flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            <Eye className="w-4 h-4 mr-3" />
+                            View My Tickets
+                          </Link>
+                        </div>
+                      )}
 
                       <div className="border-t border-white/10 mt-2">
                         <button

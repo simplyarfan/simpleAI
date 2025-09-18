@@ -147,10 +147,13 @@ export default function TicketDetail() {
             <h3 className="text-lg font-semibold text-white mb-2">Ticket Not Found</h3>
             <p className="text-gray-300 mb-6">The ticket you're looking for doesn't exist or you don't have access to it.</p>
             <button
-              onClick={() => router.push('/support/my-tickets')}
+              onClick={() => {
+                const isAdmin = ['admin', 'superadmin'].includes(user?.role);
+                router.push(isAdmin ? '/admin/tickets' : '/support/my-tickets');
+              }}
               className="px-6 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all"
             >
-              Back to My Tickets
+              {['admin', 'superadmin'].includes(user?.role) ? 'Back to Support Management' : 'Back to My Tickets'}
             </button>
           </div>
         </div>
@@ -178,11 +181,14 @@ export default function TicketDetail() {
         {/* Back Button */}
         <div className="mb-6">
           <button
-            onClick={() => router.push('/support/my-tickets')}
+            onClick={() => {
+              const isAdmin = ['admin', 'superadmin'].includes(user?.role);
+              router.push(isAdmin ? '/admin/tickets' : '/support/my-tickets');
+            }}
             className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to My Tickets
+            {['admin', 'superadmin'].includes(user?.role) ? 'Back to Support Management' : 'Back to My Tickets'}
           </button>
         </div>
 
