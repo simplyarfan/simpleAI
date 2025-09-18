@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
-const { requireAuth } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 const { generalLimiter } = require('../middleware/rateLimiter');
 
 // Test endpoint to verify routes are working
@@ -73,14 +73,14 @@ const handleUploadError = (error, req, res, next) => {
 if (CVIntelligenceController) {
   // POST /api/cv-intelligence/batch - Create new batch
   router.post('/batch',
-    requireAuth,
+    authenticateToken,
     generalLimiter,
     CVIntelligenceController.createBatch
   );
 
   // POST /api/cv-intelligence/batch/:batchId/process - Process files for batch
   router.post('/batch/:batchId/process',
-    requireAuth,
+    authenticateToken,
     generalLimiter,
     upload.fields([
       { name: 'jdFile', maxCount: 1 },
@@ -92,20 +92,20 @@ if (CVIntelligenceController) {
 
   // GET /api/cv-intelligence/batches - Get all batches for user
   router.get('/batches',
-    requireAuth,
+    authenticateToken,
     generalLimiter,
     CVIntelligenceController.getBatches
   );
 
   // GET /api/cv-intelligence/batch/:batchId/candidates - Get candidates for batch
   router.get('/batch/:batchId/candidates',
-    requireAuth,
+    authenticateToken,
     generalLimiter,
     CVIntelligenceController.getCandidates
   );
 } else {
   // Fallback routes if controller failed to load
-  router.get('/batches', requireAuth, (req, res) => {
+  router.get('/batches', authenticateToken, (req, res) => {
     res.status(500).json({
       success: false,
       message: 'CV Intelligence controller failed to load',
@@ -113,7 +113,7 @@ if (CVIntelligenceController) {
     });
   });
 
-  router.post('/batch', requireAuth, (req, res) => {
+  router.post('/batch', authenticateToken, (req, res) => {
     res.status(500).json({
       success: false,
       message: 'CV Intelligence controller failed to load',
