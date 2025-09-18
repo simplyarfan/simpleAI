@@ -168,16 +168,117 @@ Return only valid JSON:
     } catch (error) {
       console.log(`⚠️ HF API failed, using fallback for ${analysisType}:`, error.message);
       
-      // Import the old service for fallback
-      const ollamaService = require('./OllamaService');
+      // Use basic fallback methods
       if (analysisType === 'cv') {
-        return ollamaService.basicCVAnalysis(...args);
+        return this.basicCVAnalysis(...args);
       } else if (analysisType === 'jd') {
-        return ollamaService.basicJDAnalysis(...args);
+        return this.basicJDAnalysis(...args);
       } else if (analysisType === 'matching') {
-        return ollamaService.basicMatching(...args);
+        return this.basicMatching(...args);
       }
     }
+  }
+
+  // Basic fallback methods
+  basicCVAnalysis(cvText, filename) {
+    const lines = cvText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+    const emailMatch = cvText.match(emailRegex);
+    
+    const phoneRegex = /(\+?\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/;
+    const phoneMatch = cvText.match(phoneRegex);
+    
+    const name = lines.length > 0 ? lines[0] : filename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, ' ');
+    
+    const skillKeywords = [
+      'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'HTML', 'CSS', 'SQL', 
+      'Git', 'AWS', 'Docker', 'MongoDB', 'PostgreSQL', 'TypeScript', 'Vue.js',
+      'Angular', 'Express', 'Django', 'Flask', 'Spring', 'Laravel', 'PHP'
+    ];
+    const foundSkills = skillKeywords.filter(skill => 
+      cvText.toLowerCase().includes(skill.toLowerCase())
+    );
+
+    return {
+      personal: {
+        name: name,
+        email: emailMatch ? emailMatch[0] : "Not specified",
+        phone: phoneMatch ? phoneMatch[0] : "Not specified",
+        location: "Not specified",
+        age: "Not specified",
+        gender: "Not specified",
+        current_salary: "Not specified",
+        expected_salary: "Not specified"
+      },
+      skills: foundSkills.length > 0 ? foundSkills : ["Basic parsing - HF API unavailable"],
+      experience: [{
+        company: "Basic parsing completed",
+        position: "HF API analysis unavailable",
+        duration: "Unknown",
+        description: "Add HF API key for detailed analysis"
+      }],
+      education: [{
+        degree: "Basic parsing completed",
+        institution: "HF API analysis unavailable",
+        year: "Unknown"
+      }],
+      summary: "Basic CV parsing completed - add HF API key for detailed analysis"
+    };
+  }
+
+  basicJDAnalysis(jdText, filename) {
+    const skillKeywords = [
+      'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'HTML', 'CSS', 'SQL', 
+      'Git', 'AWS', 'Docker', 'MongoDB', 'PostgreSQL', 'TypeScript', 'Vue.js'
+    ];
+    
+    const requiredSkills = skillKeywords.filter(skill => 
+      jdText.toLowerCase().includes(skill.toLowerCase())
+    );
+
+    const experienceMatch = jdText.match(/(\d+)[\s-]*(\d+)?\s*years?\s*(of\s*)?experience/i);
+    const experienceRequired = experienceMatch ? 
+      (experienceMatch[2] ? `${experienceMatch[1]}-${experienceMatch[2]} years` : `${experienceMatch[1]}+ years`) :
+      '2-5 years';
+
+    return {
+      position_title: 'Software Engineer',
+      company: 'Company Name',
+      required_skills: requiredSkills.length > 0 ? requiredSkills : ['JavaScript', 'React', 'Node.js'],
+      experience_required: experienceRequired,
+      responsibilities: ['Develop software solutions', 'Collaborate with team', 'Write clean code'],
+      domain: 'Technology'
+    };
+  }
+
+  basicMatching(cvData, jdData) {
+    const cvSkills = cvData.skills.map(s => s.toLowerCase());
+    const jdSkills = jdData.required_skills.map(s => s.toLowerCase());
+    
+    const matchedSkills = cvSkills.filter(skill => 
+      jdSkills.some(jdSkill => 
+        skill.includes(jdSkill) || jdSkill.includes(skill) || skill === jdSkill
+      )
+    );
+    
+    const missingSkills = jdSkills.filter(skill => 
+      !cvSkills.some(cvSkill => cvSkill.includes(skill) || skill.includes(cvSkill))
+    );
+    
+    const skillMatchRate = jdSkills.length > 0 ? (matchedSkills.length / jdSkills.length) : 0.5;
+    const overallScore = Math.round(60 + (skillMatchRate * 40));
+    
+    return {
+      overall_score: overallScore,
+      skills_matched: matchedSkills.slice(0, 10),
+      skills_missing: missingSkills.slice(0, 5),
+      strengths: skillMatchRate > 0.6 ? ['Good skill alignment'] : ['Some relevant experience'],
+      concerns: skillMatchRate < 0.4 ? ['Limited skill match'] : [],
+      recommendations: [`Score: ${overallScore}%`, 'Add HF API key for detailed analysis'],
+      fit_level: overallScore >= 85 ? 'High' : overallScore >= 70 ? 'Medium' : 'Low',
+      recommendation: overallScore >= 85 ? 'Highly Recommended' : overallScore >= 70 ? 'Recommended' : 'Consider'
+    };
   }
 }
 

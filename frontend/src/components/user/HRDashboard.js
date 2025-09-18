@@ -129,7 +129,7 @@ const HRDashboard = () => {
           className={`w-full py-2.5 rounded-lg font-medium transition-all duration-200 text-sm bg-gradient-to-r ${agent.gradient} text-white hover:shadow-md`}
           onClick={() => {
             if (agent.id === 'cv_intelligence') {
-              window.open('/cv-intelligence', '_blank');
+              window.location.href = '/cv-intelligence';
             } else {
               window.open(`/agent/${agent.id}`, '_blank');
             }

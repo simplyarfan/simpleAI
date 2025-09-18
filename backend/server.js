@@ -30,10 +30,22 @@ const PORT = process.env.PORT || 5000;
 
 console.log('🚀 Starting SimpleAI Enterprise Backend...');
 
-// Initialize database connection (non-blocking)
-database.connect().catch(error => {
-  console.error('❌ Database connection failed:', error);
-  // Don't exit process, let it continue for health checks
+// Initialize database on startup
+database.init().then(() => {
+  console.log('✅ Database initialized successfully');
+}).catch(error => {
+  console.error('❌ Database initialization failed:', error);
+});
+
+// Add database initialization endpoint for debugging
+app.get('/api/init-db', async (req, res) => {
+  try {
+    await database.init();
+    res.json({ success: true, message: 'Database initialized successfully' });
+  } catch (error) {
+    console.error('Database init error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 // CORS Configuration

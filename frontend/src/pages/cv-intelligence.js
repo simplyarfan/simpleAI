@@ -206,25 +206,27 @@ const CVIntelligence = () => {
       <Header />
 
       <main className="relative z-10 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {/* Back to Dashboard Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => window.location.href = '/'}
+            className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </button>
+        </div>
+
         {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center mr-4">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-white">CV Intelligence</h1>
-                <p className="text-gray-300">AI-powered candidate ranking and analysis</p>
-              </div>
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center">
+              <FileText className="w-8 h-8 text-white" />
             </div>
-            <button
-              onClick={() => setShowUploadForm(true)}
-              className="flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              New Batch
-            </button>
+            <div>
+              <h1 className="text-4xl font-bold text-white">CV Intelligence</h1>
+              <p className="text-gray-300 text-lg">AI-powered candidate ranking and analysis</p>
+            </div>
           </div>
         </div>
 
