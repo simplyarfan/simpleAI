@@ -208,14 +208,7 @@ const SuperAdminDashboard = () => {
   ];
 
   return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-32 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-          <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
-        </div>
-
+      <div>
         <Head>
           <title>Super Admin Dashboard - simpleAI</title>
           <meta name="description" content="Super admin dashboard for simpleAI" />
@@ -233,7 +226,7 @@ const SuperAdminDashboard = () => {
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
                           <Brain className="w-7 h-7 text-white" />
                         </div>
-                        <div className="absolute -inset-1 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 rounded-xl blur opacity-30 animate-pulse"></div>
+                        <div className="absolute -inset-1 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 rounded-xl blur opacity-30"></div>
                       </div>
                       <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
                         simpleAI
@@ -254,7 +247,7 @@ const SuperAdminDashboard = () => {
                   </div>
                   <div className="hidden sm:block">
                     <div className="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20">
-                      <Settings className="w-16 h-16 text-white animate-spin-slow" />
+                      <Settings className="w-16 h-16 text-white" />
                     </div>
                   </div>
                 </div>
