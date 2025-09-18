@@ -69,9 +69,17 @@ export default function ProfileSettings() {
     try {
       setIsSaving(true);
       
+      // Prepare update data - exclude department for regular users
+      let updateData = { ...formData };
+      if (user?.role === 'user') {
+        // Remove department from update data for regular users
+        const { department, ...userUpdateData } = updateData;
+        updateData = userUpdateData;
+      }
+      
       // Here you would make an API call to update profile
       // For now, just update the context
-      const updatedUser = { ...user, ...formData };
+      const updatedUser = { ...user, ...updateData };
       updateUser(updatedUser);
       
       toast.success('Profile updated successfully!');
@@ -250,15 +258,24 @@ export default function ProfileSettings() {
                     <label className="block text-sm font-medium text-white mb-2">
                       <Building2 className="w-4 h-4 inline mr-2" />
                       Department
+                      {user?.role === 'user' && (
+                        <span className="ml-2 text-xs text-gray-400">(Admin Only)</span>
+                      )}
                     </label>
                     <input
                       type="text"
                       name="department"
-                      value={formData.department}
+                      value={formData.department || 'Not Assigned'}
                       onChange={handleInputChange}
-                      disabled={!isEditing}
+                      disabled={!isEditing || user?.role === 'user'}
                       className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:bg-white/5 disabled:text-gray-300"
+                      placeholder={user?.role === 'user' ? 'Department assigned by admin' : 'Enter department'}
                     />
+                    {user?.role === 'user' && (
+                      <p className="mt-1 text-xs text-gray-400">
+                        Your department can only be changed by an administrator
+                      </p>
+                    )}
                   </div>
 
                   <div>
