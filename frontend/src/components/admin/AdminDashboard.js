@@ -234,7 +234,15 @@ const AdminDashboard = () => {
               ? `bg-gradient-to-r ${agent.gradient} text-white hover:shadow-md`
               : 'bg-gray-800 text-gray-500 cursor-not-allowed'
           }`}
-          onClick={() => agent.status === 'active' && window.open(`/agent/${agent.id}`, '_blank')}
+          onClick={() => {
+            if (agent.status === 'active') {
+              if (agent.id === 'cv_intelligence') {
+                window.open('/cv-intelligence', '_blank');
+              } else {
+                window.open(`/agent/${agent.id}`, '_blank');
+              }
+            }
+          }}
           disabled={agent.status !== 'active'}
         >
           {agent.status === 'active' ? 'Launch Agent' : 'Coming Soon'}

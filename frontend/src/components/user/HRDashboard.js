@@ -127,7 +127,13 @@ const HRDashboard = () => {
         {/* Action button */}
         <button 
           className={`w-full py-2.5 rounded-lg font-medium transition-all duration-200 text-sm bg-gradient-to-r ${agent.gradient} text-white hover:shadow-md`}
-          onClick={() => window.open(`/agent/${agent.id}`, '_blank')}
+          onClick={() => {
+            if (agent.id === 'cv_intelligence') {
+              window.open('/cv-intelligence', '_blank');
+            } else {
+              window.open(`/agent/${agent.id}`, '_blank');
+            }
+          }}
         >
           Launch Agent
         </button>

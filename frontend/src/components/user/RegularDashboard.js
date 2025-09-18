@@ -473,7 +473,11 @@ const EnterpriseAIHub = () => {
             onClick={(e) => {
               e.stopPropagation();
               if (agent.status === 'active') {
-                window.open(`/agent/${agent.id}`, '_blank');
+                if (agent.id === 'cv_intelligence') {
+                  window.open('/cv-intelligence', '_blank');
+                } else {
+                  window.open(`/agent/${agent.id}`, '_blank');
+                }
               }
             }}
             className={`

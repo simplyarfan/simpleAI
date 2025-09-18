@@ -2,7 +2,7 @@ const database = require('../models/database');
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const pdf = require('pdf-parse');
-const ollamaService = require('../services/OllamaService');
+const huggingFaceService = require('../services/HuggingFaceService');
 
 class CVIntelligenceController {
   // Create a new CV analysis batch
@@ -98,8 +98,8 @@ class CVIntelligenceController {
         jdText = jdFile.buffer.toString('utf8');
       }
 
-      // Use LLM for intelligent JD analysis
-      const jdAnalysis = await ollamaService.analyzeWithFallback('jd', jdText, jdFile.originalname);
+      // Use Hugging Face for intelligent JD analysis
+      const jdAnalysis = await huggingFaceService.analyzeWithFallback('jd', jdText, jdFile.originalname);
 
       // Update batch with JD analysis
       await database.run(`
@@ -126,13 +126,13 @@ class CVIntelligenceController {
             cvText = cvFile.buffer.toString('utf8');
           }
 
-          // Analyze CV with LLM
-          console.log(`🧠 Analyzing CV with LLM: ${cvFile.originalname}`);
-          const cvAnalysis = await ollamaService.analyzeWithFallback('cv', cvText, cvFile.originalname);
+          // Analyze CV with Hugging Face
+          console.log(`🤗 Analyzing CV with Hugging Face: ${cvFile.originalname}`);
+          const cvAnalysis = await huggingFaceService.analyzeWithFallback('cv', cvText, cvFile.originalname);
           
-          // Perform intelligent matching with LLM
+          // Perform intelligent matching with Hugging Face
           console.log(`🎯 Performing intelligent matching for: ${cvFile.originalname}`);
-          const matchingResult = await ollamaService.analyzeWithFallback('matching', cvAnalysis, jdAnalysis);
+          const matchingResult = await huggingFaceService.analyzeWithFallback('matching', cvAnalysis, jdAnalysis);
 
           // Create candidate record
           const candidateId = uuidv4();
