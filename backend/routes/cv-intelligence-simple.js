@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { requireAuth } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 
 // Simple test endpoint
 router.get('/test', (req, res) => {
@@ -12,7 +12,7 @@ router.get('/test', (req, res) => {
 });
 
 // Simple batches endpoint
-router.get('/batches', requireAuth, (req, res) => {
+router.get('/batches', authenticateToken, (req, res) => {
   res.json({
     success: true,
     data: [],
@@ -21,7 +21,7 @@ router.get('/batches', requireAuth, (req, res) => {
 });
 
 // Simple create batch endpoint
-router.post('/batch', requireAuth, (req, res) => {
+router.post('/batch', authenticateToken, (req, res) => {
   res.json({
     success: true,
     message: 'Simple batch creation working',
