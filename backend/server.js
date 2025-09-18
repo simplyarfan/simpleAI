@@ -32,8 +32,8 @@ try {
 }
 
 try {
-  cvRoutes = require('./routes/cv-intelligence');
-  console.log('✅ CV Intelligence routes loaded');
+  cvRoutes = require('./routes/cv-intelligence-simple');
+  console.log('✅ CV Intelligence routes loaded (simple version)');
 } catch (error) {
   console.error('❌ Error loading CV Intelligence routes:', error.message);
   console.error('❌ CV Intelligence stack:', error.stack);
