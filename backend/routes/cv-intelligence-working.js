@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
-const { generalLimiter } = require('../middleware/rateLimiter');
+const { generalLimiter } = require('../middleware/rateLimiting');
 const database = require('../models/database');
 const { v4: uuidv4 } = require('uuid');
 
