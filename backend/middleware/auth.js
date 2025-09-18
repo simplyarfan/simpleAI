@@ -4,7 +4,7 @@ const database = require('../models/database');
 // JWT Authentication Middleware - Enterprise Grade
 const authenticateToken = async (req, res, next) => {
   try {
-  const authHeader = req.headers['authorization'];
+  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
 const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     // Debug logging
