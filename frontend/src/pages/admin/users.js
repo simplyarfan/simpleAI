@@ -340,7 +340,7 @@ export default function UsersManagement() {
                     Department
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
-                    Status
+                    Job Title
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Last Login
@@ -385,38 +385,22 @@ export default function UsersManagement() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium ${
                           user.role === 'superadmin' 
-                            ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                            ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
                             : user.role === 'admin'
-                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                            : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                            : 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
                         }`}>
                           <Shield className="w-3 h-3 mr-1" />
-                          {user.role}
+                          {user.role === 'superadmin' ? 'Superadmin' : user.role}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                         {user.department || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.is_active 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {user.is_active ? (
-                            <>
-                              <CheckCircle className="w-3 h-3 mr-1" />
-                              Active
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="w-3 h-3 mr-1" />
-                              Inactive
-                            </>
-                          )}
-                        </span>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
+                        {user.job_title || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                         {user.last_login ? (

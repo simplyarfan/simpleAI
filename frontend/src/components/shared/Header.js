@@ -84,7 +84,9 @@ const Header = () => {
                           <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium mt-2 ${
                             user.role === 'superadmin' 
                               ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
-                              : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                              : user.role === 'admin'
+                              ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                              : 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
                           }`}>
                             <Shield className="w-3 h-3 mr-1" />
                             {user.role === 'superadmin' ? 'Superadmin' : user.role}
