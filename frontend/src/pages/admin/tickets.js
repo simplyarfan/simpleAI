@@ -380,11 +380,11 @@ export default function TicketsManagement() {
                       <tr key={ticket.id} className="hover:bg-white/5">
                         <td className="px-6 py-4">
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-white">
                               #{ticket.id} - {ticket.subject}
                             </div>
-                            <div className="text-sm text-gray-500 mt-1">
-                              {ticket.description?.substring(0, 100)}...
+                            <div className="text-sm text-gray-300 mt-1 line-clamp-2">
+                              {ticket.description?.substring(0, 120)}...
                             </div>
                           </div>
                         </td>
@@ -394,10 +394,10 @@ export default function TicketsManagement() {
                               <User className="w-4 h-4 text-white" />
                             </div>
                             <div className="ml-3">
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-white">
                                 {ticket.user_name}
                               </div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm text-gray-300">
                                 {ticket.user_email}
                               </div>
                             </div>
@@ -415,17 +415,17 @@ export default function TicketsManagement() {
                             {ticket.priority}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                           <div className="flex items-center">
                             <Calendar className="w-3 h-3 mr-1" />
                             {new Date(ticket.created_at).toLocaleDateString()}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex items-center justify-end space-x-2">
+                          <div className="flex items-center justify-end space-x-3">
                             <button 
                               onClick={() => openResponseModal(ticket)}
-                              className="text-blue-600 hover:text-blue-900"
+                              className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-all"
                               title="Respond to ticket"
                             >
                               <MessageCircle className="w-4 h-4" />
@@ -433,11 +433,12 @@ export default function TicketsManagement() {
                             <select
                               value={ticket.status}
                               onChange={(e) => updateTicketStatus(ticket.id, e.target.value)}
-                              className="text-xs border border-gray-300 rounded px-2 py-1"
+                              className="text-xs bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                             >
-                              <option value="open">Open</option>
-                              <option value="in_progress">In Progress</option>
-                              <option value="closed">Closed</option>
+                              <option value="open" className="bg-slate-800">Open</option>
+                              <option value="in_progress" className="bg-slate-800">In Progress</option>
+                              <option value="resolved" className="bg-slate-800">Resolved</option>
+                              <option value="closed" className="bg-slate-800">Closed</option>
                             </select>
                           </div>
                         </td>
@@ -451,57 +452,59 @@ export default function TicketsManagement() {
 
         {/* Response Modal */}
         {showResponseModal && selectedTicket && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-              <div className="mt-3">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Respond to Ticket #{selectedTicket.id}
-                  </h3>
-                  <button
-                    onClick={() => setShowResponseModal(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+            <div className="relative w-full max-w-2xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-white">
+                  Respond to Ticket #{selectedTicket.id}
+                </h3>
+                <button
+                  onClick={() => setShowResponseModal(false)}
+                  className="text-gray-400 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-all"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              {/* Ticket Info */}
+              <div className="mb-6 p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl">
+                <h4 className="font-semibold text-white text-lg mb-2">{selectedTicket.subject}</h4>
+                <p className="text-gray-300 text-sm mb-3 leading-relaxed">{selectedTicket.description}</p>
+                <div className="flex items-center text-xs text-gray-400">
+                  <User className="w-4 h-4 mr-2" />
+                  <span>From: {selectedTicket.first_name} {selectedTicket.last_name} ({selectedTicket.email})</span>
                 </div>
-                
-                <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                  <h4 className="font-medium text-gray-900">{selectedTicket.subject}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{selectedTicket.description}</p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    From: {selectedTicket.user_name} ({selectedTicket.user_email})
-                  </p>
-                </div>
+              </div>
 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Your Response
-                  </label>
-                  <textarea
-                    value={responseText}
-                    onChange={(e) => setResponseText(e.target.value)}
-                    rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Type your response to the user..."
-                  />
-                </div>
+              {/* Response Form */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-white mb-3">
+                  Your Response
+                </label>
+                <textarea
+                  value={responseText}
+                  onChange={(e) => setResponseText(e.target.value)}
+                  rows={5}
+                  className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                  placeholder="Type your response to the user..."
+                />
+              </div>
 
-                <div className="flex justify-end space-x-3">
-                  <button
-                    onClick={() => setShowResponseModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSendResponse}
-                    disabled={isSubmitting || !responseText.trim()}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {isSubmitting ? 'Sending...' : 'Send Response'}
-                  </button>
-                </div>
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowResponseModal(false)}
+                  className="px-6 py-2 text-sm font-medium text-gray-300 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSendResponse}
+                  disabled={isSubmitting || !responseText.trim()}
+                  className="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-red-600 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Response'}
+                </button>
               </div>
             </div>
           </div>
