@@ -48,7 +48,7 @@ export default function TicketsManagement() {
     if (!loading) {
       if (!user) {
         router.push('/auth/login');
-      } else if (user.role !== 'superadmin') {
+      } else if (user.role !== 'superadmin' && user.role !== 'admin') {
         router.push('/');
       }
     }
@@ -188,7 +188,7 @@ export default function TicketsManagement() {
     );
   }
 
-  if (user.role !== 'superadmin') {
+  if (user.role !== 'superadmin' && user.role !== 'admin') {
     return null;
   }
 
@@ -213,7 +213,7 @@ export default function TicketsManagement() {
         {/* Back to Dashboard Button */}
         <div className="mb-6">
           <button
-            onClick={() => router.push('/superadmin')}
+            onClick={() => router.push(user.role === 'superadmin' ? '/superadmin' : '/')}
             className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />

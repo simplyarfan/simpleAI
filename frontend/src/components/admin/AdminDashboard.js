@@ -268,14 +268,14 @@ const AdminDashboard = () => {
               </div>
               <div className="flex items-center gap-4">
                 <button 
-                  onClick={() => window.open('/admin/admin-users', '_blank')}
+                  onClick={() => window.location.href = '/admin/admin-users'}
                   className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all"
                 >
                   <Users className="w-4 h-4 mr-2" />
                   Manage Users
                 </button>
                 <button 
-                  onClick={() => window.open('/admin/tickets', '_blank')}
+                  onClick={() => window.location.href = '/admin/tickets'}
                   className="flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all"
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />

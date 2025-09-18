@@ -58,7 +58,7 @@ const AdminUsers = () => {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/users', {
+      const response = await fetch('/api/users', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -86,7 +86,7 @@ const AdminUsers = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+      const response = await fetch(`/api/users/${selectedUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
