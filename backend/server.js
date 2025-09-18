@@ -37,17 +37,6 @@ database.init().then(() => {
   console.error('❌ Database initialization failed:', error);
 });
 
-// Add database initialization endpoint for debugging
-app.get('/api/init-db', async (req, res) => {
-  try {
-    await database.init();
-    res.json({ success: true, message: 'Database initialized successfully' });
-  } catch (error) {
-    console.error('Database init error:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
-
 // CORS Configuration
 app.use(cors({
   origin: [
@@ -186,6 +175,17 @@ if (analyticsRoutes) app.use('/api/analytics', analyticsRoutes);
 if (supportRoutes) app.use('/api/support', supportRoutes);
 if (cvRoutes) app.use('/api/cv-intelligence', cvRoutes);
 if (notificationRoutes) app.use('/api/notifications', notificationRoutes);
+
+// Add database initialization endpoint for debugging
+app.get('/api/init-db', async (req, res) => {
+  try {
+    await database.init();
+    res.json({ success: true, message: 'Database initialized successfully' });
+  } catch (error) {
+    console.error('Database init error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
 
 // Debug endpoint to check user authentication
 app.get('/api/debug/user', async (req, res) => {
