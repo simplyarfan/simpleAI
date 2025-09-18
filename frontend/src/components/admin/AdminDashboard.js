@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Header from '../shared/Header';
 import { 
@@ -20,6 +21,7 @@ import {
 
 const AdminDashboard = () => {
   const { user } = useAuth();
+  const router = useRouter();
   const [selectedDepartment, setSelectedDepartment] = useState('all');
 
   // All agents from all departments
@@ -268,14 +270,14 @@ const AdminDashboard = () => {
               </div>
               <div className="flex items-center gap-4">
                 <button 
-                  onClick={() => window.location.href = '/admin/admin-users'}
+                  onClick={() => router.push('/admin/admin-users')}
                   className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all"
                 >
                   <Users className="w-4 h-4 mr-2" />
                   Manage Users
                 </button>
                 <button 
-                  onClick={() => window.location.href = '/admin/tickets'}
+                  onClick={() => router.push('/admin/tickets')}
                   className="flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all"
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />

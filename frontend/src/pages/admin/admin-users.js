@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useAuth } from '../../contexts/AuthContext';
 import Header from '../../components/shared/Header';
-import ErrorBoundary from '../../components/shared/ErrorBoundary';
+import ErrorBoundary from '../../components/ErrorBoundary';
 import { 
   Users, 
   Search, 
