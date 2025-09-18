@@ -148,8 +148,10 @@ export default function TicketsManagement() {
 
     try {
       setIsSubmitting(true);
+      console.log('Sending response to ticket:', selectedTicket.id, 'with text:', responseText);
       
       const response = await supportAPI.addComment(selectedTicket.id, responseText, false);
+      console.log('Response from API:', response);
       
       if (response.data?.success) {
         toast.success('Response sent successfully!');
@@ -157,10 +159,14 @@ export default function TicketsManagement() {
         setSelectedTicket(null);
         setResponseText('');
         fetchTickets(); // Refresh tickets
+      } else {
+        console.error('API returned unsuccessful response:', response.data);
+        toast.error(response.data?.message || 'Failed to send response');
       }
     } catch (error) {
       console.error('Error sending response:', error);
-      toast.error('Failed to send response');
+      console.error('Error details:', error.response?.data);
+      toast.error(error.response?.data?.message || 'Failed to send response');
     } finally {
       setIsSubmitting(false);
     }
