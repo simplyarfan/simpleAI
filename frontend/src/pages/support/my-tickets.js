@@ -240,8 +240,7 @@ export default function MyTickets() {
               {filteredTickets.map((ticket) => (
                 <div
                   key={ticket.id}
-                  className="p-6 hover:bg-white/5 transition-colors cursor-pointer"
-                  onClick={() => router.push(`/support/ticket/${ticket.id}`)}
+                  className="p-6 hover:bg-white/5 transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -287,7 +286,11 @@ export default function MyTickets() {
                     </div>
 
                     {/* View Button */}
-                    <button className="ml-4 p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all">
+                    <button 
+                      onClick={() => router.push(`/support/ticket/${ticket.id}`)}
+                      className="ml-4 p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-all"
+                      title="View ticket details"
+                    >
                       <Eye className="w-4 h-4" />
                     </button>
                   </div>

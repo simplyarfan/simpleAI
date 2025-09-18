@@ -255,7 +255,7 @@ class SupportController {
       const isInternalComment = is_internal && isAdmin;
 
       // Add comment
-      const result = await database.run(`
+      const result = await database.get(`
         INSERT INTO ticket_comments (ticket_id, user_id, comment, is_internal)
         VALUES ($1, $2, $3, $4) RETURNING id
       `, [ticket_id, req.user.id, comment, isInternalComment]);
@@ -278,7 +278,7 @@ class SupportController {
         FROM ticket_comments tc
         JOIN users u ON tc.user_id = u.id
         WHERE tc.id = $1
-      `, [result.rows[0].id]);
+      `, [result.id]);
 
       // Create notification for ticket owner if comment is from admin
       if (isAdmin && ticket.user_id !== req.user.id && !isInternalComment) {
@@ -299,7 +299,7 @@ class SupportController {
         'support_comment_added',
         JSON.stringify({ 
           ticket_id, 
-          comment_id: result.rows[0].id, 
+          comment_id: result.id, 
           is_internal: isInternalComment 
         }),
         req.ip,
