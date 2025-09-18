@@ -35,8 +35,7 @@ export default function MyTickets() {
     { value: 'all', label: 'All Status' },
     { value: 'open', label: 'Open', color: 'text-blue-400', bgColor: 'bg-blue-500/20' },
     { value: 'in_progress', label: 'In Progress', color: 'text-yellow-400', bgColor: 'bg-yellow-500/20' },
-    { value: 'resolved', label: 'Resolved', color: 'text-green-400', bgColor: 'bg-green-500/20' },
-    { value: 'closed', label: 'Closed', color: 'text-gray-400', bgColor: 'bg-gray-500/20' }
+    { value: 'resolved', label: 'Resolved', color: 'text-green-400', bgColor: 'bg-green-500/20' }
   ];
 
   const priorityOptions = [

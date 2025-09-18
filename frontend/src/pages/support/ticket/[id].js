@@ -32,8 +32,7 @@ export default function TicketDetail() {
   const statusOptions = [
     { value: 'open', label: 'Open', color: 'text-blue-400', bgColor: 'bg-blue-500/20', icon: Clock },
     { value: 'in_progress', label: 'In Progress', color: 'text-yellow-400', bgColor: 'bg-yellow-500/20', icon: AlertCircle },
-    { value: 'resolved', label: 'Resolved', color: 'text-green-400', bgColor: 'bg-green-500/20', icon: CheckCircle },
-    { value: 'closed', label: 'Closed', color: 'text-gray-400', bgColor: 'bg-gray-500/20', icon: XCircle }
+    { value: 'resolved', label: 'Resolved', color: 'text-green-400', bgColor: 'bg-green-500/20', icon: CheckCircle }
   ];
 
   const priorityOptions = [
@@ -266,7 +265,7 @@ export default function TicketDetail() {
           </div>
 
           {/* Add Comment Form */}
-          {ticket.status !== 'closed' && (
+          {ticket.status !== 'resolved' && (
             <form onSubmit={handleAddComment} className="border-t border-white/10 pt-6">
               <div className="mb-4">
                 <label className="block text-sm font-medium text-white mb-2">
@@ -303,11 +302,11 @@ export default function TicketDetail() {
             </form>
           )}
 
-          {ticket.status === 'closed' && (
+          {ticket.status === 'resolved' && (
             <div className="border-t border-white/10 pt-6">
-              <div className="bg-gray-500/20 border border-gray-500/30 rounded-xl p-4 text-center">
-                <XCircle className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-300">This ticket has been closed. No new comments can be added.</p>
+              <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4 text-center">
+                <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                <p className="text-gray-300">This ticket has been resolved. If you need further assistance, please create a new ticket.</p>
               </div>
             </div>
           )}

@@ -322,14 +322,19 @@ class SupportController {
     }
   }
 
-  // Update ticket (admin only)
+  // Update ticket (user can update their own, admin can update any)
   static async updateTicket(req, res) {
     try {
-      // Admin permissions already checked by requireAdmin middleware
-      // No additional check needed here
+      console.log('🎫 [SUPPORT] Update ticket request:', {
+        ticket_id: req.params.ticket_id,
+        user_id: req.user?.id,
+        user_role: req.user?.role,
+        body: req.body
+      });
 
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('🎫 [SUPPORT] Validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           message: 'Validation errors',
@@ -346,9 +351,20 @@ class SupportController {
       `, [ticket_id]);
 
       if (!ticket) {
+        console.log('🎫 [SUPPORT] Ticket not found:', ticket_id);
         return res.status(404).json({
           success: false,
           message: 'Ticket not found'
+        });
+      }
+
+      // Check permissions
+      const isAdmin = ['admin', 'superadmin'].includes(req.user.role);
+      if (ticket.user_id !== req.user.id && !isAdmin) {
+        console.log('🎫 [SUPPORT] Access denied for user:', req.user.id);
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied'
         });
       }
 

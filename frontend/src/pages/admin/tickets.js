@@ -7,20 +7,18 @@ import Header from '../../components/shared/Header';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import toast from 'react-hot-toast';
 import { 
-  MessageSquare, 
-  Plus, 
   Search, 
-  Filter,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  User,
-  ArrowLeft,
-  Calendar,
-  Tag,
-  Eye,
-  MessageCircle,
-  X
+  Filter, 
+  MessageCircle, 
+  User, 
+  Calendar, 
+  Tag, 
+  Clock, 
+  AlertCircle, 
+  CheckCircle, 
+  XCircle,
+  X,
+  Eye
 } from 'lucide-react';
 
 export default function TicketsManagement() {
@@ -31,10 +29,6 @@ export default function TicketsManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
-  const [showResponseModal, setShowResponseModal] = useState(false);
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  const [responseText, setResponseText] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [stats, setStats] = useState({
@@ -134,43 +128,6 @@ export default function TicketsManagement() {
     }
   };
 
-  const openResponseModal = (ticket) => {
-    setSelectedTicket(ticket);
-    setShowResponseModal(true);
-    setResponseText('');
-  };
-
-  const handleSendResponse = async () => {
-    if (!responseText.trim()) {
-      toast.error('Please enter a response');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      console.log('Sending response to ticket:', selectedTicket.id, 'with text:', responseText);
-      
-      const response = await supportAPI.addComment(selectedTicket.id, responseText, false);
-      console.log('Response from API:', response);
-      
-      if (response.data?.success) {
-        toast.success('Response sent successfully!');
-        setShowResponseModal(false);
-        setSelectedTicket(null);
-        setResponseText('');
-        fetchTickets(); // Refresh tickets
-      } else {
-        console.error('API returned unsuccessful response:', response.data);
-        toast.error(response.data?.message || 'Failed to send response');
-      }
-    } catch (error) {
-      console.error('Error sending response:', error);
-      console.error('Error details:', error.response?.data);
-      toast.error(error.response?.data?.message || 'Failed to send response');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const updateTicketStatus = async (ticketId, newStatus) => {
     try {
@@ -430,11 +387,11 @@ export default function TicketsManagement() {
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-end space-x-3">
                             <button 
-                              onClick={() => openResponseModal(ticket)}
+                              onClick={() => router.push(`/support/ticket/${ticket.id}`)}
                               className="p-2 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 rounded-lg transition-all"
-                              title="Respond to ticket"
+                              title="View conversation"
                             >
-                              <MessageCircle className="w-4 h-4" />
+                              <Eye className="w-4 h-4" />
                             </button>
                             <select
                               value={ticket.status}
@@ -444,7 +401,6 @@ export default function TicketsManagement() {
                               <option value="open" className="bg-slate-800">Open</option>
                               <option value="in_progress" className="bg-slate-800">In Progress</option>
                               <option value="resolved" className="bg-slate-800">Resolved</option>
-                              <option value="closed" className="bg-slate-800">Closed</option>
                             </select>
                           </div>
                         </td>
@@ -456,65 +412,6 @@ export default function TicketsManagement() {
             </div>
           </div>
 
-        {/* Response Modal */}
-        {showResponseModal && selectedTicket && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-            <div className="relative w-full max-w-2xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold text-white">
-                  Respond to Ticket #{selectedTicket.id}
-                </h3>
-                <button
-                  onClick={() => setShowResponseModal(false)}
-                  className="text-gray-400 hover:text-white p-2 hover:bg-white/10 rounded-lg transition-all"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              
-              {/* Ticket Info */}
-              <div className="mb-6 p-4 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl">
-                <h4 className="font-semibold text-white text-lg mb-2">{selectedTicket.subject}</h4>
-                <p className="text-gray-300 text-sm mb-3 leading-relaxed">{selectedTicket.description}</p>
-                <div className="flex items-center text-xs text-gray-400">
-                  <User className="w-4 h-4 mr-2" />
-                  <span>From: {selectedTicket.first_name} {selectedTicket.last_name} ({selectedTicket.email})</span>
-                </div>
-              </div>
-
-              {/* Response Form */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-white mb-3">
-                  Your Response
-                </label>
-                <textarea
-                  value={responseText}
-                  onChange={(e) => setResponseText(e.target.value)}
-                  rows={5}
-                  className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
-                  placeholder="Type your response to the user..."
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end space-x-3">
-                <button
-                  onClick={() => setShowResponseModal(false)}
-                  className="px-6 py-2 text-sm font-medium text-gray-300 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-white/20 transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSendResponse}
-                  disabled={isSubmitting || !responseText.trim()}
-                  className="px-6 py-2 text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-red-600 rounded-xl hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? 'Sending...' : 'Send Response'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </main>
     </div>
     </ErrorBoundary>
