@@ -202,13 +202,78 @@ app.get('/', (req, res) => {
   });
 });
 
+// Debug: Check which routes are loaded
+console.log('🔍 Route loading status:');
+console.log('- authRoutes:', !!authRoutes);
+console.log('- analyticsRoutes:', !!analyticsRoutes);
+console.log('- supportRoutes:', !!supportRoutes);
+console.log('- cvRoutes:', !!cvRoutes);
+console.log('- notificationRoutes:', !!notificationRoutes);
+console.log('- initRoutes:', !!initRoutes);
+
 // API Routes (conditional)
-if (authRoutes) app.use('/api/auth', authRoutes);
-if (analyticsRoutes) app.use('/api/analytics', analyticsRoutes);
-if (supportRoutes) app.use('/api/support', supportRoutes);
-if (cvRoutes) app.use('/api/cv-intelligence', cvRoutes);
-if (notificationRoutes) app.use('/api/notifications', notificationRoutes);
-if (initRoutes) app.use('/api/init', initRoutes);
+if (authRoutes) {
+  app.use('/api/auth', authRoutes);
+  console.log('✅ Mounted /api/auth');
+}
+if (analyticsRoutes) {
+  app.use('/api/analytics', analyticsRoutes);
+  console.log('✅ Mounted /api/analytics');
+}
+if (supportRoutes) {
+  app.use('/api/support', supportRoutes);
+  console.log('✅ Mounted /api/support');
+}
+if (cvRoutes) {
+  app.use('/api/cv-intelligence', cvRoutes);
+  console.log('✅ Mounted /api/cv-intelligence');
+} else {
+  console.log('❌ cvRoutes is null/undefined - NOT MOUNTED');
+}
+if (notificationRoutes) {
+  app.use('/api/notifications', notificationRoutes);
+  console.log('✅ Mounted /api/notifications');
+}
+if (initRoutes) {
+  app.use('/api/init', initRoutes);
+  console.log('✅ Mounted /api/init');
+}
+
+// Debug endpoint to list all routes
+app.get('/api/debug/routes', (req, res) => {
+  const routes = [];
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) {
+      routes.push({
+        path: middleware.route.path,
+        methods: Object.keys(middleware.route.methods)
+      });
+    } else if (middleware.name === 'router') {
+      middleware.handle.stack.forEach((handler) => {
+        if (handler.route) {
+          routes.push({
+            path: handler.route.path,
+            methods: Object.keys(handler.route.methods)
+          });
+        }
+      });
+    }
+  });
+  
+  res.json({
+    success: true,
+    routes: routes,
+    routeCount: routes.length,
+    loadedModules: {
+      authRoutes: !!authRoutes,
+      analyticsRoutes: !!analyticsRoutes,
+      supportRoutes: !!supportRoutes,
+      cvRoutes: !!cvRoutes,
+      notificationRoutes: !!notificationRoutes,
+      initRoutes: !!initRoutes
+    }
+  });
+});
 
 // Debug endpoint to check user authentication
 app.get('/api/debug/user', async (req, res) => {
