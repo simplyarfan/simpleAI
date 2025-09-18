@@ -2,6 +2,7 @@ const database = require('../models/database');
 const { v4: uuidv4 } = require('uuid');
 const multer = require('multer');
 const pdf = require('pdf-parse');
+const ollamaService = require('../services/OllamaService');
 
 class CVIntelligenceController {
   // Create a new CV analysis batch
@@ -87,7 +88,7 @@ class CVIntelligenceController {
       `, [cvFiles.length, batchId]);
 
       // Process JD file
-      console.log('📋 Analyzing Job Description...');
+      console.log('📋 Analyzing Job Description with LLM...');
       let jdText = '';
       
       if (jdFile.mimetype === 'application/pdf') {
@@ -97,8 +98,8 @@ class CVIntelligenceController {
         jdText = jdFile.buffer.toString('utf8');
       }
 
-      // For now, we'll use basic JD analysis (will enhance with Ollama later)
-      const jdAnalysis = await this.analyzeJobDescription(jdText, jdFile.originalname);
+      // Use LLM for intelligent JD analysis
+      const jdAnalysis = await ollamaService.analyzeWithFallback('jd', jdText, jdFile.originalname);
 
       // Update batch with JD analysis
       await database.run(`
@@ -125,11 +126,13 @@ class CVIntelligenceController {
             cvText = cvFile.buffer.toString('utf8');
           }
 
-          // Analyze CV (basic analysis for now)
-          const cvAnalysis = await this.analyzeCVBasic(cvText, cvFile.originalname);
+          // Analyze CV with LLM
+          console.log(`🧠 Analyzing CV with LLM: ${cvFile.originalname}`);
+          const cvAnalysis = await ollamaService.analyzeWithFallback('cv', cvText, cvFile.originalname);
           
-          // Perform matching
-          const matchingResult = await this.performMatching(cvAnalysis, jdAnalysis);
+          // Perform intelligent matching with LLM
+          console.log(`🎯 Performing intelligent matching for: ${cvFile.originalname}`);
+          const matchingResult = await ollamaService.analyzeWithFallback('matching', cvAnalysis, jdAnalysis);
 
           // Create candidate record
           const candidateId = uuidv4();
@@ -292,174 +295,7 @@ class CVIntelligenceController {
     }
   }
 
-  // Basic JD analysis (will be enhanced with Ollama)
-  static async analyzeJobDescription(jdText, filename) {
-    try {
-      // Basic regex-based extraction
-      const lines = jdText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-      
-      // Extract position title (usually in first few lines)
-      const positionTitle = lines.find(line => 
-        line.toLowerCase().includes('position') || 
-        line.toLowerCase().includes('role') ||
-        line.toLowerCase().includes('job title')
-      ) || lines[0] || 'Software Engineer';
 
-      // Extract skills
-      const skillKeywords = [
-        'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'HTML', 'CSS', 'SQL', 
-        'Git', 'AWS', 'Docker', 'MongoDB', 'PostgreSQL', 'TypeScript', 'Vue.js',
-        'Angular', 'Express', 'Django', 'Flask', 'Spring', 'Laravel', 'PHP'
-      ];
-      
-      const requiredSkills = skillKeywords.filter(skill => 
-        jdText.toLowerCase().includes(skill.toLowerCase())
-      );
-
-      // Extract experience requirement
-      const experienceMatch = jdText.match(/(\d+)[\s-]*(\d+)?\s*years?\s*(of\s*)?experience/i);
-      const experienceRequired = experienceMatch ? 
-        (experienceMatch[2] ? `${experienceMatch[1]}-${experienceMatch[2]} years` : `${experienceMatch[1]}+ years`) :
-        '2-5 years';
-
-      return {
-        position_title: positionTitle.substring(0, 100),
-        company: 'Company Name',
-        required_skills: requiredSkills.length > 0 ? requiredSkills : ['JavaScript', 'React', 'Node.js'],
-        experience_required: experienceRequired,
-        responsibilities: ['Develop software solutions', 'Collaborate with team', 'Write clean code'],
-        domain: 'Technology'
-      };
-
-    } catch (error) {
-      console.error('JD analysis error:', error);
-      return {
-        position_title: 'Software Engineer',
-        company: 'TechCorp',
-        required_skills: ['JavaScript', 'Python', 'React'],
-        experience_required: '3-5 years',
-        responsibilities: ['Develop software', 'Collaborate with team'],
-        domain: 'Technology'
-      };
-    }
-  }
-
-  // Basic CV analysis (will be enhanced with Ollama)
-  static async analyzeCVBasic(cvText, filename) {
-    try {
-      const lines = cvText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-      
-      // Extract email
-      const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-      const emailMatch = cvText.match(emailRegex);
-      
-      // Extract phone
-      const phoneRegex = /(\+?\d{1,3}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/;
-      const phoneMatch = cvText.match(phoneRegex);
-      
-      // Extract name (usually first non-empty line)
-      const name = lines.length > 0 ? lines[0] : filename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, ' ');
-      
-      // Extract skills
-      const skillKeywords = [
-        'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'HTML', 'CSS', 'SQL', 
-        'Git', 'AWS', 'Docker', 'MongoDB', 'PostgreSQL', 'TypeScript', 'Vue.js'
-      ];
-      const foundSkills = skillKeywords.filter(skill => 
-        cvText.toLowerCase().includes(skill.toLowerCase())
-      );
-
-      return {
-        personal: {
-          name: name,
-          email: emailMatch ? emailMatch[0] : "Not specified",
-          phone: phoneMatch ? phoneMatch[0] : "Not specified",
-          location: "Not specified",
-          age: "Not specified",
-          gender: "Not specified",
-          current_salary: "Not specified",
-          expected_salary: "Not specified"
-        },
-        skills: foundSkills.length > 0 ? foundSkills : ["Skills extraction needed"],
-        experience: [{
-          company: "Experience parsing needed",
-          position: "Will be enhanced with Ollama",
-          duration: "Unknown",
-          description: "Basic parsing completed"
-        }],
-        education: [{
-          degree: "Education parsing needed",
-          institution: "Will be enhanced with Ollama",
-          year: "Unknown"
-        }],
-        summary: "Basic CV parsing completed - will be enhanced with local LLM"
-      };
-
-    } catch (error) {
-      console.error('CV analysis error:', error);
-      return {
-        personal: {
-          name: filename.replace(/\.[^/.]+$/, "").replace(/[_-]/g, ' '),
-          email: "Not specified",
-          phone: "Not specified",
-          location: "Not specified",
-          age: "Not specified",
-          gender: "Not specified",
-          current_salary: "Not specified",
-          expected_salary: "Not specified"
-        },
-        skills: ["Unable to extract skills"],
-        experience: [{ company: "Unable to extract", position: "Unable to extract", duration: "Unable to extract", description: "CV parsing failed" }],
-        education: [{ degree: "Unable to extract", institution: "Unable to extract", year: "Unable to extract" }],
-        summary: "CV analysis failed - please try uploading again"
-      };
-    }
-  }
-
-  // Basic matching logic (will be enhanced with Ollama)
-  static async performMatching(cvData, jdData) {
-    try {
-      const cvSkills = cvData.skills.map(s => s.toLowerCase());
-      const jdSkills = jdData.required_skills.map(s => s.toLowerCase());
-      
-      const matchedSkills = cvSkills.filter(skill => 
-        jdSkills.some(jdSkill => 
-          skill.includes(jdSkill) || jdSkill.includes(skill) || skill === jdSkill
-        )
-      );
-      
-      const missingSkills = jdSkills.filter(skill => 
-        !cvSkills.some(cvSkill => cvSkill.includes(skill) || skill.includes(cvSkill))
-      );
-      
-      const skillMatchRate = jdSkills.length > 0 ? (matchedSkills.length / jdSkills.length) : 0.5;
-      const overallScore = Math.round(60 + (skillMatchRate * 40));
-      
-      return {
-        overall_score: overallScore,
-        skills_matched: matchedSkills.slice(0, 10),
-        skills_missing: missingSkills.slice(0, 5),
-        strengths: skillMatchRate > 0.6 ? ['Good skill alignment', 'Relevant experience'] : ['Some relevant experience'],
-        concerns: skillMatchRate < 0.4 ? ['Limited skill match', 'May need training'] : [],
-        recommendations: [`Score: ${overallScore}%`, 'Review detailed analysis'],
-        fit_level: overallScore >= 85 ? 'High' : overallScore >= 70 ? 'Medium' : 'Low',
-        recommendation: overallScore >= 85 ? 'Highly Recommended' : overallScore >= 70 ? 'Recommended' : 'Consider'
-      };
-
-    } catch (error) {
-      console.error('Matching error:', error);
-      return {
-        overall_score: 65,
-        skills_matched: [],
-        skills_missing: [],
-        strengths: ['Basic analysis completed'],
-        concerns: ['Detailed analysis needed'],
-        recommendations: ['Review manually'],
-        fit_level: 'Medium',
-        recommendation: 'Consider'
-      };
-    }
-  }
 }
 
 module.exports = CVIntelligenceController;
