@@ -207,8 +207,16 @@ class SupportController {
   // Add comment to ticket
   static async addComment(req, res) {
     try {
+      console.log('🎫 [SUPPORT] Add comment request received:', {
+        ticket_id: req.params.ticket_id,
+        user_id: req.user?.id,
+        user_role: req.user?.role,
+        body: req.body
+      });
+
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('🎫 [SUPPORT] Validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           message: 'Validation errors',
@@ -220,11 +228,14 @@ class SupportController {
       const { comment, is_internal = false } = req.body;
 
       // Check if ticket exists and user has access
+      console.log('🎫 [SUPPORT] Looking for ticket:', ticket_id);
       const ticket = await database.get(`
         SELECT * FROM support_tickets WHERE id = $1
       `, [ticket_id]);
 
+      console.log('🎫 [SUPPORT] Ticket found:', !!ticket);
       if (!ticket) {
+        console.log('🎫 [SUPPORT] Ticket not found for ID:', ticket_id);
         return res.status(404).json({
           success: false,
           message: 'Ticket not found'
@@ -295,6 +306,7 @@ class SupportController {
         req.get('User-Agent')
       ]);
 
+      console.log('🎫 [SUPPORT] Comment added successfully:', createdComment.id);
       res.status(201).json({
         success: true,
         message: 'Comment added successfully',
@@ -302,7 +314,7 @@ class SupportController {
       });
 
     } catch (error) {
-      console.error('Add comment error:', error);
+      console.error('🎫 [SUPPORT] Add comment error:', error);
       res.status(500).json({
         success: false,
         message: 'Internal server error'
