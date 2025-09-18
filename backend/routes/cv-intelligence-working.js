@@ -25,11 +25,25 @@ const upload = multer({
   }
 });
 
-// Test endpoint
+// Test endpoint (no auth)
 router.get('/test', (req, res) => {
   res.json({
     success: true,
     message: 'CV Intelligence routes are working!',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Test auth endpoint
+router.get('/test-auth', authenticateToken, (req, res) => {
+  res.json({
+    success: true,
+    message: 'Authentication working!',
+    user: {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role
+    },
     timestamp: new Date().toISOString()
   });
 });
