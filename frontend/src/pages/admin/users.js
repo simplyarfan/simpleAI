@@ -396,8 +396,16 @@ export default function UsersManagement() {
                           {user.role === 'superadmin' ? 'Superadmin' : user.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
-                        {user.department || '-'}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {user.department ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {user.department}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            Pending Assignment
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-white">
                         {user.job_title || '-'}
@@ -681,13 +689,16 @@ export default function UsersManagement() {
                   <label className="block text-sm font-medium text-white mb-2">
                     Department
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.department}
                     onChange={(e) => setFormData({...formData, department: e.target.value})}
-                    className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="IT"
-                  />
+                    className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    <option value="">Select Department</option>
+                    <option value="Human Resources">Human Resources</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Sales & Marketing">Sales & Marketing</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">

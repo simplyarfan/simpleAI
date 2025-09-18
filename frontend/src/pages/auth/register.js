@@ -26,7 +26,6 @@ const Register = () => {
     confirmPassword: '',
     first_name: '',
     last_name: '',
-    department: '',
     job_title: ''
   });
   
@@ -106,7 +105,6 @@ const Register = () => {
         password: formData.password,
         firstName: formData.first_name,
         lastName: formData.last_name,
-        department: formData.department || undefined,
         jobTitle: formData.job_title || undefined
       });
       
@@ -252,46 +250,24 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Department & Job Title (Optional) */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="department" className="block text-sm font-medium text-white mb-2">
-                  Department <span className="text-gray-400">(optional)</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Building2 className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="department"
-                    name="department"
-                    type="text"
-                    value={formData.department}
-                    onChange={handleChange}
-                    className="appearance-none relative block w-full pl-12 pr-4 py-4 bg-white/5 border border-white/20 placeholder-gray-400 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm transition-all duration-200"
-                    placeholder="Engineering"
-                  />
+            {/* Job Title (Optional) */}
+            <div>
+              <label htmlFor="job_title" className="block text-sm font-medium text-white mb-2">
+                Job Title <span className="text-gray-400">(optional)</span>
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Briefcase className="h-5 w-5 text-gray-400" />
                 </div>
-              </div>
-
-              <div>
-                <label htmlFor="job_title" className="block text-sm font-medium text-white mb-2">
-                  Job Title <span className="text-gray-400">(optional)</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Briefcase className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="job_title"
-                    name="job_title"
-                    type="text"
-                    value={formData.job_title}
-                    onChange={handleChange}
-                    className="appearance-none relative block w-full pl-12 pr-4 py-4 bg-white/5 border border-white/20 placeholder-gray-400 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm transition-all duration-200"
-                    placeholder="Software Engineer"
-                  />
-                </div>
+                <input
+                  id="job_title"
+                  name="job_title"
+                  type="text"
+                  value={formData.job_title}
+                  onChange={handleChange}
+                  className="appearance-none relative block w-full pl-12 pr-4 py-4 bg-white/5 border border-white/20 placeholder-gray-400 text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-sm transition-all duration-200"
+                  placeholder="Software Engineer"
+                />
               </div>
             </div>
 
