@@ -18,7 +18,8 @@ import {
   CheckCircle, 
   XCircle,
   X,
-  Eye
+  Eye,
+  ArrowLeft
 } from 'lucide-react';
 
 export default function TicketsManagement() {
@@ -92,26 +93,28 @@ export default function TicketsManagement() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'open':
-        return 'bg-red-100 text-red-800';
+        return 'bg-blue-500/20 text-blue-400';
       case 'in_progress':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'closed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-yellow-500/20 text-yellow-400';
+      case 'resolved':
+        return 'bg-green-500/20 text-green-400';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-500/20 text-gray-400';
     }
   };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
+      case 'urgent':
+        return 'bg-red-500/20 text-red-400';
       case 'high':
-        return 'bg-red-100 text-red-800';
+        return 'bg-orange-500/20 text-orange-400';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-500/20 text-yellow-400';
       case 'low':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-500/20 text-green-400';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-500/20 text-gray-400';
     }
   };
 
@@ -121,7 +124,7 @@ export default function TicketsManagement() {
         return <AlertCircle className="w-3 h-3 mr-1" />;
       case 'in_progress':
         return <Clock className="w-3 h-3 mr-1" />;
-      case 'closed':
+      case 'resolved':
         return <CheckCircle className="w-3 h-3 mr-1" />;
       default:
         return <MessageCircle className="w-3 h-3 mr-1" />;
