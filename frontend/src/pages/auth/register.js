@@ -104,10 +104,10 @@ const Register = () => {
       const result = await register({
         email: formData.email,
         password: formData.password,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
+        firstName: formData.first_name,
+        lastName: formData.last_name,
         department: formData.department || undefined,
-        job_title: formData.job_title || undefined
+        jobTitle: formData.job_title || undefined
       });
       
       if (result.success) {
