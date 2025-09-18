@@ -268,11 +268,11 @@ const WaitingDashboard = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-4 gap-2 max-w-xs mx-auto mb-6">
         {memoryCards.map((card) => (
           <div
             key={card.id}
-            className={`w-16 h-16 rounded-xl cursor-pointer transition-all duration-300 flex items-center justify-center text-xl ${
+            className={`aspect-square rounded-lg cursor-pointer transition-all duration-300 flex items-center justify-center text-lg ${
               flippedCards.includes(card.id) || matchedCards.includes(card.id)
                 ? 'bg-white/20 backdrop-blur-sm border border-white/30 text-white transform scale-105 shadow-lg'
                 : 'bg-white/10 backdrop-blur-sm border border-white/20 text-gray-400 hover:bg-white/15 hover:border-white/30'
