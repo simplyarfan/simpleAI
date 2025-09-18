@@ -1,93 +1,90 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
-const CVController = require('../controllers/CVController');
-const { 
-  authenticateToken,
-  requireAdmin,
-  trackActivity 
-} = require('../middleware/auth');
-const {
-  cvBatchLimiter,
-  uploadLimiter,
-  exportLimiter,
-  generalLimiter
-} = require('../middleware/rateLimiting');
-const {
-  validateBatchCreation,
-  validateBatchId,
-  validateCandidateId,
-  validatePagination,
-  validateStatus,
-  validateTimeframe,
-  validateExportFormat
-} = require('../middleware/validation');
+const CVIntelligenceController = require('../controllers/CVIntelligenceController');
+const { requireAuth } = require('../middleware/auth');
+const { generalLimiter } = require('../middleware/rateLimiter');
 
-// All routes require authentication
-router.use(authenticateToken);
+// Configure multer for file uploads (memory storage - no disk storage needed)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB per file
+    files: 11 // 1 JD + max 10 CVs
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept PDF and text files
+    if (file.mimetype === 'application/pdf' || 
+        file.mimetype === 'text/plain' || 
+        file.mimetype === 'application/msword' ||
+        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF, TXT, DOC, and DOCX files are allowed'), false);
+    }
+  }
+});
 
-// User routes (manage own CV batches)
+// Middleware to handle file upload errors
+const handleUploadError = (error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        success: false,
+        message: 'File too large. Maximum size is 10MB per file.'
+      });
+    }
+    if (error.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({
+        success: false,
+        message: 'Too many files. Maximum is 11 files (1 JD + 10 CVs).'
+      });
+    }
+  }
+  
+  if (error.message.includes('Only PDF')) {
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+  
+  next(error);
+};
 
-// Create new CV analysis batch
-router.post('/',
-  cvBatchLimiter,
-  uploadLimiter,
-  CVController.getUploadMiddleware(),
-  validateBatchCreation,
-  trackActivity('cv_batch_created', 'cv_intelligence'),
-  CVController.createBatch
-);
+// Routes
 
-// Get user's CV batches
-router.get('/my-batches',
+// POST /api/cv-intelligence/batch - Create new batch
+router.post('/batch',
+  requireAuth,
   generalLimiter,
-  validatePagination,
-  validateStatus,
-  trackActivity('user_cv_batches_viewed', 'cv_intelligence'),
-  CVController.getUserBatches
+  CVIntelligenceController.createBatch
 );
 
-// Get batch details with candidates
-router.get('/batches/:batch_id',
+// POST /api/cv-intelligence/batch/:batchId/process - Process files for batch
+router.post('/batch/:batchId/process',
+  requireAuth,
   generalLimiter,
-  validateBatchId,
-  trackActivity('cv_batch_details_viewed', 'cv_intelligence'),
-  CVController.getBatchDetails
+  upload.fields([
+    { name: 'jdFile', maxCount: 1 },
+    { name: 'cvFiles', maxCount: 10 }
+  ]),
+  handleUploadError,
+  CVIntelligenceController.processFiles
 );
 
-// Get candidate details
-router.get('/candidates/:candidate_id',
+// GET /api/cv-intelligence/batches - Get all batches for user
+router.get('/batches',
+  requireAuth,
   generalLimiter,
-  validateCandidateId,
-  trackActivity('cv_candidate_details_viewed', 'cv_intelligence'),
-  CVController.getCandidateDetails
+  CVIntelligenceController.getBatches
 );
 
-// Export batch results
-router.get('/batches/:batch_id/export',
-  exportLimiter,
-  validateBatchId,
-  validateExportFormat,
-  trackActivity('cv_batch_exported', 'cv_intelligence'),
-  CVController.exportBatch
-);
-
-// Delete batch
-router.delete('/batches/:batch_id',
+// GET /api/cv-intelligence/batch/:batchId/candidates - Get candidates for batch
+router.get('/batch/:batchId/candidates',
+  requireAuth,
   generalLimiter,
-  validateBatchId,
-  trackActivity('cv_batch_deleted', 'cv_intelligence'),
-  CVController.deleteBatch
-);
-
-// Admin routes (view all CV Intelligence data)
-
-// Get CV Intelligence statistics (admin only)
-router.get('/admin/stats',
-  requireAdmin,
-  generalLimiter,
-  validateTimeframe,
-  trackActivity('cv_admin_stats_viewed', 'cv_intelligence'),
-  CVController.getCVStats
+  CVIntelligenceController.getCandidates
 );
 
 module.exports = router;

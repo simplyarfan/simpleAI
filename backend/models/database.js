@@ -220,7 +220,7 @@ class Database {
         )
       `);
 
-      // CV batches table
+      // CV Intelligence Batches table
       await this.run(`
         CREATE TABLE IF NOT EXISTS cv_batches (
           id VARCHAR(255) PRIMARY KEY,
@@ -228,16 +228,16 @@ class Database {
           user_id INTEGER NOT NULL,
           status VARCHAR(50) DEFAULT 'processing',
           cv_count INTEGER DEFAULT 0,
-          jd_count INTEGER DEFAULT 0,
           candidate_count INTEGER DEFAULT 0,
           processing_time INTEGER,
+          jd_analysis JSONB,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
         )
       `);
 
-      // CV candidates table
+      // CV Intelligence Candidates table
       await this.run(`
         CREATE TABLE IF NOT EXISTS cv_candidates (
           id VARCHAR(255) PRIMARY KEY,
@@ -247,7 +247,16 @@ class Database {
           email VARCHAR(255),
           phone VARCHAR(50),
           location VARCHAR(255),
+          age VARCHAR(20),
+          gender VARCHAR(20),
+          current_salary VARCHAR(50),
+          expected_salary VARCHAR(50),
           score INTEGER DEFAULT 0,
+          skills_matched INTEGER DEFAULT 0,
+          skills_missing INTEGER DEFAULT 0,
+          experience_years INTEGER DEFAULT 0,
+          fit_level VARCHAR(20) DEFAULT 'Low',
+          recommendation VARCHAR(50) DEFAULT 'Consider',
           analysis_data JSONB,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (batch_id) REFERENCES cv_batches (id) ON DELETE CASCADE
