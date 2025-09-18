@@ -72,12 +72,15 @@ const AdminUsers = () => {
         let usersArray = [];
         if (Array.isArray(data)) {
           usersArray = data;
+        } else if (data.data && data.data.users && Array.isArray(data.data.users)) {
+          usersArray = data.data.users;
         } else if (data.data && Array.isArray(data.data)) {
           usersArray = data.data;
         } else if (data.users && Array.isArray(data.users)) {
           usersArray = data.users;
         }
         
+        console.log('Parsed users array:', usersArray); // Debug log
         setUsers(usersArray);
         setTotalPages(Math.ceil(usersArray.length / 10));
       } else {
