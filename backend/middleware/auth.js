@@ -7,10 +7,19 @@ const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
 const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
+    // Debug logging
+    console.log('🔍 [AUTH DEBUG] Headers:', req.headers);
+    console.log('🔍 [AUTH DEBUG] Auth header:', authHeader);
+    console.log('🔍 [AUTH DEBUG] Extracted token:', token ? token.substring(0, 20) + '...' : 'null');
+
     if (!token) {
   return res.status(401).json({ 
   success: false, 
-message: 'Access token required' 
+message: 'Access token required',
+debug: {
+  authHeader: authHeader ? 'present' : 'missing',
+  headers: Object.keys(req.headers)
+}
 });
 }
 
