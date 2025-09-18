@@ -6,18 +6,51 @@ require('dotenv').config();
 // Import database
 const database = require('./models/database');
 
-// Import routes (with error handling)
+// Import routes (with individual error handling)
 let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes, initRoutes;
+
+// Load each route individually with error handling
 try {
   authRoutes = require('./routes/auth');
-  analyticsRoutes = require('./routes/analytics');
-  supportRoutes = require('./routes/support');
-  cvRoutes = require('./routes/cv-intelligence');
-  notificationRoutes = require('./routes/notifications');
-  initRoutes = require('./routes/init');
-  console.log('✅ All routes loaded successfully');
+  console.log('✅ Auth routes loaded');
 } catch (error) {
-  console.error('❌ Error loading routes:', error.message);
+  console.error('❌ Error loading auth routes:', error.message);
+}
+
+try {
+  analyticsRoutes = require('./routes/analytics');
+  console.log('✅ Analytics routes loaded');
+} catch (error) {
+  console.error('❌ Error loading analytics routes:', error.message);
+}
+
+try {
+  supportRoutes = require('./routes/support');
+  console.log('✅ Support routes loaded');
+} catch (error) {
+  console.error('❌ Error loading support routes:', error.message);
+}
+
+try {
+  cvRoutes = require('./routes/cv-intelligence');
+  console.log('✅ CV Intelligence routes loaded');
+} catch (error) {
+  console.error('❌ Error loading CV Intelligence routes:', error.message);
+  console.error('❌ CV Intelligence stack:', error.stack);
+}
+
+try {
+  notificationRoutes = require('./routes/notifications');
+  console.log('✅ Notification routes loaded');
+} catch (error) {
+  console.error('❌ Error loading notification routes:', error.message);
+}
+
+try {
+  initRoutes = require('./routes/init');
+  console.log('✅ Init routes loaded');
+} catch (error) {
+  console.error('❌ Error loading init routes:', error.message);
 }
 
 // Simple request logger middleware
