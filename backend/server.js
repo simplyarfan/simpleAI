@@ -30,51 +30,23 @@ const PORT = process.env.PORT || 5000;
 
 console.log('🚀 Starting SimpleAI Enterprise Backend...');
 
-// Initialize database on startup
-database.init().then(() => {
-  console.log('✅ Database initialized successfully');
-}).catch(error => {
-  console.error('❌ Database initialization failed:', error);
+// Initialize database connection (non-blocking)
+database.connect().catch(error => {
+  console.error('❌ Database connection failed:', error);
+  // Don't exit process, let it continue for health checks
 });
 
-// CORS Configuration - More permissive to fix issues
+// CORS Configuration
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      'https://thesimpleai.netlify.app',
-      'http://localhost:3000',
-      'https://thesimpleai.vercel.app'
-    ];
-    
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    
-    // For debugging - allow any origin temporarily
-    console.log('🔍 Origin not in allowlist:', origin);
-    return callback(null, true); // Allow all origins for now
-  },
+  origin: [
+    'https://thesimpleai.netlify.app',
+    'http://localhost:3000',
+    'https://thesimpleai.vercel.app'
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'Accept', 'Origin', 'X-Requested-With']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID']
 }));
-
-// Additional CORS headers for preflight
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS,PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Request-ID, Accept, Origin, X-Requested-With');
-  
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
@@ -202,17 +174,6 @@ if (analyticsRoutes) app.use('/api/analytics', analyticsRoutes);
 if (supportRoutes) app.use('/api/support', supportRoutes);
 if (cvRoutes) app.use('/api/cv-intelligence', cvRoutes);
 if (notificationRoutes) app.use('/api/notifications', notificationRoutes);
-
-// Add database initialization endpoint for debugging
-app.get('/api/init-db', async (req, res) => {
-  try {
-    await database.init();
-    res.json({ success: true, message: 'Database initialized successfully' });
-  } catch (error) {
-    console.error('Database init error:', error);
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
 
 // Debug endpoint to check user authentication
 app.get('/api/debug/user', async (req, res) => {
