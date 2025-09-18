@@ -315,61 +315,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Admin Tools */}
-        <div className="px-4 py-6 sm:px-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* User Management */}
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">User Management</h3>
-              <p className="text-gray-300 mb-4">
-                Assign departments and manage user roles. View user activity and status.
-              </p>
-              <button 
-                onClick={() => window.open('/admin/admin-users', '_blank')}
-                className="w-full py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all"
-              >
-                Manage Users
-              </button>
-            </div>
-
-            {/* Support Tickets */}
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-4">
-                <MessageSquare className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Support Tickets</h3>
-              <p className="text-gray-300 mb-4">
-                View and resolve support tickets raised by users across all departments.
-              </p>
-              <button 
-                onClick={() => window.open('/admin/tickets', '_blank')}
-                className="w-full py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all"
-              >
-                View Tickets
-              </button>
-            </div>
-
-            {/* Profile Settings */}
-            <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-xl flex items-center justify-center mb-4">
-                <Settings className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Profile Settings</h3>
-              <p className="text-gray-300 mb-4">
-                Update your profile information and manage account settings.
-              </p>
-              <button 
-                onClick={() => window.open('/profile', '_blank')}
-                className="w-full py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:shadow-lg transition-all"
-              >
-                Manage Profile
-              </button>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );
