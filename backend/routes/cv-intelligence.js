@@ -1,9 +1,26 @@
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
-const CVIntelligenceController = require('../controllers/CVIntelligenceController');
 const { requireAuth } = require('../middleware/auth');
 const { generalLimiter } = require('../middleware/rateLimiter');
+
+// Test endpoint to verify routes are working
+router.get('/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'CV Intelligence routes are working',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Try to load controller with error handling
+let CVIntelligenceController;
+try {
+  CVIntelligenceController = require('../controllers/CVIntelligenceController');
+  console.log('✅ CVIntelligenceController loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading CVIntelligenceController:', error.message);
+}
 
 // Configure multer for file uploads (memory storage - no disk storage needed)
 const upload = multer({
@@ -52,39 +69,57 @@ const handleUploadError = (error, req, res, next) => {
   next(error);
 };
 
-// Routes
+// Routes - Only add if controller loaded successfully
+if (CVIntelligenceController) {
+  // POST /api/cv-intelligence/batch - Create new batch
+  router.post('/batch',
+    requireAuth,
+    generalLimiter,
+    CVIntelligenceController.createBatch
+  );
 
-// POST /api/cv-intelligence/batch - Create new batch
-router.post('/batch',
-  requireAuth,
-  generalLimiter,
-  CVIntelligenceController.createBatch
-);
+  // POST /api/cv-intelligence/batch/:batchId/process - Process files for batch
+  router.post('/batch/:batchId/process',
+    requireAuth,
+    generalLimiter,
+    upload.fields([
+      { name: 'jdFile', maxCount: 1 },
+      { name: 'cvFiles', maxCount: 10 }
+    ]),
+    handleUploadError,
+    CVIntelligenceController.processFiles
+  );
 
-// POST /api/cv-intelligence/batch/:batchId/process - Process files for batch
-router.post('/batch/:batchId/process',
-  requireAuth,
-  generalLimiter,
-  upload.fields([
-    { name: 'jdFile', maxCount: 1 },
-    { name: 'cvFiles', maxCount: 10 }
-  ]),
-  handleUploadError,
-  CVIntelligenceController.processFiles
-);
+  // GET /api/cv-intelligence/batches - Get all batches for user
+  router.get('/batches',
+    requireAuth,
+    generalLimiter,
+    CVIntelligenceController.getBatches
+  );
 
-// GET /api/cv-intelligence/batches - Get all batches for user
-router.get('/batches',
-  requireAuth,
-  generalLimiter,
-  CVIntelligenceController.getBatches
-);
+  // GET /api/cv-intelligence/batch/:batchId/candidates - Get candidates for batch
+  router.get('/batch/:batchId/candidates',
+    requireAuth,
+    generalLimiter,
+    CVIntelligenceController.getCandidates
+  );
+} else {
+  // Fallback routes if controller failed to load
+  router.get('/batches', requireAuth, (req, res) => {
+    res.status(500).json({
+      success: false,
+      message: 'CV Intelligence controller failed to load',
+      error: 'Service temporarily unavailable'
+    });
+  });
 
-// GET /api/cv-intelligence/batch/:batchId/candidates - Get candidates for batch
-router.get('/batch/:batchId/candidates',
-  requireAuth,
-  generalLimiter,
-  CVIntelligenceController.getCandidates
-);
+  router.post('/batch', requireAuth, (req, res) => {
+    res.status(500).json({
+      success: false,
+      message: 'CV Intelligence controller failed to load',
+      error: 'Service temporarily unavailable'
+    });
+  });
+}
 
 module.exports = router;
