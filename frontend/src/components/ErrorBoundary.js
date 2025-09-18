@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -18,39 +19,57 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      // Custom error UI
+      // Custom error UI with consistent design
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden flex items-center justify-center">
+          {/* Background decorative elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-40 -right-32 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
+            <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
+          </div>
+
+          <div className="relative z-10 max-w-md mx-auto px-4">
+            <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 text-center">
+              {/* Error Icon */}
+              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+                <AlertTriangle className="w-10 h-10 text-white" />
+              </div>
+
+              {/* Error Message */}
+              <h1 className="text-2xl font-bold text-white mb-4">
+                Something went wrong
+              </h1>
+              
+              <p className="text-gray-300 mb-8 leading-relaxed">
+                We're sorry, but something unexpected happened. Please try refreshing the page or go back to the homepage.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh Page
+                </button>
+                
+                <button
+                  onClick={() => window.location.href = '/'}
+                  className="flex items-center justify-center px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-white rounded-xl hover:bg-white/20 transition-all duration-300"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Go Home
+                </button>
               </div>
             </div>
-            
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Something went wrong
-            </h2>
-            
-            <p className="text-gray-600 mb-6">
-              We're sorry, but something unexpected happened. Please try refreshing the page.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Refresh Page
-              </button>
-              <button
-                onClick={() => window.location.href = '/superadmin'}
-                className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Go Home
-              </button>
+
+            {/* Additional Info */}
+            <div className="mt-6 text-center">
+              <p className="text-gray-500 text-sm">
+                If this problem persists, please contact our support team.
+              </p>
             </div>
           </div>
         </div>

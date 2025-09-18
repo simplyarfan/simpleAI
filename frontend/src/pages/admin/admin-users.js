@@ -66,15 +66,29 @@ const AdminUsers = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setUsers(data.data || data || []);
-        setTotalPages(Math.ceil((data.data?.length || data.length || 0) / 10));
+        console.log('Users API response:', data); // Debug log
+        
+        // Handle different response structures
+        let usersArray = [];
+        if (Array.isArray(data)) {
+          usersArray = data;
+        } else if (data.data && Array.isArray(data.data)) {
+          usersArray = data.data;
+        } else if (data.users && Array.isArray(data.users)) {
+          usersArray = data.users;
+        }
+        
+        setUsers(usersArray);
+        setTotalPages(Math.ceil(usersArray.length / 10));
       } else {
-        console.error('Failed to fetch users');
+        console.error('Failed to fetch users:', response.status);
         setUsers([]);
+        setMessage({ type: 'error', content: 'Failed to load users' });
       }
     } catch (error) {
       console.error('Error fetching users:', error);
       setUsers([]);
+      setMessage({ type: 'error', content: 'Error loading users' });
     } finally {
       setIsLoading(false);
     }
@@ -134,7 +148,7 @@ const AdminUsers = () => {
   };
 
   // Filter users based on search and role
-  const filteredUsers = users.filter(u => {
+  const filteredUsers = Array.isArray(users) ? users.filter(u => {
     const matchesSearch = !searchTerm || 
       u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       u.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,7 +157,7 @@ const AdminUsers = () => {
     const matchesRole = filterRole === 'all' || u.role === filterRole;
     
     return matchesSearch && matchesRole;
-  });
+  }) : [];
 
   useEffect(() => {
     if (user && (user.role === 'admin' || user.role === 'superadmin')) {
