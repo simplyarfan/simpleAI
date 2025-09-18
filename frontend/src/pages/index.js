@@ -5,6 +5,7 @@ import WaitingDashboard from '../components/user/WaitingDashboard';
 import HRDashboard from '../components/user/HRDashboard';
 import FinanceDashboard from '../components/user/FinanceDashboard';
 import SalesMarketingDashboard from '../components/user/SalesMarketingDashboard';
+import AdminDashboard from '../components/admin/AdminDashboard';
 import Login from './auth/login';
 
 const Dashboard = () => {
@@ -68,18 +69,9 @@ const Dashboard = () => {
     }
   }
 
-  // For admin role, we'll handle this later
+  // Admin role gets admin dashboard
   if (user?.role === 'admin') {
-    // For now, redirect to superadmin (will be updated later)
-    router.push('/superadmin');
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto"></div>
-          <p className="mt-4 text-white">Redirecting...</p>
-        </div>
-      </div>
-    );
+    return <AdminDashboard />;
   }
 
   // Fallback - show waiting dashboard
