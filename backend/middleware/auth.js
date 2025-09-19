@@ -24,7 +24,18 @@ debug: {
 }
 
     // Verify JWT token
-const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key-change-in-production');
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key-change-in-production');
+      console.log('🔍 [AUTH DEBUG] JWT decoded successfully:', { userId: decoded.userId, email: decoded.email });
+    } catch (jwtError) {
+      console.error('🔍 [AUTH DEBUG] JWT verification failed:', jwtError.message);
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Invalid or expired token',
+        debug: { jwtError: jwtError.message }
+      });
+    }
 
 // Ensure database connection
 await database.connect();
@@ -34,6 +45,8 @@ const user = await database.get(
   'SELECT id, email, first_name, last_name, role, is_active, department, job_title FROM users WHERE id = $1',
       [decoded.userId]
 );
+
+console.log('🔍 [AUTH DEBUG] User lookup result:', user ? { id: user.id, email: user.email } : 'null');
 
 if (!user) {
 return res.status(401).json({ 
