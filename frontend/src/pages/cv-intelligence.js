@@ -299,6 +299,15 @@ const CVIntelligence = () => {
         <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-white">Recent Batches</h2>
+            {batches.length > 0 && (
+              <button
+                onClick={() => setShowUploadForm(true)}
+                className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Batch
+              </button>
+            )}
           </div>
 
           {batches.length === 0 ? (
