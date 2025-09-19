@@ -109,7 +109,9 @@ const CVIntelligence = () => {
       // Step 1: Create batch
       toast.loading('Creating batch...', { id: 'upload' });
       const batchResponse = await cvIntelligenceAPI.createBatch(batchName);
-      const batchId = batchResponse.data.data.batchId;
+      console.log('🎯 Batch creation response:', batchResponse.data);
+      const batchId = batchResponse.data.data.id; // Fixed: use .id not .batchId
+      console.log('🎯 Extracted batch ID:', batchId);
       setCurrentBatchId(batchId);
 
       // Step 2: Process files
