@@ -82,9 +82,13 @@ router.get('/batches', authenticateToken, async (req, res) => {
 router.post('/batch', authenticateToken, async (req, res) => {
   try {
     console.log('🎯 Creating CV batch for user:', req.user.id);
+    console.log('🎯 Request body:', req.body);
     
     const { batchName } = req.body;
+    console.log('🎯 Extracted batchName:', batchName);
+    
     if (!batchName || !batchName.trim()) {
+      console.log('❌ Batch name validation failed');
       return res.status(400).json({
         success: false,
         message: 'Batch name is required'
@@ -200,6 +204,50 @@ router.post('/batch/:batchId/process',
     }
   }
 );
+
+// GET /api/cv-intelligence/batch/:batchId - Get batch details
+router.get('/batch/:batchId', authenticateToken, async (req, res) => {
+  try {
+    const { batchId } = req.params;
+    
+    await database.connect();
+    
+    // Verify batch belongs to user and get details
+    const batch = await database.get(`
+      SELECT * FROM cv_batches WHERE id = $1 AND user_id = $2
+    `, [batchId, req.user.id]);
+
+    if (!batch) {
+      return res.status(404).json({
+        success: false,
+        message: 'Batch not found or access denied'
+      });
+    }
+
+    // Get candidates for this batch
+    const candidates = await database.all(`
+      SELECT * FROM cv_candidates 
+      WHERE batch_id = $1 
+      ORDER BY score DESC
+    `, [batchId]);
+
+    res.json({
+      success: true,
+      data: {
+        batch: batch,
+        candidates: candidates || []
+      },
+      message: 'Batch details retrieved successfully'
+    });
+  } catch (error) {
+    console.error('Get batch details error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch batch details',
+      error: error.message
+    });
+  }
+});
 
 // GET /api/cv-intelligence/batch/:batchId/candidates - Get candidates for batch
 router.get('/batch/:batchId/candidates', authenticateToken, async (req, res) => {
