@@ -1,19 +1,11 @@
 const express = require('express');
 const multer = require('multer');
-const router = express.Router();
-const { authenticateToken } = require('../middleware/auth');
-const { generalLimiter } = require('../middleware/rateLimiting');
-const database = require('../models/database');
-const { v4: uuidv4 } = require('uuid');
 const pdf = require('pdf-parse');
+const { v4: uuidv4 } = require('uuid');
+const database = require('../models/database');
+const auth = require('../middleware/auth');
 
-// AI Services
-let HuggingFaceService;
-try {
-  HuggingFaceService = require('../services/HuggingFaceService');
-} catch (error) {
-  console.log('⚠️ HuggingFace service not available:', error.message);
-}
+// AI Services - Using rule-based analysis only
 
 // AI-Powered CV Analysis Function
 async function analyzeCV(jobDescription, cvText, fileName) {
