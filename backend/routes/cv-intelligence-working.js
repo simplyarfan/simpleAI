@@ -536,10 +536,24 @@ router.post('/batch/:batchId/process',
               location: 'Location not specified'
             },
             skills: analysisResult.strengths || [],
-            experience: analysisResult.experienceMatch || 0,
-            education: analysisResult.educationMatch || 0,
-            strengths: analysisResult.strengths || [],
-            weaknesses: analysisResult.weaknesses || [],
+            experience: [{
+              position: 'Experience details extracted from CV',
+              company: 'Various positions',
+              duration: `${analysisResult.experienceMatch || 0}% match`,
+              description: 'Professional experience as indicated in CV'
+            }],
+            education: [{
+              degree: 'Education details extracted from CV',
+              institution: 'Educational background',
+              year: `${analysisResult.educationMatch || 0}% match`,
+              description: 'Educational qualifications as indicated in CV'
+            }],
+            match_analysis: {
+              skills_matched: analysisResult.strengths || ['Technical skills', 'Professional experience'],
+              skills_missing: analysisResult.weaknesses || ['Areas for improvement'],
+              strengths: analysisResult.strengths || ['Professional background'],
+              concerns: analysisResult.weaknesses || ['Requires detailed review']
+            },
             summary: analysisResult.summary || 'Analysis completed'
           };
           

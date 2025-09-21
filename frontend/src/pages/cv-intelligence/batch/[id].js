@@ -49,7 +49,28 @@ const BatchDetail = () => {
       const response = await cvIntelligenceAPI.getBatchDetails(id);
       console.log('📋 Batch details response:', response.data);
       setBatch(response.data.data.batch);
-      setCandidates(response.data.data.candidates || []);
+      
+      // Ensure candidates is always an array
+      const candidatesData = response.data.data.candidates || [];
+      console.log('📋 Candidates data:', candidatesData);
+      
+      // Validate each candidate has required structure
+      const validatedCandidates = candidatesData.map(candidate => ({
+        ...candidate,
+        analysis_data: candidate.analysis_data || {
+          personal: {},
+          match_analysis: {
+            skills_matched: [],
+            skills_missing: [],
+            strengths: [],
+            concerns: []
+          },
+          experience: [],
+          education: []
+        }
+      }));
+      
+      setCandidates(validatedCandidates);
     } catch (error) {
       console.error('Error fetching batch details:', error);
       toast.error('Failed to load batch details');
