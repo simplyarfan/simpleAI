@@ -618,6 +618,10 @@ router.post('/batch/:batchId/process',
           console.log(`📊 Analysis result:`, analysisResult);
           
           // Create analysis data structure that frontend expects
+          const actualSkills = extractSkillsFromCV(cvText);
+          const actualExperience = extractExperienceFromCV(cvText);
+          const actualEducation = extractEducationFromCV(cvText);
+          
           const analysisData = {
             personal: {
               name: analysisResult.name || 'Unknown',
@@ -625,26 +629,26 @@ router.post('/batch/:batchId/process',
               phone: analysisResult.phone || 'Phone not found',
               location: 'Location not specified'
             },
-            skills: analysisResult.strengths || [],
-            experience: [{
-              position: 'Experience details extracted from CV',
-              company: 'Various positions',
-              duration: `${analysisResult.experienceMatch || 0}% match`,
-              description: 'Professional experience as indicated in CV'
+            skills: actualSkills,
+            experience: actualExperience.length > 0 ? actualExperience : [{
+              position: 'Experience information not clearly structured in CV',
+              company: 'Please review CV manually',
+              duration: 'Duration not specified',
+              description: 'Experience details require manual extraction'
             }],
-            education: [{
-              degree: 'Education details extracted from CV',
-              institution: 'Educational background',
-              year: `${analysisResult.educationMatch || 0}% match`,
-              description: 'Educational qualifications as indicated in CV'
+            education: actualEducation.length > 0 ? actualEducation : [{
+              degree: 'Education information not clearly structured in CV',
+              institution: 'Please review CV manually',
+              year: 'Year not specified',
+              description: 'Education details require manual extraction'
             }],
             match_analysis: {
-              skills_matched: analysisResult.strengths || ['Technical skills', 'Professional experience'],
-              skills_missing: analysisResult.weaknesses || ['Areas for improvement'],
-              strengths: analysisResult.strengths || ['Professional background'],
-              concerns: analysisResult.weaknesses || ['Requires detailed review']
+              skills_matched: actualSkills.length > 0 ? actualSkills : ['No specific technical skills identified'],
+              skills_missing: analysisResult.weaknesses && analysisResult.weaknesses.length > 0 ? analysisResult.weaknesses : ['Skills assessment requires manual review'],
+              strengths: actualSkills.length > 0 ? actualSkills : ['Professional background requires review'],
+              concerns: analysisResult.weaknesses && analysisResult.weaknesses.length > 0 ? analysisResult.weaknesses : ['Manual assessment recommended']
             },
-            summary: analysisResult.summary || 'Analysis completed'
+            summary: analysisResult.summary || `CV analysis completed. ${actualSkills.length} technical skills identified.`
           };
           
           // Calculate additional fields for frontend compatibility
