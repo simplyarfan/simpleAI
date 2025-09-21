@@ -821,8 +821,8 @@ router.post('/batch/:batchId/process',
           };
           
           // Calculate additional fields for frontend compatibility
-          const skillsMatched = analysisResult.skillsMatch || 0;
-          const skillsMissing = Math.max(0, 100 - skillsMatched);
+          const skillsMatchedCount = analysisResult.skillsMatched ? analysisResult.skillsMatched.length : 0;
+          const skillsMissingCount = analysisResult.skillsMissing ? analysisResult.skillsMissing.length : 0;
           const fitLevel = analysisResult.score >= 80 ? 'High' : analysisResult.score >= 60 ? 'Medium' : 'Low';
           const recommendation = analysisResult.score >= 80 ? 'Highly Recommended' : 
                                analysisResult.score >= 60 ? 'Consider' : 'Not Recommended';
@@ -835,15 +835,13 @@ router.post('/batch/:batchId/process',
               cv_text, analysis_data, created_at
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, CURRENT_TIMESTAMP)
           `, [
-            candidateId, batchId, analysisResult.name || 'Unknown', 
-            analysisResult.email || 'Email not found', analysisResult.phone || 'Phone not found',
-            'Location not specified', analysisResult.score || 0, skillsMatched, skillsMissing,
-            analysisResult.experienceMatch || 0, analysisResult.educationMatch || 0,
+            candidateId, batchId, analysisResult.name, analysisResult.email, analysisResult.phone,
+            'Location not specified', analysisResult.score, skillsMatchedCount, skillsMissingCount,
+            analysisResult.experienceMatch, analysisResult.educationMatch,
             fitLevel, recommendation,
-            JSON.stringify(analysisResult.strengths || []), 
-            JSON.stringify(analysisResult.weaknesses || []),
-            analysisResult.summary || 'Analysis completed', 
-            cvText.substring(0, 5000), // Limit CV text storage
+            JSON.stringify(analysisResult.strengths), 
+            JSON.stringify(analysisResult.weaknesses),
+            analysisResult.summary, cvText,
             JSON.stringify(analysisData)
           ]);
           
@@ -854,36 +852,54 @@ router.post('/batch/:batchId/process',
           console.error(`❌ Failed to process ${cvFile.originalname}:`, error);
           console.error(`❌ Error stack:`, error.stack);
           
-          // Create a fallback candidate entry
-          try {
-            const fallbackCandidate = {
-              name: cvFile.originalname.replace(/\.(pdf|doc|docx)$/i, ''),
-              email: null,
-              phone: null,
-              score: 50,
-              skillsMatch: 50,
-              experienceMatch: 50,
-              educationMatch: 50,
-              strengths: ['File processed'],
-              weaknesses: ['Analysis failed'],
-              summary: 'Processing failed, manual review required'
-            };
+          // Create fallback candidate for failed processing
+          const candidateId = uuidv4();
+          const fallbackName = cvFile.originalname.replace(/\.(pdf|doc|docx)$/i, '');
+          const fallbackCandidate = {
+            name: fallbackName,
+            email: 'Email extraction failed',
+            phone: 'Phone extraction failed',
+            score: 30,
+            skillsMatch: 20,
+            experienceMatch: 25,
+            educationMatch: 30,
+            strengths: ['File processed with basic extraction'],
+            weaknesses: ['Detailed analysis failed - manual review required'],
+            summary: `Processing failed for ${cvFile.originalname}. Manual review recommended.`,
+            skillsMatched: [],
+            skillsMissing: ['Analysis failed'],
+            jdRequiredSkills: [],
+            cvSkills: []
+          };
             
-            const candidateId = uuidv4();
-            const fallbackAnalysisData = {
-              personal: {
-                name: fallbackCandidate.name,
-                email: 'Email not found',
-                phone: 'Phone not found',
-                location: 'Location not specified'
-              },
-              skills: fallbackCandidate.strengths,
-              experience: fallbackCandidate.experienceMatch,
-              education: fallbackCandidate.educationMatch,
+          const fallbackAnalysisData = {
+            personal: {
+              name: fallbackCandidate.name,
+              email: 'Email not found',
+              phone: 'Phone not found',
+              location: 'Location not specified'
+            },
+            skills: fallbackCandidate.strengths,
+            experience: [{
+              position: 'Processing failed',
+              company: 'Manual review required',
+              duration: 'N/A',
+              description: 'CV processing encountered errors'
+            }],
+            education: [{
+              degree: 'Processing failed',
+              institution: 'Manual review required',
+              year: 'N/A',
+              description: 'CV processing encountered errors'
+            }],
+            match_analysis: {
+              skills_matched: [],
+              skills_missing: ['Analysis failed'],
               strengths: fallbackCandidate.strengths,
-              weaknesses: fallbackCandidate.weaknesses,
-              summary: fallbackCandidate.summary
-            };
+              concerns: fallbackCandidate.weaknesses
+            },
+            summary: fallbackCandidate.summary
+          };
             
             await database.run(`
               INSERT INTO cv_candidates (
