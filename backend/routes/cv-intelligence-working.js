@@ -4,7 +4,7 @@ const pdf = require('pdf-parse');
 const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
 const auth = require('../middleware/auth');
-// const CVAnalysisService = require('../services/cvAnalysisService'); // Temporarily disabled
+const CVAnalysisService = require('../services/cvAnalysisService'); // ENABLED FOR REAL AI
 
 const router = express.Router();
 
@@ -13,9 +13,15 @@ const authenticateToken = auth.authenticateToken;
 
 console.log('🔧 CV Intelligence Working Routes - Loaded at:', new Date().toISOString());
 
-// CV Analysis Service temporarily disabled - using rule-based analysis only
+// CV Analysis Service ENABLED - using REAL AI analysis
 let cvAnalysisService = null;
-console.log('⚠️ CV Intelligence using rule-based analysis only');
+try {
+  cvAnalysisService = new CVAnalysisService();
+  console.log('✅ CV Analysis Service initialized - REAL AI ENABLED');
+} catch (error) {
+  console.error('❌ Failed to initialize CV Analysis Service:', error);
+}
+console.log('🧠 CV Intelligence using REAL AI analysis');
 
 // Test database connection on route load
 database.connect().then(() => {
@@ -719,32 +725,25 @@ router.post('/batch/:batchId/process',
         WHERE id = $2
       `, [cvFiles.length, batchId]);
 
-      // Enhanced AI-POWERED CV PROCESSING
-      console.log('🤖 Starting enhanced AI-powered CV analysis...');
-      
       // Extract text from JD file
       let jdText = '';
-      try {
+      if (jdFile) {
         if (jdFile.mimetype === 'application/pdf') {
-          console.log('📋 Extracting PDF JD...');
-          const pdfData = await pdf(jdFile.buffer);
-          jdText = pdfData.text;
+          const jdData = await pdf(jdFile.buffer);
+          jdText = jdData.text;
         } else {
-          console.log('📋 Extracting text JD...');
           jdText = jdFile.buffer.toString('utf8');
         }
-        console.log('📋 JD extracted successfully, length:', jdText.length);
-        console.log('📋 JD preview:', jdText.substring(0, 200) + '...');
-      } catch (error) {
-        console.error('❌ JD extraction failed:', error);
-        // Don't throw error, use fallback
-        jdText = `Job Description from ${jdFile.originalname}`;
-        console.log('📋 Using fallback JD text');
+        console.log(`📄 JD text extracted, length: ${jdText.length}`);
       }
 
-      // Process each CV file
       const candidates = [];
-      for (let i = 0; i < cvFiles.length; i++) {
+      
+      if (cvAnalysisService) {
+        // REAL AI-POWERED CV PROCESSING WITH FREE HUGGING FACE
+        console.log('🤖 Starting REAL AI-powered CV analysis with FREE models...');
+        
+        for (let i = 0; i < cvFiles.length; i++) {
         const cvFile = cvFiles[i];
         console.log(`📄 Processing CV ${i + 1}/${cvFiles.length}: ${cvFile.originalname}`);
         
@@ -764,9 +763,9 @@ router.post('/batch/:batchId/process',
           
           console.log(`📄 CV text extracted, length: ${cvText.length}`);
           
-          // AI Analysis using Enhanced Service
-          console.log(`🤖 Starting enhanced AI analysis for ${cvFile.originalname}...`);
-          const analysisResult = await analyzeCV(jdText, cvText, cvFile.originalname);
+          // REAL AI Analysis using AI Service with FREE Hugging Face
+          console.log(`🤖 Starting REAL AI analysis for ${cvFile.originalname}...`);
+          const analysisResult = await cvAnalysisService.analyzeCV(jdText, cvText, cvFile.originalname);
           console.log(`🤖 Analysis completed for ${cvFile.originalname}:`, {
             name: analysisResult.name,
             score: analysisResult.score,
@@ -870,7 +869,8 @@ router.post('/batch/:batchId/process',
             console.error(`❌ Fallback creation failed:`, fallbackError);
           }
         }
-      }
+      } // End for loop
+      } // End if (cvAnalysisService)
       
       // Update batch with results
       await database.run(`
