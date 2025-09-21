@@ -8,12 +8,11 @@ const { v4: uuidv4 } = require('uuid');
 const pdf = require('pdf-parse');
 
 // AI Services
-let OllamaService, HuggingFaceService;
+let HuggingFaceService;
 try {
-  OllamaService = require('../services/OllamaService');
   HuggingFaceService = require('../services/HuggingFaceService');
 } catch (error) {
-  console.log('⚠️ AI services not available:', error.message);
+  console.log('⚠️ HuggingFace service not available:', error.message);
 }
 
 // AI-Powered CV Analysis Function
@@ -73,18 +72,7 @@ Score should be 0-100 based on overall fit. Focus on skills, experience, and edu
       }
     }
     
-    if (!analysisResult && OllamaService) {
-      const ollama = new OllamaService();
-      if (ollama.isAvailable) {
-        console.log('🦙 Falling back to Ollama for analysis');
-        try {
-          const response = await ollama.generateResponse(prompt);
-          analysisResult = parseAIResponse(response);
-        } catch (ollamaError) {
-          console.error('❌ Ollama failed:', ollamaError.message);
-        }
-      }
-    }
+    // No Ollama fallback - using HuggingFace + rule-based only
     
     // Fallback to rule-based analysis
     if (!analysisResult) {

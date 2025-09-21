@@ -237,27 +237,23 @@ class Database {
         )
       `);
 
-      // CV Intelligence Candidates table
+      // CV Intelligence Candidates table - Drop and recreate with correct schema
+      await this.run(`DROP TABLE IF EXISTS cv_candidates`);
       await this.run(`
-        CREATE TABLE IF NOT EXISTS cv_candidates (
+        CREATE TABLE cv_candidates (
           id VARCHAR(255) PRIMARY KEY,
           batch_id VARCHAR(255) NOT NULL,
-          filename VARCHAR(255) NOT NULL,
           name VARCHAR(255),
           email VARCHAR(255),
           phone VARCHAR(50),
-          location VARCHAR(255),
-          age VARCHAR(20),
-          gender VARCHAR(20),
-          current_salary VARCHAR(50),
-          expected_salary VARCHAR(50),
           score INTEGER DEFAULT 0,
-          skills_matched INTEGER DEFAULT 0,
-          skills_missing INTEGER DEFAULT 0,
-          experience_years INTEGER DEFAULT 0,
-          fit_level VARCHAR(20) DEFAULT 'Low',
-          recommendation VARCHAR(50) DEFAULT 'Consider',
-          analysis_data JSONB,
+          skills_match INTEGER DEFAULT 0,
+          experience_match INTEGER DEFAULT 0,
+          education_match INTEGER DEFAULT 0,
+          strengths TEXT,
+          weaknesses TEXT,
+          summary TEXT,
+          cv_text TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (batch_id) REFERENCES cv_batches (id) ON DELETE CASCADE
         )
