@@ -64,8 +64,10 @@ class CVAnalysisService {
   async callOpenRouterLLM(prompt, systemPrompt = "You are an expert CV analyzer.") {
     try {
       console.log(`☁️ Calling REAL cloud LLM: ${this.model}`);
+      console.log(`🔑 API Key status: ${this.apiKey ? 'Present' : 'Missing'}`);
+      console.log(`🔑 API Key starts with: ${this.apiKey ? this.apiKey.substring(0, 10) + '...' : 'N/A'}`);
       
-      const response = await axios.post(this.apiUrl, {
+      const requestData = {
         model: this.model,
         messages: [
           { role: 'system', content: systemPrompt },
@@ -74,7 +76,13 @@ class CVAnalysisService {
         temperature: 0.3,
         max_tokens: 1000,
         top_p: 0.9
-      }, {
+      };
+      
+      console.log(`📤 Sending request to: ${this.apiUrl}`);
+      console.log(`📤 Model: ${requestData.model}`);
+      console.log(`📤 Messages count: ${requestData.messages.length}`);
+      
+      const response = await axios.post(this.apiUrl, requestData, {
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json',
@@ -85,10 +93,27 @@ class CVAnalysisService {
       });
       
       console.log('✅ OpenRouter LLM response received');
-      return response.data.choices[0].message.content;
+      console.log('📥 Response status:', response.status);
+      console.log('📥 Response data keys:', Object.keys(response.data));
+      
+      if (response.data.choices && response.data.choices[0]) {
+        console.log('📥 Message content length:', response.data.choices[0].message.content.length);
+        return response.data.choices[0].message.content;
+      } else {
+        console.error('❌ Unexpected response format:', response.data);
+        return null;
+      }
     } catch (error) {
-      console.error('❌ OpenRouter LLM error:', error.message);
-      console.log('⚠️ Falling back to enhanced regex extraction');
+      console.error('❌ OpenRouter LLM error details:');
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error code:', error.code);
+      console.error('❌ Response status:', error.response?.status);
+      console.error('❌ Response data:', error.response?.data);
+      console.error('❌ Request config:', {
+        url: error.config?.url,
+        method: error.config?.method,
+        headers: error.config?.headers
+      });
       return null;
     }
   }
