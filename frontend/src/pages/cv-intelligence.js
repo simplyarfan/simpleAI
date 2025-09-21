@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import Header from '../components/shared/Header';
-import { cvIntelligenceAPI } from '../utils/cvIntelligenceAPI';
+import { cvAPI } from '../utils/api';
 import toast from 'react-hot-toast';
 import {
   Upload,
@@ -41,6 +41,22 @@ const CVIntelligence = () => {
   const [currentStep, setCurrentStep] = useState(1); // 1: Name, 2: Files, 3: Processing
   const [currentBatchId, setCurrentBatchId] = useState(null);
 
+  // Utility functions
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (fileType) => {
+    if (fileType.includes('pdf')) return '📄';
+    if (fileType.includes('word') || fileType.includes('doc')) return '📝';
+    if (fileType.includes('text')) return '📃';
+    return '📄';
+  };
+
   useEffect(() => {
     fetchBatches();
   }, []);
@@ -48,10 +64,16 @@ const CVIntelligence = () => {
   const fetchBatches = async () => {
     try {
       setLoading(true);
-      const response = await cvIntelligenceAPI.getBatches();
+      console.log('📈 Fetching CV Intelligence batches...');
+      
+      // Use the correct API import
+      const response = await cvAPI.getBatches();
+      console.log('✅ Batches response:', response.data);
+      
       setBatches(response.data.data || []);
     } catch (error) {
-      console.error('Error fetching batches:', error);
+      console.error('❌ Error fetching batches:', error);
+      console.error('❌ Error response:', error.response?.data);
       toast.error('Failed to load batches');
     } finally {
       setLoading(false);
@@ -91,7 +113,16 @@ const CVIntelligence = () => {
       }
       setCurrentStep(2);
     } else if (currentStep === 2) {
-      const validation = cvIntelligenceAPI.validateFiles(selectedFiles.jdFile, selectedFiles.cvFiles);
+      // Use the validateFiles method from cvIntelligenceAPI for compatibility
+      const validation = {
+        isValid: selectedFiles.jdFile && selectedFiles.cvFiles.length > 0 && selectedFiles.cvFiles.length <= 10,
+        errors: []
+      };
+      
+      if (!selectedFiles.jdFile) validation.errors.push('Job Description file is required');
+      if (selectedFiles.cvFiles.length === 0) validation.errors.push('At least one CV file is required');
+      if (selectedFiles.cvFiles.length > 10) validation.errors.push('Maximum 10 CV files allowed');
+      
       if (!validation.isValid) {
         toast.error(validation.errors[0]);
         return;
@@ -108,7 +139,7 @@ const CVIntelligence = () => {
 
       // Step 1: Create batch
       toast.loading('Creating batch...', { id: 'upload' });
-      const batchResponse = await cvIntelligenceAPI.createBatch(batchName);
+      const batchResponse = await cvAPI.createBatch({ name: batchName });
       console.log('🎯 Batch creation response:', batchResponse.data);
       const batchId = batchResponse.data.data.batchId;
       console.log('🎯 Extracted batch ID:', batchId);
@@ -116,7 +147,7 @@ const CVIntelligence = () => {
 
       // Step 2: Process files
       toast.loading('Processing files...', { id: 'upload' });
-      const processResponse = await cvIntelligenceAPI.processFiles(
+      const processResponse = await cvAPI.processBatch(
         batchId,
         selectedFiles.jdFile,
         selectedFiles.cvFiles,
@@ -483,10 +514,10 @@ const CVIntelligence = () => {
                   {selectedFiles.jdFile && (
                     <div className="mt-3 p-3 bg-white/10 rounded-lg flex items-center justify-between">
                       <div className="flex items-center">
-                        <span className="mr-2">{cvIntelligenceAPI.getFileIcon(selectedFiles.jdFile.type)}</span>
+                        <span className="mr-2">{getFileIcon(selectedFiles.jdFile.type)}</span>
                         <span className="text-sm text-white">{selectedFiles.jdFile.name}</span>
                         <span className="text-xs text-gray-400 ml-2">
-                          ({cvIntelligenceAPI.formatFileSize(selectedFiles.jdFile.size)})
+                          ({formatFileSize(selectedFiles.jdFile.size)})
                         </span>
                       </div>
                       <button
@@ -525,10 +556,10 @@ const CVIntelligence = () => {
                       {selectedFiles.cvFiles.map((file, index) => (
                         <div key={index} className="p-3 bg-white/10 rounded-lg flex items-center justify-between">
                           <div className="flex items-center">
-                            <span className="mr-2">{cvIntelligenceAPI.getFileIcon(file.type)}</span>
+                            <span className="mr-2">{getFileIcon(file.type)}</span>
                             <span className="text-sm text-white">{file.name}</span>
                             <span className="text-xs text-gray-400 ml-2">
-                              ({cvIntelligenceAPI.formatFileSize(file.size)})
+                              ({formatFileSize(file.size)})
                             </span>
                           </div>
                           <button

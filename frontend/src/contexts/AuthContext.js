@@ -102,16 +102,16 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data.success) {
-        // Store tokens and auto-login
-        if (data.token && data.user) {
-          tokenManager.setTokens(data.token, data.refreshToken);
-          setUser(data.user);
+        // Store tokens and auto-login (backend sends accessToken and refreshToken in data object)
+        if (data.data?.accessToken && data.data?.user) {
+          tokenManager.setTokens(data.data.accessToken, data.data.refreshToken);
+          setUser(data.data.user);
           setIsAuthenticated(true);
           toast.success(data.message || 'Registration successful! You are now logged in.');
           return {
             success: true,
             message: data.message,
-            user: data.user,
+            user: data.data.user,
             autoLogin: true
           };
         } else {
@@ -163,11 +163,12 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data.success) {
-        // Store tokens from backend
-        const token = data.token;
+        // Store tokens from backend (backend sends token and refreshToken at top level)
+        const accessToken = data.token;
         const refreshToken = data.refreshToken;
-        if (token) {
-          tokenManager.setTokens(token, refreshToken);
+        if (accessToken) {
+          tokenManager.setTokens(accessToken, refreshToken);
+          console.log('🍪 Tokens stored successfully');
         }
 
         // Update state with user data

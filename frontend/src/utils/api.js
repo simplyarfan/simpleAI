@@ -197,15 +197,42 @@ export const authAPI = {
 };
 
 export const cvAPI = {
-  createBatch: (formData) => api.post('/cv-intelligence', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-  getBatches: (params) => api.get('/cv-intelligence/my-batches', { params }),
-  getBatchDetails: (batchId) => api.get(`/cv-intelligence/batches/${batchId}`),
-  exportBatch: (batchId, format = 'json') => api.get(`/cv-intelligence/batches/${batchId}/export`, {
+  createBatch: (data) => api.post('/cv-intelligence', data),
+  getBatches: (params) => api.get('/cv-intelligence/batches', { params }),
+  getBatchDetails: (batchId) => api.get(`/cv-intelligence/batch/${batchId}`),
+  getCandidates: (batchId) => api.get(`/cv-intelligence/batch/${batchId}/candidates`),
+  processBatch: (batchId, jdFile, cvFiles, onProgress = null) => {
+    const formData = new FormData();
+    
+    // Add JD file
+    if (jdFile) {
+      formData.append('jdFile', jdFile);
+    }
+    
+    // Add CV files
+    if (cvFiles && cvFiles.length > 0) {
+      cvFiles.forEach((file) => {
+        formData.append('cvFiles', file);
+      });
+    }
+    
+    return api.post(`/cv-intelligence/batch/${batchId}/process`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 300000, // 5 minutes
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress(percentCompleted);
+        }
+      }
+    });
+  },
+  exportBatch: (batchId, format = 'json') => api.get(`/cv-intelligence/batch/${batchId}/export`, {
     params: { format }
   }),
-  deleteBatch: (batchId) => api.delete(`/cv-intelligence/batches/${batchId}`)
+  deleteBatch: (batchId) => api.delete(`/cv-intelligence/batch/${batchId}`)
 };
 
 export const notificationsAPI = {

@@ -8,9 +8,16 @@ const authenticateToken = async (req, res, next) => {
 const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     // Debug logging
-    console.log('🔍 [AUTH DEBUG] Headers:', req.headers);
-    console.log('🔍 [AUTH DEBUG] Auth header:', authHeader);
-    console.log('🔍 [AUTH DEBUG] Extracted token:', token ? token.substring(0, 20) + '...' : 'null');
+    console.log('🔍 [AUTH DEBUG] === JWT AUTHENTICATION DEBUGGING ===');
+    console.log('🔍 [AUTH DEBUG] Request URL:', req.url);
+    console.log('🔍 [AUTH DEBUG] Request method:', req.method);
+    console.log('🔍 [AUTH DEBUG] All headers:', Object.keys(req.headers));
+    console.log('🔍 [AUTH DEBUG] Auth header raw:', authHeader);
+    console.log('🔍 [AUTH DEBUG] Token extracted:', token ? 'YES' : 'NO');
+    if (token) {
+      console.log('🔍 [AUTH DEBUG] Token preview:', token.substring(0, 30) + '...');
+      console.log('🔍 [AUTH DEBUG] Token length:', token.length);
+    }
 
     if (!token) {
   return res.status(401).json({ 

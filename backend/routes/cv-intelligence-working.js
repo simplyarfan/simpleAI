@@ -80,13 +80,112 @@ router.get('/test', (req, res) => {
   });
 });
 
+// Test auth endpoint (with auth)
+router.get('/test-auth', authenticateToken, (req, res) => {
+  console.log('🔒 PURE AI CV Intelligence AUTH test endpoint hit!');
+  console.log('🔒 User from middleware:', JSON.stringify(req.user, null, 2));
+  res.json({
+    success: true,
+    message: 'Authentication working! User authenticated successfully.',
+    timestamp: new Date().toISOString(),
+    user: {
+      id: req.user?.id,
+      email: req.user?.email,
+      role: req.user?.role,
+      name: `${req.user?.first_name} ${req.user?.last_name}`
+    },
+    debug: {
+      user_object_keys: Object.keys(req.user || {}),
+      user_id_type: typeof req.user?.id,
+      middleware_working: true
+    }
+  });
+});
+
+// Database health check endpoint
+router.get('/test-db', authenticateToken, async (req, res) => {
+  try {
+    console.log('🗄️ Testing database connection and tables...');
+    
+    await database.connect();
+    
+    // Test basic connection
+    const timeTest = await database.get('SELECT NOW() as current_time');
+    console.log('✅ Database connection test:', timeTest.current_time);
+    
+    // Test cv_batches table exists and is accessible
+    const batchesTableTest = await database.get(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.tables 
+      WHERE table_name = 'cv_batches'
+    `);
+    console.log('✅ cv_batches table exists:', batchesTableTest.count > 0);
+    
+    // Test cv_candidates table exists and is accessible
+    const candidatesTableTest = await database.get(`
+      SELECT COUNT(*) as count 
+      FROM information_schema.tables 
+      WHERE table_name = 'cv_candidates'
+    `);
+    console.log('✅ cv_candidates table exists:', candidatesTableTest.count > 0);
+    
+    // Test sample query on cv_batches
+    const sampleBatches = await database.all(`
+      SELECT id, name, status, user_id, created_at 
+      FROM cv_batches 
+      LIMIT 5
+    `);
+    console.log('✅ Sample batches query successful, found:', sampleBatches.length);
+    
+    // Test user-specific query
+    const userBatches = await database.all(`
+      SELECT id, name, status, cv_count, candidate_count, created_at 
+      FROM cv_batches 
+      WHERE user_id = $1 
+      ORDER BY created_at DESC 
+      LIMIT 3
+    `, [req.user.id]);
+    console.log('✅ User-specific batches query successful, found:', userBatches.length);
+    
+    res.json({
+      success: true,
+      message: 'Database health check passed!',
+      data: {
+        database_connected: true,
+        cv_batches_table_exists: batchesTableTest.count > 0,
+        cv_candidates_table_exists: candidatesTableTest.count > 0,
+        total_batches_in_system: sampleBatches.length,
+        user_batches_count: userBatches.length,
+        user_batches: userBatches,
+        current_time: timeTest.current_time
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Database health check failed:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Database health check failed',
+      error: error.message,
+      debug: {
+        error_name: error.name,
+        error_code: error.code,
+        error_detail: error.detail
+      }
+    });
+  }
+});
+
 // GET /api/cv-intelligence/batches - Get all batches for user
 router.get('/batches', authenticateToken, async (req, res) => {
   try {
-    console.log('📊 [BATCHES] Fetching user batches...');
-    console.log('📊 [BATCHES] User object:', JSON.stringify(req.user, null, 2));
+    console.log('📊 [BATCHES] === DEBUGGING BATCHES ENDPOINT ===');
+    console.log('📊 [BATCHES] Request headers:', JSON.stringify(req.headers, null, 2));
+    console.log('📊 [BATCHES] Auth header:', req.headers.authorization || req.headers.Authorization);
+    console.log('📊 [BATCHES] User object from middleware:', JSON.stringify(req.user, null, 2));
     console.log('📊 [BATCHES] User ID:', req.user?.id);
     console.log('📊 [BATCHES] User ID type:', typeof req.user?.id);
+    console.log('📊 [BATCHES] User role:', req.user?.role);
     
     if (!req.user?.id) {
       return res.status(401).json({
