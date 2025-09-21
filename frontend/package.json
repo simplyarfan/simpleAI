@@ -5,7 +5,7 @@
   "description": "Enterprise AI Hub - Modern AI Platform Frontend",
   "scripts": {
     "dev": "next dev",
-    "build": "next build && next export",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
