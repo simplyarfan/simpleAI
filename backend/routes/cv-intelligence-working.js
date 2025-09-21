@@ -4,7 +4,7 @@ const pdf = require('pdf-parse');
 const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
 const auth = require('../middleware/auth');
-const CVAnalysisService = require('../services/cvAnalysisService');
+// const CVAnalysisService = require('../services/cvAnalysisService'); // Temporarily disabled
 
 const router = express.Router();
 
@@ -13,18 +13,31 @@ const authenticateToken = auth.authenticateToken;
 
 console.log('🔧 CV Intelligence Working Routes - Loaded at:', new Date().toISOString());
 
-// AI Services - Using rule-based analysis onlyService
-const cvAnalysisService = new CVAnalysisService();
+// CV Analysis Service temporarily disabled - using rule-based analysis only
+let cvAnalysisService = null;
+console.log('⚠️ CV Intelligence using rule-based analysis only');
+
+// Test database connection on route load
+database.connect().then(() => {
+  console.log('✅ Database connection verified for CV Intelligence');
+}).catch(error => {
+  console.error('❌ Database connection failed for CV Intelligence:', error.message);
+});
 
 // AI-Powered CV Analysis Function - Enhanced Version
 async function analyzeCV(jobDescription, cvText, fileName) {
-  console.log(' Analyzing CV with Enhanced AI Service:', fileName);
+  console.log('🤖 Analyzing CV with Enhanced AI Service:', fileName);
   
   try {
-    // Use the enhanced CV analysis service
-    const analysisResult = await cvAnalysisService.analyzeCV(jobDescription, cvText, fileName);
-    console.log('✅ Enhanced CV analysis completed for:', fileName);
-    return analysisResult;
+    // Use the enhanced CV analysis service if available
+    if (cvAnalysisService) {
+      const analysisResult = await cvAnalysisService.analyzeCV(jobDescription, cvText, fileName);
+      console.log('✅ Enhanced CV analysis completed for:', fileName);
+      return analysisResult;
+    } else {
+      console.log('⚠️ CV Analysis Service not available, using fallback');
+      return createBasicFallbackAnalysis(cvText, fileName);
+    }
   } catch (error) {
     console.error('❌ Enhanced CV analysis failed:', error);
     // Fallback to basic analysis
@@ -105,22 +118,35 @@ const upload = multer({
 
 // Test endpoint (no auth)
 router.get('/test', (req, res) => {
+  console.log('🗺 [TEST] CV Intelligence test endpoint hit');
   res.json({
     success: true,
     message: 'CV Intelligence routes are working!',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    routes_available: [
+      'GET /test',
+      'GET /test-auth', 
+      'POST /',
+      'GET /batches',
+      'POST /batch',
+      'POST /batch/:id/process',
+      'GET /batch/:id',
+      'GET /batch/:id/candidates'
+    ]
   });
 });
 
 // Test auth endpoint
 router.get('/test-auth', authenticateToken, (req, res) => {
+  console.log('🔒 [TEST-AUTH] Authenticated test endpoint hit');
+  console.log('🔒 [TEST-AUTH] User object:', req.user);
   res.json({
     success: true,
     message: 'Authentication working!',
     user: {
-      id: req.user.id,
-      email: req.user.email,
-      role: req.user.role
+      id: req.user?.id,
+      email: req.user?.email,
+      role: req.user?.role
     },
     timestamp: new Date().toISOString()
   });
@@ -175,9 +201,21 @@ router.post('/', authenticateToken, async (req, res) => {
 // GET /api/cv-intelligence/batches - Get all batches for user
 router.get('/batches', authenticateToken, async (req, res) => {
   try {
-    console.log('📊 Fetching user batches for user:', req.user.id);
+    console.log('📊 [BATCHES] Fetching user batches for user:', req.user?.id);
+    console.log('📊 [BATCHES] Request headers:', req.headers.authorization ? 'Auth header present' : 'No auth header');
+    console.log('📊 [BATCHES] User object:', req.user);
+    
+    if (!req.user || !req.user.id) {
+      console.log('❌ [BATCHES] No user found in request');
+      return res.status(401).json({
+        success: false,
+        message: 'User authentication required'
+      });
+    }
     
     await database.connect();
+    console.log('✅ [BATCHES] Database connected successfully');
+    
     const batches = await database.all(`
       SELECT 
         id, name, status, cv_count, candidate_count, 
@@ -186,6 +224,8 @@ router.get('/batches', authenticateToken, async (req, res) => {
       WHERE user_id = $1 
       ORDER BY created_at DESC
     `, [req.user.id]);
+    
+    console.log('✅ [BATCHES] Query executed successfully, found:', batches?.length || 0, 'batches');
 
     res.json({
       success: true,
@@ -193,7 +233,7 @@ router.get('/batches', authenticateToken, async (req, res) => {
       message: 'Batches retrieved successfully'
     });
   } catch (error) {
-    console.error('Get batches error:', error);
+    console.error('❌ [BATCHES] Get batches error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch batches',
@@ -657,4 +697,5 @@ router.get('/batch/:batchId/candidates', authenticateToken, async (req, res) => 
   }
 });
 
+console.log('✅ CV Intelligence Working Routes - Module ready for export');
 module.exports = router;
