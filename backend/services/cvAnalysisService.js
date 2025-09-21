@@ -16,6 +16,7 @@ class CVAnalysisService {
     console.log('🤖 REAL AI CV Analysis Service initialized with OpenRouter');
     console.log('🧠 Using FREE cloud model:', this.model);
     console.log('☁️ CLOUD-BASED - Works on Vercel!');
+    console.log('🔑 API Key configured:', this.apiKey !== 'sk-or-v1-your-key-here' ? 'YES' : 'NO - Please add OPENROUTER_API_KEY to Vercel env vars');
     this.techKeywords = [
       // Programming Languages
       'python', 'javascript', 'java', 'c++', 'sql', 'html', 'css', 'typescript', 'php', 'ruby', 'go', 'rust', 'swift',
