@@ -71,8 +71,8 @@ export const cvIntelligenceAPI = {
         throw new Error('Batch name is required and must be a non-empty string');
       }
       
-      const response = await api.post('/', { batchName: batchName.trim() });
-      console.log('✅ [CV-API] Batch created successfully:', response.data.data?.id);
+      const response = await api.post('/', { name: batchName.trim(), description: '' });
+      console.log('✅ [CV-API] Batch created successfully:', response.data.data?.batchId);
       return response;
     } catch (error) {
       console.error('❌ [CV-API] Create batch error:', error.response?.data || error.message);
