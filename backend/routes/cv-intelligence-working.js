@@ -118,15 +118,13 @@ const upload = multer({
 
 // Test endpoint (no auth)
 router.get('/test', (req, res) => {
-  console.log('🗺 [TEST] CV Intelligence test endpoint hit');
+  console.log('🧪 CV Intelligence test endpoint hit!');
   res.json({
     success: true,
     message: 'CV Intelligence routes are working!',
     timestamp: new Date().toISOString(),
-    routes_available: [
-      'GET /test',
-      'GET /test-auth', 
-      'POST /',
+    routes_loaded: true,
+    available_routes: [
       'GET /batches',
       'POST /batch',
       'POST /batch/:id/process',
