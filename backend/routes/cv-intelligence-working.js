@@ -101,7 +101,7 @@ router.get('/batches', authenticateToken, async (req, res) => {
     
     const batches = await database.all(`
       SELECT 
-        id, name, description, status, cv_count, candidate_count, 
+        id, name, status, cv_count, candidate_count, 
         processing_time, created_at, updated_at
       FROM cv_batches 
       WHERE user_id = $1 
@@ -138,12 +138,12 @@ router.post('/', authenticateToken, async (req, res) => {
     await database.connect();
     
     const batchId = uuidv4();
-    const { name, description } = req.body;
+    const { name } = req.body;
     
     await database.run(`
-      INSERT INTO cv_batches (id, user_id, name, description, status, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, 'created', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-    `, [batchId, req.user.id, name || 'New Batch', description || '']);
+      INSERT INTO cv_batches (id, user_id, name, status, created_at, updated_at)
+      VALUES ($1, $2, $3, 'created', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    `, [batchId, req.user.id, name || 'New Batch']);
     
     console.log('✅ Batch created successfully:', batchId);
     
