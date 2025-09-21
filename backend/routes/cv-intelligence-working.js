@@ -845,9 +845,10 @@ router.post('/batch/:batchId/process',
           console.error(`❌ Error stack:`, error.stack);
           
           // Create fallback candidate for failed processing
-          const candidateId = uuidv4();
-          const fallbackName = cvFile.originalname.replace(/\.(pdf|doc|docx)$/i, '');
-          const fallbackCandidate = {
+          try {
+            const candidateId = uuidv4();
+            const fallbackName = cvFile.originalname.replace(/\.(pdf|doc|docx)$/i, '');
+            const fallbackCandidate = {
             name: fallbackName,
             email: 'Email extraction failed',
             phone: 'Phone extraction failed',
