@@ -766,9 +766,16 @@ router.post('/batch/:batchId/process',
           // REAL AI Analysis using AI Service with FREE Hugging Face
           console.log(`🤖 Starting REAL AI analysis for ${cvFile.originalname}...`);
           const analysisResult = await cvAnalysisService.analyzeCV(jdText, cvText, cvFile.originalname);
+          
+          console.log(`🤖 Raw analysis result:`, JSON.stringify(analysisResult, null, 2));
+          
+          if (!analysisResult) {
+            throw new Error('Analysis service returned null/undefined result');
+          }
+          
           console.log(`🤖 Analysis completed for ${cvFile.originalname}:`, {
-            name: analysisResult.name,
-            score: analysisResult.score,
+            name: analysisResult.name || 'No name',
+            score: analysisResult.score || 0,
             hasAnalysisData: !!analysisResult.analysisData
           });
           

@@ -157,11 +157,22 @@ class CVAnalysisService {
     try {
       console.log('🧠 Using REAL AI for CV analysis...');
       
-      // Use AI for intelligent extraction
+      // Use AI for intelligent extraction with error handling
+      console.log('🔍 Extracting personal info...');
       const personalInfo = await this.extractPersonalInfoWithAI(cvText, fileName);
+      console.log('✅ Personal info extracted:', personalInfo);
+      
+      console.log('🔍 Analyzing skills...');
       const skillsAnalysis = await this.analyzeSkillsWithAI(cvText);
+      console.log('✅ Skills analyzed:', skillsAnalysis?.cvSkills?.length || 0, 'skills found');
+      
+      console.log('🔍 Extracting experience...');
       const experienceInfo = await this.extractExperienceWithAI(cvText);
+      console.log('✅ Experience extracted:', experienceInfo?.length || 0, 'entries found');
+      
+      console.log('🔍 Extracting education...');
       const educationInfo = await this.extractEducationWithAI(cvText);
+      console.log('✅ Education extracted:', educationInfo?.length || 0, 'entries found');
       
       // Calculate scores based on AI analysis
       const scores = this.calculateIntelligentScores(skillsAnalysis, experienceInfo, educationInfo);
@@ -557,17 +568,21 @@ class CVAnalysisService {
   async extractPersonalInfoWithAI(cvText, fileName) {
     console.log('🤖 FREE AI: Extracting personal information with Hugging Face...');
     
-    // Try Named Entity Recognition first
-    const nerResult = await this.extractWithNER(cvText.substring(0, 2000));
-    
-    if (nerResult) {
-      console.log('✅ NER extracted entities:', nerResult);
-      return {
-        name: nerResult.persons[0] || fileName.replace(/\.(pdf|doc|docx)$/i, '').replace(/[_-]/g, ' ').trim(),
-        email: this.extractEmailRegex(cvText),
-        phone: this.extractPhoneRegex(cvText),
-        location: nerResult.locations[0] || null
-      };
+    try {
+      // Try Named Entity Recognition first
+      const nerResult = await this.extractWithNER(cvText.substring(0, 2000));
+      
+      if (nerResult) {
+        console.log('✅ NER extracted entities:', nerResult);
+        return {
+          name: nerResult.persons[0] || fileName.replace(/\.(pdf|doc|docx)$/i, '').replace(/[_-]/g, ' ').trim(),
+          email: this.extractEmailRegex(cvText),
+          phone: this.extractPhoneRegex(cvText),
+          location: nerResult.locations[0] || null
+        };
+      }
+    } catch (error) {
+      console.error('❌ AI personal info extraction failed:', error.message);
     }
     
     // Enhanced regex fallback
@@ -589,11 +604,13 @@ class CVAnalysisService {
   async analyzeSkillsWithAI(cvText) {
     console.log('🤖 FREE AI: Analyzing skills with Hugging Face...');
     
-    // Try NER to extract technical entities
-    const nerResult = await this.extractWithNER(cvText.substring(0, 3000));
-    const aiSkills = [];
+    let aiSkills = [];
     
-    if (nerResult) {
+    try {
+      // Try NER to extract technical entities
+      const nerResult = await this.extractWithNER(cvText.substring(0, 3000));
+      
+      if (nerResult) {
       // Add organizations as potential technologies/frameworks
       aiSkills.push(...nerResult.organizations.filter(org => 
         org.toLowerCase().includes('python') || 
@@ -608,6 +625,9 @@ class CVAnalysisService {
       ));
       
       console.log('✅ NER extracted potential skills:', aiSkills);
+      }
+    } catch (error) {
+      console.error('❌ AI skills extraction failed:', error.message);
     }
     
     // Enhanced regex fallback combined with AI results
@@ -638,11 +658,13 @@ class CVAnalysisService {
   async extractExperienceWithAI(cvText) {
     console.log('🤖 FREE AI: Extracting experience with Hugging Face...');
     
-    // Try NER to extract organizations (potential companies)
-    const nerResult = await this.extractWithNER(cvText.substring(0, 3000));
     const experiences = [];
     
-    if (nerResult && nerResult.organizations.length > 0) {
+    try {
+      // Try NER to extract organizations (potential companies)
+      const nerResult = await this.extractWithNER(cvText.substring(0, 3000));
+      
+      if (nerResult && nerResult.organizations.length > 0) {
       console.log('✅ NER found organizations:', nerResult.organizations);
       
       // Create experience entries from organizations
@@ -654,6 +676,9 @@ class CVAnalysisService {
           description: `Professional experience at ${org}`
         });
       }
+      }
+    } catch (error) {
+      console.error('❌ AI experience extraction failed:', error.message);
     }
     
     // Enhanced regex fallback if no AI results
@@ -689,11 +714,13 @@ class CVAnalysisService {
   async extractEducationWithAI(cvText) {
     console.log('🤖 FREE AI: Extracting education with Hugging Face...');
     
-    // Try NER to extract organizations (potential universities)
-    const nerResult = await this.extractWithNER(cvText.substring(0, 2000));
     const education = [];
     
-    if (nerResult && nerResult.organizations.length > 0) {
+    try {
+      // Try NER to extract organizations (potential universities)
+      const nerResult = await this.extractWithNER(cvText.substring(0, 2000));
+      
+      if (nerResult && nerResult.organizations.length > 0) {
       console.log('✅ NER found potential educational institutions:', nerResult.organizations);
       
       // Filter organizations that look like educational institutions
@@ -712,6 +739,9 @@ class CVAnalysisService {
           description: `Educational qualification from ${institution}`
         });
       }
+      }
+    } catch (error) {
+      console.error('❌ AI education extraction failed:', error.message);
     }
     
     // Enhanced regex fallback if no AI results
