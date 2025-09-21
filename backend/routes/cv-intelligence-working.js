@@ -108,20 +108,23 @@ Score should be 0-100 based on overall fit. Focus on skills, experience, and edu
 // Helper functions
 function extractName(cvText, fileName) {
   console.log('🔍 Extracting name from CV text...');
+  console.log('🔍 CV text first 200 chars:', cvText.substring(0, 200));
   
   // Try to extract name from CV text with multiple patterns
   const namePatterns = [
-    // Name at the beginning of document
-    /^([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/m,
+    // Exact pattern for your CV: "Syed Arfan Hussain" at the beginning
+    /^([A-Z][a-z]+\s+[A-Z][a-z]+\s+[A-Z][a-z]+)/m,
+    // Name at the beginning of document (2-3 words)
+    /^([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/m,
     // Name with label
     /Name:?\s*([A-Za-z\s]{2,50})/i,
     /Full Name:?\s*([A-Za-z\s]{2,50})/i,
     // Name in caps at beginning
-    /^([A-Z\s]{2,50})/m,
-    // Name before email or phone
-    /([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*[\n\r].*?[@\+]/,
-    // Common CV format
-    /([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*[\n\r]/,
+    /^([A-Z\s]{3,50})/m,
+    // Name before title or description
+    /^([A-Z][a-z]+(?:\s[A-Z][a-z]+){1,3})\s*[\n\r]/m,
+    // Name followed by professional title
+    /([A-Z][a-z]+(?:\s[A-Z][a-z]+){1,3})\s*[\n\r].*(?:Engineer|Developer|Graduate|Professional)/,
   ];
   
   for (const pattern of namePatterns) {
@@ -161,10 +164,16 @@ function extractPhone(cvText) {
   console.log('📞 CV text sample:', cvText.substring(0, 500)); // Show first 500 chars for debugging
   
   const phonePatterns = [
+    // Exact pattern for your phone: "+971 54 425 7976"
+    /\+971\s+\d{2}\s+\d{3}\s+\d{4}/,
+    // General UAE format
+    /\+971[-.\s]?\d{1,2}[-.\s]?\d{3}[-.\s]?\d{4}/,
     // Phone with label
     /(?:Phone|Tel|Mobile|Cell|Contact):?\s*([+\d\s\-\(\)\.]{8,20})/i,
-    // International format with +
+    // International format with + (general)
     /\+\d{1,3}[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/,
+    // International format with spaces
+    /\+\d{1,3}\s+\d{2}\s+\d{3}\s+\d{4}/,
     // US format with parentheses
     /\(\d{3}\)\s*\d{3}[-.\s]?\d{4}/,
     // US format without parentheses
@@ -229,11 +238,18 @@ function ruleBasedAnalysis(jobDescription, cvText) {
   const jdLower = jobDescription.toLowerCase();
   const cvLower = cvText.toLowerCase();
   
-  // Enhanced keyword matching with categories
-  const techKeywords = ['javascript', 'python', 'react', 'node', 'sql', 'aws', 'docker', 'git', 'typescript', 'angular', 'vue', 'mongodb', 'postgresql', 'redis', 'kubernetes', 'jenkins', 'ci/cd', 'agile', 'scrum'];
-  const softSkills = ['leadership', 'communication', 'teamwork', 'problem solving', 'analytical', 'creative', 'management', 'collaboration'];
-  const experienceKeywords = ['years', 'experience', 'worked', 'developed', 'managed', 'led', 'implemented', 'designed', 'architected'];
-  const educationKeywords = ['degree', 'university', 'college', 'bachelor', 'master', 'phd', 'certification', 'certified'];
+  // Enhanced keyword matching with categories (including skills from your CV)
+  const techKeywords = [
+    'python', 'javascript', 'java', 'c++', 'sql', 'html', 'css',
+    'tensorflow', 'keras', 'opencv', 'pandas', 'numpy', 'matplotlib',
+    'scikit-learn', 'machine learning', 'deep learning', 'ai', 'artificial intelligence',
+    'google cloud', 'azure', 'oracle', 'git', 'github', 'jupyter',
+    'office 365', 'react', 'node', 'mongodb', 'postgresql', 'redis',
+    'docker', 'kubernetes', 'jenkins', 'ci/cd', 'agile', 'scrum'
+  ];
+  const softSkills = ['leadership', 'communication', 'teamwork', 'problem solving', 'analytical', 'creative', 'management', 'collaboration', 'adaptability', 'time management'];
+  const experienceKeywords = ['intern', 'internship', 'experience', 'worked', 'developed', 'managed', 'led', 'implemented', 'designed', 'architected', 'collaborated', 'competed', 'project'];
+  const educationKeywords = ['bachelor', 'degree', 'university', 'college', 'graduate', 'diploma', 'master', 'phd', 'certification', 'certified', 'course', 'scholarship'];
   
   // Find matching skills
   const techSkillsFound = techKeywords.filter(skill => cvLower.includes(skill) && jdLower.includes(skill));
