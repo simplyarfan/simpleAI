@@ -107,40 +107,82 @@ Score should be 0-100 based on overall fit. Focus on skills, experience, and edu
 
 // Helper functions
 function extractName(cvText, fileName) {
-  // Try to extract name from CV text
+  console.log('🔍 Extracting name from CV text...');
+  
+  // Try to extract name from CV text with multiple patterns
   const namePatterns = [
-    /^([A-Z][a-z]+ [A-Z][a-z]+)/m,
-    /Name:?\s*([A-Za-z\s]+)/i,
-    /([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/
+    // Name at the beginning of document
+    /^([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)/m,
+    // Name with label
+    /Name:?\s*([A-Za-z\s]{2,50})/i,
+    /Full Name:?\s*([A-Za-z\s]{2,50})/i,
+    // Name in caps at beginning
+    /^([A-Z\s]{2,50})/m,
+    // Name before email or phone
+    /([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*[\n\r].*?[@\+]/,
+    // Common CV format
+    /([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*[\n\r]/,
   ];
   
   for (const pattern of namePatterns) {
     const match = cvText.match(pattern);
-    if (match && match[1] && match[1].length < 50) {
-      return match[1].trim();
+    if (match && match[1]) {
+      const name = match[1].trim();
+      // Validate name (not too long, contains letters)
+      if (name.length >= 2 && name.length <= 50 && /^[A-Za-z\s]+$/.test(name)) {
+        console.log('✅ Name extracted:', name);
+        return name;
+      }
     }
   }
   
-  // Fallback to filename
-  return fileName.replace(/\.(pdf|doc|docx)$/i, '').replace(/[_-]/g, ' ');
+  // Enhanced fallback to filename
+  const cleanFileName = fileName
+    .replace(/\.(pdf|doc|docx)$/i, '')
+    .replace(/[_-]/g, ' ')
+    .replace(/cv|resume/i, '')
+    .trim();
+  
+  console.log('⚠️ Using filename as name:', cleanFileName);
+  return cleanFileName || 'Unknown Candidate';
 }
 
 function extractEmail(cvText) {
+  console.log('📧 Extracting email from CV text...');
   const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
   const match = cvText.match(emailPattern);
-  return match ? match[0] : null;
+  const email = match ? match[0] : null;
+  console.log('📧 Email extracted:', email);
+  return email;
 }
 
 function extractPhone(cvText) {
+  console.log('📞 Extracting phone from CV text...');
   const phonePatterns = [
-    /(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/,
-    /(\+?\d{1,3}[-.\s]?)?\d{10,}/
+    // International format
+    /(\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/,
+    // US format
+    /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/,
+    // International long format
+    /\+\d{1,3}[-.\s]?\d{8,15}/,
+    // Simple number format
+    /\d{10,15}/,
+    // With country code
+    /(\+?\d{1,3}[-.\s]?)?\d{8,15}/
   ];
   
   for (const pattern of phonePatterns) {
     const match = cvText.match(pattern);
-    if (match) return match[0];
+    if (match && match[0]) {
+      const phone = match[0].trim();
+      // Validate phone (reasonable length)
+      if (phone.length >= 8 && phone.length <= 20) {
+        console.log('📞 Phone extracted:', phone);
+        return phone;
+      }
+    }
   }
+  console.log('📞 No phone found');
   return null;
 }
 
@@ -454,25 +496,51 @@ router.post('/batch/:batchId/process',
           const analysisResult = await analyzeCV(jdText, cvText, cvFile.originalname);
           console.log(`🤖 Analysis completed for ${cvFile.originalname}:`, analysisResult);
           
-          // Store candidate in database
+          // Store candidate in database with frontend-compatible format
           const candidateId = uuidv4();
           console.log(`💾 Storing candidate ${analysisResult.name} in database...`);
           
+          // Create analysis data structure that frontend expects
+          const analysisData = {
+            personal: {
+              name: analysisResult.name || 'Unknown',
+              email: analysisResult.email || 'Email not found',
+              phone: analysisResult.phone || 'Phone not found',
+              location: 'Location not specified'
+            },
+            skills: analysisResult.strengths || [],
+            experience: analysisResult.experienceMatch || 0,
+            education: analysisResult.educationMatch || 0,
+            strengths: analysisResult.strengths || [],
+            weaknesses: analysisResult.weaknesses || [],
+            summary: analysisResult.summary || 'Analysis completed'
+          };
+          
+          // Calculate additional fields for frontend compatibility
+          const skillsMatched = analysisResult.skillsMatch || 0;
+          const skillsMissing = Math.max(0, 100 - skillsMatched);
+          const fitLevel = analysisResult.score >= 80 ? 'High' : analysisResult.score >= 60 ? 'Medium' : 'Low';
+          const recommendation = analysisResult.score >= 80 ? 'Highly Recommend' : 
+                               analysisResult.score >= 60 ? 'Consider' : 'Not Recommended';
+          
           await database.run(`
             INSERT INTO cv_candidates (
-              id, batch_id, name, email, phone, score, 
-              skills_match, experience_match, education_match,
-              strengths, weaknesses, summary, cv_text, created_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, CURRENT_TIMESTAMP)
+              id, batch_id, name, email, phone, location, score, 
+              skills_match, skills_missing, experience_match, education_match,
+              fit_level, recommendation, strengths, weaknesses, summary, 
+              cv_text, analysis_data, created_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, CURRENT_TIMESTAMP)
           `, [
             candidateId, batchId, analysisResult.name || 'Unknown', 
-            analysisResult.email || null, analysisResult.phone || null, 
-            analysisResult.score || 0, analysisResult.skillsMatch || 0,
+            analysisResult.email || 'Email not found', analysisResult.phone || 'Phone not found',
+            'Location not specified', analysisResult.score || 0, skillsMatched, skillsMissing,
             analysisResult.experienceMatch || 0, analysisResult.educationMatch || 0,
+            fitLevel, recommendation,
             JSON.stringify(analysisResult.strengths || []), 
             JSON.stringify(analysisResult.weaknesses || []),
             analysisResult.summary || 'Analysis completed', 
-            cvText.substring(0, 5000) // Limit CV text storage
+            cvText.substring(0, 5000), // Limit CV text storage
+            JSON.stringify(analysisData)
           ]);
           
           candidates.push(analysisResult);
@@ -498,19 +566,37 @@ router.post('/batch/:batchId/process',
             };
             
             const candidateId = uuidv4();
+            const fallbackAnalysisData = {
+              personal: {
+                name: fallbackCandidate.name,
+                email: 'Email not found',
+                phone: 'Phone not found',
+                location: 'Location not specified'
+              },
+              skills: fallbackCandidate.strengths,
+              experience: fallbackCandidate.experienceMatch,
+              education: fallbackCandidate.educationMatch,
+              strengths: fallbackCandidate.strengths,
+              weaknesses: fallbackCandidate.weaknesses,
+              summary: fallbackCandidate.summary
+            };
+            
             await database.run(`
               INSERT INTO cv_candidates (
-                id, batch_id, name, email, phone, score, 
-                skills_match, experience_match, education_match,
-                strengths, weaknesses, summary, cv_text, created_at
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, CURRENT_TIMESTAMP)
+                id, batch_id, name, email, phone, location, score, 
+                skills_match, skills_missing, experience_match, education_match,
+                fit_level, recommendation, strengths, weaknesses, summary, 
+                cv_text, analysis_data, created_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, CURRENT_TIMESTAMP)
             `, [
-              candidateId, batchId, fallbackCandidate.name, null, null, 
-              fallbackCandidate.score, fallbackCandidate.skillsMatch,
+              candidateId, batchId, fallbackCandidate.name, 'Email not found', 'Phone not found',
+              'Location not specified', fallbackCandidate.score, fallbackCandidate.skillsMatch, 50,
               fallbackCandidate.experienceMatch, fallbackCandidate.educationMatch,
+              'Low', 'Needs Review',
               JSON.stringify(fallbackCandidate.strengths), 
               JSON.stringify(fallbackCandidate.weaknesses),
-              fallbackCandidate.summary, 'Processing failed'
+              fallbackCandidate.summary, 'Processing failed',
+              JSON.stringify(fallbackAnalysisData)
             ]);
             
             candidates.push(fallbackCandidate);
