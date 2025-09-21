@@ -581,16 +581,13 @@ Return ONLY the JSON object, no other text.`;
       console.error('❌ AI personal info extraction failed:', error.message);
     }
     
-    // Enhanced regex fallback
-    const name = fileName.replace(/\.(pdf|doc|docx)$/i, '').replace(/[_-]/g, ' ').trim() || 'Contact';
-    const emailMatch = cvText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-    const phoneMatch = cvText.match(/\(\+\d{1,3}\)\s*\d{2,3}\s*\d{3}\s*\d{4}|\+\d{1,3}[-.\s]?\d{2,4}[-.\s]?\d{3,4}[-.\s]?\d{3,4}/);
-    
+    // PURE AI ONLY - NO REGEX FALLBACK
+    console.log('⚠️ AI personal info extraction failed - returning empty (no regex fallback)');
     return {
-      name,
-      email: emailMatch ? emailMatch[0] : null,
-      phone: phoneMatch ? phoneMatch[0] : null,
-      location: null
+      name: 'AI extraction failed - please check OpenRouter API key',
+      email: 'Add OPENROUTER_API_KEY to Vercel environment variables',
+      phone: 'Real AI analysis requires OpenRouter API key',
+      location: 'N/A'
     };
   }
 
@@ -637,23 +634,23 @@ Return ONLY the JSON object, no other text.`;
       console.error('❌ AI skills extraction failed:', error.message);
     }
     
-    // Enhanced regex fallback combined with AI results
-    const regexSkills = [];
-    const cvLower = cvText.toLowerCase();
+    // PURE AI ONLY - NO REGEX FALLBACK
+    console.log(`🎯 PURE AI skills found: ${aiSkills.length}`);
     
-    for (const skill of this.techKeywords) {
-      if (cvLower.includes(skill.toLowerCase())) {
-        regexSkills.push(skill);
-      }
+    // If AI failed, return empty instead of regex fallback
+    if (aiSkills.length === 0) {
+      console.log('⚠️ AI skills extraction failed - returning empty (no regex fallback)');
+      return {
+        matched: [],
+        cvSkills: [],
+        required: [],
+        missing: []
+      };
     }
     
-    // Combine AI and regex results
-    const allSkills = [...new Set([...aiSkills, ...regexSkills])];
-    console.log(`🎯 Total skills found: ${allSkills.length} (AI: ${aiSkills.length}, Regex: ${regexSkills.length})`);
-    
     return {
-      matched: allSkills,
-      cvSkills: allSkills,
+      matched: aiSkills,
+      cvSkills: aiSkills,
       required: [],
       missing: []
     };
@@ -698,31 +695,21 @@ Return ONLY the JSON array, no other text.`;
       console.error('❌ AI experience extraction failed:', error.message);
     }
     
-    // Enhanced regex fallback if no AI results
+    // PURE AI ONLY - NO REGEX FALLBACK
+    console.log(`🎯 PURE AI experience found: ${experiences.length} entries`);
+    
+    // If AI failed, return empty instead of generic fallback
     if (experiences.length === 0) {
-      const lines = cvText.split('\n');
-      
-      for (const line of lines) {
-        if (line.toLowerCase().includes('intern') || 
-            line.toLowerCase().includes('project') ||
-            line.toLowerCase().includes('experience')) {
-          experiences.push({
-            position: line.trim(),
-            company: 'Company mentioned in CV',
-            duration: 'Duration in CV',
-            description: 'Professional experience'
-          });
-          if (experiences.length >= 5) break; // Limit to 5 experiences
-        }
-      }
+      console.log('⚠️ AI experience extraction failed - returning empty (no regex fallback)');
+      return [{
+        position: 'AI extraction failed - please check OpenRouter API key',
+        company: 'Add OPENROUTER_API_KEY to Vercel environment variables',
+        duration: 'N/A',
+        description: 'Real AI analysis requires OpenRouter API key'
+      }];
     }
     
-    return experiences.length > 0 ? experiences : [{
-      position: 'Professional experience',
-      company: 'Details in CV',
-      duration: 'Duration in CV', 
-      description: 'Experience mentioned in CV'
-    }];
+    return experiences;
   }
 
   /**
@@ -764,24 +751,21 @@ Return ONLY the JSON array, no other text.`;
       console.error('❌ AI education extraction failed:', error.message);
     }
     
-    // Enhanced regex fallback if no AI results
+    // PURE AI ONLY - NO REGEX FALLBACK
+    console.log(`🎯 PURE AI education found: ${education.length} entries`);
+    
+    // If AI failed, return empty instead of generic fallback
     if (education.length === 0) {
-      if (cvText.includes('Bachelor') || cvText.includes('Master') || cvText.includes('University')) {
-        education.push({
-          degree: 'Degree mentioned in CV',
-          institution: 'Institution mentioned in CV',
-          year: 'Year mentioned in CV',
-          description: 'Educational qualification'
-        });
-      }
+      console.log('⚠️ AI education extraction failed - returning empty (no regex fallback)');
+      return [{
+        degree: 'AI extraction failed - please check OpenRouter API key',
+        institution: 'Add OPENROUTER_API_KEY to Vercel environment variables',
+        year: 'N/A',
+        description: 'Real AI analysis requires OpenRouter API key'
+      }];
     }
     
-    return education.length > 0 ? education : [{
-      degree: 'Educational qualification',
-      institution: 'Institution mentioned in CV',
-      year: 'Year mentioned in CV',
-      description: 'Education details in CV'
-    }];
+    return education;
   }
 
   /**
