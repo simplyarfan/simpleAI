@@ -158,31 +158,57 @@ function extractEmail(cvText) {
 
 function extractPhone(cvText) {
   console.log('📞 Extracting phone from CV text...');
+  console.log('📞 CV text sample:', cvText.substring(0, 500)); // Show first 500 chars for debugging
+  
   const phonePatterns = [
-    // International format
-    /(\+\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/,
-    // US format
-    /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/,
+    // Phone with label
+    /(?:Phone|Tel|Mobile|Cell|Contact):?\s*([+\d\s\-\(\)\.]{8,20})/i,
+    // International format with +
+    /\+\d{1,3}[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/,
+    // US format with parentheses
+    /\(\d{3}\)\s*\d{3}[-.\s]?\d{4}/,
+    // US format without parentheses
+    /\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/,
     // International long format
     /\+\d{1,3}[-.\s]?\d{8,15}/,
-    // Simple number format
-    /\d{10,15}/,
-    // With country code
-    /(\+?\d{1,3}[-.\s]?)?\d{8,15}/
+    // Simple continuous digits
+    /\b\d{10,15}\b/,
+    // With country code variations
+    /(\+?\d{1,3}[-.\s]?)?\d{8,15}/,
+    // Any sequence with phone-like separators
+    /\d{2,4}[-.\s]\d{2,4}[-.\s]\d{2,8}/
   ];
   
-  for (const pattern of phonePatterns) {
+  for (let i = 0; i < phonePatterns.length; i++) {
+    const pattern = phonePatterns[i];
     const match = cvText.match(pattern);
     if (match && match[0]) {
-      const phone = match[0].trim();
-      // Validate phone (reasonable length)
-      if (phone.length >= 8 && phone.length <= 20) {
-        console.log('📞 Phone extracted:', phone);
-        return phone;
+      let phone = match[1] || match[0]; // Use captured group if available
+      phone = phone.trim();
+      
+      // Clean up the phone number
+      const cleanPhone = phone.replace(/[^\d+\-\(\)\s\.]/g, '');
+      
+      // Validate phone (reasonable length and contains digits)
+      if (cleanPhone.length >= 8 && cleanPhone.length <= 20 && /\d{6,}/.test(cleanPhone)) {
+        console.log(`📞 Phone extracted with pattern ${i + 1}:`, cleanPhone);
+        return cleanPhone;
       }
     }
   }
-  console.log('📞 No phone found');
+  
+  // Try to find any sequence that looks like a phone number
+  const allNumbers = cvText.match(/\d{8,15}/g);
+  if (allNumbers) {
+    for (const num of allNumbers) {
+      if (num.length >= 10 && num.length <= 15) {
+        console.log('📞 Phone found as number sequence:', num);
+        return num;
+      }
+    }
+  }
+  
+  console.log('📞 No phone found in CV text');
   return null;
 }
 
@@ -499,6 +525,7 @@ router.post('/batch/:batchId/process',
           // Store candidate in database with frontend-compatible format
           const candidateId = uuidv4();
           console.log(`💾 Storing candidate ${analysisResult.name} in database...`);
+          console.log(`📊 Analysis result:`, analysisResult);
           
           // Create analysis data structure that frontend expects
           const analysisData = {
@@ -661,11 +688,31 @@ router.get('/batch/:batchId', authenticateToken, async (req, res) => {
       ORDER BY score DESC
     `, [batchId]);
 
+    console.log(`📋 Retrieved ${candidates.length} candidates from database`);
+    if (candidates.length > 0) {
+      console.log(`📊 First candidate data:`, candidates[0]);
+    }
+
+    // Parse JSON fields for frontend
+    const processedCandidates = candidates.map(candidate => {
+      try {
+        return {
+          ...candidate,
+          strengths: candidate.strengths ? JSON.parse(candidate.strengths) : [],
+          weaknesses: candidate.weaknesses ? JSON.parse(candidate.weaknesses) : [],
+          analysis_data: candidate.analysis_data ? JSON.parse(candidate.analysis_data) : null
+        };
+      } catch (error) {
+        console.error('Error parsing candidate JSON fields:', error);
+        return candidate;
+      }
+    });
+
     res.json({
       success: true,
       data: {
         batch: batch,
-        candidates: candidates || []
+        candidates: processedCandidates || []
       },
       message: 'Batch details retrieved successfully'
     });
