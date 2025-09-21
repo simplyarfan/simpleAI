@@ -11,12 +11,14 @@ const router = express.Router();
 // Authentication middleware
 const authenticateToken = auth.authenticateToken;
 
-// Initialize CV Analysis Service
+console.log('🔧 CV Intelligence Working Routes - Loaded at:', new Date().toISOString());
+
+// AI Services - Using rule-based analysis onlyService
 const cvAnalysisService = new CVAnalysisService();
 
 // AI-Powered CV Analysis Function - Enhanced Version
 async function analyzeCV(jobDescription, cvText, fileName) {
-  console.log('🤖 Analyzing CV with Enhanced AI Service:', fileName);
+  console.log(' Analyzing CV with Enhanced AI Service:', fileName);
   
   try {
     // Use the enhanced CV analysis service

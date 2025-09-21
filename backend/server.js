@@ -33,7 +33,7 @@ try {
 
 try {
   cvRoutes = require('./routes/cv-intelligence-working');
-  console.log('✅ CV Intelligence routes loaded (working version)');
+  console.log('✅ CV Intelligence routes loaded (working version) - Updated 2025-01-21');
 } catch (error) {
   console.error('❌ Error loading CV Intelligence routes:', error.message);
   console.error('❌ CV Intelligence stack:', error.stack);
