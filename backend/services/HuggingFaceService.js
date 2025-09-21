@@ -2,7 +2,7 @@ class HuggingFaceService {
   constructor() {
     this.apiKey = process.env.HUGGINGFACE_API_KEY;
     this.baseUrl = 'https://api-inference.huggingface.co/models';
-    this.model = 'microsoft/DialoGPT-large'; // Free model for text generation
+    this.model = 'microsoft/DialoGPT-medium'; // Better for CV analysis
     this.isAvailable = !!this.apiKey;
     
     if (!this.apiKey) {
@@ -19,6 +19,7 @@ class HuggingFaceService {
     }
 
     try {
+      console.log('🤗 Making HuggingFace API request...');
       const response = await fetch(`${this.baseUrl}/${this.model}`, {
         method: 'POST',
         headers: {

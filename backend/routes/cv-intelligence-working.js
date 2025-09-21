@@ -49,30 +49,46 @@ Please analyze and respond with ONLY a JSON object (no other text) with this exa
 Score should be 0-100 based on overall fit. Focus on skills, experience, and education match.`;
 
   try {
-    // Try Ollama first, then HuggingFace, then fallback
+    // Try HuggingFace first (since API key is set up), then Ollama, then fallback
     let analysisResult;
     
-    if (OllamaService) {
-      const ollama = new OllamaService();
-      if (ollama.isAvailable) {
-        console.log('🦙 Using Ollama for analysis');
-        const response = await ollama.generateResponse(prompt);
-        analysisResult = parseAIResponse(response);
+    if (HuggingFaceService) {
+      const hf = new HuggingFaceService();
+      if (hf.isAvailable) {
+        console.log('🤗 Using HuggingFace AI for analysis');
+        try {
+          const response = await hf.generateResponse(prompt, {
+            max_tokens: 800,
+            temperature: 0.3,
+            top_p: 0.9
+          });
+          console.log('🤗 HuggingFace response received:', response.substring(0, 200) + '...');
+          analysisResult = parseAIResponse(response);
+          if (analysisResult) {
+            console.log('✅ HuggingFace analysis successful');
+          }
+        } catch (hfError) {
+          console.error('❌ HuggingFace API failed:', hfError.message);
+        }
       }
     }
     
-    if (!analysisResult && HuggingFaceService) {
-      const hf = new HuggingFaceService();
-      if (hf.isAvailable) {
-        console.log('🤗 Using HuggingFace for analysis');
-        const response = await hf.generateResponse(prompt);
-        analysisResult = parseAIResponse(response);
+    if (!analysisResult && OllamaService) {
+      const ollama = new OllamaService();
+      if (ollama.isAvailable) {
+        console.log('🦙 Falling back to Ollama for analysis');
+        try {
+          const response = await ollama.generateResponse(prompt);
+          analysisResult = parseAIResponse(response);
+        } catch (ollamaError) {
+          console.error('❌ Ollama failed:', ollamaError.message);
+        }
       }
     }
     
     // Fallback to rule-based analysis
     if (!analysisResult) {
-      console.log('📊 Using fallback rule-based analysis');
+      console.log('📊 Using intelligent rule-based analysis as fallback');
       analysisResult = ruleBasedAnalysis(jobDescription, cvText);
     }
     
@@ -157,20 +173,75 @@ function ruleBasedAnalysis(jobDescription, cvText) {
   const jdLower = jobDescription.toLowerCase();
   const cvLower = cvText.toLowerCase();
   
-  // Simple keyword matching
-  const techKeywords = ['javascript', 'python', 'react', 'node', 'sql', 'aws', 'docker', 'git'];
-  const skillsFound = techKeywords.filter(skill => cvLower.includes(skill) && jdLower.includes(skill));
+  // Enhanced keyword matching with categories
+  const techKeywords = ['javascript', 'python', 'react', 'node', 'sql', 'aws', 'docker', 'git', 'typescript', 'angular', 'vue', 'mongodb', 'postgresql', 'redis', 'kubernetes', 'jenkins', 'ci/cd', 'agile', 'scrum'];
+  const softSkills = ['leadership', 'communication', 'teamwork', 'problem solving', 'analytical', 'creative', 'management', 'collaboration'];
+  const experienceKeywords = ['years', 'experience', 'worked', 'developed', 'managed', 'led', 'implemented', 'designed', 'architected'];
+  const educationKeywords = ['degree', 'university', 'college', 'bachelor', 'master', 'phd', 'certification', 'certified'];
   
-  const score = Math.min(100, 50 + (skillsFound.length * 10));
+  // Find matching skills
+  const techSkillsFound = techKeywords.filter(skill => cvLower.includes(skill) && jdLower.includes(skill));
+  const softSkillsFound = softSkills.filter(skill => cvLower.includes(skill) && jdLower.includes(skill));
+  const experienceIndicators = experienceKeywords.filter(keyword => cvLower.includes(keyword));
+  const educationIndicators = educationKeywords.filter(keyword => cvLower.includes(keyword));
+  
+  // Calculate scores
+  const techScore = Math.min(100, (techSkillsFound.length / Math.max(1, techKeywords.filter(k => jdLower.includes(k)).length)) * 100);
+  const softScore = Math.min(100, (softSkillsFound.length / Math.max(1, softSkills.filter(k => jdLower.includes(k)).length)) * 100);
+  const experienceScore = Math.min(100, 40 + (experienceIndicators.length * 15));
+  const educationScore = Math.min(100, 50 + (educationIndicators.length * 20));
+  
+  // Overall score with weighted average
+  const overallScore = Math.round(
+    (techScore * 0.4) + 
+    (experienceScore * 0.3) + 
+    (educationScore * 0.2) + 
+    (softScore * 0.1)
+  );
+  
+  // Generate strengths and weaknesses
+  const strengths = [];
+  const weaknesses = [];
+  
+  if (techSkillsFound.length > 0) {
+    strengths.push(`Strong technical skills: ${techSkillsFound.slice(0, 5).join(', ')}`);
+  }
+  if (softSkillsFound.length > 0) {
+    strengths.push(`Soft skills: ${softSkillsFound.slice(0, 3).join(', ')}`);
+  }
+  if (experienceIndicators.length > 2) {
+    strengths.push('Demonstrated professional experience');
+  }
+  if (educationIndicators.length > 0) {
+    strengths.push('Educational background present');
+  }
+  
+  if (techSkillsFound.length < 2) {
+    weaknesses.push('Limited technical skill matches');
+  }
+  if (experienceIndicators.length < 2) {
+    weaknesses.push('Experience details could be clearer');
+  }
+  if (softSkillsFound.length === 0) {
+    weaknesses.push('Soft skills not prominently featured');
+  }
+  
+  // Ensure we have at least one strength and weakness
+  if (strengths.length === 0) {
+    strengths.push('Professional background and qualifications');
+  }
+  if (weaknesses.length === 0) {
+    weaknesses.push('Requires detailed review for specific requirements');
+  }
   
   return {
-    score,
-    skillsMatch: Math.min(100, skillsFound.length * 15),
-    experienceMatch: cvLower.includes('experience') ? 80 : 60,
-    educationMatch: cvLower.includes('degree') || cvLower.includes('university') ? 85 : 70,
-    strengths: skillsFound.length > 0 ? [`Technical skills: ${skillsFound.join(', ')}`] : ["Professional background"],
-    weaknesses: skillsFound.length < 3 ? ["Limited technical skill matches"] : ["Needs detailed review"],
-    summary: `Rule-based analysis complete. Found ${skillsFound.length} matching technical skills.`
+    score: Math.max(30, overallScore), // Minimum score of 30
+    skillsMatch: Math.round(techScore),
+    experienceMatch: Math.round(experienceScore),
+    educationMatch: Math.round(educationScore),
+    strengths: strengths,
+    weaknesses: weaknesses,
+    summary: `Intelligent analysis completed. Technical skills: ${techSkillsFound.length}/${techKeywords.filter(k => jdLower.includes(k)).length} matches. Overall compatibility: ${overallScore >= 70 ? 'High' : overallScore >= 50 ? 'Medium' : 'Low'}.`
   };
 }
 
