@@ -135,18 +135,23 @@ router.get('/test', (req, res) => {
 });
 
 // Test auth endpoint
-router.get('/test-auth', authenticateToken, (req, res) => {
+router.get('/test-auth', authenticateToken, async (req, res) => {
   console.log('🔒 [TEST-AUTH] Authenticated test endpoint hit');
-  console.log('🔒 [TEST-AUTH] User object:', req.user);
+  console.log('🔒 [TEST-AUTH] User data:', req.user);
   res.json({
     success: true,
     message: 'Authentication working!',
     user: {
-      id: req.user?.id,
-      email: req.user?.email,
-      role: req.user?.role
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role
     },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    auth_debug: {
+      user_authenticated: true,
+      user_id: req.user.id,
+      token_valid: true
+    }
   });
 });
 
