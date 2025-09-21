@@ -237,7 +237,7 @@ class Database {
         )
       `);
 
-      // CV Intelligence Candidates table - Ensure correct schema
+      // CV Intelligence Candidates table - Enhanced schema for better compatibility
       await this.run(`
         CREATE TABLE IF NOT EXISTS cv_candidates (
           id VARCHAR(255) PRIMARY KEY,
@@ -257,7 +257,7 @@ class Database {
           weaknesses TEXT,
           summary TEXT,
           cv_text TEXT,
-          analysis_data TEXT,
+          analysis_data JSONB,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (batch_id) REFERENCES cv_batches (id) ON DELETE CASCADE
         )

@@ -110,7 +110,7 @@ const CVIntelligence = () => {
       toast.loading('Creating batch...', { id: 'upload' });
       const batchResponse = await cvIntelligenceAPI.createBatch(batchName);
       console.log('🎯 Batch creation response:', batchResponse.data);
-      const batchId = batchResponse.data.data.id; // Fixed: use .id not .batchId
+      const batchId = batchResponse.data.data.id;
       console.log('🎯 Extracted batch ID:', batchId);
       setCurrentBatchId(batchId);
 
@@ -139,7 +139,25 @@ const CVIntelligence = () => {
 
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error(error.response?.data?.message || 'Upload failed', { id: 'upload' });
+      
+      // Enhanced error handling with specific messages
+      let errorMessage = 'Upload failed';
+      
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
+      } else if (error.response?.status === 413) {
+        errorMessage = 'Files are too large. Please reduce file sizes and try again.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Authentication failed. Please log in again.';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Access denied. Please check your permissions.';
+      } else if (error.response?.status >= 500) {
+        errorMessage = 'Server error. Please try again later.';
+      }
+      
+      toast.error(errorMessage, { id: 'upload', duration: 5000 });
       setCurrentStep(2); // Go back to file selection
     } finally {
       setUploading(false);

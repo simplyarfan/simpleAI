@@ -12,80 +12,153 @@ const api = axios.create({
   },
 });
 
-// Add auth token to requests
+// Add auth token to requests with better error handling
 api.interceptors.request.use((config) => {
   const token = Cookies.get('accessToken');
-  console.log('🔍 [INTERCEPTOR] Token from cookies:', token ? token.substring(0, 20) + '...' : 'null');
+  console.log('🔍 [CV-API] Token from cookies:', token ? 'present' : 'missing');
+  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log('🔍 [INTERCEPTOR] Authorization header set:', config.headers.Authorization ? 'YES' : 'NO');
+    console.log('🔍 [CV-API] Authorization header set successfully');
   } else {
-    console.log('🔍 [INTERCEPTOR] No token found in cookies');
+    console.log('⚠️ [CV-API] No authentication token found');
   }
-  console.log('🔍 [INTERCEPTOR] Final headers:', config.headers);
+  
+  // Add request tracking
+  config.headers['X-Request-ID'] = Math.random().toString(36).substring(7);
+  console.log('🔍 [CV-API] Request:', config.method?.toUpperCase(), config.url);
+  
   return config;
+}, (error) => {
+  console.error('❌ [CV-API] Request interceptor error:', error);
+  return Promise.reject(error);
 });
 
-// Handle response errors
+// Handle response errors with improved messaging
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('✅ [CV-API] Response received:', response.status, response.config.url);
+    return response;
+  },
   (error) => {
-    console.error('CV Intelligence API Error:', error.response?.data || error.message);
+    console.error('❌ [CV-API] Response error:', {
+      status: error.response?.status,
+      message: error.response?.data?.message || error.message,
+      url: error.config?.url
+    });
+    
+    // Provide user-friendly error messages
+    if (error.response?.status === 401) {
+      console.error('❌ [CV-API] Authentication failed - redirecting to login');
+    } else if (error.response?.status === 403) {
+      console.error('❌ [CV-API] Access forbidden');
+    } else if (error.response?.status >= 500) {
+      console.error('❌ [CV-API] Server error - please try again later');
+    }
+    
     return Promise.reject(error);
   }
 );
 
 export const cvIntelligenceAPI = {
-  // Create a new batch
+  // Create a new batch with enhanced validation
   createBatch: async (batchName) => {
     try {
-      console.log('🎯 Creating CV batch:', batchName);
-      const response = await api.post('/batch', { batchName });
+      console.log('🎯 [CV-API] Creating CV batch:', batchName);
+      
+      // Validate input
+      if (!batchName || typeof batchName !== 'string' || !batchName.trim()) {
+        throw new Error('Batch name is required and must be a non-empty string');
+      }
+      
+      const response = await api.post('/', { batchName: batchName.trim() });
+      console.log('✅ [CV-API] Batch created successfully:', response.data.data?.id);
       return response;
     } catch (error) {
-      console.error('Create batch error:', error);
+      console.error('❌ [CV-API] Create batch error:', error.response?.data || error.message);
       throw error;
     }
   },
 
-  // Process files for a batch
+  // Process files for a batch with enhanced validation and progress tracking
   processFiles: async (batchId, jdFile, cvFiles, onProgress = null) => {
     try {
-      console.log('📄 Processing files for batch:', batchId);
-      console.log('📋 JD File:', jdFile?.name);
-      console.log('📄 CV Files:', cvFiles?.map(f => f.name));
+      console.log('📄 [CV-API] Processing files for batch:', batchId);
+      console.log('📋 [CV-API] JD File:', jdFile?.name);
+      console.log('📄 [CV-API] CV Files:', cvFiles?.map(f => f.name));
+
+      // Enhanced validation
+      if (!batchId || typeof batchId !== 'string') {
+        throw new Error('Valid batch ID is required');
+      }
+      
+      if (!jdFile || !(jdFile instanceof File)) {
+        throw new Error('Job Description file is required and must be a valid file');
+      }
+      
+      if (!cvFiles || !Array.isArray(cvFiles) || cvFiles.length === 0) {
+        throw new Error('At least one CV file is required');
+      }
+      
+      if (cvFiles.length > 10) {
+        throw new Error('Maximum 10 CV files allowed');
+      }
+      
+      // Validate file types and sizes
+      const allowedTypes = ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      
+      if (!allowedTypes.includes(jdFile.type)) {
+        throw new Error('Job Description must be PDF, TXT, DOC, or DOCX format');
+      }
+      
+      if (jdFile.size > maxSize) {
+        throw new Error('Job Description file is too large (max 10MB)');
+      }
+      
+      for (let i = 0; i < cvFiles.length; i++) {
+        const file = cvFiles[i];
+        if (!(file instanceof File)) {
+          throw new Error(`CV file ${i + 1} is not a valid file`);
+        }
+        if (!allowedTypes.includes(file.type)) {
+          throw new Error(`CV file "${file.name}" must be PDF, TXT, DOC, or DOCX format`);
+        }
+        if (file.size > maxSize) {
+          throw new Error(`CV file "${file.name}" is too large (max 10MB)`);
+        }
+      }
 
       const formData = new FormData();
       
       // Add JD file
-      if (jdFile) {
-        formData.append('jdFile', jdFile);
-      }
+      formData.append('jdFile', jdFile);
       
       // Add CV files
-      if (cvFiles && cvFiles.length > 0) {
-        cvFiles.forEach((file) => {
-          formData.append('cvFiles', file);
-        });
-      }
+      cvFiles.forEach((file) => {
+        formData.append('cvFiles', file);
+      });
 
       const response = await api.post(`/batch/${batchId}/process`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 300000, // 5 minutes
         onUploadProgress: (progressEvent) => {
-          if (onProgress) {
+          if (onProgress && progressEvent.total) {
             const percentCompleted = Math.round(
               (progressEvent.loaded * 100) / progressEvent.total
             );
+            console.log('📈 [CV-API] Upload progress:', percentCompleted + '%');
             onProgress(percentCompleted);
           }
         },
       });
-
+      
+      console.log('✅ [CV-API] Files processed successfully');
       return response;
     } catch (error) {
-      console.error('Process files error:', error);
+      console.error('❌ [CV-API] Process files error:', error.response?.data || error.message);
       throw error;
     }
   },
