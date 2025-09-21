@@ -141,13 +141,18 @@ function extractName(cvText, fileName) {
     /(?:^|\n)([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*(?:\n|$)(?!.*(?:Summary|Experience|Education|Skills|Contact|Professional|Technical))/m,
   ];
   
-  for (const pattern of namePatterns) {
-    const match = cvText.match(pattern);
+  for (let i = 0; i < namePatterns.length; i++) {
+    const pattern = namePatterns[i];
+    const match = cleanText.match(pattern);
     if (match && match[1]) {
       const name = match[1].trim();
-      // Validate name (not too long, contains letters)
-      if (name.length >= 2 && name.length <= 50 && /^[A-Za-z\s]+$/.test(name)) {
-        console.log('✅ Name extracted:', name);
+      // Validate name (not too long, contains letters, not section headers)
+      if (name.length >= 2 && name.length <= 50 && /^[A-Za-z\s]+$/.test(name) && 
+          !name.toLowerCase().includes('contact') && 
+          !name.toLowerCase().includes('summary') &&
+          !name.toLowerCase().includes('experience') &&
+          !name.toLowerCase().includes('professional')) {
+        console.log(`✅ Name extracted with pattern ${i + 1}:`, name);
         return name;
       }
     }
@@ -203,7 +208,7 @@ function extractPhone(cvText) {
   
   for (let i = 0; i < phonePatterns.length; i++) {
     const pattern = phonePatterns[i];
-    const match = cvText.match(pattern);
+    const match = cleanText.match(pattern);
     if (match && match[0]) {
       let phone = match[1] || match[0]; // Use captured group if available
       phone = phone.trim();
@@ -236,21 +241,42 @@ function extractPhone(cvText) {
 
 // Extract actual skills from CV text
 function extractSkillsFromCV(cvText) {
-  const skillsSection = cvText.match(/Technical Skills[\s\S]*?(?=\n[A-Z]|$)/i);
   const skills = [];
+  const cvLower = cvText.toLowerCase();
   
-  if (skillsSection) {
-    const skillText = skillsSection[0];
-    // Extract programming languages, tools, etc.
-    const techSkills = ['Python', 'Java', 'C++', 'SQL', 'HTML', 'CSS', 'JavaScript', 'TensorFlow', 'Keras', 'OpenCV', 'Pandas', 'NumPy', 'Matplotlib', 'Google Cloud', 'Azure', 'Oracle', 'Git', 'GitHub', 'Jupyter', 'Office 365'];
-    
-    techSkills.forEach(skill => {
-      if (skillText.toLowerCase().includes(skill.toLowerCase())) {
-        skills.push(skill);
-      }
-    });
-  }
+  // Look for Technical Skills section or just scan entire CV
+  const skillsSection = cvText.match(/Technical Skills[\s\S]*?(?=\n[A-Z]|$)/i);
+  const searchText = skillsSection ? skillsSection[0] : cvText;
   
+  // Your specific skills from the CV
+  const techSkills = [
+    'Python', 'C++', 'Java', 'SQL', 'HTML', 'CSS', 
+    'scikit-learn', 'TensorFlow', 'Keras', 'OpenCV',
+    'Pandas', 'NumPy', 'Matplotlib', 'Google Cloud', 
+    'Azure', 'Oracle Provable', 'Git', 'VS Code',
+    'Office 365', 'GitHub', 'Jupyter', 'Machine Learning',
+    'Deep Learning', 'AI', 'Artificial Intelligence',
+    'CNNs', 'Neural Networks', 'Data Analysis'
+  ];
+  
+  // Also look for soft skills
+  const softSkills = ['Leadership', 'Teamwork', 'Communication', 'Problem Solving', 'Adaptability', 'Creativity'];
+  
+  // Check for technical skills
+  techSkills.forEach(skill => {
+    if (searchText.toLowerCase().includes(skill.toLowerCase())) {
+      skills.push(skill);
+    }
+  });
+  
+  // Check for soft skills
+  softSkills.forEach(skill => {
+    if (cvLower.includes(skill.toLowerCase())) {
+      skills.push(skill);
+    }
+  });
+  
+  console.log('🔧 Skills extracted:', skills);
   return skills;
 }
 
@@ -655,7 +681,7 @@ router.post('/batch/:batchId/process',
           const skillsMatched = analysisResult.skillsMatch || 0;
           const skillsMissing = Math.max(0, 100 - skillsMatched);
           const fitLevel = analysisResult.score >= 80 ? 'High' : analysisResult.score >= 60 ? 'Medium' : 'Low';
-          const recommendation = analysisResult.score >= 80 ? 'Highly Recommend' : 
+          const recommendation = analysisResult.score >= 80 ? 'Highly Recommended' : 
                                analysisResult.score >= 60 ? 'Consider' : 'Not Recommended';
           
           await database.run(`
