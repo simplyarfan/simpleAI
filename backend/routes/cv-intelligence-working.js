@@ -83,9 +83,21 @@ router.get('/test', (req, res) => {
 // GET /api/cv-intelligence/batches - Get all batches for user
 router.get('/batches', authenticateToken, async (req, res) => {
   try {
-    console.log('📊 [BATCHES] Fetching user batches for user:', req.user?.id);
+    console.log('📊 [BATCHES] Fetching user batches...');
+    console.log('📊 [BATCHES] User object:', JSON.stringify(req.user, null, 2));
+    console.log('📊 [BATCHES] User ID:', req.user?.id);
+    console.log('📊 [BATCHES] User ID type:', typeof req.user?.id);
+    
+    if (!req.user?.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated or user ID missing',
+        debug: { user: req.user }
+      });
+    }
     
     await database.connect();
+    console.log('📊 [BATCHES] Database connected successfully');
     
     const batches = await database.all(`
       SELECT 
@@ -96,7 +108,7 @@ router.get('/batches', authenticateToken, async (req, res) => {
       ORDER BY created_at DESC
     `, [req.user.id]);
     
-    console.log(`📊 [BATCHES] Found ${batches.length} batches for user ${req.user.id}`);
+    console.log(`📊 [BATCHES] Found ${batches?.length || 0} batches for user ${req.user.id}`);
     
     res.json({
       success: true,
@@ -104,11 +116,16 @@ router.get('/batches', authenticateToken, async (req, res) => {
       message: 'Batches retrieved successfully'
     });
   } catch (error) {
-    console.error('Get batches error:', error);
+    console.error('❌ [BATCHES] Get batches error:', error);
+    console.error('❌ [BATCHES] Error stack:', error.stack);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch batches',
-      error: error.message
+      error: error.message,
+      debug: {
+        user_id: req.user?.id,
+        error_type: error.constructor.name
+      }
     });
   }
 });
