@@ -185,6 +185,9 @@ function extractPhone(cvText) {
   const cleanText = cvText.replace(/\s+/g, ' ').trim();
   console.log('📞 Clean CV text sample:', cleanText.substring(0, 500));
   
+  // Search for phone patterns in the text
+  console.log('📞 Searching for phone patterns...');
+  
   const phonePatterns = [
     // Exact pattern for your phone: "+971 54 425 7976"
     /\+971\s+54\s+425\s+7976/,
@@ -192,10 +195,12 @@ function extractPhone(cvText) {
     /\+971\s+\d{2}\s+\d{3}\s+\d{4}/,
     // UAE format with different separators
     /\+971[-.\s]?\d{2}[-.\s]?\d{3}[-.\s]?\d{4}/,
-    // Look for the exact number in the text
+    // Look for the exact number in the text (without +)
     /971\s*54\s*425\s*7976/,
-    // Phone with label
-    /(?:Phone|Tel|Mobile|Cell|Contact):?\s*([+\d\s\-\(\)\.]{8,20})/i,
+    // Just the number part
+    /54\s*425\s*7976/,
+    // Phone with label (more flexible)
+    /(?:Phone|Tel|Mobile|Cell|Contact|Ph)[:.\s]*([+\d\s\-\(\)\.]{8,20})/i,
     // International format with + (general)
     /\+\d{1,3}[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/,
     // International format with spaces
@@ -244,28 +249,48 @@ function extractSkillsFromCV(cvText) {
   const skills = [];
   const cvLower = cvText.toLowerCase();
   
+  console.log('🔧 Starting skills extraction...');
+  console.log('🔧 CV text length:', cvText.length);
+  console.log('🔧 CV text sample:', cvText.substring(0, 300));
+  
   // Look for Technical Skills section or just scan entire CV
   const skillsSection = cvText.match(/Technical Skills[\s\S]*?(?=\n[A-Z]|$)/i);
   const searchText = skillsSection ? skillsSection[0] : cvText;
   
-  // Your specific skills from the CV
+  console.log('🔧 Skills section found:', !!skillsSection);
+  if (skillsSection) {
+    console.log('🔧 Skills section content:', skillsSection[0].substring(0, 200));
+  }
+  
+  // Your specific skills from the CV (expanded and more flexible)
   const techSkills = [
-    'Python', 'C++', 'Java', 'SQL', 'HTML', 'CSS', 
-    'scikit-learn', 'TensorFlow', 'Keras', 'OpenCV',
-    'Pandas', 'NumPy', 'Matplotlib', 'Google Cloud', 
-    'Azure', 'Oracle Provable', 'Git', 'VS Code',
-    'Office 365', 'GitHub', 'Jupyter', 'Machine Learning',
-    'Deep Learning', 'AI', 'Artificial Intelligence',
-    'CNNs', 'Neural Networks', 'Data Analysis'
+    // Programming Languages
+    'Python', 'C++', 'Java', 'JavaScript', 'SQL', 'HTML', 'CSS',
+    // ML/AI Libraries
+    'scikit-learn', 'scikit learn', 'TensorFlow', 'Keras', 'OpenCV',
+    'Pandas', 'NumPy', 'Matplotlib', 'PyTorch',
+    // Cloud & Tools
+    'Google Cloud', 'Azure', 'Oracle', 'Git', 'GitHub', 'VS Code',
+    'Office 365', 'Jupyter', 'Docker', 'AWS',
+    // Concepts
+    'Machine Learning', 'Deep Learning', 'AI', 'Artificial Intelligence',
+    'CNNs', 'Neural Networks', 'Data Analysis', 'Computer Vision',
+    'Natural Language Processing', 'NLP'
   ];
   
-  // Also look for soft skills
-  const softSkills = ['Leadership', 'Teamwork', 'Communication', 'Problem Solving', 'Adaptability', 'Creativity'];
+  // Soft skills
+  const softSkills = ['Leadership', 'Teamwork', 'Communication', 'Problem Solving', 'Adaptability', 'Creativity', 'Time Management'];
   
-  // Check for technical skills
+  // Check for technical skills with flexible matching
   techSkills.forEach(skill => {
-    if (searchText.toLowerCase().includes(skill.toLowerCase())) {
+    const skillLower = skill.toLowerCase();
+    const found = cvLower.includes(skillLower) || 
+                  cvLower.includes(skillLower.replace(/\s+/g, '')) || // Remove spaces
+                  cvLower.includes(skillLower.replace(/[-_]/g, ' ')); // Replace dashes/underscores
+    
+    if (found) {
       skills.push(skill);
+      console.log('✅ Technical skill found:', skill);
     }
   });
   
@@ -273,10 +298,25 @@ function extractSkillsFromCV(cvText) {
   softSkills.forEach(skill => {
     if (cvLower.includes(skill.toLowerCase())) {
       skills.push(skill);
+      console.log('✅ Soft skill found:', skill);
     }
   });
   
-  console.log('🔧 Skills extracted:', skills);
+  // Also try to extract skills from bullet points or lists
+  const bulletPoints = cvText.match(/[•·▪▫-]\s*([A-Za-z\s,]+)/g);
+  if (bulletPoints) {
+    console.log('🔧 Found bullet points:', bulletPoints.length);
+    bulletPoints.forEach(point => {
+      techSkills.forEach(skill => {
+        if (point.toLowerCase().includes(skill.toLowerCase()) && !skills.includes(skill)) {
+          skills.push(skill);
+          console.log('✅ Skill found in bullet point:', skill);
+        }
+      });
+    });
+  }
+  
+  console.log('🔧 Final skills extracted:', skills);
   return skills;
 }
 
@@ -827,18 +867,63 @@ router.get('/batch/:batchId', authenticateToken, async (req, res) => {
       console.log(`📊 First candidate data:`, candidates[0]);
     }
 
-    // Parse JSON fields for frontend
+    // Parse JSON fields for frontend with better error handling
     const processedCandidates = candidates.map(candidate => {
       try {
+        const processed = {
+          ...candidate,
+          strengths: [],
+          weaknesses: [],
+          analysis_data: null
+        };
+        
+        // Safely parse JSON fields
+        if (candidate.strengths) {
+          try {
+            processed.strengths = JSON.parse(candidate.strengths);
+          } catch (e) {
+            console.error('Error parsing strengths:', e);
+            processed.strengths = [];
+          }
+        }
+        
+        if (candidate.weaknesses) {
+          try {
+            processed.weaknesses = JSON.parse(candidate.weaknesses);
+          } catch (e) {
+            console.error('Error parsing weaknesses:', e);
+            processed.weaknesses = [];
+          }
+        }
+        
+        if (candidate.analysis_data) {
+          try {
+            processed.analysis_data = JSON.parse(candidate.analysis_data);
+          } catch (e) {
+            console.error('Error parsing analysis_data:', e);
+            processed.analysis_data = {
+              personal: {},
+              match_analysis: { skills_matched: [], skills_missing: [], strengths: [], concerns: [] },
+              experience: [],
+              education: []
+            };
+          }
+        }
+        
+        return processed;
+      } catch (error) {
+        console.error('Error processing candidate:', error);
         return {
           ...candidate,
-          strengths: candidate.strengths ? JSON.parse(candidate.strengths) : [],
-          weaknesses: candidate.weaknesses ? JSON.parse(candidate.weaknesses) : [],
-          analysis_data: candidate.analysis_data ? JSON.parse(candidate.analysis_data) : null
+          strengths: [],
+          weaknesses: [],
+          analysis_data: {
+            personal: {},
+            match_analysis: { skills_matched: [], skills_missing: [], strengths: [], concerns: [] },
+            experience: [],
+            education: []
+          }
         };
-      } catch (error) {
-        console.error('Error parsing candidate JSON fields:', error);
-        return candidate;
       }
     });
 

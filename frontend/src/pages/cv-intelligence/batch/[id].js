@@ -53,6 +53,14 @@ const BatchDetail = () => {
       // Ensure candidates is always an array
       const candidatesData = response.data.data.candidates || [];
       console.log('📋 Candidates data:', candidatesData);
+      console.log('📋 Candidates data type:', typeof candidatesData, 'Is array:', Array.isArray(candidatesData));
+      
+      // Ensure it's actually an array before mapping
+      if (!Array.isArray(candidatesData)) {
+        console.error('❌ Candidates data is not an array:', candidatesData);
+        setCandidates([]);
+        return;
+      }
       
       // Validate each candidate has required structure
       const validatedCandidates = candidatesData.map(candidate => ({
