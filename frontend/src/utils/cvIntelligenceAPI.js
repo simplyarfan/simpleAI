@@ -1,11 +1,11 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api/cv-intelligence`,
+  baseURL: `${API_BASE_URL}/cv-intelligence`,
   timeout: 300000, // 5 minutes for file processing
   headers: {
     'Content-Type': 'application/json',
