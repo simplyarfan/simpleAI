@@ -5,6 +5,11 @@ const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
 const auth = require('../middleware/auth');
 
+const router = express.Router();
+
+// Authentication middleware
+const authenticateToken = auth.authenticateToken;
+
 // AI Services - Using rule-based analysis only
 
 // AI-Powered CV Analysis Function
