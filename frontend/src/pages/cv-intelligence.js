@@ -110,7 +110,7 @@ const CVIntelligence = () => {
       toast.loading('Creating batch...', { id: 'upload' });
       const batchResponse = await cvIntelligenceAPI.createBatch(batchName);
       console.log('🎯 Batch creation response:', batchResponse.data);
-      const batchId = batchResponse.data.data.id;
+      const batchId = batchResponse.data.data.batchId;
       console.log('🎯 Extracted batch ID:', batchId);
       setCurrentBatchId(batchId);
 
