@@ -1,29 +1,20 @@
 /**
  * REAL AI CV Analysis Service
- * Uses OpenAI GPT models for intelligent CV analysis
+ * Uses Ollama LLM for intelligent CV analysis
  * Provides true AI-powered extraction and analysis
  */
 
-const axios = require('axios');
+const { Ollama } = require('ollama');
 
 class CVAnalysisService {
   constructor() {
-    // FREE Hugging Face API configuration
-    this.hfApiKey = process.env.HUGGINGFACE_API_KEY || 'hf_free_api_key';
-    this.hfApiUrl = 'https://api-inference.huggingface.co/models';
+    // Ollama LLM configuration - REAL AI!
+    this.ollama = new Ollama({ host: 'http://localhost:11434' });
+    this.model = 'llama3.2:1b'; // Fast, lightweight model
     
-    // FREE AI Models for different tasks
-    this.models = {
-      // FREE models that don't require API key for basic usage
-      ner: 'dbmdz/bert-large-cased-finetuned-conll03-english', // Named Entity Recognition
-      extraction: 'facebook/bart-large-cnn', // Information extraction
-      classification: 'microsoft/DialoGPT-medium', // Text classification
-      summarization: 'facebook/bart-large-cnn' // Text summarization
-    };
-    
-    console.log('🤖 FREE AI CV Analysis Service initialized with Hugging Face models');
-    console.log('🆓 Using FREE Hugging Face models - no API key required!');
-    console.log('🔧 Models loaded:', Object.keys(this.models).join(', '));
+    console.log('🤖 REAL AI CV Analysis Service initialized with Ollama LLM');
+    console.log('🧠 Using Ollama model:', this.model);
+    console.log('🚀 REAL INTELLIGENCE - No more regex bullshit!');
     this.techKeywords = [
       // Programming Languages
       'python', 'javascript', 'java', 'c++', 'sql', 'html', 'css', 'typescript', 'php', 'ruby', 'go', 'rust', 'swift',
@@ -66,69 +57,55 @@ class CVAnalysisService {
   }
 
   /**
-   * Call FREE Hugging Face API for REAL AI analysis
+   * Call REAL Ollama LLM for intelligent analysis
    */
-  async callHuggingFaceAPI(model, text, task = 'text-generation') {
+  async callOllamaLLM(prompt, systemPrompt = "You are an expert CV analyzer.") {
     try {
-      console.log(`🤖 Calling FREE Hugging Face model: ${model}`);
+      console.log(`🧠 Calling REAL Ollama LLM: ${this.model}`);
       
-      const response = await axios.post(
-        `${this.hfApiUrl}/${model}`,
-        {
-          inputs: text,
-          parameters: {
-            max_length: 200,
-            temperature: 0.7,
-            do_sample: true,
-            return_full_text: false
-          }
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            // No API key required for basic usage of free models
-            ...(this.hfApiKey !== 'hf_free_api_key' && { 'Authorization': `Bearer ${this.hfApiKey}` })
-          },
-          timeout: 30000
+      const response = await this.ollama.chat({
+        model: this.model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: prompt }
+        ],
+        stream: false,
+        options: {
+          temperature: 0.3,
+          top_p: 0.9,
+          num_predict: 500
         }
-      );
+      });
       
-      console.log('✅ Hugging Face API response received');
-      return response.data;
+      console.log('✅ Ollama LLM response received');
+      return response.message.content;
     } catch (error) {
-      console.error('❌ Hugging Face API error:', error.message);
+      console.error('❌ Ollama LLM error:', error.message);
       console.log('⚠️ Falling back to enhanced regex extraction');
       return null;
     }
   }
 
   /**
-   * Use Named Entity Recognition for extracting information
+   * Parse JSON response from LLM with error handling
    */
-  async extractWithNER(text) {
+  parseJSONResponse(response) {
     try {
-      const result = await this.callHuggingFaceAPI(this.models.ner, text, 'ner');
-      if (result && Array.isArray(result)) {
-        const entities = {
-          persons: [],
-          organizations: [],
-          locations: [],
-          misc: []
-        };
-        
-        for (const entity of result) {
-          if (entity.entity_group === 'PER') entities.persons.push(entity.word);
-          if (entity.entity_group === 'ORG') entities.organizations.push(entity.word);
-          if (entity.entity_group === 'LOC') entities.locations.push(entity.word);
-          if (entity.entity_group === 'MISC') entities.misc.push(entity.word);
-        }
-        
-        return entities;
+      // Clean the response - remove markdown code blocks if present
+      let cleanResponse = response.replace(/```json\s*|\s*```/g, '').trim();
+      
+      // Try to find JSON object in the response
+      const jsonMatch = cleanResponse.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        cleanResponse = jsonMatch[0];
       }
+      
+      return JSON.parse(cleanResponse);
     } catch (error) {
-      console.log('⚠️ NER extraction failed, using regex fallback');
+      console.error('❌ Failed to parse JSON response:', error.message);
+      console.log('Raw response:', response);
+      return null;
     }
-    return null;
   }
 
   /**
@@ -566,20 +543,32 @@ class CVAnalysisService {
    * AI-POWERED PERSONAL INFO EXTRACTION
    */
   async extractPersonalInfoWithAI(cvText, fileName) {
-    console.log('🤖 FREE AI: Extracting personal information with Hugging Face...');
+    console.log('🧠 REAL AI: Extracting personal information with Ollama LLM...');
     
     try {
-      // Try Named Entity Recognition first
-      const nerResult = await this.extractWithNER(cvText.substring(0, 2000));
+      const prompt = `Extract personal information from this CV text and return ONLY a JSON object:
+
+CV Text:
+${cvText.substring(0, 2000)}
+
+Extract and return ONLY valid JSON:
+{
+  "name": "full name from CV",
+  "email": "email address", 
+  "phone": "phone number with country code",
+  "location": "city, country or address"
+}
+
+Return ONLY the JSON object, no other text.`;
+
+      const aiResult = await this.callOllamaLLM(prompt, "You are an expert at extracting personal information from CVs. Return only valid JSON.");
       
-      if (nerResult) {
-        console.log('✅ NER extracted entities:', nerResult);
-        return {
-          name: nerResult.persons[0] || fileName.replace(/\.(pdf|doc|docx)$/i, '').replace(/[_-]/g, ' ').trim(),
-          email: this.extractEmailRegex(cvText),
-          phone: this.extractPhoneRegex(cvText),
-          location: nerResult.locations[0] || null
-        };
+      if (aiResult) {
+        const parsed = this.parseJSONResponse(aiResult);
+        if (parsed) {
+          console.log('✅ LLM extracted personal info:', parsed);
+          return parsed;
+        }
       }
     } catch (error) {
       console.error('❌ AI personal info extraction failed:', error.message);
@@ -602,29 +591,40 @@ class CVAnalysisService {
    * AI-POWERED SKILLS ANALYSIS
    */
   async analyzeSkillsWithAI(cvText) {
-    console.log('🤖 FREE AI: Analyzing skills with Hugging Face...');
+    console.log('🧠 REAL AI: Analyzing skills with Ollama LLM...');
     
     let aiSkills = [];
     
     try {
-      // Try NER to extract technical entities
-      const nerResult = await this.extractWithNER(cvText.substring(0, 3000));
+      const prompt = `Analyze this CV and extract ALL technical and soft skills. Return ONLY a JSON object:
+
+CV Text:
+${cvText.substring(0, 3000)}
+
+Extract ALL skills including:
+- Programming languages (Python, Java, JavaScript, C++, etc.)
+- Frameworks (React, Django, TensorFlow, etc.) 
+- Tools (Docker, Git, AWS, etc.)
+- Databases (MySQL, MongoDB, etc.)
+- Soft skills (Leadership, Communication, etc.)
+
+Return ONLY valid JSON:
+{
+  "technical_skills": ["Python", "JavaScript", "React", "Docker", "AWS"],
+  "soft_skills": ["Leadership", "Communication", "Problem Solving"],
+  "total_count": 8
+}
+
+Return ONLY the JSON object, no other text.`;
+
+      const aiResult = await this.callOllamaLLM(prompt, "You are an expert at identifying skills from CVs. Return only valid JSON.");
       
-      if (nerResult) {
-      // Add organizations as potential technologies/frameworks
-      aiSkills.push(...nerResult.organizations.filter(org => 
-        org.toLowerCase().includes('python') || 
-        org.toLowerCase().includes('java') ||
-        org.toLowerCase().includes('javascript') ||
-        this.techKeywords.some(keyword => org.toLowerCase().includes(keyword.toLowerCase()))
-      ));
-      
-      // Add misc entities as potential skills
-      aiSkills.push(...nerResult.misc.filter(misc => 
-        this.techKeywords.some(keyword => misc.toLowerCase().includes(keyword.toLowerCase()))
-      ));
-      
-      console.log('✅ NER extracted potential skills:', aiSkills);
+      if (aiResult) {
+        const parsed = this.parseJSONResponse(aiResult);
+        if (parsed && parsed.technical_skills && parsed.soft_skills) {
+          aiSkills = [...parsed.technical_skills, ...parsed.soft_skills];
+          console.log('✅ LLM extracted skills:', aiSkills.length, 'total skills found');
+        }
       }
     } catch (error) {
       console.error('❌ AI skills extraction failed:', error.message);
@@ -656,26 +656,36 @@ class CVAnalysisService {
    * AI-POWERED EXPERIENCE EXTRACTION
    */
   async extractExperienceWithAI(cvText) {
-    console.log('🤖 FREE AI: Extracting experience with Hugging Face...');
+    console.log('🧠 REAL AI: Extracting experience with Ollama LLM...');
     
     const experiences = [];
     
     try {
-      // Try NER to extract organizations (potential companies)
-      const nerResult = await this.extractWithNER(cvText.substring(0, 3000));
+      const prompt = `Extract work experience from this CV and return ONLY a JSON array:
+
+CV Text:
+${cvText.substring(0, 3000)}
+
+Extract ALL work experience, internships, projects, positions. Return ONLY valid JSON:
+[
+  {
+    "position": "exact job title or role",
+    "company": "company or organization name", 
+    "duration": "time period (e.g., 2023-2024)",
+    "description": "brief description of role and achievements"
+  }
+]
+
+Return ONLY the JSON array, no other text.`;
+
+      const aiResult = await this.callOllamaLLM(prompt, "You are an expert at extracting work experience from CVs. Return only valid JSON array.");
       
-      if (nerResult && nerResult.organizations.length > 0) {
-      console.log('✅ NER found organizations:', nerResult.organizations);
-      
-      // Create experience entries from organizations
-      for (const org of nerResult.organizations.slice(0, 5)) { // Limit to 5
-        experiences.push({
-          position: 'Professional role',
-          company: org,
-          duration: 'Duration mentioned in CV',
-          description: `Professional experience at ${org}`
-        });
-      }
+      if (aiResult) {
+        const parsed = this.parseJSONResponse(aiResult);
+        if (parsed && Array.isArray(parsed)) {
+          experiences.push(...parsed);
+          console.log('✅ LLM extracted experience:', experiences.length, 'entries found');
+        }
       }
     } catch (error) {
       console.error('❌ AI experience extraction failed:', error.message);
@@ -712,33 +722,36 @@ class CVAnalysisService {
    * AI-POWERED EDUCATION EXTRACTION
    */
   async extractEducationWithAI(cvText) {
-    console.log('🤖 FREE AI: Extracting education with Hugging Face...');
+    console.log('🧠 REAL AI: Extracting education with Ollama LLM...');
     
     const education = [];
     
     try {
-      // Try NER to extract organizations (potential universities)
-      const nerResult = await this.extractWithNER(cvText.substring(0, 2000));
+      const prompt = `Extract education information from this CV and return ONLY a JSON array:
+
+CV Text:
+${cvText.substring(0, 2000)}
+
+Extract ALL education including degrees, institutions, years, certifications. Return ONLY valid JSON:
+[
+  {
+    "degree": "exact degree name (e.g., Bachelor of Science in Computer Engineering)",
+    "institution": "full institution name",
+    "year": "graduation year or period (e.g., 2021-2025)",
+    "description": "additional details about the program"
+  }
+]
+
+Return ONLY the JSON array, no other text.`;
+
+      const aiResult = await this.callOllamaLLM(prompt, "You are an expert at extracting education information from CVs. Return only valid JSON array.");
       
-      if (nerResult && nerResult.organizations.length > 0) {
-      console.log('✅ NER found potential educational institutions:', nerResult.organizations);
-      
-      // Filter organizations that look like educational institutions
-      const educationalOrgs = nerResult.organizations.filter(org => 
-        org.toLowerCase().includes('university') ||
-        org.toLowerCase().includes('college') ||
-        org.toLowerCase().includes('institute') ||
-        org.toLowerCase().includes('school')
-      );
-      
-      for (const institution of educationalOrgs.slice(0, 3)) { // Limit to 3
-        education.push({
-          degree: 'Degree mentioned in CV',
-          institution: institution,
-          year: 'Year mentioned in CV',
-          description: `Educational qualification from ${institution}`
-        });
-      }
+      if (aiResult) {
+        const parsed = this.parseJSONResponse(aiResult);
+        if (parsed && Array.isArray(parsed)) {
+          education.push(...parsed);
+          console.log('✅ LLM extracted education:', education.length, 'entries found');
+        }
       }
     } catch (error) {
       console.error('❌ AI education extraction failed:', error.message);
