@@ -45,7 +45,9 @@ const BatchDetail = () => {
   const fetchBatchDetails = async () => {
     try {
       setLoading(true);
-      const response = await cvIntelligenceAPI.getCandidates(id);
+      console.log('🔍 Fetching batch details for ID:', id);
+      const response = await cvIntelligenceAPI.getBatchDetails(id);
+      console.log('📋 Batch details response:', response.data);
       setBatch(response.data.data.batch);
       setCandidates(response.data.data.candidates || []);
     } catch (error) {

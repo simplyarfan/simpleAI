@@ -102,6 +102,18 @@ export const cvIntelligenceAPI = {
     }
   },
 
+  // Get batch details (batch info + candidates)
+  getBatchDetails: async (batchId) => {
+    try {
+      console.log('📋 Fetching batch details for:', batchId);
+      const response = await api.get(`/batch/${batchId}`);
+      return response;
+    } catch (error) {
+      console.error('Get batch details error:', error);
+      throw error;
+    }
+  },
+
   // Get candidates for a specific batch
   getCandidates: async (batchId) => {
     try {
