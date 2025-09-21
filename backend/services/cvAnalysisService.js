@@ -1,20 +1,21 @@
 /**
  * REAL AI CV Analysis Service
- * Uses Ollama LLM for intelligent CV analysis
- * Provides true AI-powered extraction and analysis
+ * Uses OpenRouter API for cloud-based LLM intelligence
+ * Works on Vercel and any cloud platform
  */
 
-const { Ollama } = require('ollama');
+const axios = require('axios');
 
 class CVAnalysisService {
   constructor() {
-    // Ollama LLM configuration - REAL AI!
-    this.ollama = new Ollama({ host: 'http://localhost:11434' });
-    this.model = 'llama3.2:1b'; // Fast, lightweight model
+    // OpenRouter API configuration - REAL CLOUD AI!
+    this.apiKey = process.env.OPENROUTER_API_KEY || 'sk-or-v1-your-key-here';
+    this.apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+    this.model = 'meta-llama/llama-3.2-3b-instruct:free'; // FREE Llama model
     
-    console.log('🤖 REAL AI CV Analysis Service initialized with Ollama LLM');
-    console.log('🧠 Using Ollama model:', this.model);
-    console.log('🚀 REAL INTELLIGENCE - No more regex bullshit!');
+    console.log('🤖 REAL AI CV Analysis Service initialized with OpenRouter');
+    console.log('🧠 Using FREE cloud model:', this.model);
+    console.log('☁️ CLOUD-BASED - Works on Vercel!');
     this.techKeywords = [
       // Programming Languages
       'python', 'javascript', 'java', 'c++', 'sql', 'html', 'css', 'typescript', 'php', 'ruby', 'go', 'rust', 'swift',
@@ -57,30 +58,35 @@ class CVAnalysisService {
   }
 
   /**
-   * Call REAL Ollama LLM for intelligent analysis
+   * Call REAL OpenRouter LLM for cloud-based intelligent analysis
    */
-  async callOllamaLLM(prompt, systemPrompt = "You are an expert CV analyzer.") {
+  async callOpenRouterLLM(prompt, systemPrompt = "You are an expert CV analyzer.") {
     try {
-      console.log(`🧠 Calling REAL Ollama LLM: ${this.model}`);
+      console.log(`☁️ Calling REAL cloud LLM: ${this.model}`);
       
-      const response = await this.ollama.chat({
+      const response = await axios.post(this.apiUrl, {
         model: this.model,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt }
         ],
-        stream: false,
-        options: {
-          temperature: 0.3,
-          top_p: 0.9,
-          num_predict: 500
-        }
+        temperature: 0.3,
+        max_tokens: 1000,
+        top_p: 0.9
+      }, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://thesimpleai.vercel.app',
+          'X-Title': 'SimpleAI CV Intelligence'
+        },
+        timeout: 30000
       });
       
-      console.log('✅ Ollama LLM response received');
-      return response.message.content;
+      console.log('✅ OpenRouter LLM response received');
+      return response.data.choices[0].message.content;
     } catch (error) {
-      console.error('❌ Ollama LLM error:', error.message);
+      console.error('❌ OpenRouter LLM error:', error.message);
       console.log('⚠️ Falling back to enhanced regex extraction');
       return null;
     }
@@ -561,7 +567,7 @@ Extract and return ONLY valid JSON:
 
 Return ONLY the JSON object, no other text.`;
 
-      const aiResult = await this.callOllamaLLM(prompt, "You are an expert at extracting personal information from CVs. Return only valid JSON.");
+      const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at extracting personal information from CVs. Return only valid JSON.");
       
       if (aiResult) {
         const parsed = this.parseJSONResponse(aiResult);
@@ -617,7 +623,7 @@ Return ONLY valid JSON:
 
 Return ONLY the JSON object, no other text.`;
 
-      const aiResult = await this.callOllamaLLM(prompt, "You are an expert at identifying skills from CVs. Return only valid JSON.");
+      const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at identifying skills from CVs. Return only valid JSON.");
       
       if (aiResult) {
         const parsed = this.parseJSONResponse(aiResult);
@@ -678,7 +684,7 @@ Extract ALL work experience, internships, projects, positions. Return ONLY valid
 
 Return ONLY the JSON array, no other text.`;
 
-      const aiResult = await this.callOllamaLLM(prompt, "You are an expert at extracting work experience from CVs. Return only valid JSON array.");
+      const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at extracting work experience from CVs. Return only valid JSON array.");
       
       if (aiResult) {
         const parsed = this.parseJSONResponse(aiResult);
@@ -744,7 +750,7 @@ Extract ALL education including degrees, institutions, years, certifications. Re
 
 Return ONLY the JSON array, no other text.`;
 
-      const aiResult = await this.callOllamaLLM(prompt, "You are an expert at extracting education information from CVs. Return only valid JSON array.");
+      const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at extracting education information from CVs. Return only valid JSON array.");
       
       if (aiResult) {
         const parsed = this.parseJSONResponse(aiResult);
