@@ -845,36 +845,9 @@ router.post('/batch/:batchId/process',
           console.error(`❌ Failed to process ${cvFile.originalname}:`, error);
           console.error(`❌ Error stack:`, error.stack);
           
-          // Create fallback candidate for failed processing
-          try {
-            const candidateId = uuidv4();
-            const fallbackName = cvFile.originalname.replace(/\.(pdf|doc|docx)$/i, '');
-            const fallbackCandidate = createBasicFallbackAnalysis('', fallbackName);
-            
-            await database.run(`
-              INSERT INTO cv_candidates (
-                id, batch_id, name, email, phone, location, score, 
-                skills_match, skills_missing, experience_match, education_match,
-                fit_level, recommendation, strengths, weaknesses, summary, 
-                cv_text, analysis_data, created_at
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, CURRENT_TIMESTAMP)
-            `, [
-              candidateId, batchId, fallbackCandidate.name, fallbackCandidate.email, fallbackCandidate.phone,
-              'Location not specified', fallbackCandidate.score, 0, 50,
-              fallbackCandidate.experienceMatch, fallbackCandidate.educationMatch,
-              'Low', 'Needs Review',
-              JSON.stringify(fallbackCandidate.strengths), 
-              JSON.stringify(fallbackCandidate.weaknesses),
-              fallbackCandidate.summary, 'Processing failed',
-              JSON.stringify(fallbackCandidate.analysisData)
-            ]);
-            
-            candidates.push(fallbackCandidate);
-            console.log(`⚠️ Created fallback entry for ${cvFile.originalname}`);
-            
-          } catch (fallbackError) {
-            console.error(`❌ Fallback creation failed:`, fallbackError);
-          }
+          // NO FALLBACK - PURE AI ONLY
+          console.log('❌ Skipping failed CV - no regex fallback allowed');
+          continue;
         }
       } // End for loop
       } // End if (cvAnalysisService)
