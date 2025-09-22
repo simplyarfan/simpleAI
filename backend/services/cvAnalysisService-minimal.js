@@ -61,11 +61,24 @@ class CVAnalysisService {
     
     console.log('✅ Analysis completed:', {
       name: personalInfo.name,
+      email: personalInfo.email,
+      phone: personalInfo.phone,
       skillsFound: skillsAnalysis.cvSkills.length,
+      skillsMatched: skillsAnalysis.matchedSkills.length,
+      skillsMissing: skillsAnalysis.missingSkills.length,
       experienceEntries: experienceAnalysis.length,
       educationEntries: educationAnalysis.length,
-      overallScore: scores.overall
+      overallScore: scores.overall,
+      skillsScore: scores.skills,
+      experienceScore: scores.experience,
+      educationScore: scores.education
     });
+    
+    console.log('🔍 Detailed analysis data:');
+    console.log('- Skills found:', skillsAnalysis.cvSkills);
+    console.log('- Skills matched:', skillsAnalysis.matchedSkills);
+    console.log('- Experience entries:', experienceAnalysis.map(exp => `${exp.position} at ${exp.company}`));
+    console.log('- Education entries:', educationAnalysis.map(edu => `${edu.degree} from ${edu.institution}`));
     
     return {
       name: personalInfo.name,
@@ -239,59 +252,123 @@ class CVAnalysisService {
     const pattern1 = /(.+?)\s*\|\s*(.+?)\s*\|\s*([\d\-\s,to present]+)/gi;
     let match1;
     while ((match1 = pattern1.exec(cvText)) !== null) {
-      experiences.push({
-        company: match1[1].trim(),
-        position: match1[2].trim(),
-        duration: match1[3].trim(),
-        description: 'Experience details available in CV'
-      });
+      if (match1[1].trim().length > 2 && match1[2].trim().length > 2) {
+        experiences.push({
+          company: match1[1].trim(),
+          position: match1[2].trim(),
+          duration: match1[3].trim(),
+          description: 'Experience details available in CV'
+        });
+      }
     }
     
     // Pattern 2: Position at Company (Duration)
     const pattern2 = /(.+?)\s*(?:at|@)\s*(.+?)\s*\(([\d\-\s,to present]+)\)/gi;
     let match2;
     while ((match2 = pattern2.exec(cvText)) !== null) {
+      if (match2[1].trim().length > 2 && match2[2].trim().length > 2) {
+        experiences.push({
+          position: match2[1].trim(),
+          company: match2[2].trim(),
+          duration: match2[3].trim(),
+          description: 'Professional experience'
+        });
+      }
+    }
+    
+    // Pattern 3: Job Title followed by Company and dates
+    const pattern3 = /([A-Z][a-zA-Z\s]+(?:Engineer|Developer|Manager|Analyst|Specialist|Coordinator|Assistant|Lead|Senior|Junior))\s*\n\s*([A-Z][a-zA-Z\s&.,]+)\s*\n\s*([\d\/\-\s,to present]+)/gi;
+    let match3;
+    while ((match3 = pattern3.exec(cvText)) !== null) {
       experiences.push({
-        position: match2[1].trim(),
-        company: match2[2].trim(),
-        duration: match2[3].trim(),
-        description: 'Professional experience'
+        position: match3[1].trim(),
+        company: match3[2].trim(),
+        duration: match3[3].trim(),
+        description: 'Professional role with documented experience'
       });
     }
     
-    // Pattern 3: Look for experience sections
+    // Pattern 4: Look for experience sections with better parsing
     const experienceSection = this.extractSection(cvText, 'experience');
     if (experienceSection && experiences.length === 0) {
       const lines = experienceSection.split('\n').filter(line => line.trim().length > 10);
+      let currentExp = null;
+      
       lines.forEach((line, index) => {
-        if (index < 5) { // Limit to first 5 entries
-          experiences.push({
-            position: `Position ${index + 1}`,
+        const trimmedLine = line.trim();
+        
+        // Check if line looks like a job title
+        if (/^[A-Z][a-zA-Z\s]+(Engineer|Developer|Manager|Analyst|Specialist|Coordinator|Assistant|Lead|Senior|Junior)/i.test(trimmedLine)) {
+          if (currentExp) experiences.push(currentExp);
+          currentExp = {
+            position: trimmedLine,
             company: 'Company details in CV',
-            duration: 'Duration specified in CV',
-            description: line.trim().substring(0, 100) + '...'
-          });
+            duration: 'Duration in CV',
+            description: ''
+          };
+        }
+        // Check if line looks like a company name
+        else if (currentExp && /^[A-Z][a-zA-Z\s&.,]+(Inc|LLC|Corp|Company|Ltd|Technologies|Systems|Solutions)/i.test(trimmedLine)) {
+          currentExp.company = trimmedLine;
+        }
+        // Check if line looks like dates
+        else if (currentExp && /\d{4}/.test(trimmedLine)) {
+          currentExp.duration = trimmedLine;
+        }
+        // Otherwise, add to description
+        else if (currentExp && trimmedLine.length > 20) {
+          currentExp.description = trimmedLine.substring(0, 150) + '...';
         }
       });
+      
+      if (currentExp) experiences.push(currentExp);
     }
     
-    // If still no structured experience, look for keywords
+    // If still no structured experience, create meaningful entries from keywords
     if (experiences.length === 0) {
       const experienceIndicators = this.experienceKeywords.filter(keyword => 
         cvText.toLowerCase().includes(keyword)
       );
       
-      if (experienceIndicators.length > 0) {
-        experiences.push({
-          position: 'Professional Experience',
-          company: 'Multiple organizations',
-          duration: 'Various periods',
-          description: `Experience indicators found: ${experienceIndicators.slice(0, 5).join(', ')}`
+      if (experienceIndicators.length > 3) {
+        // Try to extract any company-like names
+        const companyPatterns = [
+          /(?:at|with|for)\s+([A-Z][a-zA-Z\s&.,]+(Inc|LLC|Corp|Company|Ltd|Technologies|Systems|Solutions))/gi,
+          /([A-Z][a-zA-Z\s&.,]{3,30})\s*(?:,|\.|$)/g
+        ];
+        
+        const companies = [];
+        companyPatterns.forEach(pattern => {
+          let match;
+          while ((match = pattern.exec(cvText)) !== null && companies.length < 3) {
+            const company = match[1].trim();
+            if (company.length > 3 && company.length < 50) {
+              companies.push(company);
+            }
+          }
         });
+        
+        if (companies.length > 0) {
+          companies.forEach((company, index) => {
+            experiences.push({
+              position: `Professional Role ${index + 1}`,
+              company: company,
+              duration: 'Duration specified in CV',
+              description: `Professional experience with documented responsibilities`
+            });
+          });
+        } else {
+          experiences.push({
+            position: 'Professional Experience',
+            company: 'Multiple organizations',
+            duration: 'Various periods',
+            description: `Experience indicators found: ${experienceIndicators.slice(0, 5).join(', ')}`
+          });
+        }
       }
     }
     
-    return experiences;
+    return experiences.slice(0, 5); // Limit to 5 entries
   }
 
   // ===== EDUCATION EXTRACTION =====
@@ -302,12 +379,14 @@ class CVAnalysisService {
     const pattern1 = /(Bachelor|Master|PhD|Degree).+?(?:in|of)\s*(.+?)(?:from|at)\s*(.+?)(?:\((.+?)\)|$)/gi;
     let match1;
     while ((match1 = pattern1.exec(cvText)) !== null) {
-      education.push({
-        degree: `${match1[1]} in ${match1[2].trim()}`,
-        institution: match1[3].trim(),
-        year: match1[4] ? match1[4].trim() : 'Year not specified',
-        type: 'Degree'
-      });
+      if (match1[2].trim().length > 2 && match1[3].trim().length > 2) {
+        education.push({
+          degree: `${match1[1]} in ${match1[2].trim()}`,
+          institution: match1[3].trim(),
+          year: match1[4] ? match1[4].trim() : 'Year not specified',
+          type: 'Degree'
+        });
+      }
     }
     
     // Pattern 2: Institution | Degree | Year
@@ -322,41 +401,100 @@ class CVAnalysisService {
       });
     }
     
-    // Look for education section
+    // Pattern 3: More flexible degree patterns
+    const degreePatterns = [
+      /(B\.?S\.?c?\.?|Bachelor).+?(Computer Science|Engineering|Science|Technology|Business)/gi,
+      /(M\.?S\.?c?\.?|Master).+?(Computer Science|Engineering|Science|Technology|Business)/gi,
+      /(PhD|Ph\.D\.?|Doctorate).+?(Computer Science|Engineering|Science|Technology)/gi
+    ];
+    
+    degreePatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(cvText)) !== null) {
+        // Try to find associated institution
+        const contextStart = Math.max(0, match.index - 100);
+        const contextEnd = Math.min(cvText.length, match.index + match[0].length + 100);
+        const context = cvText.substring(contextStart, contextEnd);
+        
+        const institutionMatch = context.match(/(?:from|at)\s+([A-Z][a-zA-Z\s&.,]{5,50})/i);
+        const yearMatch = context.match(/(\d{4})/);
+        
+        education.push({
+          degree: `${match[1]} ${match[2]}`,
+          institution: institutionMatch ? institutionMatch[1].trim() : 'Institution in CV',
+          year: yearMatch ? yearMatch[1] : 'Year in CV',
+          type: 'Degree'
+        });
+      }
+    });
+    
+    // Look for education section with better parsing
     const educationSection = this.extractSection(cvText, 'education');
     if (educationSection && education.length === 0) {
       const lines = educationSection.split('\n').filter(line => line.trim().length > 10);
+      let currentEdu = null;
+      
       lines.forEach((line, index) => {
-        if (index < 3) { // Limit to first 3 entries
+        const trimmedLine = line.trim();
+        
+        // Check if line looks like a degree
+        if (/(Bachelor|Master|PhD|B\.S|M\.S|Degree)/i.test(trimmedLine)) {
+          if (currentEdu) education.push(currentEdu);
+          currentEdu = {
+            degree: trimmedLine,
+            institution: 'Institution in CV',
+            year: 'Year in CV',
+            type: 'Degree'
+          };
+        }
+        // Check if line looks like an institution
+        else if (currentEdu && /(University|College|Institute|School)/i.test(trimmedLine)) {
+          currentEdu.institution = trimmedLine;
+        }
+        // Check if line has a year
+        else if (currentEdu && /\d{4}/.test(trimmedLine)) {
+          currentEdu.year = trimmedLine;
+        }
+      });
+      
+      if (currentEdu) education.push(currentEdu);
+      
+      // If still no structured education, create entries from lines
+      if (education.length === 0 && lines.length > 0) {
+        lines.slice(0, 3).forEach((line, index) => {
           education.push({
             degree: 'Educational Background',
             institution: line.trim().substring(0, 50),
             year: 'Year specified in CV',
             type: 'Education'
           });
-        }
-      });
+        });
+      }
     }
     
-    // Look for certifications
+    // Look for certifications with better patterns
     const certificationPatterns = [
       /certified?\s+(.+?)(?:\s|$)/gi,
-      /certification\s+in\s+(.+?)(?:\s|$)/gi
+      /certification\s+in\s+(.+?)(?:\s|$)/gi,
+      /(AWS|Google|Microsoft|Oracle|Cisco|CompTIA)\s+(Certified|Certification).+?/gi
     ];
     
     certificationPatterns.forEach(pattern => {
       let match;
-      while ((match = pattern.exec(cvText)) !== null) {
-        education.push({
-          degree: `Certification in ${match[1].trim()}`,
-          institution: 'Certification Authority',
-          year: 'Certification year in CV',
-          type: 'Certification'
-        });
+      while ((match = pattern.exec(cvText)) !== null && education.length < 5) {
+        const certName = match[1] || `${match[1]} ${match[2]}`;
+        if (certName && certName.trim().length > 2) {
+          education.push({
+            degree: `Certification: ${certName.trim()}`,
+            institution: 'Certification Authority',
+            year: 'Certification year in CV',
+            type: 'Certification'
+          });
+        }
       }
     });
     
-    return education;
+    return education.slice(0, 4); // Limit to 4 entries
   }
 
   // Helper method to extract sections
