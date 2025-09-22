@@ -166,42 +166,57 @@ class CVAnalysisService {
   }
 
   /**
-   * REAL AI CV Analysis using FREE Hugging Face models
-   * @param {string} jobDescription - The job description text
+   * REAL AI CV Analysis using OpenRouter AI
+   * @param {string} jobDescription - The job description text  
    * @param {string} cvText - The CV text content
    * @param {string} fileName - Original filename for fallback name
    * @returns {Object} Structured analysis result matching frontend expectations
    */
   async analyzeCV(jobDescription, cvText, fileName) {
     console.log('🤖 Starting REAL AI CV analysis for:', fileName);
+    console.log('📝 Job Description length:', jobDescription.length, 'characters');
+    console.log('📄 CV Text length:', cvText.length, 'characters');
     
     try {
       console.log('🧠 Using REAL AI for CV analysis...');
       
-      // Use AI for intelligent extraction with error handling
-      console.log('🔍 Extracting personal info...');
+      // STEP 1: Extract Job Description Requirements with AI
+      console.log('🎯 STEP 1: Analyzing job requirements...');
+      const jobRequirements = await this.extractJobRequirementsWithAI(jobDescription);
+      console.log('✅ Job requirements extracted:', jobRequirements);
+      
+      // STEP 2: Extract personal info with AI
+      console.log('🎯 STEP 2: Extracting personal info...');
       const personalInfo = await this.extractPersonalInfoWithAI(cvText, fileName);
       console.log('✅ Personal info extracted:', personalInfo);
       
-      console.log('🔍 Analyzing skills...');
-      const skillsAnalysis = await this.analyzeSkillsWithAI(cvText);
-      console.log('✅ Skills analyzed:', skillsAnalysis?.cvSkills?.length || 0, 'skills found');
+      // STEP 3: Extract CV skills with AI  
+      console.log('🎯 STEP 3: Analyzing CV skills...');
+      const cvSkillsResult = await this.extractCVSkillsWithAI(cvText);
+      console.log('✅ CV skills extracted:', cvSkillsResult?.cvSkills?.length || 0, 'skills found');
       
-      console.log('🔍 Extracting experience...');
+      // STEP 4: Compare skills (AI-powered matching)
+      console.log('🎯 STEP 4: Matching skills against job requirements...');
+      const skillsComparison = await this.compareSkillsWithAI(jobRequirements.required_skills, cvSkillsResult.cvSkills);
+      console.log('✅ Skills comparison completed:', skillsComparison);
+      
+      // STEP 5: Extract experience with AI
+      console.log('🎯 STEP 5: Extracting experience...');
       const experienceInfo = await this.extractExperienceWithAI(cvText);
       console.log('✅ Experience extracted:', experienceInfo?.length || 0, 'entries found');
       
-      console.log('🔍 Extracting education...');
+      // STEP 6: Extract education with AI
+      console.log('🎯 STEP 6: Extracting education...');
       const educationInfo = await this.extractEducationWithAI(cvText);
       console.log('✅ Education extracted:', educationInfo?.length || 0, 'entries found');
       
-      // Calculate scores based on AI analysis
-      const scores = this.calculateIntelligentScores(skillsAnalysis, experienceInfo, educationInfo);
+      // STEP 7: Calculate dynamic scores based on real comparison
+      console.log('🎯 STEP 7: Calculating match scores...');
+      const scores = this.calculateDynamicScores(skillsComparison, experienceInfo, educationInfo, jobRequirements);
+      console.log('✅ Scores calculated:', scores);
       
-      // Generate AI-powered recommendations
-      const recommendation = this.generateRecommendation(scores.overall);
-      
-      // Create structured analysis data for frontend
+      // STEP 8: Generate AI-powered analysis summary
+      console.log('🎯 STEP 8: Generating analysis summary...');
       const analysisData = {
         personal: {
           name: personalInfo.name,
@@ -209,28 +224,22 @@ class CVAnalysisService {
           phone: personalInfo.phone || 'Phone not found',
           location: personalInfo.location || 'Location not specified'
         },
-        skills: skillsAnalysis.cvSkills,
-        experience: experienceInfo.length > 0 ? experienceInfo : [{
-          position: 'Experience details require manual review',
-          company: 'Please review CV manually',
-          duration: 'Duration not specified',
-          description: 'Experience information not clearly structured in CV'
-        }],
-        education: educationInfo.length > 0 ? educationInfo : [{
-          degree: 'Education details require manual review',
-          institution: 'Please review CV manually',
-          year: 'Year not specified',
-          description: 'Education information not clearly structured in CV'
-        }],
+        skills: cvSkillsResult.cvSkills || [],
+        experience: experienceInfo,
+        education: educationInfo,
         match_analysis: {
-          skills_matched: skillsAnalysis.matched,
-          skills_missing: skillsAnalysis.missing,
-          strengths: this.generateStrengths(skillsAnalysis, experienceInfo, educationInfo, cvText),
-          concerns: this.generateConcerns(skillsAnalysis, experienceInfo, scores)
+          skills_matched: skillsComparison.matched,
+          skills_missing: skillsComparison.missing,
+          strengths: this.generateDynamicStrengths(skillsComparison, experienceInfo, educationInfo, scores),
+          concerns: this.generateDynamicConcerns(skillsComparison, experienceInfo, scores)
         },
-        summary: this.generateSummary(personalInfo.name || fileName, scores, skillsAnalysis)
+        summary: this.generateDynamicSummary(personalInfo.name || fileName, scores, skillsComparison)
       };
 
+      console.log('✅ AI CV Analysis completed successfully!');
+      console.log('📊 Final scores - Overall:', scores.overall, '%, Skills:', scores.skills, '%, Experience:', scores.experience, '%, Education:', scores.education, '%');
+      console.log('📅 Skills matched:', skillsComparison.matched.length, '/', skillsComparison.required.length);
+      
       // Return complete analysis result
       return {
         name: personalInfo.name,
@@ -244,10 +253,10 @@ class CVAnalysisService {
         weaknesses: analysisData.match_analysis.concerns,
         summary: analysisData.summary,
         // Additional data for compatibility
-        skillsMatched: skillsAnalysis.matched,
-        skillsMissing: skillsAnalysis.missing,
-        jdRequiredSkills: skillsAnalysis.required,
-        cvSkills: skillsAnalysis.cvSkills,
+        skillsMatched: skillsComparison.matched,
+        skillsMissing: skillsComparison.missing,
+        jdRequiredSkills: skillsComparison.required,
+        cvSkills: cvSkillsResult.cvSkills,
         analysisData: analysisData
       };
 
@@ -584,8 +593,218 @@ class CVAnalysisService {
   }
 
   /**
-   * AI-POWERED PERSONAL INFO EXTRACTION
+   * AI-POWERED JOB REQUIREMENTS EXTRACTION
    */
+  async extractJobRequirementsWithAI(jobDescription) {
+    console.log('🧠 REAL AI: Extracting job requirements with OpenRouter LLM...');
+    
+    if (this.apiKey && jobDescription && jobDescription.length > 50) {
+      try {
+        const prompt = `Analyze this job description and extract the required skills. Return ONLY a JSON object:
+
+Job Description:
+${jobDescription.substring(0, 3000)}
+
+Extract ALL required skills including:
+- Technical skills (programming languages, frameworks, tools)
+- Soft skills (leadership, communication, etc.)
+- Experience requirements
+- Education requirements
+
+Return ONLY valid JSON:
+{
+  "required_skills": ["Python", "JavaScript", "AWS", "Leadership", "Communication"],
+  "experience_level": "2-5 years",
+  "education_level": "Bachelor's degree",
+  "key_responsibilities": ["Develop software", "Lead team"],
+  "total_requirements": 5
+}
+
+Return ONLY the JSON object, no other text.`;
+
+        const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at analyzing job descriptions. Return only valid JSON.");
+        
+        if (aiResult) {
+          const parsed = this.parseJSONResponse(aiResult);
+          if (parsed && parsed.required_skills && Array.isArray(parsed.required_skills)) {
+            console.log('✅ LLM extracted job requirements:', parsed.required_skills.length, 'skills required');
+            return {
+              required_skills: parsed.required_skills,
+              experience_level: parsed.experience_level || 'Not specified',
+              education_level: parsed.education_level || 'Not specified',
+              key_responsibilities: parsed.key_responsibilities || [],
+              total_requirements: parsed.required_skills.length
+            };
+          }
+        }
+      } catch (error) {
+        console.error('❌ AI job requirements extraction failed:', error.message);
+      }
+    }
+    
+    // FALLBACK: Extract using regex patterns
+    console.log('⚠️ Using regex fallback for job requirements extraction');
+    const jdLower = jobDescription.toLowerCase();
+    const foundSkills = this.techKeywords.filter(skill => jdLower.includes(skill.toLowerCase()));
+    const foundSoftSkills = this.softSkills.filter(skill => jdLower.includes(skill.toLowerCase()));
+    
+    return {
+      required_skills: [...foundSkills, ...foundSoftSkills].slice(0, 15), // Top 15 skills
+      experience_level: 'Please review job description',
+      education_level: 'Please review job description', 
+      key_responsibilities: ['Extracted from job description'],
+      total_requirements: foundSkills.length + foundSoftSkills.length
+    };
+  }
+
+  /**
+   * AI-POWERED CV SKILLS EXTRACTION (SEPARATE FROM JD)
+   */
+  async extractCVSkillsWithAI(cvText) {
+    console.log('🧠 REAL AI: Extracting CV skills with OpenRouter LLM...');
+    
+    if (this.apiKey) {
+      try {
+        const prompt = `Analyze this CV and extract ALL skills mentioned. Return ONLY a JSON object:
+
+CV Text:
+${cvText.substring(0, 3000)}
+
+Extract ALL skills including:
+- Programming languages
+- Frameworks and libraries
+- Tools and technologies
+- Databases
+- Cloud platforms
+- Soft skills
+- Certifications
+
+Return ONLY valid JSON:
+{
+  "technical_skills": ["Python", "React", "AWS", "Docker"],
+  "soft_skills": ["Leadership", "Communication"],
+  "total_skills": 6
+}
+
+Return ONLY the JSON object, no other text.`;
+
+        const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at extracting skills from CVs. Return only valid JSON.");
+        
+        if (aiResult) {
+          const parsed = this.parseJSONResponse(aiResult);
+          if (parsed && parsed.technical_skills && parsed.soft_skills) {
+            const allSkills = [...parsed.technical_skills, ...parsed.soft_skills];
+            console.log('✅ LLM extracted CV skills:', allSkills.length, 'total skills');
+            return {
+              cvSkills: allSkills,
+              technical_skills: parsed.technical_skills,
+              soft_skills: parsed.soft_skills,
+              total_skills: allSkills.length
+            };
+          }
+        }
+      } catch (error) {
+        console.error('❌ AI CV skills extraction failed:', error.message);
+      }
+    }
+    
+    // FALLBACK: Use regex extraction
+    console.log('⚠️ Using regex fallback for CV skills extraction');
+    const cvLower = cvText.toLowerCase();
+    const foundTechSkills = this.techKeywords.filter(skill => cvLower.includes(skill.toLowerCase()));
+    const foundSoftSkills = this.softSkills.filter(skill => cvLower.includes(skill.toLowerCase()));
+    const allSkills = [...foundTechSkills, ...foundSoftSkills];
+    
+    return {
+      cvSkills: allSkills,
+      technical_skills: foundTechSkills,
+      soft_skills: foundSoftSkills,
+      total_skills: allSkills.length
+    };
+  }
+
+  /**
+   * AI-POWERED SKILLS COMPARISON
+   */
+  async compareSkillsWithAI(requiredSkills, cvSkills) {
+    console.log('🧠 REAL AI: Comparing skills with OpenRouter LLM...');
+    console.log('📈 Required skills:', requiredSkills.length);
+    console.log('📈 CV skills:', cvSkills.length);
+    
+    if (this.apiKey && requiredSkills.length > 0 && cvSkills.length > 0) {
+      try {
+        const prompt = `Compare these skill sets and return ONLY a JSON object:
+
+Required Skills (from job description):
+${requiredSkills.join(', ')}
+
+Candidate Skills (from CV):
+${cvSkills.join(', ')}
+
+Compare and return ONLY valid JSON:
+{
+  "matched_skills": ["skills that match between required and CV"],
+  "missing_skills": ["required skills not found in CV"],
+  "extra_skills": ["CV skills not required but valuable"],
+  "match_percentage": 75
+}
+
+Return ONLY the JSON object, no other text.`;
+
+        const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at comparing skill sets. Return only valid JSON.");
+        
+        if (aiResult) {
+          const parsed = this.parseJSONResponse(aiResult);
+          if (parsed && parsed.matched_skills && parsed.missing_skills) {
+            console.log('✅ LLM skills comparison completed');
+            console.log('📈 Matched:', parsed.matched_skills.length, 'Missing:', parsed.missing_skills.length);
+            return {
+              matched: parsed.matched_skills,
+              missing: parsed.missing_skills,
+              extra: parsed.extra_skills || [],
+              required: requiredSkills,
+              cv_skills: cvSkills,
+              match_percentage: parsed.match_percentage || 0
+            };
+          }
+        }
+      } catch (error) {
+        console.error('❌ AI skills comparison failed:', error.message);
+      }
+    }
+    
+    // FALLBACK: Simple string matching
+    console.log('⚠️ Using regex fallback for skills comparison');
+    const matched = [];
+    const missing = [];
+    
+    requiredSkills.forEach(reqSkill => {
+      const found = cvSkills.some(cvSkill => 
+        cvSkill.toLowerCase().includes(reqSkill.toLowerCase()) ||
+        reqSkill.toLowerCase().includes(cvSkill.toLowerCase())
+      );
+      
+      if (found) {
+        matched.push(reqSkill);
+      } else {
+        missing.push(reqSkill);
+      }
+    });
+    
+    const matchPercentage = requiredSkills.length > 0 ? 
+      Math.round((matched.length / requiredSkills.length) * 100) : 0;
+    
+    console.log('📈 Fallback comparison - Matched:', matched.length, 'Missing:', missing.length, 'Percentage:', matchPercentage + '%');
+    
+    return {
+      matched: matched,
+      missing: missing,
+      extra: [],
+      required: requiredSkills,
+      cv_skills: cvSkills,
+      match_percentage: matchPercentage
+    };
+  }
   async extractPersonalInfoWithAI(cvText, fileName) {
     console.log('🧠 REAL AI: Extracting personal information with OpenRouter LLM...');
     
@@ -876,28 +1095,154 @@ Return ONLY the JSON array, no other text.`;
   }
 
   /**
-   * INTELLIGENT SCORING BASED ON AI ANALYSIS
+   * DYNAMIC SCORING BASED ON REAL COMPARISON
    */
-  calculateIntelligentScores(skillsAnalysis, experienceInfo, educationInfo) {
-    const skillsCount = skillsAnalysis.cvSkills.length;
-    const experienceCount = experienceInfo.length;
-    const educationCount = educationInfo.length;
+  calculateDynamicScores(skillsComparison, experienceInfo, educationInfo, jobRequirements) {
+    console.log('📈 Calculating dynamic scores...');
     
-    // Dynamic scoring based on content quality
-    const skillsScore = Math.min(95, 25 + (skillsCount * 6));
-    const experienceScore = Math.min(95, 20 + (experienceCount * 20));
-    const educationScore = Math.min(95, 30 + (educationCount * 25));
+    // Skills score based on actual match percentage
+    const skillsScore = skillsComparison.match_percentage || 0;
+    console.log('📈 Skills score:', skillsScore + '%', `(${skillsComparison.matched.length}/${skillsComparison.required.length} matched)`);
     
-    const overall = Math.round((skillsScore * 0.5) + (experienceScore * 0.3) + (educationScore * 0.2));
+    // Experience score based on content quality and length
+    let experienceScore = 30; // Base score
+    if (experienceInfo && experienceInfo.length > 0) {
+      experienceInfo.forEach(exp => {
+        if (exp.position && exp.position !== 'Experience Review Required') {
+          experienceScore += 15; // +15 for each real position
+        }
+        if (exp.company && exp.company !== 'Manual review recommended') {
+          experienceScore += 10; // +10 for each real company
+        }
+        if (exp.duration && exp.duration !== 'Duration not specified') {
+          experienceScore += 5; // +5 for duration info
+        }
+      });
+    }
+    experienceScore = Math.min(100, experienceScore); // Cap at 100
+    console.log('📈 Experience score:', experienceScore + '%', `(based on ${experienceInfo?.length || 0} entries)`);
     
-    console.log(`🎯 AI SCORING: Skills(${skillsCount}): ${skillsScore}%, Experience(${experienceCount}): ${experienceScore}%, Education(${educationCount}): ${educationScore}%, Overall: ${overall}%`);
+    // Education score based on content quality
+    let educationScore = 40; // Base score
+    if (educationInfo && educationInfo.length > 0) {
+      educationInfo.forEach(edu => {
+        if (edu.degree && !edu.degree.includes('Review Required')) {
+          educationScore += 20; // +20 for each real degree
+        }
+        if (edu.institution && edu.institution !== 'Manual review recommended') {
+          educationScore += 15; // +15 for each real institution
+        }
+        if (edu.year && edu.year !== 'Year not specified') {
+          educationScore += 10; // +10 for year info
+        }
+      });
+    }
+    educationScore = Math.min(100, educationScore); // Cap at 100
+    console.log('📈 Education score:', educationScore + '%', `(based on ${educationInfo?.length || 0} entries)`);
+    
+    // Overall score with weighted average favoring skills matching
+    const overall = Math.round(
+      (skillsScore * 0.5) +      // 50% weight on skills match
+      (experienceScore * 0.3) +  // 30% weight on experience
+      (educationScore * 0.2)     // 20% weight on education
+    );
+    
+    console.log('📈 Final calculated scores:', { overall, skills: skillsScore, experience: experienceScore, education: educationScore });
     
     return {
-      skills: skillsScore,
-      experience: experienceScore,
-      education: educationScore,
-      overall: overall
+      overall: Math.max(20, Math.min(100, overall)),
+      skills: Math.max(10, Math.min(100, skillsScore)),
+      experience: Math.max(20, Math.min(100, experienceScore)),
+      education: Math.max(30, Math.min(100, educationScore))
     };
+  }
+
+  /**
+   * GENERATE DYNAMIC STRENGTHS
+   */
+  generateDynamicStrengths(skillsComparison, experienceInfo, educationInfo, scores) {
+    const strengths = [];
+    
+    if (skillsComparison.matched.length > 0) {
+      strengths.push(`Strong technical skills: ${skillsComparison.matched.slice(0, 4).join(', ')}`);
+    }
+    
+    if (skillsComparison.match_percentage >= 70) {
+      strengths.push(`Excellent skill match (${skillsComparison.match_percentage}% of required skills)`);
+    } else if (skillsComparison.match_percentage >= 50) {
+      strengths.push(`Good skill alignment (${skillsComparison.match_percentage}% of required skills)`);
+    }
+    
+    if (experienceInfo && experienceInfo.length > 1) {
+      strengths.push(`Professional experience with ${experienceInfo.length} positions`);
+    }
+    
+    if (educationInfo && educationInfo.length > 0 && !educationInfo[0].degree.includes('Review Required')) {
+      strengths.push(`Educational background: ${educationInfo[0].degree}`);
+    }
+    
+    if (skillsComparison.extra && skillsComparison.extra.length > 0) {
+      strengths.push(`Additional valuable skills: ${skillsComparison.extra.slice(0, 3).join(', ')}`);
+    }
+    
+    if (scores.overall >= 80) {
+      strengths.push('Excellent overall candidate profile');
+    }
+    
+    return strengths.length > 0 ? strengths : ['Professional background with relevant qualifications'];
+  }
+
+  /**
+   * GENERATE DYNAMIC CONCERNS
+   */
+  generateDynamicConcerns(skillsComparison, experienceInfo, scores) {
+    const concerns = [];
+    
+    if (skillsComparison.missing.length > 0) {
+      concerns.push(`Missing key skills: ${skillsComparison.missing.slice(0, 3).join(', ')}`);
+    }
+    
+    if (skillsComparison.match_percentage < 30) {
+      concerns.push('Significant skills gap requiring development');
+    } else if (skillsComparison.match_percentage < 50) {
+      concerns.push('Some technical skills gap needs attention');
+    }
+    
+    if (scores.experience < 50) {
+      concerns.push('Limited professional experience');
+    }
+    
+    if (!experienceInfo || experienceInfo.length === 0 || experienceInfo[0].position.includes('Review Required')) {
+      concerns.push('Experience details require clarification');
+    }
+    
+    if (scores.overall < 50) {
+      concerns.push('Overall profile requires significant development');
+    }
+    
+    return concerns.length > 0 ? concerns : ['Minor areas for improvement identified'];
+  }
+
+  /**
+   * GENERATE DYNAMIC SUMMARY
+   */
+  generateDynamicSummary(name, scores, skillsComparison) {
+    const compatibilityLevel = scores.overall >= 80 ? 'Excellent' : 
+                              scores.overall >= 65 ? 'Good' : 
+                              scores.overall >= 50 ? 'Fair' : 'Needs Development';
+    
+    const skillMatchText = skillsComparison.match_percentage > 0 ? 
+      `${skillsComparison.match_percentage}% skill match (${skillsComparison.matched.length}/${skillsComparison.required.length})` :
+      'Skills assessment completed';
+    
+    const recommendation = scores.overall >= 75 ? 'Highly Recommended' :
+                          scores.overall >= 60 ? 'Recommended' :
+                          scores.overall >= 45 ? 'Consider with Development' : 'Not Recommended';
+    
+    return `${name}: ${compatibilityLevel} candidate fit (${scores.overall}% overall score). ` +
+           `${skillMatchText} with ${skillsComparison.matched.length} matching technical skills. ` +
+           `Experience level: ${scores.experience}%, Education: ${scores.education}%. ` +
+           `Recommendation: ${recommendation}.`;
   }
 
   /**
