@@ -9,14 +9,26 @@ const axios = require('axios');
 class CVAnalysisService {
   constructor() {
     // OpenRouter API configuration - REAL CLOUD AI!
-    this.apiKey = process.env.OPENROUTER_API_KEY || 'sk-or-v1-your-key-here';
+    this.apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY || process.env.API_KEY || null;
     this.apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
     this.model = 'meta-llama/llama-3.2-3b-instruct:free'; // FREE Llama model
     
     console.log('🤖 REAL AI CV Analysis Service initialized with OpenRouter');
     console.log('🧠 Using FREE cloud model:', this.model);
     console.log('☁️ CLOUD-BASED - Works on Vercel!');
-    console.log('🔑 API Key configured:', this.apiKey !== 'sk-or-v1-your-key-here' ? 'YES' : 'NO - Please add OPENROUTER_API_KEY to Vercel env vars');
+    console.log('🔑 Environment check:');
+    console.log('  - OPENROUTER_API_KEY:', process.env.OPENROUTER_API_KEY ? 'SET' : 'NOT SET');
+    console.log('  - OPENROUTER_KEY:', process.env.OPENROUTER_KEY ? 'SET' : 'NOT SET');
+    console.log('  - API_KEY:', process.env.API_KEY ? 'SET' : 'NOT SET');
+    console.log('  - Final API key configured:', this.apiKey ? 'YES' : 'NO');
+    
+    if (this.apiKey) {
+      console.log('✅ API key found! AI analysis ENABLED');
+      console.log('🔑 Key starts with:', this.apiKey.substring(0, 15) + '...');
+    } else {
+      console.log('❌ NO API key found! Will use regex fallback');
+      console.log('📝 Add OPENROUTER_API_KEY to Vercel environment variables for full AI');
+    }
     this.techKeywords = [
       // Programming Languages
       'python', 'javascript', 'java', 'c++', 'sql', 'html', 'css', 'typescript', 'php', 'ruby', 'go', 'rust', 'swift',
@@ -699,12 +711,12 @@ Return ONLY the JSON object, no other text.`;
    * AI-POWERED EXPERIENCE EXTRACTION
    */
   async extractExperienceWithAI(cvText) {
-    console.log('🧠 REAL AI: Extracting experience with Ollama LLM...');
+    console.log('🧠 REAL AI: Extracting experience with OpenRouter LLM...');
     
-    const experiences = [];
-    
-    try {
-      const prompt = `Extract work experience from this CV and return ONLY a JSON array:
+    // Try AI first if API key is available
+    if (this.apiKey) {
+      try {
+        const prompt = `Extract work experience from this CV and return ONLY a JSON array:
 
 CV Text:
 ${cvText.substring(0, 3000)}
@@ -721,46 +733,68 @@ Extract ALL work experience, internships, projects, positions. Return ONLY valid
 
 Return ONLY the JSON array, no other text.`;
 
-      const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at extracting work experience from CVs. Return only valid JSON array.");
-      
-      if (aiResult) {
-        const parsed = this.parseJSONResponse(aiResult);
-        if (parsed && Array.isArray(parsed)) {
-          experiences.push(...parsed);
-          console.log('✅ LLM extracted experience:', experiences.length, 'entries found');
+        const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at extracting work experience from CVs. Return only valid JSON array.");
+        
+        if (aiResult) {
+          const parsed = this.parseJSONResponse(aiResult);
+          if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+            console.log('✅ LLM extracted experience:', parsed.length, 'entries found');
+            return parsed;
+          }
         }
+      } catch (error) {
+        console.error('❌ AI experience extraction failed:', error.message);
       }
-    } catch (error) {
-      console.error('❌ AI experience extraction failed:', error.message);
     }
     
-    // PURE AI ONLY - NO REGEX FALLBACK
-    console.log(`🎯 PURE AI experience found: ${experiences.length} entries`);
+    // ENHANCED REGEX FALLBACK
+    console.log('⚠️ Using enhanced regex experience extraction');
+    const regexExperience = this.extractExperience(cvText);
     
-    // If AI failed, return empty instead of generic fallback
-    if (experiences.length === 0) {
-      console.log('⚠️ AI experience extraction failed - returning empty (no regex fallback)');
+    if (regexExperience.length > 0) {
+      console.log('✅ Regex extracted experience:', regexExperience.length, 'entries found');
+      return regexExperience;
+    }
+    
+    // SMART FALLBACK - Look for experience indicators
+    const cvLower = cvText.toLowerCase();
+    const experienceIndicators = [
+      'experience', 'worked', 'intern', 'developer', 'engineer', 'analyst', 
+      'manager', 'specialist', 'consultant', 'technician', 'coordinator',
+      'years', 'months', 'project', 'team', 'led', 'managed', 'developed'
+    ];
+    
+    const foundIndicators = experienceIndicators.filter(indicator => cvLower.includes(indicator));
+    
+    if (foundIndicators.length > 0) {
+      console.log('✅ Found experience indicators:', foundIndicators.length);
       return [{
-        position: 'AI extraction failed - please check OpenRouter API key',
-        company: 'Add OPENROUTER_API_KEY to Vercel environment variables',
-        duration: 'N/A',
-        description: 'Real AI analysis requires OpenRouter API key'
+        position: 'Professional Experience Identified',
+        company: 'Details in CV content',
+        duration: 'Please review CV for specifics',
+        description: `Found ${foundIndicators.length} experience-related terms: ${foundIndicators.slice(0, 5).join(', ')}`
       }];
     }
     
-    return experiences;
+    // FINAL FALLBACK
+    return [{
+      position: 'Experience Review Required',
+      company: 'Manual review recommended', 
+      duration: 'Duration not specified',
+      description: 'Experience information requires manual review for accurate extraction'
+    }];
   }
 
   /**
    * AI-POWERED EDUCATION EXTRACTION
    */
   async extractEducationWithAI(cvText) {
-    console.log('🧠 REAL AI: Extracting education with Ollama LLM...');
+    console.log('🧠 REAL AI: Extracting education with OpenRouter LLM...');
     
-    const education = [];
-    
-    try {
-      const prompt = `Extract education information from this CV and return ONLY a JSON array:
+    // Try AI first if API key is available
+    if (this.apiKey) {
+      try {
+        const prompt = `Extract education information from this CV and return ONLY a JSON array:
 
 CV Text:
 ${cvText.substring(0, 2000)}
@@ -777,34 +811,68 @@ Extract ALL education including degrees, institutions, years, certifications. Re
 
 Return ONLY the JSON array, no other text.`;
 
-      const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at extracting education information from CVs. Return only valid JSON array.");
-      
-      if (aiResult) {
-        const parsed = this.parseJSONResponse(aiResult);
-        if (parsed && Array.isArray(parsed)) {
-          education.push(...parsed);
-          console.log('✅ LLM extracted education:', education.length, 'entries found');
+        const aiResult = await this.callOpenRouterLLM(prompt, "You are an expert at extracting education information from CVs. Return only valid JSON array.");
+        
+        if (aiResult) {
+          const parsed = this.parseJSONResponse(aiResult);
+          if (parsed && Array.isArray(parsed) && parsed.length > 0) {
+            console.log('✅ LLM extracted education:', parsed.length, 'entries found');
+            return parsed;
+          }
         }
+      } catch (error) {
+        console.error('❌ AI education extraction failed:', error.message);
       }
-    } catch (error) {
-      console.error('❌ AI education extraction failed:', error.message);
     }
     
-    // PURE AI ONLY - NO REGEX FALLBACK
-    console.log(`🎯 PURE AI education found: ${education.length} entries`);
+    // ENHANCED REGEX FALLBACK
+    console.log('⚠️ Using enhanced regex education extraction');
+    const regexEducation = this.extractEducation(cvText);
     
-    // If AI failed, return empty instead of generic fallback
-    if (education.length === 0) {
-      console.log('⚠️ AI education extraction failed - returning empty (no regex fallback)');
+    if (regexEducation.length > 0) {
+      console.log('✅ Regex extracted education:', regexEducation.length, 'entries found');
+      return regexEducation;
+    }
+    
+    // SMART FALLBACK - Look for education indicators
+    const cvLower = cvText.toLowerCase();
+    const educationIndicators = [
+      'bachelor', 'master', 'phd', 'degree', 'university', 'college', 
+      'graduate', 'diploma', 'certification', 'certified', 'course', 
+      'training', 'scholarship', 'academic', 'education', 'school',
+      'b.sc', 'm.sc', 'b.tech', 'm.tech', 'mba', 'computer science'
+    ];
+    
+    const foundIndicators = educationIndicators.filter(indicator => cvLower.includes(indicator));
+    
+    if (foundIndicators.length > 0) {
+      console.log('✅ Found education indicators:', foundIndicators.length);
+      
+      // Try to extract basic degree info
+      let degreeType = 'Educational Qualification';
+      if (cvLower.includes('bachelor') || cvLower.includes('b.sc') || cvLower.includes('b.tech')) {
+        degreeType = 'Bachelor\'s Degree';
+      } else if (cvLower.includes('master') || cvLower.includes('m.sc') || cvLower.includes('m.tech') || cvLower.includes('mba')) {
+        degreeType = 'Master\'s Degree';
+      } else if (cvLower.includes('phd') || cvLower.includes('doctorate')) {
+        degreeType = 'Doctoral Degree';
+      }
+      
       return [{
-        degree: 'AI extraction failed - please check OpenRouter API key',
-        institution: 'Add OPENROUTER_API_KEY to Vercel environment variables',
-        year: 'N/A',
-        description: 'Real AI analysis requires OpenRouter API key'
+        degree: degreeType,
+        institution: 'Institution details in CV',
+        year: 'Year not clearly specified',
+        description: `Found ${foundIndicators.length} education-related terms: ${foundIndicators.slice(0, 5).join(', ')}`
       }];
     }
     
-    return education;
+    // FINAL FALLBACK
+    return [{
+      degree: 'Education Review Required',
+      institution: 'Manual review recommended',
+      year: 'Year not specified',
+      description: 'Education information requires manual review for accurate extraction'
+    }];
   }
 
   /**
