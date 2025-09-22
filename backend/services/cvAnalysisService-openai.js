@@ -99,12 +99,14 @@ Provide a thorough analysis and return a JSON response with this structure:
   },
   "experience": [
     {
-      "title": "Exact job title from CV",
-      "company": "Company/Organization name", 
+      "title": "Exact job title from CV (Computer Engineering Intern, Project Intern, Competitor, etc.)",
+      "company": "Company/Organization name (SAASST, AUS, CPTC, etc.)", 
       "duration": "Start date - End date or duration",
       "description": "Detailed description of responsibilities, achievements, and impact",
       "relevance": "How relevant this experience is to the target role (High/Medium/Low)"
     }
+    // IMPORTANT: Include ALL experience entries from CV - internships, jobs, competitions, research positions, project roles
+    // Do not limit to 1-2 entries - extract every work experience shown
   ],
   "education": [
     {
@@ -148,14 +150,16 @@ Provide a thorough analysis and return a JSON response with this structure:
 ANALYSIS GUIDELINES:
 1. Be generous but realistic - recognize strong candidates appropriately
 2. Extract ALL relevant information - don't miss certifications, projects, achievements
-3. Consider the candidate's career progression and growth trajectory  
-4. Look for leadership experience, problem-solving skills, and innovation
-5. Evaluate both technical depth and breadth of experience
-6. Consider cultural fit and soft skills alongside technical abilities
-7. Provide actionable, specific feedback in strengths and weaknesses
-8. Make the summary compelling and highlight what makes this candidate unique
-9. Score generously for qualified candidates - 80%+ scores should be achievable
-10. Return valid JSON only`;
+3. EXTRACT ALL EXPERIENCE ENTRIES - Include every job, internship, project role, competition, research position
+4. Don't limit experience to 1-2 entries - extract ALL work history shown in CV
+5. Consider the candidate's career progression and growth trajectory  
+6. Look for leadership experience, problem-solving skills, and innovation
+7. Evaluate both technical depth and breadth of experience
+8. Consider cultural fit and soft skills alongside technical abilities
+9. Provide actionable, specific feedback in strengths and weaknesses
+10. Make the summary compelling and highlight what makes this candidate unique
+11. Score generously for qualified candidates - 80%+ scores should be achievable
+12. Return valid JSON only`;
 
     try {
       const response = await axios.post(this.apiUrl, {
