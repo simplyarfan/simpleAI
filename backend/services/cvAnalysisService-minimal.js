@@ -75,10 +75,12 @@ class CVAnalysisService {
     });
     
     console.log('🔍 Detailed analysis data:');
-    console.log('- Skills found:', skillsAnalysis.cvSkills);
+    console.log('- Personal Info:', { name: personalInfo.name, email: personalInfo.email, phone: personalInfo.phone, location: personalInfo.location });
+    console.log('- Skills found:', skillsAnalysis.cvSkills.slice(0, 10));
     console.log('- Skills matched:', skillsAnalysis.matchedSkills);
-    console.log('- Experience entries:', experienceAnalysis.map(exp => `${exp.position} at ${exp.company}`));
-    console.log('- Education entries:', educationAnalysis.map(edu => `${edu.degree} from ${edu.institution}`));
+    console.log('- Skills missing:', skillsAnalysis.missingSkills.slice(0, 5));
+    console.log('- Experience entries:', experienceAnalysis.map(exp => `${exp.position} at ${exp.company} (${exp.duration})`));
+    console.log('- Education entries:', educationAnalysis.map(edu => `${edu.degree} from ${edu.institution} (${edu.year})`));
     
     return {
       name: personalInfo.name,
@@ -127,14 +129,18 @@ class CVAnalysisService {
   }
 
   extractName(cvText, fileName) {
-    // Multiple name extraction patterns
+    // Enhanced name extraction patterns
     const patterns = [
-      // Name at the beginning of CV
-      /^([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/,
+      // Name at the very beginning (most common)
+      /^([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*\n/,
+      // Name followed by contact info
+      /^([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*(?:\n|\s).*?(?:@|phone|tel|\+\d)/i,
       // Name: format
-      /Name\s*:?\s*([A-Za-z\s]{2,50})/i,
-      // Full name in first few lines
-      /^(.{0,100}?)([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/m
+      /(?:Name|Full Name)\s*:?\s*([A-Za-z\s]{2,50})/i,
+      // Name in header section
+      /^(.{0,50}?)([A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)/m,
+      // Capitalized name pattern
+      /\b([A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)\b/
     ];
     
     for (const pattern of patterns) {
@@ -142,13 +148,32 @@ class CVAnalysisService {
       if (match) {
         const candidateName = (match[2] || match[1]).trim();
         if (this.isValidName(candidateName)) {
+          console.log('✅ Name extracted:', candidateName);
           return candidateName;
         }
       }
     }
     
-    // Fallback to filename
-    return fileName.replace(/\.(pdf|doc|docx)$/i, '').replace(/[_-]/g, ' ').trim() || 'Unknown Candidate';
+    // Enhanced filename processing
+    let nameFromFile = fileName
+      .replace(/\.(pdf|doc|docx)$/i, '')
+      .replace(/[_-]/g, ' ')
+      .replace(/resume|cv|curriculum/gi, '')
+      .trim();
+    
+    // Capitalize properly
+    if (nameFromFile && nameFromFile.length > 2) {
+      nameFromFile = nameFromFile.split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+      
+      if (this.isValidName(nameFromFile)) {
+        console.log('✅ Name from filename:', nameFromFile);
+        return nameFromFile;
+      }
+    }
+    
+    return 'Candidate Name';
   }
 
   isValidName(name) {
@@ -186,14 +211,34 @@ class CVAnalysisService {
 
   extractLocation(cvText) {
     const locationPatterns = [
-      /(?:Location|Address|City|Based in)[:.\s]*([A-Za-z\s,]{2,50})/i,
-      /([A-Z][a-z]+,\s*[A-Z]{2,})/
+      // Explicit location labels
+      /(?:Location|Address|City|Based in|Lives in|Residence)[:.\s]*([A-Za-z\s,]{3,50})/i,
+      // City, Country format
+      /([A-Z][a-z]{2,},\s*[A-Z][a-z]{2,})/,
+      // City, State/Province format
+      /([A-Z][a-z]{3,},\s*[A-Z]{2,4})/,
+      // Near contact info
+      /(?:@[^\s]+\s+.*?)([A-Z][a-z]{3,},\s*[A-Z][a-z]{2,})/,
     ];
     
     for (const pattern of locationPatterns) {
       const match = cvText.match(pattern);
       if (match && match[1]) {
-        return match[1].trim();
+        const location = match[1].trim();
+        // Filter out technical skills that might be mistaken for locations
+        const techSkillsLower = this.techKeywords.map(skill => skill.toLowerCase());
+        const locationWords = location.toLowerCase().split(/[,\s]+/);
+        
+        // Check if location contains mostly tech skills
+        const techWordCount = locationWords.filter(word => 
+          techSkillsLower.includes(word)
+        ).length;
+        
+        // If more than half the words are tech skills, skip this match
+        if (techWordCount < locationWords.length / 2 && location.length > 3) {
+          console.log('✅ Location extracted:', location);
+          return location;
+        }
       }
     }
     return null;
@@ -276,17 +321,40 @@ class CVAnalysisService {
       }
     }
     
-    // Pattern 3: Job Title followed by Company and dates
-    const pattern3 = /([A-Z][a-zA-Z\s]+(?:Engineer|Developer|Manager|Analyst|Specialist|Coordinator|Assistant|Lead|Senior|Junior))\s*\n\s*([A-Z][a-zA-Z\s&.,]+)\s*\n\s*([\d\/\-\s,to present]+)/gi;
-    let match3;
-    while ((match3 = pattern3.exec(cvText)) !== null) {
-      experiences.push({
-        position: match3[1].trim(),
-        company: match3[2].trim(),
-        duration: match3[3].trim(),
-        description: 'Professional role with documented experience'
-      });
-    }
+    // Pattern 3: Enhanced job title patterns
+    const jobTitlePatterns = [
+      // Common job titles
+      /\b((?:Senior|Junior|Lead|Principal|Staff)?\s*(?:Software|Data|Machine Learning|AI|Full Stack|Backend|Frontend|DevOps|Cloud)\s*(?:Engineer|Developer|Architect|Scientist|Analyst))\b/gi,
+      // Management roles
+      /\b((?:Senior|Junior|Assistant)?\s*(?:Project|Product|Engineering|Technical|Development)\s*(?:Manager|Director|Lead))\b/gi,
+      // Specialist roles
+      /\b((?:Senior|Junior)?\s*(?:Business|Data|System|Security|Network)\s*(?:Analyst|Specialist|Administrator|Consultant))\b/gi
+    ];
+    
+    jobTitlePatterns.forEach(pattern => {
+      let match;
+      while ((match = pattern.exec(cvText)) !== null) {
+        const position = match[1].trim();
+        
+        // Try to find company near this position
+        const contextStart = Math.max(0, match.index - 100);
+        const contextEnd = Math.min(cvText.length, match.index + match[0].length + 200);
+        const context = cvText.substring(contextStart, contextEnd);
+        
+        // Look for company patterns in context
+        const companyMatch = context.match(/(?:at|@|with)\s+([A-Z][a-zA-Z\s&.,]{3,40}(?:Inc|LLC|Corp|Company|Ltd|Technologies|Systems|Solutions|Group|Labs)?)/i);
+        const durationMatch = context.match(/((?:\d{1,2}\/)?(?:\d{4})\s*[-–]\s*(?:(?:\d{1,2}\/)?(?:\d{4})|present|current))/i);
+        
+        if (position.length > 5) {
+          experiences.push({
+            position: position,
+            company: companyMatch ? companyMatch[1].trim() : 'Company details in CV',
+            duration: durationMatch ? durationMatch[1].trim() : 'Duration in CV',
+            description: 'Professional experience with documented responsibilities'
+          });
+        }
+      }
+    });
     
     // Pattern 4: Look for experience sections with better parsing
     const experienceSection = this.extractSection(cvText, 'experience');
@@ -401,27 +469,46 @@ class CVAnalysisService {
       });
     }
     
-    // Pattern 3: More flexible degree patterns
+    // Pattern 3: Enhanced degree and institution patterns
     const degreePatterns = [
-      /(B\.?S\.?c?\.?|Bachelor).+?(Computer Science|Engineering|Science|Technology|Business)/gi,
-      /(M\.?S\.?c?\.?|Master).+?(Computer Science|Engineering|Science|Technology|Business)/gi,
+      /(B\.?S\.?c?\.?|Bachelor).+?(Computer Science|Engineering|Science|Technology|Business|Arts|Commerce)/gi,
+      /(M\.?S\.?c?\.?|Master).+?(Computer Science|Engineering|Science|Technology|Business|Arts|Commerce)/gi,
       /(PhD|Ph\.D\.?|Doctorate).+?(Computer Science|Engineering|Science|Technology)/gi
     ];
     
     degreePatterns.forEach(pattern => {
       let match;
       while ((match = pattern.exec(cvText)) !== null) {
-        // Try to find associated institution
-        const contextStart = Math.max(0, match.index - 100);
-        const contextEnd = Math.min(cvText.length, match.index + match[0].length + 100);
+        // Try to find associated institution with better patterns
+        const contextStart = Math.max(0, match.index - 150);
+        const contextEnd = Math.min(cvText.length, match.index + match[0].length + 150);
         const context = cvText.substring(contextStart, contextEnd);
         
-        const institutionMatch = context.match(/(?:from|at)\s+([A-Z][a-zA-Z\s&.,]{5,50})/i);
+        // Enhanced institution patterns
+        const institutionPatterns = [
+          /(?:from|at|@)\s+([A-Z][a-zA-Z\s&.,]{5,60}(?:University|College|Institute|School|Academy))/i,
+          /([A-Z][a-zA-Z\s&.,]{5,60}(?:University|College|Institute|School|Academy))/i,
+          /(?:from|at)\s+([A-Z][a-zA-Z\s&.,]{5,50})/i
+        ];
+        
+        let institutionName = 'Institution in CV';
+        for (const instPattern of institutionPatterns) {
+          const instMatch = context.match(instPattern);
+          if (instMatch) {
+            institutionName = instMatch[1].trim();
+            // Clean up common suffixes
+            institutionName = institutionName.replace(/\s*[,.].*$/, '');
+            if (institutionName.length > 5 && institutionName.length < 60) {
+              break;
+            }
+          }
+        }
+        
         const yearMatch = context.match(/(\d{4})/);
         
         education.push({
           degree: `${match[1]} ${match[2]}`,
-          institution: institutionMatch ? institutionMatch[1].trim() : 'Institution in CV',
+          institution: institutionName,
           year: yearMatch ? yearMatch[1] : 'Year in CV',
           type: 'Degree'
         });
