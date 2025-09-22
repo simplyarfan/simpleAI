@@ -367,74 +367,214 @@ class CVAnalysisService {
    * Extract personal information from CV text
    */
   extractPersonalInfo(cvText, fileName) {
-    const cleanText = cvText.replace(/\s+/g, ' ').trim();
+    console.log('👤 MAIN SERVICE: Extracting personal information with enhanced patterns...');
     
-    // Name extraction with multiple patterns
-    const namePatterns = [
-      /^([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*(?:\n|$)/,
-      /Name:?\s*([A-Za-z\s]{2,50})/i,
-      /^([A-Z][a-z]+\s+[A-Z][a-z]+)/
+    const name = this.extractNameEnhanced(cvText, fileName);
+    const email = this.extractEmailEnhanced(cvText);
+    const phone = this.extractPhoneEnhanced(cvText);
+    const location = this.extractLocationEnhanced(cvText);
+    
+    const personal = { name, email, phone, location };
+    console.log('✅ Enhanced personal info extracted:', personal);
+    return personal;
+  }
+
+  extractNameEnhanced(cvText, fileName) {
+    console.log('📝 ENHANCED: Extracting name...');
+    
+    // ROBUST NAME PATTERNS - Multiple strategies
+    const patterns = [
+      // Pattern 1: Name at very start of CV (most reliable)
+      /^([A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)\s*$/m,
+      
+      // Pattern 2: Name followed by contact info
+      /^([A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)\s*\n.*?(?:@|\+\d|phone|email)/i,
+      
+      // Pattern 3: Explicit name labels
+      /(?:name|full\s*name)\s*:?\s*([A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)/i,
+      
+      // Pattern 4: Name in first 3 lines
+      /^.{0,100}?([A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)/m,
+      
+      // Pattern 5: Standalone capitalized names
+      /\b([A-Z][a-z]{2,}\s+[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})?)\b/
     ];
     
-    let name = null;
-    for (const pattern of namePatterns) {
-      const match = cleanText.match(pattern);
-      if (match && match[1]) {
-        const candidateName = match[1].trim();
-        if (candidateName.length >= 2 && candidateName.length <= 50 && 
-            /^[A-Za-z\s]+$/.test(candidateName) &&
-            !candidateName.toLowerCase().includes('summary') &&
-            !candidateName.toLowerCase().includes('experience')) {
-          name = candidateName;
-          break;
+    for (let i = 0; i < patterns.length; i++) {
+      const match = cvText.match(patterns[i]);
+      if (match) {
+        const candidateName = (match[1]).trim();
+        if (this.isValidNameEnhanced(candidateName)) {
+          console.log(`✅ Name found with pattern ${i + 1}:`, candidateName);
+          return candidateName;
         }
       }
     }
     
-    // Fallback to filename
-    if (!name) {
-      name = fileName.replace(/\.(pdf|doc|docx)$/i, '').replace(/[_-]/g, ' ').replace(/cv|resume/i, '').trim() || 'Unknown Candidate';
+    // FILENAME FALLBACK with smart processing
+    let nameFromFile = fileName
+      .replace(/\.(pdf|doc|docx|txt)$/i, '')
+      .replace(/[-_]/g, ' ')
+      .replace(/\b(resume|cv|curriculum|vitae)\b/gi, '')
+      .trim();
+    
+    if (nameFromFile && nameFromFile.length > 2) {
+      // Proper case conversion
+      nameFromFile = nameFromFile
+        .split(' ')
+        .filter(word => word.length > 1)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+      
+      if (this.isValidNameEnhanced(nameFromFile)) {
+        console.log('✅ Name from filename:', nameFromFile);
+        return nameFromFile;
+      }
     }
+    
+    console.log('⚠️ No valid name found, using fallback');
+    return 'Candidate Name';
+  }
 
-    // Email extraction
+  isValidNameEnhanced(name) {
+    if (!name || name.length < 3 || name.length > 50) return false;
+    
+    // Must contain only letters and spaces
+    if (!/^[A-Za-z\s]+$/.test(name)) return false;
+    
+    // Must have at least 2 words
+    const words = name.trim().split(/\s+/);
+    if (words.length < 2) return false;
+    
+    // Each word must be at least 2 characters
+    if (words.some(word => word.length < 2)) return false;
+    
+    // STRICT EXCLUSIONS - Filter out placeholder text and CV sections
+    const excludeWords = [
+      'insert', 'candidate', 'name', 'your', 'full', 'summary', 'experience', 
+      'education', 'skills', 'objective', 'profile', 'contact', 'information',
+      'resume', 'curriculum', 'vitae', 'personal', 'details'
+    ];
+    
+    const nameLower = name.toLowerCase();
+    if (excludeWords.some(word => nameLower.includes(word))) {
+      console.log(`❌ Name rejected (contains excluded word): ${name}`);
+      return false;
+    }
+    
+    // Reject if it looks like placeholder text
+    if (nameLower.includes('insert') || nameLower.includes('candidate')) {
+      console.log(`❌ Name rejected (placeholder text): ${name}`);
+      return false;
+    }
+    
+    return true;
+  }
+
+  extractEmailEnhanced(cvText) {
+    console.log('📧 ENHANCED: Extracting email...');
     const emailMatch = cvText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
     const email = emailMatch ? emailMatch[0] : null;
+    console.log('✅ Email found:', email);
+    return email;
+  }
 
-    // Phone extraction with multiple patterns
+  extractPhoneEnhanced(cvText) {
+    console.log('📱 ENHANCED: Extracting phone...');
     const phonePatterns = [
-      /\+\d{1,3}[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/,
-      /(?:Phone|Tel|Mobile|Cell|Contact)[:.\s]*([+\d\s\-\(\)\.]{8,20})/i,
-      /\b\d{10,15}\b/
+      // International format with +
+      /\+\d{1,3}[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/g,
+      // Phone with label
+      /(?:phone|tel|mobile|cell|contact)[:.\s]*([+\d\s\-\(\)\.]{8,20})/gi,
+      // UAE format specifically
+      /\+971[-.\s]?\d{1,2}[-.\s]?\d{3}[-.\s]?\d{4}/g,
+      // US format
+      /\(\d{3}\)\s*\d{3}[-.\s]?\d{4}/g,
+      // Generic long numbers
+      /\b\d{10,15}\b/g
     ];
     
-    let phone = null;
     for (const pattern of phonePatterns) {
-      const match = cvText.match(pattern);
-      if (match) {
-        const candidatePhone = (match[1] || match[0]).trim();
-        if (candidatePhone.length >= 8 && candidatePhone.length <= 20 && /\d{6,}/.test(candidatePhone)) {
-          phone = candidatePhone;
-          break;
+      let match;
+      while ((match = pattern.exec(cvText)) !== null) {
+        const phone = (match[1] || match[0]).trim();
+        // Clean up the phone number
+        const cleanPhone = phone.replace(/[^\d+\-\s\(\)\.]/g, '');
+        
+        if (cleanPhone.length >= 8 && cleanPhone.length <= 20 && /\d{6,}/.test(cleanPhone)) {
+          // Additional validation - must have enough digits
+          const digitCount = (cleanPhone.match(/\d/g) || []).length;
+          if (digitCount >= 7) {
+            console.log('✅ Phone found:', cleanPhone);
+            return cleanPhone;
+          }
         }
       }
     }
+    console.log('⚠️ No phone found');
+    return null;
+  }
 
-    // Location extraction
-    const locationPatterns = [
-      /(?:Location|Address|City)[:.\s]*([A-Za-z\s,]{2,50})/i,
-      /([A-Z][a-z]+,\s*[A-Z]{2,})/
+  extractLocationEnhanced(cvText) {
+    console.log('📍 ENHANCED: Extracting location...');
+    
+    // Known cities and countries for validation
+    const knownLocations = [
+      'dubai', 'abu dhabi', 'sharjah', 'uae', 'united arab emirates',
+      'new york', 'london', 'paris', 'tokyo', 'singapore', 'mumbai', 'delhi',
+      'bangalore', 'hyderabad', 'chennai', 'pune', 'karachi', 'lahore',
+      'riyadh', 'jeddah', 'doha', 'kuwait', 'manama', 'muscat'
     ];
     
-    let location = null;
+    const locationPatterns = [
+      // Explicit location labels
+      /(?:location|address|city|based in|lives in|residence)[:.\s]*([A-Za-z\s,]{3,50})/i,
+      // City, Country format (most reliable)
+      /\b([A-Z][a-z]{3,},\s*[A-Z][a-z]{3,})\b/,
+      // City, State/Province format
+      /\b([A-Z][a-z]{3,},\s*[A-Z]{2,4})\b/
+    ];
+    
     for (const pattern of locationPatterns) {
       const match = cvText.match(pattern);
       if (match && match[1]) {
-        location = match[1].trim();
-        break;
+        const location = match[1].trim();
+        const locationLower = location.toLowerCase();
+        
+        // STRICT FILTERING
+        // 1. Filter out tech skills
+        const techSkillsLower = this.techKeywords.map(skill => skill.toLowerCase());
+        const locationWords = locationLower.split(/[,\s]+/);
+        const techWordCount = locationWords.filter(word => techSkillsLower.includes(word)).length;
+        
+        // 2. Filter out names and personal info
+        const personalWords = ['syed', 'arfan', 'hussain', 'ashfaq', 'data', 'engineer', 'developer'];
+        const personalWordCount = locationWords.filter(word => personalWords.includes(word)).length;
+        
+        // 3. Check if it's a known location
+        const isKnownLocation = knownLocations.some(knownLoc => locationLower.includes(knownLoc));
+        
+        // 4. Must not be mostly tech skills or personal info
+        const totalWords = locationWords.length;
+        const badWordCount = techWordCount + personalWordCount;
+        
+        if (isKnownLocation || (badWordCount < totalWords / 2 && location.length > 3 && location.length < 30)) {
+          // Additional validation - must look like a real location
+          if (!/\d{4}/.test(location) && // No years
+              !/^[A-Z][a-z]+\s+[A-Z][a-z]+$/.test(location.trim()) && // Not just "First Last"
+              !locationLower.includes('university') &&
+              !locationLower.includes('college') &&
+              !locationLower.includes('institute')) {
+            console.log('✅ Location found:', location);
+            return location;
+          }
+        }
+        
+        console.log(`❌ Location rejected: ${location} (tech: ${techWordCount}, personal: ${personalWordCount}, known: ${isKnownLocation})`);
       }
     }
-
-    return { name, email, phone, location };
+    console.log('⚠️ No valid location found');
+    return null;
   }
 
   /**
