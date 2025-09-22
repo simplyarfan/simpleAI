@@ -9,10 +9,10 @@ const axios = require('axios');
 class CVAnalysisService {
   constructor() {
     try {
-      // OpenRouter API configuration - ROBUST INITIALIZATION
-      this.apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY || process.env.API_KEY || null;
-      this.apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
-      this.model = 'meta-llama/llama-3.2-3b-instruct:free'; // FREE Llama model
+      // OPENAI API CONFIGURATION - MUCH BETTER THAN OPENROUTER
+      this.apiKey = process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY || process.env.API_KEY || null;
+      this.apiUrl = 'https://api.openai.com/v1/chat/completions';
+      this.model = 'gpt-3.5-turbo'; // OpenAI's excellent model
       this.initialized = true;
       
       console.log('🤖 CV Analysis Service initializing...');
@@ -25,10 +25,11 @@ class CVAnalysisService {
       const hasApiKey = !!(process.env.API_KEY);
       
       console.log('🔑 Environment check:');
+      console.log('  - OPENAI_API_KEY:', !!(process.env.OPENAI_API_KEY) ? 'SET' : 'NOT SET');
       console.log('  - OPENROUTER_API_KEY:', hasOpenRouterKey ? 'SET' : 'NOT SET');
       console.log('  - OPENROUTER_KEY:', hasOpenRouterKeyAlt ? 'SET' : 'NOT SET');
       console.log('  - API_KEY:', hasApiKey ? 'SET' : 'NOT SET');
-      console.log('  - Service ready:', this.apiKey ? 'AI ENABLED' : 'FALLBACK MODE');
+      console.log('  - Service ready:', this.apiKey ? 'OPENAI ENABLED' : 'FALLBACK MODE');
       
       if (this.apiKey && this.apiKey.length > 10) {
         console.log('✅ API key configured! AI analysis available');

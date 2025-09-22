@@ -11,15 +11,15 @@ const authenticateToken = auth.authenticateToken;
 
 console.log('🧠 CV Intelligence Routes - Loading at:', new Date().toISOString());
 
-// CV Analysis Service - GUARANTEED WORKING VERSION
+// CV Analysis Service - OPENAI POWERED VERSION
 let cvAnalysisService = null;
 try {
-  // Try the main service first
-  const CVAnalysisService = require('../services/cvAnalysisService');
-  cvAnalysisService = new CVAnalysisService();
-  console.log('✅ Full CV Analysis Service initialized successfully');
+  // Try OpenAI service first (best quality)
+  const CVAnalysisServiceOpenAI = require('../services/cvAnalysisService-openai');
+  cvAnalysisService = new CVAnalysisServiceOpenAI();
+  console.log('✅ OpenAI CV Analysis Service initialized successfully');
 } catch (error) {
-  console.error('❌ Main service failed, trying minimal version:', error.message);
+  console.error('❌ OpenAI service failed, trying minimal version:', error.message);
   try {
     // Fallback to minimal service
     const CVAnalysisServiceMinimal = require('../services/cvAnalysisService-minimal');
