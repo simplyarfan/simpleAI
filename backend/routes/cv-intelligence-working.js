@@ -536,11 +536,17 @@ router.get('/batch/:batchId', authenticateToken, async (req, res) => {
     // Parse JSON fields for frontend
     const processedCandidates = candidates.map(candidate => {
       try {
+        const analysisData = candidate.analysis_data ? JSON.parse(candidate.analysis_data) : {};
         return {
           ...candidate,
           strengths: candidate.strengths ? JSON.parse(candidate.strengths) : [],
           weaknesses: candidate.weaknesses ? JSON.parse(candidate.weaknesses) : [],
-          analysis_data: candidate.analysis_data ? JSON.parse(candidate.analysis_data) : {}
+          analysis_data: analysisData,
+          // Fix skills count display - frontend expects these field names
+          skillsMatched: analysisData.match_analysis?.skills_matched || [],
+          skillsMissing: analysisData.match_analysis?.skills_missing || [],
+          skills_matched: (analysisData.match_analysis?.skills_matched || []).length,
+          skills_missing: (analysisData.match_analysis?.skills_missing || []).length
         };
       } catch (e) {
         console.error('Error parsing candidate data:', e);
@@ -548,16 +554,33 @@ router.get('/batch/:batchId', authenticateToken, async (req, res) => {
           ...candidate,
           strengths: [],
           weaknesses: [],
-          analysis_data: {}
+          analysis_data: {},
+          skillsMatched: [],
+          skillsMissing: [],
+          skills_matched: 0,
+          skills_missing: 0
         };
       }
     });
+
+    // OPENAI INTELLIGENT RANKING
+    let rankedCandidates = processedCandidates;
+    if (cvAnalysisService && batch.job_description && processedCandidates.length > 1) {
+      try {
+        console.log('🧠 Applying OpenAI intelligent ranking...');
+        rankedCandidates = await cvAnalysisService.rankCandidatesWithAI(processedCandidates, batch.job_description);
+        console.log('✅ OpenAI ranking applied successfully');
+      } catch (error) {
+        console.error('❌ OpenAI ranking failed, using score-based ranking:', error.message);
+        rankedCandidates = processedCandidates.sort((a, b) => b.score - a.score);
+      }
+    }
 
     res.json({
       success: true,
       data: {
         batch,
-        candidates: processedCandidates
+        candidates: rankedCandidates
       },
       message: 'Batch details retrieved successfully'
     });

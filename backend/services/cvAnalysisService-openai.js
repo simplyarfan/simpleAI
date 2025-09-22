@@ -130,9 +130,11 @@ IMPORTANT RULES:
 2. Location should be actual places (Dubai, UAE) NOT technical skills (Java, Python)
 3. Extract ALL experience entries - don't limit to 2-3, include ALL jobs/internships/projects
 4. Be specific about experience - extract actual company names, job titles, and durations
-5. Provide realistic scores based on actual match with job requirements
-6. Give actionable insights in strengths/weaknesses with specific examples
-7. Return valid JSON only`;
+5. Calculate REALISTIC and VARIED scores - avoid repeated scores like 70%, 60%
+6. Skills score should be: (matched_skills / total_required_skills) * 100
+7. Experience score should vary based on relevance and seniority
+8. Give actionable insights in strengths/weaknesses with specific examples
+9. Return valid JSON only`;
 
     try {
       const response = await axios.post(this.apiUrl, {
@@ -559,6 +561,89 @@ IMPORTANT RULES:
   generateSummary(name, scores, skillsAnalysis) {
     const fitLevel = scores.overall >= 80 ? 'excellent' : scores.overall >= 70 ? 'strong' : scores.overall >= 60 ? 'good' : 'fair';
     return `${name} presents a ${fitLevel} candidate profile with ${scores.overall}% overall compatibility. Technical skills show alignment with ${skillsAnalysis.matched.length}/${skillsAnalysis.required.length} required skills matched.`;
+  }
+
+  /**
+   * OpenAI Intelligent Ranking - Let AI rank candidates
+   */
+  async rankCandidatesWithAI(candidates, jobDescription) {
+    if (!this.apiKey || candidates.length <= 1) {
+      console.log('⚠️ No API key or insufficient candidates for AI ranking');
+      return candidates.sort((a, b) => b.score - a.score); // Fallback to score sorting
+    }
+
+    console.log('🧠 OpenAI: Ranking candidates intelligently...');
+
+    const candidatesSummary = candidates.map((candidate, index) => ({
+      index: index,
+      name: candidate.name,
+      score: candidate.score,
+      skills_matched: candidate.skillsMatched?.length || 0,
+      skills_missing: candidate.skillsMissing?.length || 0,
+      experience_count: candidate.analysisData?.experience?.length || 0,
+      education_count: candidate.analysisData?.education?.length || 0,
+      summary: candidate.summary
+    }));
+
+    const rankingPrompt = `You are an expert HR manager. Rank these candidates for the given job position based on overall fit, not just scores.
+
+JOB DESCRIPTION:
+${jobDescription}
+
+CANDIDATES TO RANK:
+${JSON.stringify(candidatesSummary, null, 2)}
+
+Please rank them from BEST to WORST fit and return a JSON array with just the indices in ranking order:
+{
+  "ranking": [2, 0, 1],
+  "reasoning": "Brief explanation of ranking logic"
+}
+
+Consider:
+1. Skills match quality and relevance
+2. Experience relevance and seniority
+3. Overall profile fit for the role
+4. Not just the numerical score but actual qualifications`;
+
+    try {
+      const response = await axios.post(this.apiUrl, {
+        model: this.model,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert HR manager who ranks candidates based on job fit. Return valid JSON only.'
+          },
+          {
+            role: 'user',
+            content: rankingPrompt
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 500
+      }, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        timeout: 15000
+      });
+
+      const aiResponse = response.data.choices[0].message.content;
+      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+      
+      if (jsonMatch) {
+        const rankingData = JSON.parse(jsonMatch[0]);
+        const rankedCandidates = rankingData.ranking.map(index => candidates[index]);
+        console.log('✅ OpenAI ranking completed:', rankingData.reasoning);
+        return rankedCandidates;
+      }
+    } catch (error) {
+      console.error('❌ OpenAI ranking failed:', error.message);
+    }
+
+    // Fallback to score-based ranking
+    console.log('⚠️ Using fallback score-based ranking');
+    return candidates.sort((a, b) => b.score - a.score);
   }
 }
 
