@@ -114,14 +114,14 @@ Please analyze and return a JSON response with the following structure:
     }
   ],
   "analysis": {
-    "overall_score": 85,
-    "skills_score": 90,
-    "experience_score": 80,
-    "education_score": 85,
-    "strengths": ["List key strengths"],
-    "weaknesses": ["List areas for improvement"],
-    "summary": "Professional summary of candidate fit",
-    "recommendation": "Hire/Consider/Reject with reasoning"
+    "overall_score": "Calculate realistic score 0-100 based on actual match",
+    "skills_score": "Score based on % of required skills matched",
+    "experience_score": "Score based on relevance and quantity of experience",
+    "education_score": "Score based on educational background relevance",
+    "strengths": ["List specific strengths with examples"],
+    "weaknesses": ["List specific areas for improvement"],
+    "summary": "Professional summary explaining the scores and fit",
+    "recommendation": "Hire/Consider/Reject with detailed reasoning"
   }
 }
 
@@ -195,14 +195,35 @@ IMPORTANT RULES:
     const skills = data.skills || {};
     const analysis = data.analysis || {};
     
+    // Use OpenAI scores if available, otherwise calculate dynamically
+    let scores;
+    if (analysis.overall_score && analysis.skills_score && analysis.experience_score && analysis.education_score) {
+      console.log('✅ Using OpenAI calculated scores');
+      scores = {
+        overall: analysis.overall_score,
+        skills: analysis.skills_score,
+        experience: analysis.experience_score,
+        education: analysis.education_score
+      };
+    } else {
+      console.log('⚠️ OpenAI scores missing, calculating dynamically...');
+      // Create mock skill analysis for scoring
+      const skillsAnalysis = {
+        required: skills.missing ? [...(skills.matched || []), ...(skills.missing || [])] : [],
+        matched: skills.matched || [],
+        cvSkills: [...(skills.technical || []), ...(skills.soft || [])]
+      };
+      scores = this.calculateScores(skillsAnalysis, data.experience || [], data.education || []);
+    }
+    
     return {
       name: personal.name || this.extractNameFromFilename(fileName),
       email: personal.email || 'Email not found',
       phone: personal.phone || 'Phone not found',
-      score: analysis.overall_score || 70,
-      skillsMatch: analysis.skills_score || 70,
-      experienceMatch: analysis.experience_score || 70,
-      educationMatch: analysis.education_score || 70,
+      score: scores.overall,
+      skillsMatch: scores.skills,
+      experienceMatch: scores.experience,
+      educationMatch: scores.education,
       strengths: analysis.strengths || ['Strong technical background'],
       weaknesses: analysis.weaknesses || ['Areas for improvement identified'],
       summary: analysis.summary || `${personal.name || 'Candidate'} shows good potential for this role.`,
@@ -352,15 +373,33 @@ IMPORTANT RULES:
   }
 
   analyzeSkills(jobDescription, cvText) {
+    console.log('🛠️ ANALYZING SKILLS:');
     const jdLower = jobDescription.toLowerCase();
     const cvLower = cvText.toLowerCase();
     
+    // Find required skills in job description
     const required = this.techKeywords.filter(skill => jdLower.includes(skill.toLowerCase()));
+    console.log('- Required skills from JD:', required);
+    
+    // Find all skills present in CV
     const cvSkills = this.techKeywords.filter(skill => cvLower.includes(skill.toLowerCase()));
+    const softSkillsFound = this.softSkills.filter(skill => cvLower.includes(skill.toLowerCase()));
+    const allCvSkills = [...cvSkills, ...softSkillsFound];
+    console.log('- Skills found in CV:', allCvSkills);
+    
+    // Find matching and missing skills
     const matched = required.filter(skill => cvLower.includes(skill.toLowerCase()));
     const missing = required.filter(skill => !cvLower.includes(skill.toLowerCase()));
     
-    return { required, cvSkills, matched, missing };
+    console.log('- Skills matched:', matched);
+    console.log('- Skills missing:', missing);
+    
+    return { 
+      required, 
+      cvSkills: allCvSkills, 
+      matched, 
+      missing 
+    };
   }
 
   extractExperience(cvText) {
@@ -434,18 +473,62 @@ IMPORTANT RULES:
   }
 
   calculateScores(skillsAnalysis, experience, education) {
-    const skillsScore = skillsAnalysis.required.length > 0 ? 
-      Math.round((skillsAnalysis.matched.length / skillsAnalysis.required.length) * 100) : 75;
-    const experienceScore = Math.min(85, 50 + (experience.length * 15));
-    const educationScore = Math.min(90, 60 + (education.length * 10));
-    const overallScore = Math.round((skillsScore * 0.4) + (experienceScore * 0.35) + (educationScore * 0.25));
+    console.log('📊 CALCULATING DYNAMIC SCORES:');
+    console.log('- Required skills:', skillsAnalysis.required.length);
+    console.log('- Matched skills:', skillsAnalysis.matched.length);
+    console.log('- CV skills total:', skillsAnalysis.cvSkills.length);
+    console.log('- Experience entries:', experience.length);
+    console.log('- Education entries:', education.length);
     
-    return {
-      skills: Math.max(20, Math.min(100, skillsScore)),
-      experience: Math.max(30, Math.min(100, experienceScore)),
-      education: Math.max(40, Math.min(100, educationScore)),
-      overall: Math.max(30, Math.min(100, overallScore))
+    // DYNAMIC SKILLS SCORING
+    let skillsScore = 50; // Base score
+    if (skillsAnalysis.required.length > 0) {
+      const matchPercentage = (skillsAnalysis.matched.length / skillsAnalysis.required.length) * 100;
+      skillsScore = Math.round(matchPercentage);
+      console.log('- Skills match percentage:', matchPercentage + '%');
+    } else {
+      // If no specific requirements, score based on total skills found
+      skillsScore = Math.min(85, 40 + (skillsAnalysis.cvSkills.length * 3));
+    }
+    
+    // DYNAMIC EXPERIENCE SCORING
+    let experienceScore = 30; // Base score
+    if (experience.length === 0) {
+      experienceScore = 25;
+    } else if (experience.length === 1) {
+      experienceScore = 55;
+    } else if (experience.length === 2) {
+      experienceScore = 70;
+    } else if (experience.length >= 3) {
+      experienceScore = Math.min(90, 75 + ((experience.length - 3) * 5));
+    }
+    
+    // DYNAMIC EDUCATION SCORING
+    let educationScore = 40; // Base score
+    if (education.length === 0) {
+      educationScore = 35;
+    } else if (education.length === 1) {
+      educationScore = 70;
+    } else if (education.length >= 2) {
+      educationScore = 85;
+    }
+    
+    // WEIGHTED OVERALL SCORE
+    const overallScore = Math.round(
+      (skillsScore * 0.5) +      // 50% weight on skills
+      (experienceScore * 0.35) + // 35% weight on experience  
+      (educationScore * 0.15)    // 15% weight on education
+    );
+    
+    const scores = {
+      skills: Math.max(15, Math.min(100, skillsScore)),
+      experience: Math.max(20, Math.min(100, experienceScore)),
+      education: Math.max(30, Math.min(100, educationScore)),
+      overall: Math.max(25, Math.min(100, overallScore))
     };
+    
+    console.log('✅ FINAL SCORES:', scores);
+    return scores;
   }
 
   generateStrengths(skillsAnalysis, experience, education) {
