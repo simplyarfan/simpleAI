@@ -73,7 +73,7 @@ class CVAnalysisService {
   async performOpenAIAnalysis(jobDescription, cvText, fileName) {
     console.log('🧠 OpenAI: Performing intelligent CV analysis...');
     
-    const prompt = `You are an expert HR analyst with 15+ years of experience. Analyze this CV comprehensively against the job description like a senior recruiter would.
+    const prompt = `You are an expert HR analyst with 15+ years of experience. Use the following STRUCTURED RESUME SCREENING METHODOLOGY to evaluate this CV against the job description.
 
 JOB DESCRIPTION:
 ${jobDescription}
@@ -83,7 +83,33 @@ ${cvText}
 
 FILENAME: ${fileName}
 
-Provide a thorough analysis and return a JSON response with this structure:
+RESUME SCREENING GUIDELINES:
+
+1. EXTRACT KEY DETAILS FROM JD:
+   - Required tools, technologies, frameworks, certifications
+   - Responsibilities and expected tasks
+   - Soft skills or team collaboration needs
+   - Industry or domain experience
+
+2. EVALUATION CRITERIA (with weightage):
+   - Technical Skills Match (30%)
+   - Role and Responsibility Alignment (20%)
+   - Project Work and Impact Evidence (20%)
+   - Industry/Domain Fit (10%)
+   - Soft Skills and Learning Mindset (20%)
+
+3. SCORING LOGIC:
+   - Strong evidence = full points
+   - Some/indirect evidence = half points
+   - Not mentioned/not relevant = zero points
+   - Only count what's CLEARLY STATED in the resume
+
+4. RECENCY LOGIC:
+   - Experience in last 5 years = 100% weight
+   - 5-10 years ago = 50% weight
+   - More than 10 years ago = 25% weight (unless legacy expertise required)
+
+Provide analysis and return a JSON response with this structure:
 {
   "personal": {
     "name": "Extract the candidate's full name (NOT placeholder text)",
@@ -131,32 +157,55 @@ Provide a thorough analysis and return a JSON response with this structure:
       "impact": "Results or impact achieved"
     }
   ],
+  "evaluation": {
+    "technical_skills_match": {
+      "score": "0-30 points based on evidence strength and recency",
+      "evidence": ["List specific technical skills with evidence level (Strong/Some/None)"],
+      "gaps": ["Missing critical technical skills"]
+    },
+    "role_responsibility_alignment": {
+      "score": "0-20 points based on role match",
+      "evidence": ["List relevant responsibilities with evidence level"],
+      "gaps": ["Missing key responsibilities"]
+    },
+    "project_work_impact": {
+      "score": "0-20 points based on project relevance and impact",
+      "evidence": ["List relevant projects with measurable impact"],
+      "gaps": ["Missing project types or impact evidence"]
+    },
+    "industry_domain_fit": {
+      "score": "0-10 points based on domain experience",
+      "evidence": ["List relevant industry/domain experience"],
+      "gaps": ["Missing domain knowledge"]
+    },
+    "soft_skills_learning": {
+      "score": "0-20 points based on soft skills and growth mindset",
+      "evidence": ["List soft skills with evidence"],
+      "gaps": ["Missing soft skills"]
+    }
+  },
   "analysis": {
-    "overall_score": "Realistic score 45-95 based on comprehensive evaluation",
-    "skills_score": "Score based on technical and soft skills match (40-100)",
-    "experience_score": "Score based on relevance, seniority, and achievements (40-100)",
-    "education_score": "Score based on educational background and relevance (50-100)",
-    "strengths": ["Specific strengths with concrete examples from CV"],
-    "weaknesses": ["Areas for improvement with constructive feedback"],
-    "summary": "Professional 2-3 sentence summary explaining why this candidate fits the role and what makes them unique",
-    "recommendation": "Strong Hire/Hire/Consider/Pass with detailed reasoning",
-    "key_highlights": ["3-4 most impressive achievements or qualifications"],
-    "growth_potential": "Assessment of candidate's potential for growth in the role"
+    "total_score": "Sum of all category scores (0-100)",
+    "ranking_position": "Position among candidates (if multiple)",
+    "summary": "1 paragraph professional summary explaining fit and unique value",
+    "strengths": ["Key strengths with specific evidence from resume"],
+    "gaps_mismatches": ["Areas where candidate doesn't match requirements"],
+    "recommendation": "Shortlist/Maybe/No with detailed reasoning",
+    "recency_impact": "How recency of experience affected scoring"
   }
 }
 
-ANALYSIS GUIDELINES:
-1. PRIORITIZE ACTUAL EXPERIENCE OVER JOB TITLES - Focus on what they actually did, not their title
-2. TECHNICAL SKILLS MATCH IS CRITICAL - Exact technology match is more important than seniority
-3. HANDS-ON AI/ML EXPERIENCE beats general data experience for AI roles
-4. Research labs, AI projects, and ML implementations should score very highly
-5. Don't be biased by prestigious education if technical experience doesn't match
-6. Current employment status (intern vs consultant) is less important than relevant experience
-7. Look for specific AI frameworks (TensorFlow, PyTorch) and ML project outcomes
-8. Space/research AI experience is highly valuable for AI engineering roles
-9. Data engineering ≠ AI engineering - distinguish between data pipelines and ML pipelines
-10. Score based on JOB RELEVANCE, not general career prestige
-11. Return valid JSON only`;
+CRITICAL EVALUATION RULES:
+1. EVIDENCE-BASED SCORING: Only count what is CLEARLY STATED in the resume
+2. RECENCY MATTERS: Apply time-based weighting to all experience
+3. EXACT MATCH PRIORITY: Direct technology/framework matches score higher
+4. MEASURABLE IMPACT: Look for quantifiable results and achievements
+5. ROLE-SPECIFIC FOCUS: Score based on job requirements, not general impressiveness
+6. NO ASSUMPTION: Don't infer skills or experience not explicitly mentioned
+7. STRUCTURED SCORING: Use the 5-category breakdown with proper weightage
+8. PROFESSIONAL OBJECTIVITY: Focus on job fit, not candidate potential
+9. CLEAR EVIDENCE LEVELS: Distinguish between Strong/Some/None evidence
+10. Return valid JSON only with structured evaluation breakdown`;
 
     try {
       const response = await axios.post(this.apiUrl, {
@@ -213,28 +262,36 @@ ANALYSIS GUIDELINES:
    * Format OpenAI response to match expected structure
    */
   formatOpenAIResponse(data, fileName) {
-    console.log('🔄 Formatting OpenAI response...');
+    console.log('🔄 Formatting structured OpenAI response...');
     
     const personal = data.personal || {};
     const skills = data.skills || {};
+    const evaluation = data.evaluation || {};
     const analysis = data.analysis || {};
     const certifications = data.certifications || [];
     const projects = data.projects || [];
     
-    // PURE AI SCORING - No fallbacks, trust OpenAI completely
-    console.log('✅ Using pure OpenAI analysis and scoring');
+    // STRUCTURED EVALUATION SCORING
+    console.log('✅ Using structured resume screening methodology');
+    
+    const totalScore = analysis.total_score || 
+      (evaluation.technical_skills_match?.score || 0) +
+      (evaluation.role_responsibility_alignment?.score || 0) +
+      (evaluation.project_work_impact?.score || 0) +
+      (evaluation.industry_domain_fit?.score || 0) +
+      (evaluation.soft_skills_learning?.score || 0);
     
     return {
       name: personal.name || this.extractNameFromFilename(fileName),
       email: personal.email || 'Email not found',
       phone: personal.phone || 'Phone not found',
-      score: analysis.overall_score || 75,
-      skillsMatch: analysis.skills_score || 75,
-      experienceMatch: analysis.experience_score || 75,
-      educationMatch: analysis.education_score || 75,
-      strengths: analysis.strengths || ['Strong technical background'],
-      weaknesses: analysis.weaknesses || ['Areas for improvement identified'],
-      summary: analysis.summary || `${personal.name || 'Candidate'} shows good potential for this role.`,
+      score: totalScore,
+      skillsMatch: evaluation.technical_skills_match?.score || 20,
+      experienceMatch: (evaluation.role_responsibility_alignment?.score || 0) + (evaluation.project_work_impact?.score || 0),
+      educationMatch: evaluation.industry_domain_fit?.score || 8,
+      strengths: analysis.strengths || ['Professional background identified'],
+      weaknesses: analysis.gaps_mismatches || ['Areas for improvement identified'],
+      summary: analysis.summary || `${personal.name || 'Candidate'} evaluated using structured screening methodology.`,
       skillsMatched: skills.matched || [],
       skillsMissing: skills.missing || [],
       jdRequiredSkills: [...(skills.matched || []), ...(skills.missing || [])],
@@ -252,20 +309,29 @@ ANALYSIS GUIDELINES:
         education: data.education || [],
         certifications: certifications,
         projects: projects,
+        structured_evaluation: {
+          technical_skills: evaluation.technical_skills_match || {},
+          role_alignment: evaluation.role_responsibility_alignment || {},
+          project_impact: evaluation.project_work_impact || {},
+          domain_fit: evaluation.industry_domain_fit || {},
+          soft_skills: evaluation.soft_skills_learning || {}
+        },
         match_analysis: {
           skills_matched: skills.matched || [],
           skills_missing: skills.missing || [],
           strengths: analysis.strengths || [],
-          concerns: analysis.weaknesses || [],
-          key_highlights: analysis.key_highlights || [],
-          growth_potential: analysis.growth_potential || 'Good potential for growth',
-          recommendation: analysis.recommendation || 'Consider'
+          concerns: analysis.gaps_mismatches || [],
+          recommendation: analysis.recommendation || 'Maybe',
+          recency_impact: analysis.recency_impact || 'Not specified'
         },
         scoring_breakdown: {
-          skills_score: analysis.skills_score || 75,
-          experience_score: analysis.experience_score || 75,
-          education_score: analysis.education_score || 75,
-          overall_calculation: `OpenAI Comprehensive Analysis: ${analysis.overall_score || 75}% - ${analysis.recommendation || 'Recommended'}`
+          technical_skills_score: evaluation.technical_skills_match?.score || 0,
+          role_alignment_score: evaluation.role_responsibility_alignment?.score || 0,
+          project_impact_score: evaluation.project_work_impact?.score || 0,
+          domain_fit_score: evaluation.industry_domain_fit?.score || 0,
+          soft_skills_score: evaluation.soft_skills_learning?.score || 0,
+          total_score: totalScore,
+          methodology: 'Structured Resume Screening with Evidence-Based Evaluation'
         }
       }
     };
