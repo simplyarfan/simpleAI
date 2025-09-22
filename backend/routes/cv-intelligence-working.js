@@ -4,24 +4,35 @@ const pdf = require('pdf-parse');
 const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
 const auth = require('../middleware/auth');
-const CVAnalysisService = require('../services/cvAnalysisService');
-
 const router = express.Router();
 
 // Authentication middleware
 const authenticateToken = auth.authenticateToken;
 
-console.log('🧠 PURE AI CV Intelligence Routes - Loaded at:', new Date().toISOString());
+console.log('🧠 CV Intelligence Routes - Loading at:', new Date().toISOString());
 
-// CV Analysis Service - ROBUST INITIALIZATION
+// CV Analysis Service - GUARANTEED WORKING VERSION
 let cvAnalysisService = null;
 try {
+  // Try the main service first
+  const CVAnalysisService = require('../services/cvAnalysisService');
   cvAnalysisService = new CVAnalysisService();
-  console.log('✅ CV Analysis Service initialized successfully');
+  console.log('✅ Full CV Analysis Service initialized successfully');
 } catch (error) {
-  console.error('❌ Failed to initialize CV Analysis Service:', error);
-  console.log('⚠️ Routes will still load with fallback analysis mode');
+  console.error('❌ Main service failed, trying minimal version:', error.message);
+  try {
+    // Fallback to minimal service
+    const CVAnalysisServiceMinimal = require('../services/cvAnalysisService-minimal');
+    cvAnalysisService = new CVAnalysisServiceMinimal();
+    console.log('✅ Minimal CV Analysis Service initialized successfully');
+  } catch (minimalError) {
+    console.error('❌ Even minimal service failed:', minimalError.message);
+    console.log('⚠️ Routes will load with basic fallback analysis');
+    cvAnalysisService = null;
+  }
 }
+
+console.log('🔧 CV Intelligence Routes module loading completed');
 
 // Test database connection on route load
 database.connect().then(() => {
