@@ -87,6 +87,12 @@ class CVAnalysisService {
         skills: skillsAnalysis.cvSkills,
         experience: experienceAnalysis,
         education: educationAnalysis,
+        match_analysis: {
+          skills_matched: skillsAnalysis.matchedSkills,
+          skills_missing: skillsAnalysis.missingSkills,
+          strengths: this.generateIntelligentStrengths(skillsAnalysis, experienceAnalysis, educationAnalysis, scores),
+          concerns: this.generateIntelligentWeaknesses(skillsAnalysis, experienceAnalysis, educationAnalysis, scores)
+        },
         scoring_breakdown: {
           skills_score: scores.skills,
           experience_score: scores.experience,
