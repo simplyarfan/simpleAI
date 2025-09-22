@@ -449,9 +449,10 @@ router.post('/batch/:batchId/process',
           const analysisData = analysisResult.analysisData || {};
           const skillsMatchedCount = analysisResult.skillsMatched?.length || 0;
           const skillsMissingCount = analysisResult.skillsMissing?.length || 0;
-          const fitLevel = analysisResult.score >= 80 ? 'High' : analysisResult.score >= 60 ? 'Medium' : 'Low';
-          const recommendation = analysisResult.score >= 80 ? 'Highly Recommended' : 
-                               analysisResult.score >= 60 ? 'Recommended' : 'Consider';
+          // REALISTIC FIT LEVEL THRESHOLDS - More generous
+          const fitLevel = analysisResult.score >= 75 ? 'High' : analysisResult.score >= 55 ? 'Medium' : 'Low';
+          const recommendation = analysisResult.score >= 75 ? 'Highly Recommended' : 
+                               analysisResult.score >= 55 ? 'Recommended' : 'Consider';
 
           // Fix location display - use actual location from analysis data
           const candidateLocation = analysisData.personal?.location || 'Location not specified';

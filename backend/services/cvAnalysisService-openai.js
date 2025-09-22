@@ -482,37 +482,41 @@ IMPORTANT RULES:
     console.log('- Experience entries:', experience.length);
     console.log('- Education entries:', education.length);
     
-    // DYNAMIC SKILLS SCORING
-    let skillsScore = 50; // Base score
+    // ENHANCED DYNAMIC SKILLS SCORING - More generous and realistic
+    let skillsScore = 60; // Higher base score
     if (skillsAnalysis.required.length > 0) {
       const matchPercentage = (skillsAnalysis.matched.length / skillsAnalysis.required.length) * 100;
-      skillsScore = Math.round(matchPercentage);
+      // BOOST: Add bonus for high skill counts
+      const skillBonus = Math.min(15, skillsAnalysis.matched.length * 2); // 2 points per matched skill, max 15
+      skillsScore = Math.round(matchPercentage + skillBonus);
       console.log('- Skills match percentage:', matchPercentage + '%');
+      console.log('- Skills bonus:', skillBonus + ' points');
+      console.log('- Final skills score:', skillsScore + '%');
     } else {
-      // If no specific requirements, score based on total skills found
-      skillsScore = Math.min(85, 40 + (skillsAnalysis.cvSkills.length * 3));
+      // If no specific requirements, score based on total skills found - more generous
+      skillsScore = Math.min(90, 60 + (skillsAnalysis.cvSkills.length * 4));
     }
     
-    // DYNAMIC EXPERIENCE SCORING
-    let experienceScore = 30; // Base score
+    // ENHANCED DYNAMIC EXPERIENCE SCORING - More generous
+    let experienceScore = 50; // Higher base score
     if (experience.length === 0) {
-      experienceScore = 25;
+      experienceScore = 40;
     } else if (experience.length === 1) {
-      experienceScore = 55;
-    } else if (experience.length === 2) {
       experienceScore = 70;
+    } else if (experience.length === 2) {
+      experienceScore = 85;
     } else if (experience.length >= 3) {
-      experienceScore = Math.min(90, 75 + ((experience.length - 3) * 5));
+      experienceScore = Math.min(95, 85 + ((experience.length - 3) * 3));
     }
     
-    // DYNAMIC EDUCATION SCORING
-    let educationScore = 40; // Base score
+    // ENHANCED DYNAMIC EDUCATION SCORING - More generous
+    let educationScore = 60; // Higher base score
     if (education.length === 0) {
-      educationScore = 35;
+      educationScore = 50;
     } else if (education.length === 1) {
-      educationScore = 70;
+      educationScore = 80;
     } else if (education.length >= 2) {
-      educationScore = 85;
+      educationScore = 90;
     }
     
     // WEIGHTED OVERALL SCORE
@@ -523,10 +527,10 @@ IMPORTANT RULES:
     );
     
     const scores = {
-      skills: Math.max(15, Math.min(100, skillsScore)),
-      experience: Math.max(20, Math.min(100, experienceScore)),
-      education: Math.max(30, Math.min(100, educationScore)),
-      overall: Math.max(25, Math.min(100, overallScore))
+      skills: Math.max(40, Math.min(100, skillsScore)),
+      experience: Math.max(40, Math.min(100, experienceScore)),
+      education: Math.max(50, Math.min(100, educationScore)),
+      overall: Math.max(45, Math.min(100, overallScore))
     };
     
     console.log('✅ FINAL SCORES:', scores);
