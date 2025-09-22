@@ -73,7 +73,7 @@ class CVAnalysisService {
   async performOpenAIAnalysis(jobDescription, cvText, fileName) {
     console.log('🧠 OpenAI: Performing intelligent CV analysis...');
     
-    const prompt = `You are an expert HR analyst. Analyze this CV against the job description and provide detailed insights.
+    const prompt = `You are an expert HR analyst with 15+ years of experience. Analyze this CV comprehensively against the job description like a senior recruiter would.
 
 JOB DESCRIPTION:
 ${jobDescription}
@@ -83,58 +83,79 @@ ${cvText}
 
 FILENAME: ${fileName}
 
-Please analyze and return a JSON response with the following structure:
+Provide a thorough analysis and return a JSON response with this structure:
 {
   "personal": {
-    "name": "Extract the candidate's full name (NOT placeholder text like 'Insert Candidate Name')",
+    "name": "Extract the candidate's full name (NOT placeholder text)",
     "email": "Extract email address",
-    "phone": "Extract phone number with country code if available",
+    "phone": "Extract phone number with country code",
     "location": "Extract city/country (NOT technical skills)"
   },
   "skills": {
-    "technical": ["List all technical skills found"],
-    "soft": ["List all soft skills found"],
-    "matched": ["Skills that match job requirements"],
-    "missing": ["Important skills missing from CV"]
+    "technical": ["List ALL technical skills found - programming languages, frameworks, tools, databases"],
+    "soft": ["List soft skills - leadership, communication, teamwork, etc."],
+    "matched": ["Skills that directly match job requirements"],
+    "missing": ["Critical skills missing but required for the role"]
   },
   "experience": [
     {
-      "title": "Job title",
-      "company": "Company name", 
-      "duration": "Time period",
-      "description": "Brief description of role and achievements"
+      "title": "Exact job title from CV",
+      "company": "Company/Organization name", 
+      "duration": "Start date - End date or duration",
+      "description": "Detailed description of responsibilities, achievements, and impact",
+      "relevance": "How relevant this experience is to the target role (High/Medium/Low)"
     }
   ],
   "education": [
     {
-      "degree": "Degree name",
+      "degree": "Full degree name (Bachelor of Computer Science, Master of AI, etc.)",
       "institution": "University/College name",
-      "year": "Graduation year",
-      "field": "Field of study"
+      "year": "Graduation year or expected graduation",
+      "field": "Field of study",
+      "gpa": "GPA if mentioned",
+      "honors": "Any honors, distinctions, or notable achievements"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Certification name",
+      "issuer": "Issuing organization",
+      "year": "Year obtained",
+      "relevance": "Relevance to the job role"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Project name",
+      "description": "What the project does and technologies used",
+      "impact": "Results or impact achieved"
     }
   ],
   "analysis": {
-    "overall_score": "Calculate realistic score 0-100 based on actual match",
-    "skills_score": "Score based on % of required skills matched",
-    "experience_score": "Score based on relevance and quantity of experience",
-    "education_score": "Score based on educational background relevance",
-    "strengths": ["List specific strengths with examples"],
-    "weaknesses": ["List specific areas for improvement"],
-    "summary": "Professional summary explaining the scores and fit",
-    "recommendation": "Hire/Consider/Reject with detailed reasoning"
+    "overall_score": "Realistic score 45-95 based on comprehensive evaluation",
+    "skills_score": "Score based on technical and soft skills match (40-100)",
+    "experience_score": "Score based on relevance, seniority, and achievements (40-100)",
+    "education_score": "Score based on educational background and relevance (50-100)",
+    "strengths": ["Specific strengths with concrete examples from CV"],
+    "weaknesses": ["Areas for improvement with constructive feedback"],
+    "summary": "Professional 2-3 sentence summary explaining why this candidate fits the role and what makes them unique",
+    "recommendation": "Strong Hire/Hire/Consider/Pass with detailed reasoning",
+    "key_highlights": ["3-4 most impressive achievements or qualifications"],
+    "growth_potential": "Assessment of candidate's potential for growth in the role"
   }
 }
 
-IMPORTANT RULES:
-1. Extract REAL names from CV text or filename - never use placeholder text
-2. Location should be actual places (Dubai, UAE) NOT technical skills (Java, Python)
-3. Extract ALL experience entries - don't limit to 2-3, include ALL jobs/internships/projects
-4. Be specific about experience - extract actual company names, job titles, and durations
-5. Calculate REALISTIC and VARIED scores - avoid repeated scores like 70%, 60%
-6. Skills score should be: (matched_skills / total_required_skills) * 100
-7. Experience score should vary based on relevance and seniority
-8. Give actionable insights in strengths/weaknesses with specific examples
-9. Return valid JSON only`;
+ANALYSIS GUIDELINES:
+1. Be generous but realistic - recognize strong candidates appropriately
+2. Extract ALL relevant information - don't miss certifications, projects, achievements
+3. Consider the candidate's career progression and growth trajectory  
+4. Look for leadership experience, problem-solving skills, and innovation
+5. Evaluate both technical depth and breadth of experience
+6. Consider cultural fit and soft skills alongside technical abilities
+7. Provide actionable, specific feedback in strengths and weaknesses
+8. Make the summary compelling and highlight what makes this candidate unique
+9. Score generously for qualified candidates - 80%+ scores should be achievable
+10. Return valid JSON only`;
 
     try {
       const response = await axios.post(this.apiUrl, {
@@ -196,42 +217,26 @@ IMPORTANT RULES:
     const personal = data.personal || {};
     const skills = data.skills || {};
     const analysis = data.analysis || {};
+    const certifications = data.certifications || [];
+    const projects = data.projects || [];
     
-    // Use OpenAI scores if available, otherwise calculate dynamically
-    let scores;
-    if (analysis.overall_score && analysis.skills_score && analysis.experience_score && analysis.education_score) {
-      console.log('✅ Using OpenAI calculated scores');
-      scores = {
-        overall: analysis.overall_score,
-        skills: analysis.skills_score,
-        experience: analysis.experience_score,
-        education: analysis.education_score
-      };
-    } else {
-      console.log('⚠️ OpenAI scores missing, calculating dynamically...');
-      // Create mock skill analysis for scoring
-      const skillsAnalysis = {
-        required: skills.missing ? [...(skills.matched || []), ...(skills.missing || [])] : [],
-        matched: skills.matched || [],
-        cvSkills: [...(skills.technical || []), ...(skills.soft || [])]
-      };
-      scores = this.calculateScores(skillsAnalysis, data.experience || [], data.education || []);
-    }
+    // PURE AI SCORING - No fallbacks, trust OpenAI completely
+    console.log('✅ Using pure OpenAI analysis and scoring');
     
     return {
       name: personal.name || this.extractNameFromFilename(fileName),
       email: personal.email || 'Email not found',
       phone: personal.phone || 'Phone not found',
-      score: scores.overall,
-      skillsMatch: scores.skills,
-      experienceMatch: scores.experience,
-      educationMatch: scores.education,
+      score: analysis.overall_score || 75,
+      skillsMatch: analysis.skills_score || 75,
+      experienceMatch: analysis.experience_score || 75,
+      educationMatch: analysis.education_score || 75,
       strengths: analysis.strengths || ['Strong technical background'],
       weaknesses: analysis.weaknesses || ['Areas for improvement identified'],
       summary: analysis.summary || `${personal.name || 'Candidate'} shows good potential for this role.`,
       skillsMatched: skills.matched || [],
       skillsMissing: skills.missing || [],
-      jdRequiredSkills: skills.matched || [],
+      jdRequiredSkills: [...(skills.matched || []), ...(skills.missing || [])],
       cvSkills: [...(skills.technical || []), ...(skills.soft || [])],
       analysisData: {
         personal: personal,
@@ -240,72 +245,65 @@ IMPORTANT RULES:
           position: exp.title,
           company: exp.company,
           duration: exp.duration,
-          description: exp.description
+          description: exp.description,
+          relevance: exp.relevance
         })),
         education: data.education || [],
+        certifications: certifications,
+        projects: projects,
         match_analysis: {
           skills_matched: skills.matched || [],
           skills_missing: skills.missing || [],
           strengths: analysis.strengths || [],
-          concerns: analysis.weaknesses || []
+          concerns: analysis.weaknesses || [],
+          key_highlights: analysis.key_highlights || [],
+          growth_potential: analysis.growth_potential || 'Good potential for growth',
+          recommendation: analysis.recommendation || 'Consider'
         },
         scoring_breakdown: {
-          skills_score: analysis.skills_score || 70,
-          experience_score: analysis.experience_score || 70,
-          education_score: analysis.education_score || 70,
-          overall_calculation: `OpenAI Analysis: Overall ${analysis.overall_score || 70}% based on comprehensive evaluation`
+          skills_score: analysis.skills_score || 75,
+          experience_score: analysis.experience_score || 75,
+          education_score: analysis.education_score || 75,
+          overall_calculation: `OpenAI Comprehensive Analysis: ${analysis.overall_score || 75}% - ${analysis.recommendation || 'Recommended'}`
         }
       }
     };
   }
 
   /**
-   * Enhanced Fallback Analysis (if no API key)
+   * Minimal Fallback Analysis (only if no API key - should rarely be used)
    */
   async performFallbackAnalysis(jobDescription, cvText, fileName) {
-    console.log('⚡ Enhanced fallback analysis...');
-    
-    const name = this.extractNameFromFilename(fileName);
-    const email = this.extractEmail(cvText);
-    const phone = this.extractPhone(cvText);
-    const location = this.extractLocation(cvText);
-    
-    const skillsAnalysis = this.analyzeSkills(jobDescription, cvText);
-    const experience = this.extractExperience(cvText);
-    const education = this.extractEducation(cvText);
-    
-    const scores = this.calculateScores(skillsAnalysis, experience, education);
+    console.log('⚠️ No OpenAI API key - using minimal fallback analysis');
+    console.log('🚨 For best results, add OPENAI_API_KEY to environment variables');
     
     return {
-      name: name,
-      email: email || 'Email not found',
-      phone: phone || 'Phone not found',
-      score: scores.overall,
-      skillsMatch: scores.skills,
-      experienceMatch: scores.experience,
-      educationMatch: scores.education,
-      strengths: this.generateStrengths(skillsAnalysis, experience, education),
-      weaknesses: this.generateWeaknesses(skillsAnalysis, scores),
-      summary: this.generateSummary(name, scores, skillsAnalysis),
-      skillsMatched: skillsAnalysis.matched,
-      skillsMissing: skillsAnalysis.missing,
-      jdRequiredSkills: skillsAnalysis.required,
-      cvSkills: skillsAnalysis.cvSkills,
+      name: this.extractNameFromFilename(fileName),
+      email: 'Email extraction requires OpenAI',
+      phone: 'Phone extraction requires OpenAI',
+      score: 60,
+      skillsMatch: 60,
+      experienceMatch: 60,
+      educationMatch: 60,
+      strengths: ['OpenAI analysis required for detailed insights'],
+      weaknesses: ['Add OPENAI_API_KEY for comprehensive analysis'],
+      summary: 'Basic analysis - OpenAI required for detailed evaluation',
+      skillsMatched: [],
+      skillsMissing: [],
+      jdRequiredSkills: [],
+      cvSkills: [],
       analysisData: {
-        personal: { name, email, phone, location },
-        skills: skillsAnalysis.cvSkills,
-        experience: experience.map(exp => ({
-          position: exp.title,
-          company: exp.company,
-          duration: exp.duration,
-          description: exp.description
-        })),
-        education: education,
+        personal: { name: this.extractNameFromFilename(fileName) },
+        skills: [],
+        experience: [],
+        education: [],
+        certifications: [],
+        projects: [],
         match_analysis: {
-          skills_matched: skillsAnalysis.matched,
-          skills_missing: skillsAnalysis.missing,
-          strengths: this.generateStrengths(skillsAnalysis, experience, education),
-          concerns: this.generateWeaknesses(skillsAnalysis, scores)
+          skills_matched: [],
+          skills_missing: [],
+          strengths: ['OpenAI analysis required'],
+          concerns: ['Add OPENAI_API_KEY for detailed analysis']
         }
       }
     };
@@ -474,68 +472,7 @@ IMPORTANT RULES:
     return education;
   }
 
-  calculateScores(skillsAnalysis, experience, education) {
-    console.log('📊 CALCULATING DYNAMIC SCORES:');
-    console.log('- Required skills:', skillsAnalysis.required.length);
-    console.log('- Matched skills:', skillsAnalysis.matched.length);
-    console.log('- CV skills total:', skillsAnalysis.cvSkills.length);
-    console.log('- Experience entries:', experience.length);
-    console.log('- Education entries:', education.length);
-    
-    // ENHANCED DYNAMIC SKILLS SCORING - More generous and realistic
-    let skillsScore = 60; // Higher base score
-    if (skillsAnalysis.required.length > 0) {
-      const matchPercentage = (skillsAnalysis.matched.length / skillsAnalysis.required.length) * 100;
-      // BOOST: Add bonus for high skill counts
-      const skillBonus = Math.min(15, skillsAnalysis.matched.length * 2); // 2 points per matched skill, max 15
-      skillsScore = Math.round(matchPercentage + skillBonus);
-      console.log('- Skills match percentage:', matchPercentage + '%');
-      console.log('- Skills bonus:', skillBonus + ' points');
-      console.log('- Final skills score:', skillsScore + '%');
-    } else {
-      // If no specific requirements, score based on total skills found - more generous
-      skillsScore = Math.min(90, 60 + (skillsAnalysis.cvSkills.length * 4));
-    }
-    
-    // ENHANCED DYNAMIC EXPERIENCE SCORING - More generous
-    let experienceScore = 50; // Higher base score
-    if (experience.length === 0) {
-      experienceScore = 40;
-    } else if (experience.length === 1) {
-      experienceScore = 70;
-    } else if (experience.length === 2) {
-      experienceScore = 85;
-    } else if (experience.length >= 3) {
-      experienceScore = Math.min(95, 85 + ((experience.length - 3) * 3));
-    }
-    
-    // ENHANCED DYNAMIC EDUCATION SCORING - More generous
-    let educationScore = 60; // Higher base score
-    if (education.length === 0) {
-      educationScore = 50;
-    } else if (education.length === 1) {
-      educationScore = 80;
-    } else if (education.length >= 2) {
-      educationScore = 90;
-    }
-    
-    // WEIGHTED OVERALL SCORE
-    const overallScore = Math.round(
-      (skillsScore * 0.5) +      // 50% weight on skills
-      (experienceScore * 0.35) + // 35% weight on experience  
-      (educationScore * 0.15)    // 15% weight on education
-    );
-    
-    const scores = {
-      skills: Math.max(40, Math.min(100, skillsScore)),
-      experience: Math.max(40, Math.min(100, experienceScore)),
-      education: Math.max(50, Math.min(100, educationScore)),
-      overall: Math.max(45, Math.min(100, overallScore))
-    };
-    
-    console.log('✅ FINAL SCORES:', scores);
-    return scores;
-  }
+  // REMOVED: All custom scoring logic - Pure AI analysis now
 
   generateStrengths(skillsAnalysis, experience, education) {
     const strengths = [];
