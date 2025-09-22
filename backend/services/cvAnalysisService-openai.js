@@ -146,16 +146,17 @@ Provide a thorough analysis and return a JSON response with this structure:
 }
 
 ANALYSIS GUIDELINES:
-1. Be generous but realistic - recognize strong candidates appropriately
-2. Extract ALL relevant information - don't miss certifications, projects, achievements
-3. Consider the candidate's career progression and growth trajectory  
-4. Look for leadership experience, problem-solving skills, and innovation
-5. Evaluate both technical depth and breadth of experience
-6. Consider cultural fit and soft skills alongside technical abilities
-7. Provide actionable, specific feedback in strengths and weaknesses
-8. Make the summary compelling and highlight what makes this candidate unique
-9. Score generously for qualified candidates - 80%+ scores should be achievable
-10. Return valid JSON only`;
+1. PRIORITIZE ACTUAL EXPERIENCE OVER JOB TITLES - Focus on what they actually did, not their title
+2. TECHNICAL SKILLS MATCH IS CRITICAL - Exact technology match is more important than seniority
+3. HANDS-ON AI/ML EXPERIENCE beats general data experience for AI roles
+4. Research labs, AI projects, and ML implementations should score very highly
+5. Don't be biased by prestigious education if technical experience doesn't match
+6. Current employment status (intern vs consultant) is less important than relevant experience
+7. Look for specific AI frameworks (TensorFlow, PyTorch) and ML project outcomes
+8. Space/research AI experience is highly valuable for AI engineering roles
+9. Data engineering ≠ AI engineering - distinguish between data pipelines and ML pipelines
+10. Score based on JOB RELEVANCE, not general career prestige
+11. Return valid JSON only`;
 
     try {
       const response = await axios.post(this.apiUrl, {
@@ -543,12 +544,14 @@ Please rank them from BEST to WORST fit and return a JSON array with just the in
 }
 
 Consider:
-1. Skills match quality and relevance (look at skills_list for specific matches)
-2. Experience relevance and seniority (analyze experience_details for AI/ML/data science roles)
-3. Overall profile fit for the role
-4. Quality of experience over quantity
-5. Specific AI/ML/data science experience should rank higher for AI roles
-6. Not just the numerical score but actual qualifications and experience depth`;
+1. ACTUAL AI/ML EXPERIENCE is most important - research labs, AI projects, ML implementations
+2. TECHNICAL SKILLS EXACT MATCH - TensorFlow, PyTorch, scikit-learn for AI roles
+3. HANDS-ON PROJECT EXPERIENCE - Real AI projects beat job titles
+4. RESEARCH/ACADEMIC AI EXPERIENCE is highly valuable for AI engineering
+5. Data engineering experience ≠ AI engineering experience
+6. Don't be fooled by prestigious job titles if technical experience doesn't match
+7. Space AI, computer vision, ML research should rank very highly for AI roles
+8. Look at what they actually built, not where they worked`;
 
     try {
       const response = await axios.post(this.apiUrl, {
