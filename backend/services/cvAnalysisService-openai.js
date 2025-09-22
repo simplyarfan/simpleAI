@@ -582,6 +582,8 @@ IMPORTANT RULES:
       skills_missing: candidate.skillsMissing?.length || 0,
       experience_count: candidate.analysisData?.experience?.length || 0,
       education_count: candidate.analysisData?.education?.length || 0,
+      experience_details: candidate.analysisData?.experience?.map(exp => `${exp.position} at ${exp.company}`).join('; ') || 'No experience details',
+      skills_list: candidate.skillsMatched?.join(', ') || 'No skills matched',
       summary: candidate.summary
     }));
 
@@ -600,10 +602,12 @@ Please rank them from BEST to WORST fit and return a JSON array with just the in
 }
 
 Consider:
-1. Skills match quality and relevance
-2. Experience relevance and seniority
+1. Skills match quality and relevance (look at skills_list for specific matches)
+2. Experience relevance and seniority (analyze experience_details for AI/ML/data science roles)
 3. Overall profile fit for the role
-4. Not just the numerical score but actual qualifications`;
+4. Quality of experience over quantity
+5. Specific AI/ML/data science experience should rank higher for AI roles
+6. Not just the numerical score but actual qualifications and experience depth`;
 
     try {
       const response = await axios.post(this.apiUrl, {
@@ -635,7 +639,11 @@ Consider:
         const rankingData = JSON.parse(jsonMatch[0]);
         const rankedCandidates = rankingData.ranking.map(index => candidates[index]);
         console.log('✅ OpenAI ranking completed:', rankingData.reasoning);
+        console.log('📊 Ranking order:', rankingData.ranking.map(index => candidates[index].name));
         return rankedCandidates;
+      } else {
+        console.log('⚠️ No valid JSON found in OpenAI ranking response');
+        console.log('Raw response:', aiResponse);
       }
     } catch (error) {
       console.error('❌ OpenAI ranking failed:', error.message);

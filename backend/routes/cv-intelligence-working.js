@@ -453,6 +453,9 @@ router.post('/batch/:batchId/process',
           const recommendation = analysisResult.score >= 80 ? 'Highly Recommended' : 
                                analysisResult.score >= 60 ? 'Recommended' : 'Consider';
 
+          // Fix location display - use actual location from analysis data
+          const candidateLocation = analysisData.personal?.location || 'Location not specified';
+
           await database.run(`
             INSERT INTO cv_candidates (
               id, batch_id, name, email, phone, location, score, 
@@ -462,7 +465,7 @@ router.post('/batch/:batchId/process',
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, CURRENT_TIMESTAMP)
           `, [
             candidateId, batchId, analysisResult.name, analysisResult.email, analysisResult.phone,
-            'Location not specified', analysisResult.score, skillsMatchedCount, skillsMissingCount,
+            candidateLocation, analysisResult.score, skillsMatchedCount, skillsMissingCount,
             analysisResult.experienceMatch, analysisResult.educationMatch,
             fitLevel, recommendation,
             JSON.stringify(analysisResult.strengths), 
