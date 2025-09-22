@@ -102,7 +102,7 @@ Please analyze and return a JSON response with the following structure:
       "title": "Job title",
       "company": "Company name", 
       "duration": "Time period",
-      "description": "Brief description of role"
+      "description": "Brief description of role and achievements"
     }
   ],
   "education": [
@@ -128,10 +128,11 @@ Please analyze and return a JSON response with the following structure:
 IMPORTANT RULES:
 1. Extract REAL names from CV text or filename - never use placeholder text
 2. Location should be actual places (Dubai, UAE) NOT technical skills (Java, Python)
-3. Be specific about experience - extract actual company names and job titles
-4. Provide realistic scores based on actual match with job requirements
-5. Give actionable insights in strengths/weaknesses
-6. Return valid JSON only`;
+3. Extract ALL experience entries - don't limit to 2-3, include ALL jobs/internships/projects
+4. Be specific about experience - extract actual company names, job titles, and durations
+5. Provide realistic scores based on actual match with job requirements
+6. Give actionable insights in strengths/weaknesses with specific examples
+7. Return valid JSON only`;
 
     try {
       const response = await axios.post(this.apiUrl, {
@@ -212,7 +213,12 @@ IMPORTANT RULES:
       analysisData: {
         personal: personal,
         skills: [...(skills.technical || []), ...(skills.soft || [])],
-        experience: data.experience || [],
+        experience: (data.experience || []).map(exp => ({
+          position: exp.title,
+          company: exp.company,
+          duration: exp.duration,
+          description: exp.description
+        })),
         education: data.education || [],
         match_analysis: {
           skills_matched: skills.matched || [],
@@ -265,7 +271,12 @@ IMPORTANT RULES:
       analysisData: {
         personal: { name, email, phone, location },
         skills: skillsAnalysis.cvSkills,
-        experience: experience,
+        experience: experience.map(exp => ({
+          position: exp.title,
+          company: exp.company,
+          duration: exp.duration,
+          description: exp.description
+        })),
         education: education,
         match_analysis: {
           skills_matched: skillsAnalysis.matched,
@@ -354,16 +365,56 @@ IMPORTANT RULES:
 
   extractExperience(cvText) {
     const experiences = [];
-    const jobTitlePattern = /\b((?:Senior|Junior|Lead)?\s*(?:Software|Data|AI|Full Stack|Backend|Frontend|DevOps)\s*(?:Engineer|Developer|Scientist|Analyst))\b/gi;
-    let match;
-    while ((match = jobTitlePattern.exec(cvText)) !== null && experiences.length < 3) {
-      experiences.push({
-        title: match[1].trim(),
-        company: 'Company details in CV',
-        duration: 'Duration in CV',
-        description: 'Professional experience'
-      });
+    
+    // Enhanced patterns for better experience extraction
+    const experiencePatterns = [
+      // Company | Position | Duration format
+      /(.+?)\s*\|\s*(.+?)\s*\|\s*([\d\-\s,to present]+)/gi,
+      // Position at Company (Duration)
+      /(.+?)\s*(?:at|@)\s*(.+?)\s*\(([\d\-\s,to present]+)\)/gi,
+      // Job titles with context
+      /\b((?:Senior|Junior|Lead|Principal|Staff)?\s*(?:Software|Data|AI|Machine Learning|Full Stack|Backend|Frontend|DevOps|Cloud|Research)\s*(?:Engineer|Developer|Scientist|Analyst|Architect|Specialist|Researcher))\b/gi
+    ];
+    
+    // Try structured patterns first
+    for (let i = 0; i < 2; i++) {
+      const pattern = experiencePatterns[i];
+      let match;
+      while ((match = pattern.exec(cvText)) !== null && experiences.length < 10) {
+        if (i === 0) {
+          // Company | Position | Duration
+          experiences.push({
+            title: match[2].trim(),
+            company: match[1].trim(),
+            duration: match[3].trim(),
+            description: 'Professional experience with documented responsibilities'
+          });
+        } else {
+          // Position at Company (Duration)
+          experiences.push({
+            title: match[1].trim(),
+            company: match[2].trim(),
+            duration: match[3].trim(),
+            description: 'Professional role with documented experience'
+          });
+        }
+      }
     }
+    
+    // If no structured experience found, look for job titles
+    if (experiences.length === 0) {
+      const jobTitlePattern = experiencePatterns[2];
+      let match;
+      while ((match = jobTitlePattern.exec(cvText)) !== null && experiences.length < 5) {
+        experiences.push({
+          title: match[1].trim(),
+          company: 'Company details in CV',
+          duration: 'Duration in CV',
+          description: 'Professional experience'
+        });
+      }
+    }
+    
     return experiences;
   }
 
