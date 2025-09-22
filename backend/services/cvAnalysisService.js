@@ -8,26 +8,41 @@ const axios = require('axios');
 
 class CVAnalysisService {
   constructor() {
-    // OpenRouter API configuration - REAL CLOUD AI!
-    this.apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY || process.env.API_KEY || null;
-    this.apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
-    this.model = 'meta-llama/llama-3.2-3b-instruct:free'; // FREE Llama model
-    
-    console.log('🤖 REAL AI CV Analysis Service initialized with OpenRouter');
-    console.log('🧠 Using FREE cloud model:', this.model);
-    console.log('☁️ CLOUD-BASED - Works on Vercel!');
-    console.log('🔑 Environment check:');
-    console.log('  - OPENROUTER_API_KEY:', process.env.OPENROUTER_API_KEY ? 'SET' : 'NOT SET');
-    console.log('  - OPENROUTER_KEY:', process.env.OPENROUTER_KEY ? 'SET' : 'NOT SET');
-    console.log('  - API_KEY:', process.env.API_KEY ? 'SET' : 'NOT SET');
-    console.log('  - Final API key configured:', this.apiKey ? 'YES' : 'NO');
-    
-    if (this.apiKey) {
-      console.log('✅ API key found! AI analysis ENABLED');
-      console.log('🔑 Key starts with:', this.apiKey.substring(0, 15) + '...');
-    } else {
-      console.log('❌ NO API key found! Will use regex fallback');
-      console.log('📝 Add OPENROUTER_API_KEY to Vercel environment variables for full AI');
+    try {
+      // OpenRouter API configuration - ROBUST INITIALIZATION
+      this.apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENROUTER_KEY || process.env.API_KEY || null;
+      this.apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+      this.model = 'meta-llama/llama-3.2-3b-instruct:free'; // FREE Llama model
+      this.initialized = true;
+      
+      console.log('🤖 CV Analysis Service initializing...');
+      console.log('🧠 Using model:', this.model);
+      console.log('☁️ Cloud-based service ready');
+      
+      // Safe environment check
+      const hasOpenRouterKey = !!(process.env.OPENROUTER_API_KEY);
+      const hasOpenRouterKeyAlt = !!(process.env.OPENROUTER_KEY);
+      const hasApiKey = !!(process.env.API_KEY);
+      
+      console.log('🔑 Environment check:');
+      console.log('  - OPENROUTER_API_KEY:', hasOpenRouterKey ? 'SET' : 'NOT SET');
+      console.log('  - OPENROUTER_KEY:', hasOpenRouterKeyAlt ? 'SET' : 'NOT SET');
+      console.log('  - API_KEY:', hasApiKey ? 'SET' : 'NOT SET');
+      console.log('  - Service ready:', this.apiKey ? 'AI ENABLED' : 'FALLBACK MODE');
+      
+      if (this.apiKey && this.apiKey.length > 10) {
+        console.log('✅ API key configured! AI analysis available');
+        console.log('🔑 Key preview:', this.apiKey.substring(0, 8) + '...');
+      } else {
+        console.log('⚠️ No API key found - will use fallback analysis');
+        console.log('📝 Add OPENROUTER_API_KEY to environment for full AI features');
+      }
+    } catch (error) {
+      console.error('❌ CVAnalysisService constructor error:', error.message);
+      this.initialized = false;
+      this.apiKey = null;
+      this.apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+      this.model = 'meta-llama/llama-3.2-3b-instruct:free';
     }
     this.techKeywords = [
       // Programming Languages
