@@ -164,7 +164,38 @@ export default function UsersManagement() {
       const response = await authAPI.deleteUser(selectedUser.id);
       
       if (response.data.success) {
-        toast.success('User deleted successfully!');
+        const deletedData = response.data.deletedData;
+        
+        // Create detailed success message
+        let message = `User ${deletedData.user} deleted successfully!`;
+        
+        if (deletedData.totalItemsDeleted > 1) {
+          const relatedItems = [];
+          if (deletedData.relatedItemsDeleted.cvBatches > 0) {
+            relatedItems.push(`${deletedData.relatedItemsDeleted.cvBatches} CV batches`);
+          }
+          if (deletedData.relatedItemsDeleted.cvCandidates > 0) {
+            relatedItems.push(`${deletedData.relatedItemsDeleted.cvCandidates} CV candidates`);
+          }
+          if (deletedData.relatedItemsDeleted.supportTickets > 0) {
+            relatedItems.push(`${deletedData.relatedItemsDeleted.supportTickets} support tickets`);
+          }
+          if (deletedData.relatedItemsDeleted.ticketComments > 0) {
+            relatedItems.push(`${deletedData.relatedItemsDeleted.ticketComments} ticket comments`);
+          }
+          if (deletedData.relatedItemsDeleted.notifications > 0) {
+            relatedItems.push(`${deletedData.relatedItemsDeleted.notifications} notifications`);
+          }
+          if (deletedData.relatedItemsDeleted.userSessions > 0) {
+            relatedItems.push(`${deletedData.relatedItemsDeleted.userSessions} user sessions`);
+          }
+          
+          if (relatedItems.length > 0) {
+            message += ` Also cleaned up: ${relatedItems.join(', ')}.`;
+          }
+        }
+        
+        toast.success(message, { duration: 6000 });
         setShowDeleteModal(false);
         setSelectedUser(null);
         fetchUsers();
@@ -761,10 +792,22 @@ export default function UsersManagement() {
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
                 <Trash2 className="h-6 w-6 text-red-600" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Delete User</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Delete User & All Related Data</h3>
               <p className="text-sm text-gray-500 mb-4">
                 Are you sure you want to delete <strong>{selectedUser.first_name} {selectedUser.last_name}</strong>? 
-                This action cannot be undone and will remove all user data from the database.
+                This action cannot be undone and will permanently remove:
+              </p>
+              <div className="text-left text-sm text-gray-600 mb-4 bg-gray-50 p-3 rounded-md">
+                <ul className="list-disc list-inside space-y-1">
+                  <li>User account and profile information</li>
+                  <li>All CV Intelligence batches and analysis data</li>
+                  <li>All support tickets and comments</li>
+                  <li>All notifications and user sessions</li>
+                  <li>Any other data associated with this user</li>
+                </ul>
+              </div>
+              <p className="text-sm text-red-600 font-medium">
+                This ensures complete data cleanup and optimized storage usage.
               </p>
               <div className="flex justify-center space-x-3">
                 <button

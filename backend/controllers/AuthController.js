@@ -690,17 +690,81 @@ const deleteUser = async (req, res) => {
       });
     }
 
+    // Get counts of related data before deletion for audit logging
+    const relatedDataCounts = {};
+    
+    try {
+      // Count CV batches
+      const batchCount = await database.get('SELECT COUNT(*) as count FROM cv_batches WHERE user_id = $1', [user_id]);
+      relatedDataCounts.cvBatches = parseInt(batchCount.count);
+
+      // Count CV candidates (through batches)
+      const candidateCount = await database.get(`
+        SELECT COUNT(*) as count FROM cv_candidates 
+        WHERE batch_id IN (SELECT id FROM cv_batches WHERE user_id = $1)
+      `, [user_id]);
+      relatedDataCounts.cvCandidates = parseInt(candidateCount.count);
+
+      // Count support tickets
+      const ticketCount = await database.get('SELECT COUNT(*) as count FROM support_tickets WHERE user_id = $1', [user_id]);
+      relatedDataCounts.supportTickets = parseInt(ticketCount.count);
+
+      // Count ticket comments
+      const commentCount = await database.get('SELECT COUNT(*) as count FROM ticket_comments WHERE user_id = $1', [user_id]);
+      relatedDataCounts.ticketComments = parseInt(commentCount.count);
+
+      // Count notifications
+      const notificationCount = await database.get('SELECT COUNT(*) as count FROM notifications WHERE user_id = $1', [user_id]);
+      relatedDataCounts.notifications = parseInt(notificationCount.count);
+
+      // Count user sessions
+      const sessionCount = await database.get('SELECT COUNT(*) as count FROM user_sessions WHERE user_id = $1', [user_id]);
+      relatedDataCounts.userSessions = parseInt(sessionCount.count);
+
+    } catch (countError) {
+      console.warn('Warning: Could not count related data:', countError.message);
+    }
+
+    // Log the deletion for audit purposes
+    console.log(`🗑️ [USER DELETION] Superadmin ${req.user.email} is deleting user:`, {
+      deletedUser: {
+        id: user.id,
+        email: user.email,
+        name: `${user.first_name} ${user.last_name}`,
+        role: user.role,
+        created_at: user.created_at
+      },
+      relatedDataToDelete: relatedDataCounts,
+      deletedBy: {
+        id: req.user.id,
+        email: req.user.email
+      },
+      timestamp: new Date().toISOString()
+    });
+
+    // Delete the user (cascade deletion will handle related data)
     await database.run('DELETE FROM users WHERE id = $1', [user_id]);
+
+    // Calculate total items deleted
+    const totalItemsDeleted = 1 + Object.values(relatedDataCounts).reduce((sum, count) => sum + count, 0);
+
+    console.log(`✅ [USER DELETION] Successfully deleted user ${user.email} and ${totalItemsDeleted - 1} related items`);
 
     res.json({
       success: true,
-      message: 'User deleted successfully'
+      message: `User ${user.first_name} ${user.last_name} deleted successfully`,
+      deletedData: {
+        user: `${user.first_name} ${user.last_name} (${user.email})`,
+        relatedItemsDeleted: relatedDataCounts,
+        totalItemsDeleted: totalItemsDeleted
+      }
     });
   } catch (error) {
-    console.error('Delete user error:', error);
+    console.error('❌ [USER DELETION] Delete user error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete user'
+      message: 'Failed to delete user',
+      error: error.message
     });
   }
 };
