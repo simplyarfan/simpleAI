@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
-import LinearSuperAdminDashboard from '../components/modern/LinearSuperAdminDashboard';
+import ImprovedSuperAdminDashboard from '../components/modern/ImprovedSuperAdminDashboard';
 
 export default function SuperAdmin() {
   const { user, loading } = useAuth();
@@ -32,5 +32,5 @@ export default function SuperAdmin() {
     return null;
   }
 
-  return <LinearSuperAdminDashboard />;
+  return <ImprovedSuperAdminDashboard />;
 }

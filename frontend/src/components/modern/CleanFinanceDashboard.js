@@ -8,7 +8,9 @@ import {
   Settings,
   LogOut,
   User,
-  ArrowRight
+  ArrowRight,
+  Receipt,
+  Calculator
 } from 'lucide-react';
 
 export default function CleanFinanceDashboard() {
@@ -31,14 +33,16 @@ export default function CleanFinanceDashboard() {
       name: 'Invoice Processor',
       description: 'Automated invoice processing and validation',
       route: '/invoice-processor',
-      available: false
+      available: false,
+      icon: Receipt
     },
     {
       id: 'expense-auditor',
       name: 'Expense Auditor', 
       description: 'AI-powered expense analysis and auditing',
       route: '/expense-auditor',
-      available: false
+      available: false,
+      icon: Calculator
     }
   ];
 
@@ -96,7 +100,12 @@ export default function CleanFinanceDashboard() {
                   onClick={agent.available ? () => router.push(agent.route) : undefined}
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-medium text-white">{agent.name}</h3>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                        <agent.icon className="w-5 h-5 text-white" />
+                      </div>
+                      <h3 className="font-medium text-white">{agent.name}</h3>
+                    </div>
                     {agent.available && (
                       <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
                     )}

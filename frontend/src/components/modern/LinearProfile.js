@@ -198,7 +198,7 @@ export default function LinearProfile() {
                     <button
                       onClick={async () => {
                         try {
-                          await updateUser({ logout: true });
+                          await logout();
                           router.push('/landing');
                         } catch (error) {
                           console.error('Logout error:', error);

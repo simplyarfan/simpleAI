@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../../contexts/AuthContext';
 import Header from '../../../components/shared/Header';
-import { cvIntelligenceAPI } from '../../../utils/cvIntelligenceAPI';
+import { cvAPI } from '../../../utils/api';
 import toast from 'react-hot-toast';
 import {
   ArrowLeft,
@@ -46,7 +46,7 @@ const BatchDetail = () => {
     try {
       setLoading(true);
       console.log('🔍 Fetching batch details for ID:', id);
-      const response = await cvIntelligenceAPI.getBatchDetails(id);
+      const response = await cvAPI.getBatchDetails(id);
       console.log('📋 Batch details response:', response.data);
       setBatch(response.data.data.batch);
       

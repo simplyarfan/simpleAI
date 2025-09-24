@@ -8,7 +8,9 @@ import {
   Settings,
   LogOut,
   User,
-  ArrowRight
+  ArrowRight,
+  Target,
+  BarChart3
 } from 'lucide-react';
 
 export default function CleanSalesDashboard() {
@@ -31,14 +33,16 @@ export default function CleanSalesDashboard() {
       name: 'Lead Generator',
       description: 'AI-powered lead generation and qualification',
       route: '/lead-generator',
-      available: false
+      available: false,
+      icon: Target
     },
     {
       id: 'campaign-optimizer',
       name: 'Campaign Optimizer', 
       description: 'Marketing campaign analysis and optimization',
       route: '/campaign-optimizer',
-      available: false
+      available: false,
+      icon: BarChart3
     }
   ];
 
@@ -96,7 +100,12 @@ export default function CleanSalesDashboard() {
                   onClick={agent.available ? () => router.push(agent.route) : undefined}
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-medium text-white">{agent.name}</h3>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                        <agent.icon className="w-5 h-5 text-white" />
+                      </div>
+                      <h3 className="font-medium text-white">{agent.name}</h3>
+                    </div>
                     {agent.available && (
                       <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
                     )}

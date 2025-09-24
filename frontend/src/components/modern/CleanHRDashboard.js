@@ -31,14 +31,16 @@ export default function CleanHRDashboard() {
       name: 'CV Intelligence',
       description: 'AI-powered resume analysis and candidate ranking',
       route: '/cv-intelligence',
-      available: true
+      available: true,
+      icon: FileText
     },
     {
       id: 'interview-coordinator',
       name: 'Interview Coordinator', 
       description: 'Smart scheduling & interview automation',
       route: '/interview-coordinator',
-      available: true
+      available: true,
+      icon: Calendar
     }
   ];
 
@@ -92,7 +94,12 @@ export default function CleanHRDashboard() {
                   className="bg-white/5 border border-white/10 rounded-lg p-6 hover:bg-white/10 transition-all duration-200 cursor-pointer group"
                 >
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-medium text-white">{agent.name}</h3>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                        <agent.icon className="w-5 h-5 text-white" />
+                      </div>
+                      <h3 className="font-medium text-white">{agent.name}</h3>
+                    </div>
                     <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
                   </div>
                   <p className="text-sm text-gray-400 mb-4">{agent.description}</p>
@@ -100,7 +107,7 @@ export default function CleanHRDashboard() {
                     <span className="text-xs text-gray-500">
                       Status: {agent.available ? 'Available' : 'Unavailable'}
                     </span>
-                    <div className={`w-2 h-2 rounded-full ${agent.available ? 'bg-white' : 'bg-gray-600'}`} />
+                    <div className={`w-2 h-2 rounded-full ${agent.available ? 'bg-green-400' : 'bg-gray-600'}`} />
                   </div>
                 </div>
               ))}
