@@ -1,26 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import { 
-  Brain, 
-  Calendar, 
   Users, 
   FileText, 
-  BarChart3, 
-  Settings, 
-  User,
-  Upload,
-  Clock,
-  TrendingUp,
-  CheckCircle,
-  Star,
-  Sparkles,
-  Play,
-  ArrowRight,
+  Calendar, 
+  BarChart3,
+  Settings,
   Plus,
-  Eye,
-  MoreHorizontal,
+  ArrowRight,
+  Play,
+  Clock,
+  CheckCircle,
+  User,
+  LogOut
   Zap,
   Target,
   Award

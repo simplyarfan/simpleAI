@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
-import WaitingDashboard from '../components/user/WaitingDashboard';
-import LinearHRDashboard from '../components/modern/LinearHRDashboard';
-import LinearFinanceDashboard from '../components/modern/LinearFinanceDashboard';
-import LinearSalesDashboard from '../components/modern/LinearSalesDashboard';
+import CleanHRDashboard from '../components/modern/CleanHRDashboard';
+import CleanFinanceDashboard from '../components/modern/CleanFinanceDashboard';
+import CleanSalesDashboard from '../components/modern/CleanSalesDashboard';
 import AdminDashboard from '../components/admin/AdminDashboard';
+import WaitingDashboard from '../components/shared/WaitingDashboard';
 
 const Dashboard = () => {
   const { user, loading, isAuthenticated } = useAuth();
@@ -58,11 +58,11 @@ const Dashboard = () => {
     // Route based on department
     switch (user.department) {
       case 'Human Resources':
-        return <LinearHRDashboard />;
+        return <CleanHRDashboard />;
       case 'Finance':
-        return <LinearFinanceDashboard />;
+        return <CleanFinanceDashboard />;
       case 'Sales & Marketing':
-        return <LinearSalesDashboard />;
+        return <CleanSalesDashboard />;
       default:
         // If department is not recognized, show waiting dashboard
         return <WaitingDashboard />;

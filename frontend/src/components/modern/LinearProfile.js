@@ -129,17 +129,7 @@ export default function LinearProfile() {
       </Head>
 
       <div className="min-h-screen bg-black text-white">
-        {/* Animated background */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div 
-            className="absolute w-96 h-96 bg-blue-500/5 rounded-full blur-3xl transition-all duration-1000 ease-out"
-            style={{
-              left: mousePosition.x - 192,
-              top: mousePosition.y - 192,
-            }}
-          />
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500/3 rounded-full blur-2xl animate-pulse" />
-        </div>
+        {/* No animated background - clean minimal design */}
 
         {/* Header */}
         <header className="relative z-10 border-b border-white/10">
@@ -158,7 +148,7 @@ export default function LinearProfile() {
                   <ArrowLeft className="w-5 h-5" />
                 </button>
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
                     <User className="w-5 h-5 text-white" />
                   </div>
                   <div>
@@ -186,7 +176,7 @@ export default function LinearProfile() {
                     <button
                       onClick={handleSave}
                       disabled={isSaving}
-                      className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 disabled:opacity-50"
+                      className="bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 disabled:opacity-50"
                     >
                       {isSaving ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -197,13 +187,29 @@ export default function LinearProfile() {
                     </button>
                   </>
                 ) : (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>Edit Profile</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                    >
+                      <Settings className="w-4 h-4" />
+                      <span>Edit Profile</span>
+                    </button>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await updateUser({ logout: true });
+                          router.push('/landing');
+                        } catch (error) {
+                          console.error('Logout error:', error);
+                        }
+                      }}
+                      className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                      title="Logout"
+                    >
+                      <LogOut className="w-4 h-4" />
+                    </button>
+                  </>
                 )}
               </motion.div>
             </div>
@@ -224,7 +230,7 @@ export default function LinearProfile() {
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
                   <div className="text-center">
                     <div className="relative inline-block mb-4">
-                      <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                      <div className="w-24 h-24 bg-white/10 rounded-2xl flex items-center justify-center">
                         <span className="text-2xl font-bold text-white">
                           {user?.first_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
                         </span>
@@ -434,7 +440,7 @@ export default function LinearProfile() {
                       </button>
                       <button
                         onClick={handlePasswordUpdate}
-                        className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
+                        className="bg-white/10 hover:bg-white/20 border border-white/10 px-4 py-2 rounded-lg transition-colors flex items-center space-x-2"
                       >
                         <Check className="w-4 h-4" />
                         <span>Update Password</span>
