@@ -93,35 +93,26 @@ export default function LivelySalesDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-orange-900 to-slate-900 relative overflow-hidden">
-      {/* Animated background elements */}
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Subtle animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div 
-          className="absolute w-96 h-96 bg-orange-500/20 rounded-full blur-3xl"
+          className="absolute w-96 h-96 bg-orange-500/5 rounded-full blur-3xl"
           animate={{
-            x: mousePosition.x * 0.02,
-            y: mousePosition.y * 0.02,
+            x: mousePosition.x * 0.01,
+            y: mousePosition.y * 0.01,
           }}
           transition={{ type: "spring", stiffness: 50, damping: 20 }}
           style={{ left: '10%', top: '20%' }}
         />
         <motion.div 
-          className="absolute w-64 h-64 bg-red-500/20 rounded-full blur-2xl"
+          className="absolute w-64 h-64 bg-red-500/3 rounded-full blur-2xl"
           animate={{
-            x: mousePosition.x * -0.01,
-            y: mousePosition.y * -0.01,
+            x: mousePosition.x * -0.005,
+            y: mousePosition.y * -0.005,
           }}
           transition={{ type: "spring", stiffness: 30, damping: 15 }}
           style={{ right: '10%', bottom: '20%' }}
-        />
-        <motion.div 
-          className="absolute w-80 h-80 bg-pink-500/10 rounded-full blur-3xl"
-          animate={{
-            x: mousePosition.x * 0.015,
-            y: mousePosition.y * 0.015,
-          }}
-          transition={{ type: "spring", stiffness: 40, damping: 25 }}
-          style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
         />
       </div>
 
@@ -129,7 +120,7 @@ export default function LivelySalesDashboard() {
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 border-b border-white/10 backdrop-blur-xl bg-black/20"
+        className="relative z-10 border-b border-white/10 bg-black/95 backdrop-blur-sm"
       >
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
@@ -141,8 +132,8 @@ export default function LivelySalesDashboard() {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <div className="relative">
-                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shadow-lg border border-white/20">
+                    <Sparkles className="w-5 h-5 bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent" style={{WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundImage: 'linear-gradient(to right, rgb(251 146 60), rgb(239 68 68))'}} />
                   </div>
                   <motion.div 
                     className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"

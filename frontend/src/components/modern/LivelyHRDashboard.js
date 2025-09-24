@@ -94,35 +94,26 @@ export default function LivelyHRDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Animated background elements */}
+    <div className="min-h-screen bg-black relative overflow-hidden">
+      {/* Subtle animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div 
-          className="absolute w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
+          className="absolute w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"
           animate={{
-            x: mousePosition.x * 0.02,
-            y: mousePosition.y * 0.02,
+            x: mousePosition.x * 0.01,
+            y: mousePosition.y * 0.01,
           }}
           transition={{ type: "spring", stiffness: 50, damping: 20 }}
           style={{ left: '10%', top: '20%' }}
         />
         <motion.div 
-          className="absolute w-64 h-64 bg-pink-500/20 rounded-full blur-2xl"
+          className="absolute w-64 h-64 bg-pink-500/3 rounded-full blur-2xl"
           animate={{
-            x: mousePosition.x * -0.01,
-            y: mousePosition.y * -0.01,
+            x: mousePosition.x * -0.005,
+            y: mousePosition.y * -0.005,
           }}
           transition={{ type: "spring", stiffness: 30, damping: 15 }}
           style={{ right: '10%', bottom: '20%' }}
-        />
-        <motion.div 
-          className="absolute w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"
-          animate={{
-            x: mousePosition.x * 0.015,
-            y: mousePosition.y * 0.015,
-          }}
-          transition={{ type: "spring", stiffness: 40, damping: 25 }}
-          style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
         />
       </div>
 
@@ -130,7 +121,7 @@ export default function LivelyHRDashboard() {
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 border-b border-white/10 backdrop-blur-xl bg-black/20"
+        className="relative z-10 border-b border-white/10 bg-black/95 backdrop-blur-sm"
       >
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
@@ -142,8 +133,8 @@ export default function LivelyHRDashboard() {
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <div className="relative">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-5 h-5 text-white" />
+                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shadow-lg border border-white/20">
+                    <Sparkles className="w-5 h-5 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent" style={{WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundImage: 'linear-gradient(to right, rgb(168 85 247), rgb(236 72 153))'}} />
                   </div>
                   <motion.div 
                     className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
@@ -221,17 +212,17 @@ export default function LivelyHRDashboard() {
                   onClick={() => router.push(agent.route)}
                   className={`relative group cursor-pointer`}
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-r ${agent.bgGradient} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                  <div className="absolute inset-0 bg-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   
-                  <div className="relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all duration-300 group-hover:transform group-hover:scale-[1.02]">
+                  <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all duration-300 group-hover:transform group-hover:scale-[1.02]">
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center space-x-4">
                         <motion.div 
-                          className={`w-16 h-16 bg-gradient-to-r ${agent.gradient} rounded-2xl flex items-center justify-center shadow-lg`}
+                          className="w-16 h-16 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center shadow-lg"
                           whileHover={{ rotate: 360 }}
                           transition={{ duration: 0.6 }}
                         >
-                          <agent.icon className="w-8 h-8 text-white" />
+                          <agent.icon className={`w-8 h-8 bg-gradient-to-r ${agent.gradient} bg-clip-text text-transparent`} style={{WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
                         </motion.div>
                         <div>
                           <h3 className="text-xl font-bold text-white mb-1">{agent.name}</h3>
@@ -282,18 +273,18 @@ export default function LivelyHRDashboard() {
                 <motion.button
                   key={action.title}
                   onClick={() => router.push(action.route)}
-                  className="relative group bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300 text-left overflow-hidden"
+                  className="relative group bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300 text-left overflow-hidden"
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.7 + index * 0.1 }}
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-r ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                  <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   
                   <div className="relative">
-                    <div className={`w-10 h-10 bg-gradient-to-r ${action.gradient} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                      <action.icon className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 bg-white/10 border border-white/20 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <action.icon className={`w-5 h-5 bg-gradient-to-r ${action.gradient} bg-clip-text text-transparent`} style={{WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}} />
                     </div>
                     <h4 className="font-semibold text-white mb-2">{action.title}</h4>
                     <p className="text-sm text-gray-400">{action.description}</p>
