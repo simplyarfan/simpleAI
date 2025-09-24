@@ -22,8 +22,7 @@ class Database {
         throw new Error('No database connection string found. Please set DATABASE_URL or POSTGRES_URL environment variable.');
       }
       
-      console.log('🔗 Connecting to Neon PostgreSQL database...');
-      console.log('🔗 Connection string format:', connectionString.substring(0, 20) + '...');
+      // Connecting to PostgreSQL database
       
       this.pool = new Pool({
         connectionString,
@@ -42,9 +41,7 @@ class Database {
       });
         
       // Test connection
-      const testResult = await this.pool.query('SELECT NOW() as current_time, version() as pg_version');
-      console.log('✅ Connected to PostgreSQL at:', testResult.rows[0].current_time);
-      console.log('✅ PostgreSQL version:', testResult.rows[0].pg_version);
+      const testResult = await this.pool.query('SELECT NOW() as current_time');
       this.isConnected = true;
       
       // Initialize tables

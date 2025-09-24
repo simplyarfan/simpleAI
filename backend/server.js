@@ -46,9 +46,11 @@ try {
   console.error('❌ Error loading init routes:', error.message);
 }
 
-// Simple request logger middleware
+// Simple request logger middleware (only errors and important routes)
 const requestLogger = (req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  if (req.url.includes('/api/') && !req.url.includes('/health')) {
+    console.log(`${req.method} ${req.url}`);
+  }
   next();
 };
 

@@ -9,94 +9,29 @@ const router = express.Router();
 // Authentication middleware
 const authenticateToken = auth.authenticateToken;
 
-console.log('🧠 CV Intelligence Routes - Loading at:', new Date().toISOString());
-
-// CV Analysis Service - OPENAI POWERED VERSION
+// CV Analysis Service - Simplified initialization
 let cvAnalysisService = null;
 try {
-  // Try OpenAI service first (best quality)
   const CVAnalysisServiceOpenAI = require('../services/cvAnalysisService-openai');
   cvAnalysisService = new CVAnalysisServiceOpenAI();
-  console.log('✅ OpenAI CV Analysis Service initialized successfully');
 } catch (error) {
-  console.error('❌ OpenAI service failed, trying minimal version:', error.message);
-  try {
-    // Fallback to minimal service
-    const CVAnalysisServiceMinimal = require('../services/cvAnalysisService-minimal');
-    cvAnalysisService = new CVAnalysisServiceMinimal();
-    console.log('✅ Minimal CV Analysis Service initialized successfully');
-  } catch (minimalError) {
-    console.error('❌ Even minimal service failed:', minimalError.message);
-    console.log('⚠️ Routes will load with basic fallback analysis');
-    cvAnalysisService = null;
-  }
+  console.error('❌ CV Analysis Service failed to initialize:', error.message);
+  cvAnalysisService = null;
 }
 
-console.log('🔧 CV Intelligence Routes module loading completed');
-
-// Test database connection on route load
-database.connect().then(() => {
-  console.log('✅ Database connection verified for CV Intelligence');
-}).catch(error => {
-  console.error('❌ Database connection failed for CV Intelligence:', error.message);
-});
-
-// CV Analysis Function with Fallback Support
+// CV Analysis Function - Simplified
 async function analyzeCV(jobDescription, cvText, fileName) {
-  console.log('🧠 CV Analysis starting for:', fileName);
-  
   if (!cvAnalysisService) {
-    console.log('⚠️ CV Analysis Service not available, using fallback analysis');
-    return createFallbackAnalysis(jobDescription, cvText, fileName);
+    throw new Error('CV Analysis Service not available. Please ensure OPENAI_API_KEY is configured.');
   }
   
   try {
     const analysisResult = await cvAnalysisService.analyzeCV(jobDescription, cvText, fileName);
-    console.log('✅ AI analysis completed for:', fileName);
     return analysisResult;
   } catch (error) {
-    console.error('❌ AI analysis failed, using fallback:', error.message);
-    return createFallbackAnalysis(jobDescription, cvText, fileName);
+    console.error('❌ AI analysis failed:', error.message);
+    throw new Error(`CV analysis failed: ${error.message}`);
   }
-}
-
-// Fallback analysis function
-function createFallbackAnalysis(jobDescription, cvText, fileName) {
-  console.log('🔄 Creating fallback analysis for:', fileName);
-  
-  // Extract basic info
-  const name = extractNameFromText(cvText) || fileName.replace(/\.(pdf|doc|docx)$/i, '').replace(/[_-]/g, ' ');
-  const email = extractEmailFromText(cvText);
-  const phone = extractPhoneFromText(cvText);
-  
-  // Generate realistic varied scores
-  const baseScore = Math.floor(Math.random() * 25) + 50; // 50-75 base
-  const skillsScore = Math.floor(Math.random() * 20) + 60; // 60-80
-  const experienceScore = Math.floor(Math.random() * 25) + 55; // 55-80
-  const educationScore = Math.floor(Math.random() * 20) + 65; // 65-85
-  
-  return {
-    name: name,
-    email: email || 'Email not found',
-    phone: phone || 'Phone not found',
-    score: baseScore,
-    skillsMatch: skillsScore,
-    experienceMatch: experienceScore,
-    educationMatch: educationScore,
-    strengths: ['Professional background', 'Relevant qualifications', 'Technical skills identified'],
-    weaknesses: ['Requires detailed review', 'Additional skills assessment needed'],
-    summary: `${name}: Candidate analysis completed (${baseScore}% compatibility). Professional background with relevant experience. Requires detailed review for optimal matching.`,
-    skillsMatched: ['Technical Skills', 'Professional Experience'],
-    skillsMissing: ['Specific requirements review needed'],
-    jdRequiredSkills: ['Job requirements analysis'],
-    cvSkills: ['Professional skills', 'Technical background'],
-    analysisData: {
-      personal: { name, email, phone },
-      skills: ['Professional skills identified'],
-      experience: ['Experience review needed'],
-      education: ['Educational background']
-    }
-  };
 }
 
 // Helper functions for fallback analysis
