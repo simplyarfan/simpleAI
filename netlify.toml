@@ -2,6 +2,8 @@
   base = "frontend"
   publish = "frontend/out"
   command = "npm run build"
+  
+# Force deployment trigger
 
 [build.environment]
   NODE_VERSION = "18"
