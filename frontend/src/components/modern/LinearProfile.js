@@ -16,7 +16,8 @@ import {
   Check,
   X,
   Camera,
-  Settings
+  Settings,
+  LogOut
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 

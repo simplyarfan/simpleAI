@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import { cvAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 import {
   Upload,
   FileText,
@@ -15,7 +16,11 @@ import {
   User,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Brain,
+  Sparkles,
+  Zap,
+  Star
 } from 'lucide-react';
 
 const CleanCVIntelligence = () => {
@@ -120,53 +125,75 @@ const CleanCVIntelligence = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
       <Head>
         <title>CV Intelligence - SimpleAI</title>
         <meta name="description" content="AI-powered CV analysis and candidate ranking" />
       </Head>
 
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute w-96 h-96 bg-purple-500/20 rounded-full blur-3xl" style={{ left: '10%', top: '20%' }} />
+        <div className="absolute w-64 h-64 bg-pink-500/20 rounded-full blur-2xl" style={{ right: '10%', bottom: '20%' }} />
+        <div className="absolute w-80 h-80 bg-blue-500/10 rounded-full blur-3xl" style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }} />
+      </div>
+
       {/* Header */}
-      <header className="border-b border-white/10">
+      <motion.header 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 border-b border-white/10 backdrop-blur-xl bg-black/20"
+      >
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <button
+              <motion.button
                 onClick={() => router.push('/')}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <ArrowLeft className="w-4 h-4" />
-              </button>
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
-                  <FileText className="w-4 h-4" />
+              </motion.button>
+              <motion.div 
+                className="flex items-center space-x-3"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="relative">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Brain className="w-5 h-5 text-white" />
+                  </div>
+                  <motion.div 
+                    className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
                 </div>
                 <div>
-                  <h1 className="text-lg font-medium">CV Intelligence</h1>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                    CV Intelligence
+                  </h1>
                   <p className="text-sm text-gray-400">AI-powered resume analysis and candidate ranking</p>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             <div className="flex items-center space-x-3">
-              <button
-                onClick={() => router.push('/profile')}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                title="Profile Settings"
-              >
-                <User className="w-4 h-4" />
-              </button>
-              <button
+              <motion.button
                 onClick={handleLogout}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white group"
                 title="Logout"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <LogOut className="w-4 h-4" />
-              </button>
+                <LogOut className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              </motion.button>
             </div>
           </div>
         </div>
-      </header>
+      </motion.header>
 
       {/* Main Content */}
       <main className="p-6">
