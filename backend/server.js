@@ -57,6 +57,20 @@ const requestLogger = (req, res, next) => {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// EMERGENCY CORS FIX - Add headers to ALL responses
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization,X-Request-ID,X-Admin-Secret');
+  res.header('Access-Control-Expose-Headers', 'Content-Length,X-Request-ID');
+  
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 // Starting SimpleAI Enterprise Backend
 
 // Validate required environment variables
