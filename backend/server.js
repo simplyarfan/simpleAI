@@ -260,6 +260,17 @@ app.get('/api/test', async (req, res) => {
       results.checks.table_schema = { status: 'ERROR', message: error.message };
     }
 
+    res.json(results);
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Health check failed',
+      error: error.message
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
