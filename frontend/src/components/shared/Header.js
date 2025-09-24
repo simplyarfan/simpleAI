@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain,
   User,
@@ -14,7 +15,9 @@ import {
   FileText,
   MessageSquare,
   Plus,
-  Eye
+  Eye,
+  Sparkles,
+  ChevronDown
 } from 'lucide-react';
 
 const Header = () => {
@@ -28,229 +31,158 @@ const Header = () => {
     router.push('/auth/login');
   };
 
-  // Remove all navigation items - only keep logo and profile dropdown
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
 
   return (
-    <nav className="bg-slate-900/95 backdrop-blur-xl shadow-2xl border-b border-white/10 relative z-50">
+    <motion.nav 
+      className="bg-black/95 backdrop-blur-sm border-b border-white/10 relative z-50"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          {/* Logo and main navigation */}
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
+          {/* Logo */}
+          <div className="flex items-center">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            >
               <Link href="/" className="flex items-center space-x-3">
                 <div className="relative">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <Brain className="w-6 h-6 text-white" />
+                  <div className="w-10 h-10 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center shadow-lg">
+                    <Brain className="w-5 h-5 text-purple-400" />
                   </div>
-                  <div className="absolute -inset-1 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 rounded-xl blur opacity-30 animate-pulse"></div>
+                  <motion.div 
+                    className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  simpleAI
-                </span>
+                <div>
+                  <span className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                    SimpleAI
+                  </span>
+                </div>
               </Link>
-            </div>
-            
-            {/* Desktop navigation - removed */}
+            </motion.div>
           </div>
 
-          {/* Right side - User menu or auth buttons */}
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {isAuthenticated ? (
+          {/* User Menu */}
+          {isAuthenticated && user && (
+            <div className="flex items-center space-x-4">
+              {/* User Profile Dropdown */}
               <div className="relative">
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="bg-white/10 backdrop-blur-sm border border-white/20 flex items-center text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 hover:bg-white/20 transition-all duration-200 p-2"
+                <motion.button
+                  onClick={toggleUserMenu}
+                  className="flex items-center space-x-3 px-4 py-2 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-all duration-300"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <span className="sr-only">Open user menu</span>
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <User className="w-5 h-5 text-white" />
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                    {user.first_name?.[0]}{user.last_name?.[0]}
                   </div>
-                  <div className="ml-3 text-left">
+                  <div className="hidden md:block text-left">
                     <p className="text-sm font-medium text-white">
-                      {user?.first_name} {user?.last_name}
+                      {user.first_name} {user.last_name}
                     </p>
-                    <p className="text-xs text-gray-300">{user?.email}</p>
+                    <p className="text-xs text-gray-400">
+                      {user.department || 'No Department'}
+                    </p>
                   </div>
-                </button>
+                  <motion.div
+                    animate={{ rotate: isUserMenuOpen ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                  </motion.div>
+                </motion.button>
 
-                {/* User dropdown menu */}
-                {isUserMenuOpen && (
-                  <div className="origin-top-right absolute right-0 mt-2 w-64 rounded-2xl shadow-2xl bg-slate-800/95 backdrop-blur-xl border border-white/20 z-50">
-                    <div className="py-2">
-                      {/* User info */}
-                      <div className="px-4 py-3 border-b border-white/10">
-                        <p className="text-sm font-medium text-white">
-                          {user?.first_name} {user?.last_name}
-                        </p>
-                        <p className="text-xs text-gray-300">{user?.email}</p>
-                        {user?.role && (
-                          <span className={`inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium mt-2 ${
-                            user.role === 'superadmin' 
-                              ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
-                              : user.role === 'admin'
-                              ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                              : 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
-                          }`}>
-                            <Shield className="w-3 h-3 mr-1" />
-                            {user.role === 'superadmin' ? 'Superadmin' : user.role}
-                          </span>
-                        )}
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {isUserMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-2 w-64 bg-black/90 backdrop-blur-sm border border-white/20 rounded-xl shadow-2xl overflow-hidden z-50"
+                    >
+                      {/* User Info Header */}
+                      <div className="px-4 py-3 border-b border-white/10 bg-white/5">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-blue-400 rounded-lg flex items-center justify-center text-white font-bold">
+                            {user.first_name?.[0]}{user.last_name?.[0]}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-white">
+                              {user.first_name} {user.last_name}
+                            </p>
+                            <p className="text-xs text-gray-400">{user.email}</p>
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Menu items */}
-                      <Link
-                        href="/profile"
-                        className="flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        <User className="w-4 h-4 mr-3" />
-                        Profile Settings
-                      </Link>
-
-                      {/* Support Tickets Section - Only for regular users */}
-                      {user?.role === 'user' && (
-                        <div className="border-t border-white/10 mt-2 pt-2">
-                          <Link
-                            href="/support/create-ticket"
-                            className="flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
-                            onClick={() => setIsUserMenuOpen(false)}
-                          >
-                            <Plus className="w-4 h-4 mr-3" />
-                            Create Ticket
-                          </Link>
-                          <Link
-                            href="/support/my-tickets"
-                            className="flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200"
-                            onClick={() => setIsUserMenuOpen(false)}
-                          >
-                            <Eye className="w-4 h-4 mr-3" />
-                            View My Tickets
-                          </Link>
-                        </div>
-                      )}
-
-                      <div className="border-t border-white/10 mt-2">
-                        <button
+                      {/* Menu Items */}
+                      <div className="py-2">
+                        <motion.button
                           onClick={() => {
+                            router.push('/profile');
                             setIsUserMenuOpen(false);
-                            handleLogout();
                           }}
-                          className="flex items-center w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all duration-200"
+                          className="w-full flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                          whileHover={{ x: 4 }}
+                        >
+                          <User className="w-4 h-4 mr-3 text-blue-400" />
+                          Profile Settings
+                        </motion.button>
+
+                        {user.email === 'syedarfan@securemaxtech.com' && (
+                          <motion.button
+                            onClick={() => {
+                              router.push('/superadmin');
+                              setIsUserMenuOpen(false);
+                            }}
+                            className="w-full flex items-center px-4 py-3 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                            whileHover={{ x: 4 }}
+                          >
+                            <Shield className="w-4 h-4 mr-3 text-red-400" />
+                            Admin Dashboard
+                          </motion.button>
+                        )}
+
+                        <div className="border-t border-white/10 my-2"></div>
+
+                        <motion.button
+                          onClick={() => {
+                            handleLogout();
+                            setIsUserMenuOpen(false);
+                          }}
+                          className="w-full flex items-center px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                          whileHover={{ x: 4 }}
                         >
                           <LogOut className="w-4 h-4 mr-3" />
-                          Sign out
-                        </button>
+                          Sign Out
+                        </motion.button>
                       </div>
-                    </div>
-                  </div>
-                )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Link
-                  href="/auth/login"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/auth/register"
-                  className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 shadow-lg"
-                >
-                  Sign up
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile menu button */}
-          <div className="sm:hidden flex items-center">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-lg text-gray-300 hover:text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500 transition-all duration-200"
-            >
-              <span className="sr-only">Open main menu</span>
-              {isMenuOpen ? (
-                <X className="block h-6 w-6" />
-              ) : (
-                <Menu className="block h-6 w-6" />
-              )}
-            </button>
-          </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {isMenuOpen && (
-        <div className="sm:hidden bg-slate-800/95 backdrop-blur-xl border-t border-white/10">
-          <div className="pt-2 pb-3 space-y-1">
-            {isAuthenticated ? (
-              <>
-                {/* Navigation items removed for simplicity */}
-                
-                {/* Mobile user info */}
-                <div className="border-t border-white/10 pt-4 pb-3">
-                  <div className="flex items-center px-4">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                      <User className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="ml-3">
-                      <div className="text-base font-medium text-white">
-                        {user?.first_name} {user?.last_name}
-                      </div>
-                      <div className="text-sm font-medium text-gray-300">{user?.email}</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 space-y-1">
-                    <Link
-                      href="/profile"
-                      className="block px-4 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-white/10"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Profile Settings
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        handleLogout();
-                      }}
-                      className="block w-full text-left px-4 py-2 text-base font-medium text-red-400 hover:text-red-300 hover:bg-red-500/20"
-                    >
-                      Sign out
-                    </button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/auth/login"
-                  className="block px-3 py-2 text-base font-medium text-gray-300 hover:text-white hover:bg-white/10"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign in
-                </Link>
-                <Link
-                  href="/auth/register"
-                  className="block px-3 py-2 text-base font-medium text-purple-400 hover:text-purple-300 hover:bg-purple-500/20"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign up
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Click outside to close user menu */}
+      {/* Click outside to close dropdown */}
       {isUserMenuOpen && (
         <div
           className="fixed inset-0 z-40"
           onClick={() => setIsUserMenuOpen(false)}
         />
       )}
-    </nav>
+    </motion.nav>
   );
 };
 

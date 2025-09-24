@@ -48,15 +48,28 @@ export default function TicketsManagement() {
   const fetchTickets = async () => {
     try {
       setIsLoading(true);
+      console.log('🎫 Fetching support tickets...');
+      
       const response = await supportAPI.getAllTickets();
-      if (response.success && response.data) {
-        setTickets(response.data);
+      console.log('📋 Tickets API response:', response);
+      
+      if (response && response.data) {
+        // Handle different response structures
+        const ticketData = response.data.data || response.data.tickets || response.data || [];
+        console.log('🎫 Setting tickets:', ticketData);
+        setTickets(Array.isArray(ticketData) ? ticketData : []);
       } else {
+        console.log('⚠️ No ticket data in response, setting empty array');
         setTickets([]);
       }
     } catch (error) {
-      console.error('Error fetching tickets:', error);
-      toast.error('Failed to fetch tickets');
+      console.error('❌ Error fetching tickets:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      toast.error(`Failed to fetch tickets: ${error.response?.data?.message || error.message}`);
       setTickets([]);
     } finally {
       setIsLoading(false);

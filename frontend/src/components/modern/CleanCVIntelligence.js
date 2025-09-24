@@ -50,17 +50,29 @@ const CleanCVIntelligence = () => {
   const fetchBatches = async () => {
     try {
       setLoading(true);
-      const response = await cvAPI.getBatches();
+      console.log('🧠 Fetching CV batches...');
       
-      if (response.success && response.data) {
-        setBatches(Array.isArray(response.data) ? response.data : []);
+      const response = await cvAPI.getBatches();
+      console.log('📋 CV Batches API response:', response);
+      
+      if (response && response.data) {
+        // Handle different response structures
+        const batchData = response.data.data || response.data.batches || response.data || [];
+        console.log('🧠 Setting batches:', batchData);
+        setBatches(Array.isArray(batchData) ? batchData : []);
       } else {
+        console.log('⚠️ No batch data in response, setting empty array');
         setBatches([]);
       }
     } catch (error) {
-      console.error('Error fetching batches:', error);
+      console.error('❌ Error fetching batches:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
       setBatches([]);
-      toast.error('Failed to load CV batches');
+      toast.error(`Failed to load CV batches: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }

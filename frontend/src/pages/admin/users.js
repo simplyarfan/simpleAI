@@ -72,21 +72,40 @@ export default function UsersManagement() {
   const fetchUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await authAPI.getUsers({
+      console.log('🔍 Fetching users with params:', {
         page: currentPage,
         search: searchTerm,
         role: filterRole === 'all' ? undefined : filterRole
       });
       
-      if (response.success && response.data) {
-        setUsers(response.data.data || response.data || []);
-        setTotalPages(response.data.totalPages || 1);
+      const response = await authAPI.getAllUsers({
+        page: currentPage,
+        search: searchTerm,
+        role: filterRole === 'all' ? undefined : filterRole
+      });
+      
+      console.log('📋 Users API response:', response);
+      
+      if (response && response.data) {
+        // Handle different response structures
+        const userData = response.data.data || response.data.users || response.data || [];
+        const totalPagesData = response.data.totalPages || response.data.total_pages || 1;
+        
+        console.log('👥 Setting users:', userData);
+        setUsers(Array.isArray(userData) ? userData : []);
+        setTotalPages(totalPagesData);
       } else {
+        console.log('⚠️ No data in response, setting empty array');
         setUsers([]);
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
-      toast.error('Failed to fetch users');
+      console.error('❌ Error fetching users:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      toast.error(`Failed to fetch users: ${error.response?.data?.message || error.message}`);
       setUsers([]);
     } finally {
       setIsLoading(false);
