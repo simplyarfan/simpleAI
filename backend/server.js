@@ -75,17 +75,60 @@ database.connect().catch(error => {
   // Don't exit process, let it continue for health checks
 });
 
-// CORS Configuration
-app.use(cors({
-  origin: [
-    'https://thesimpleai.netlify.app',
-    'http://localhost:3000',
-    'https://thesimpleai.vercel.app'
-  ],
+// CORS Configuration - Fixed for Netlify to Vercel communication
+const corsOptions = {
+  origin: function (origin, callback) {
+    console.log('🔍 CORS check for origin:', origin);
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      console.log('✅ CORS: Allowing request with no origin');
+      return callback(null, true);
+    }
+    
+    const allowedOrigins = [
+      'https://thesimpleai.netlify.app',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://thesimpleai.vercel.app'
+    ];
+    
+    if (allowedOrigins.includes(origin)) {
+      console.log('✅ CORS: Origin allowed:', origin);
+      callback(null, true);
+    } else {
+      console.log('❌ CORS: Origin blocked:', origin);
+      callback(new Error(`Not allowed by CORS: ${origin}`));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID']
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Request-ID',
+    'Accept',
+    'Origin',
+    'X-Requested-With',
+    'Access-Control-Allow-Origin'
+  ],
+  exposedHeaders: ['Content-Length', 'X-Request-ID'],
+  maxAge: 86400, // 24 hours
+  optionsSuccessStatus: 200 // For legacy browser support
+};
+
+app.use(cors(corsOptions));
+
+// Explicit OPTIONS handler for all routes
+app.options('*', (req, res) => {
+  console.log('🔍 OPTIONS request for:', req.url, 'from origin:', req.get('Origin'));
+  res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Request-ID,Accept,Origin,X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Max-Age', '86400');
+  res.sendStatus(200);
+});
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
@@ -104,6 +147,19 @@ app.get('/health', (req, res) => {
     message: 'SimpleAI Enterprise Backend is running!',
     database: database.isConnected ? 'connected' : 'disconnected',
     uptime: process.uptime()
+  });
+});
+
+// CORS Test endpoint
+app.get('/cors-test', (req, res) => {
+  console.log('🔍 CORS Test - Origin:', req.get('Origin'));
+  console.log('🔍 CORS Test - Headers:', req.headers);
+  res.json({
+    success: true,
+    message: 'CORS test successful',
+    origin: req.get('Origin'),
+    timestamp: new Date().toISOString(),
+    headers: req.headers
   });
 });
 
