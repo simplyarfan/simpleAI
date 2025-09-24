@@ -78,37 +78,26 @@ database.connect().catch(error => {
   // Don't exit process, let it continue for health checks
 });
 
-// CORS Configuration - Permissive for debugging login issues
-const corsOptions = {
-  origin: true, // Allow all origins temporarily to fix login
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: [
-    'Content-Type', 
-    'Authorization', 
-    'X-Request-ID',
-    'Accept',
-    'Origin',
-    'X-Requested-With',
-    'Access-Control-Allow-Origin',
-    'X-Admin-Secret'
-  ],
-  exposedHeaders: ['Content-Length', 'X-Request-ID'],
-  maxAge: 86400, // 24 hours
-  optionsSuccessStatus: 200 // For legacy browser support
-};
-
-app.use(cors(corsOptions));
-
-// Explicit OPTIONS handler for all routes
-app.options('*', (req, res) => {
-  console.log('🔍 OPTIONS request for:', req.url, 'from origin:', req.get('Origin'));
-  res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Request-ID,Accept,Origin,X-Requested-With,X-Admin-Secret');
+// CORS Configuration - Ultra permissive to fix login
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  console.log('🔍 Request from origin:', origin, 'to:', req.url);
+  
+  // Set CORS headers for all requests
+  res.header('Access-Control-Allow-Origin', origin || '*');
   res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
+  res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization,X-Request-ID,X-Admin-Secret');
+  res.header('Access-Control-Expose-Headers', 'Content-Length,X-Request-ID');
   res.header('Access-Control-Max-Age', '86400');
-  res.sendStatus(200);
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log('✅ Handling OPTIONS preflight for:', req.url);
+    return res.sendStatus(200);
+  }
+  
+  next();
 });
 
 // Middleware
@@ -118,6 +107,40 @@ app.use(requestLogger);
 
 // Trust proxy for accurate IP addresses
 app.set('trust proxy', true);
+
+// Simple test endpoint
+app.get('/test', (req, res) => {
+  console.log('🧪 Test endpoint hit from origin:', req.headers.origin);
+  res.json({
+    success: true,
+    message: 'Backend is working!',
+    timestamp: new Date().toISOString(),
+    origin: req.headers.origin
+  });
+});
+
+// Test login endpoint
+app.post('/api/test-login', async (req, res) => {
+  try {
+    console.log('🧪 Test login endpoint hit');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
+    
+    res.json({
+      success: true,
+      message: 'Test login endpoint working!',
+      receivedData: req.body,
+      headers: req.headers
+    });
+  } catch (error) {
+    console.error('Test login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Test login failed',
+      error: error.message
+    });
+  }
+});
 
 // Health Check
 app.get('/health', (req, res) => {
