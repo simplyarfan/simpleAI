@@ -628,13 +628,17 @@ const createUser = async (req, res) => {
     const result = await database.run(`
       INSERT INTO users (email, password_hash, first_name, last_name, role, department, job_title, is_active, is_verified)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING id
     `, [email.toLowerCase(), hashedPassword, finalFirstName, finalLastName, role, department, finalJobTitle, true, true]);
 
     console.log('🔧 Database insert result:', result);
 
+    const userId = result.rows[0]?.id || result.id;
+    console.log('🔧 Extracted user ID:', userId);
+
     const newUser = await database.get(
       'SELECT id, email, first_name, last_name, role, department, job_title, is_active FROM users WHERE id = $1',
-      [result.lastID || result.id]
+      [userId]
     );
 
     console.log('🔧 Created user:', newUser);
