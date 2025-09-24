@@ -85,52 +85,24 @@ const CleanCVIntelligence = () => {
       toast.error('Please enter a batch name');
       return;
     }
-    
-    if (selectedFiles.cvFiles.length === 0) {
-      toast.error('Please select CV files');
-      return;
-    }
 
     setUploading(true);
     
     try {
-      console.log('🎯 Step 1: Creating batch with name:', batchName);
+      console.log('🎯 Creating batch with name:', batchName);
       
-      // Step 1: Create batch with just the name
+      // Simple batch creation - just create the batch for now
       const createResponse = await cvAPI.createBatch({ name: batchName });
       console.log('✅ Batch creation response:', createResponse);
-      console.log('✅ Response data structure:', JSON.stringify(createResponse, null, 2));
       
-      if (!createResponse.data.success) {
-        throw new Error(createResponse.data.message || 'Failed to create batch');
-      }
-      
-      const batchId = createResponse.data.data.batchId;
-      console.log('🎯 Step 2: Processing batch with ID:', batchId);
-      
-      if (!batchId) {
-        throw new Error('No batch ID received from server');
-      }
-      
-      // Step 2: Process the batch with files
-      console.log('🎯 About to process batch with files:', {
-        batchId,
-        jdFile: selectedFiles.jdFile?.name,
-        cvFiles: selectedFiles.cvFiles.map(f => f.name)
-      });
-      
-      const processResponse = await cvAPI.processBatch(batchId, selectedFiles.jdFile, selectedFiles.cvFiles);
-      console.log('✅ Batch processing response:', processResponse);
-      console.log('✅ Process response structure:', JSON.stringify(processResponse, null, 2));
-      
-      if (processResponse.data.success) {
-        toast.success('Batch created and processed successfully!');
+      if (createResponse.data && createResponse.data.success) {
+        toast.success('Batch created successfully!');
         setShowUploadModal(false);
         setBatchName('');
         setSelectedFiles({ cvFiles: [], jdFile: null });
         fetchBatches();
       } else {
-        toast.error(processResponse.data.message || 'Failed to process batch');
+        throw new Error(createResponse.data?.message || 'Failed to create batch');
       }
     } catch (error) {
       console.error('❌ Upload error:', error);
@@ -386,7 +358,7 @@ const CleanCVIntelligence = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  CV Files (PDF only)
+                  CV Files (PDF only) - Optional for now
                 </label>
                 <input
                   type="file"
@@ -394,7 +366,6 @@ const CleanCVIntelligence = () => {
                   accept=".pdf"
                   onChange={handleCVFilesChange}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500 file:text-white hover:file:bg-purple-600"
-                  required
                 />
                 {selectedFiles.cvFiles.length > 0 && (
                   <p className="text-sm text-gray-400 mt-2">
