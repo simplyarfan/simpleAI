@@ -33,7 +33,10 @@ debug: {
     // Verify JWT token
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key-change-in-production');
+      if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET environment variable is required');
+      }
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log('🔍 [AUTH DEBUG] JWT decoded successfully:', { userId: decoded.userId, email: decoded.email });
     } catch (jwtError) {
       console.error('🔍 [AUTH DEBUG] JWT verification failed:', jwtError.message);

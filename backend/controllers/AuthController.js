@@ -6,15 +6,23 @@ const { validationResult } = require('express-validator');
 
 // Helper function to generate secure JWT tokens
 const generateTokens = (userId, email, role) => {
+  // Ensure JWT secrets are configured
+  if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  if (!process.env.JWT_REFRESH_SECRET) {
+    throw new Error('JWT_REFRESH_SECRET environment variable is required');
+  }
+
   const accessToken = jwt.sign(
     { userId, email, role, type: 'access' },
-    process.env.JWT_SECRET || 'fallback-secret-key-change-in-production',
+    process.env.JWT_SECRET,
     { expiresIn: '15m' }
   );
   
   const refreshToken = jwt.sign(
     { userId, type: 'refresh' },
-    process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret-change-in-production',
+    process.env.JWT_REFRESH_SECRET,
     { expiresIn: '7d' }
   );
   
@@ -842,7 +850,10 @@ const refreshToken = async (req, res) => {
       });
     }
 
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'fallback-refresh-secret-change-in-production');
+    if (!process.env.JWT_REFRESH_SECRET) {
+      throw new Error('JWT_REFRESH_SECRET environment variable is required');
+    }
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     
     await database.connect();
     const user = await database.get(
