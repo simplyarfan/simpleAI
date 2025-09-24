@@ -78,32 +78,9 @@ database.connect().catch(error => {
   // Don't exit process, let it continue for health checks
 });
 
-// CORS Configuration - Fixed for Netlify to Vercel communication
+// CORS Configuration - Permissive for debugging login issues
 const corsOptions = {
-  origin: function (origin, callback) {
-    console.log('🔍 CORS check for origin:', origin);
-    
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) {
-      console.log('✅ CORS: Allowing request with no origin');
-      return callback(null, true);
-    }
-    
-    const allowedOrigins = [
-      'https://thesimpleai.netlify.app',
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'https://thesimpleai.vercel.app'
-    ];
-    
-    if (allowedOrigins.includes(origin)) {
-      console.log('✅ CORS: Origin allowed:', origin);
-      callback(null, true);
-    } else {
-      console.log('❌ CORS: Origin blocked:', origin);
-      callback(new Error(`Not allowed by CORS: ${origin}`));
-    }
-  },
+  origin: true, // Allow all origins temporarily to fix login
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: [
@@ -113,7 +90,8 @@ const corsOptions = {
     'Accept',
     'Origin',
     'X-Requested-With',
-    'Access-Control-Allow-Origin'
+    'Access-Control-Allow-Origin',
+    'X-Admin-Secret'
   ],
   exposedHeaders: ['Content-Length', 'X-Request-ID'],
   maxAge: 86400, // 24 hours
@@ -127,7 +105,7 @@ app.options('*', (req, res) => {
   console.log('🔍 OPTIONS request for:', req.url, 'from origin:', req.get('Origin'));
   res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Request-ID,Accept,Origin,X-Requested-With');
+  res.header('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Request-ID,Accept,Origin,X-Requested-With,X-Admin-Secret');
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Max-Age', '86400');
   res.sendStatus(200);
