@@ -45,13 +45,11 @@ export default function ModernSidebar({ collapsed, onToggle }) {
   };
 
   return (
-    <motion.div
+    <div
       className={cn(
-        "h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300",
+        "h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col transition-all duration-300 flex-shrink-0",
         collapsed ? "w-16" : "w-64"
       )}
-      animate={{ width: collapsed ? 64 : 256 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
     >
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -179,6 +177,6 @@ export default function ModernSidebar({ collapsed, onToggle }) {
           )}
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }

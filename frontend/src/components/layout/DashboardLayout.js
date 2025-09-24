@@ -15,18 +15,11 @@ export default function DashboardLayout({ children }) {
       />
       
       {/* Main Content */}
-      <motion.main
-        className="flex-1 overflow-hidden"
-        animate={{ 
-          marginLeft: 0,
-          width: sidebarCollapsed ? 'calc(100% - 64px)' : 'calc(100% - 256px)' 
-        }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
+      <main className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto">
           {children}
         </div>
-      </motion.main>
+      </main>
     </div>
   );
 }
