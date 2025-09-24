@@ -99,26 +99,38 @@ const CleanCVIntelligence = () => {
       // Step 1: Create batch with just the name
       const createResponse = await cvAPI.createBatch({ name: batchName });
       console.log('✅ Batch creation response:', createResponse);
+      console.log('✅ Response data structure:', JSON.stringify(createResponse, null, 2));
       
-      if (!createResponse.success) {
-        throw new Error(createResponse.message || 'Failed to create batch');
+      if (!createResponse.data.success) {
+        throw new Error(createResponse.data.message || 'Failed to create batch');
       }
       
-      const batchId = createResponse.data.batchId;
+      const batchId = createResponse.data.data.batchId;
       console.log('🎯 Step 2: Processing batch with ID:', batchId);
       
+      if (!batchId) {
+        throw new Error('No batch ID received from server');
+      }
+      
       // Step 2: Process the batch with files
+      console.log('🎯 About to process batch with files:', {
+        batchId,
+        jdFile: selectedFiles.jdFile?.name,
+        cvFiles: selectedFiles.cvFiles.map(f => f.name)
+      });
+      
       const processResponse = await cvAPI.processBatch(batchId, selectedFiles.jdFile, selectedFiles.cvFiles);
       console.log('✅ Batch processing response:', processResponse);
+      console.log('✅ Process response structure:', JSON.stringify(processResponse, null, 2));
       
-      if (processResponse.success) {
+      if (processResponse.data.success) {
         toast.success('Batch created and processed successfully!');
         setShowUploadModal(false);
         setBatchName('');
         setSelectedFiles({ cvFiles: [], jdFile: null });
         fetchBatches();
       } else {
-        toast.error(processResponse.message || 'Failed to process batch');
+        toast.error(processResponse.data.message || 'Failed to process batch');
       }
     } catch (error) {
       console.error('❌ Upload error:', error);
