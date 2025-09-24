@@ -5,7 +5,7 @@ import CleanHRDashboard from '../components/modern/CleanHRDashboard';
 import CleanFinanceDashboard from '../components/modern/CleanFinanceDashboard';
 import CleanSalesDashboard from '../components/modern/CleanSalesDashboard';
 import AdminDashboard from '../components/admin/AdminDashboard';
-import WaitingDashboard from '../components/shared/WaitingDashboard';
+import WaitingDashboard from '../components/user/WaitingDashboard';
 
 const Dashboard = () => {
   const { user, loading, isAuthenticated } = useAuth();

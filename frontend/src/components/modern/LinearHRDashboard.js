@@ -14,7 +14,7 @@ import {
   Clock,
   CheckCircle,
   User,
-  LogOut
+  LogOut,
   Zap,
   Target,
   Award
