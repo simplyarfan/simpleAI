@@ -583,7 +583,33 @@ const getUser = async (req, res) => {
 // Create new user
 const createUser = async (req, res) => {
   try {
-    const { email, firstName, lastName, role = 'user', department, jobTitle } = req.body;
+    console.log('🔧 Create user request body:', req.body);
+    
+    // Handle both frontend field name variations
+    const { 
+      email, 
+      password,
+      firstName, 
+      lastName, 
+      first_name, 
+      last_name,
+      role = 'user', 
+      department, 
+      jobTitle,
+      job_title 
+    } = req.body;
+
+    const finalFirstName = firstName || first_name;
+    const finalLastName = lastName || last_name;
+    const finalJobTitle = jobTitle || job_title;
+    const finalPassword = password || crypto.randomBytes(12).toString('hex');
+
+    if (!email || !finalFirstName || !finalLastName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, first name, and last name are required'
+      });
+    }
 
     await database.connect();
 
@@ -596,34 +622,38 @@ const createUser = async (req, res) => {
       });
     }
 
-    // Generate temporary password
-    const tempPassword = crypto.randomBytes(12).toString('hex');
-    const hashedPassword = await bcrypt.hash(tempPassword, 12);
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(finalPassword, 12);
 
     const result = await database.run(`
       INSERT INTO users (email, password_hash, first_name, last_name, role, department, job_title, is_active, is_verified)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING id
-    `, [email.toLowerCase(), hashedPassword, firstName, lastName, role, department, jobTitle, true, true]);
+    `, [email.toLowerCase(), hashedPassword, finalFirstName, finalLastName, role, department, finalJobTitle, true, true]);
+
+    console.log('🔧 Database insert result:', result);
 
     const newUser = await database.get(
       'SELECT id, email, first_name, last_name, role, department, job_title, is_active FROM users WHERE id = $1',
-      [result.rows[0].id]
+      [result.lastID || result.id]
     );
+
+    console.log('🔧 Created user:', newUser);
 
     res.status(201).json({
       success: true,
       message: 'User created successfully',
       data: {
         user: newUser,
-        temporaryPassword: tempPassword
+        temporaryPassword: password ? undefined : finalPassword // Only return temp password if we generated it
       }
     });
   } catch (error) {
-    console.error('Create user error:', error);
+    console.error('❌ Create user error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: 'Failed to create user'
+      message: 'Failed to create user',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };
@@ -631,8 +661,26 @@ const createUser = async (req, res) => {
 // Update user
 const updateUser = async (req, res) => {
   try {
+    console.log('🔧 Update user request:', { params: req.params, body: req.body });
+    
     const { user_id } = req.params;
-    const { first_name, last_name, email, role, department, job_title, is_active } = req.body;
+    const { 
+      first_name, 
+      last_name, 
+      firstName,
+      lastName,
+      email, 
+      role, 
+      department, 
+      job_title,
+      jobTitle,
+      is_active 
+    } = req.body;
+
+    // Handle field name variations
+    const finalFirstName = firstName || first_name;
+    const finalLastName = lastName || last_name;
+    const finalJobTitle = jobTitle || job_title;
 
     await database.connect();
 
@@ -655,12 +703,14 @@ const updateUser = async (req, res) => {
         is_active = COALESCE($7, is_active),
         updated_at = CURRENT_TIMESTAMP
       WHERE id = $8
-    `, [first_name, last_name, email, role, department, job_title, is_active, user_id]);
+    `, [finalFirstName, finalLastName, email, role, department, finalJobTitle, is_active, user_id]);
 
     const updatedUser = await database.get(
       'SELECT id, email, first_name, last_name, role, department, job_title, is_active FROM users WHERE id = $1',
       [user_id]
     );
+
+    console.log('🔧 Updated user:', updatedUser);
 
     res.json({
       success: true,
@@ -668,10 +718,12 @@ const updateUser = async (req, res) => {
       data: { user: updatedUser }
     });
   } catch (error) {
-    console.error('Update user error:', error);
+    console.error('❌ Update user error:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: 'Failed to update user'
+      message: 'Failed to update user',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };

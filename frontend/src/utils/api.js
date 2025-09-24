@@ -245,6 +245,7 @@ export const notificationsAPI = {
 
 export const analyticsAPI = {
   getDashboard: () => api.get('/analytics/dashboard'),
+  getDashboardAnalytics: () => api.get('/analytics/dashboard'), // Alias for consistency
   getDetailedAnalytics: () => api.get('/analytics/detailed'),
   getUserAnalytics: (params) => api.get('/analytics/users', { params }),
   getAgentAnalytics: (params) => api.get('/analytics/agents', { params }),
