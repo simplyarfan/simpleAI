@@ -53,13 +53,17 @@ export default function TicketsManagement() {
       const response = await supportAPI.getAllTickets();
       console.log('📋 Tickets API response:', response);
       
-      if (response && response.data) {
-        // Handle different response structures
-        const ticketData = response.data.data || response.data.tickets || response.data || [];
+      if (response && response.data && response.data.data) {
+        // Backend returns: { success: true, data: { tickets: [...], pagination: {...} } }
+        const ticketData = response.data.data.tickets || [];
+        const paginationData = response.data.data.pagination || {};
+        
         console.log('🎫 Setting tickets:', ticketData);
+        console.log('📄 Pagination:', paginationData);
         setTickets(Array.isArray(ticketData) ? ticketData : []);
       } else {
         console.log('⚠️ No ticket data in response, setting empty array');
+        console.log('Response structure:', response);
         setTickets([]);
       }
     } catch (error) {

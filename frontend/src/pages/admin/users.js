@@ -86,16 +86,19 @@ export default function UsersManagement() {
       
       console.log('📋 Users API response:', response);
       
-      if (response && response.data) {
-        // Handle different response structures
-        const userData = response.data.data || response.data.users || response.data || [];
-        const totalPagesData = response.data.totalPages || response.data.total_pages || 1;
+      if (response && response.data && response.data.data) {
+        // Backend returns: { success: true, data: { users: [...], pagination: {...} } }
+        const userData = response.data.data.users || [];
+        const paginationData = response.data.data.pagination || {};
+        const totalPagesData = paginationData.totalPages || 1;
         
         console.log('👥 Setting users:', userData);
+        console.log('📄 Pagination:', paginationData);
         setUsers(Array.isArray(userData) ? userData : []);
         setTotalPages(totalPagesData);
       } else {
         console.log('⚠️ No data in response, setting empty array');
+        console.log('Response structure:', response);
         setUsers([]);
       }
     } catch (error) {

@@ -4,6 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
 import Header from '../../components/shared/Header';
 import ErrorBoundary from '../../components/ErrorBoundary';
+import { analyticsAPI } from '../../utils/api';
+import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { 
   BarChart3, 
@@ -45,28 +47,52 @@ export default function Analytics() {
   const fetchAnalytics = async () => {
     try {
       setIsLoading(true);
-      // Simulate API call with mock data
-      setTimeout(() => {
+      console.log('📊 Fetching real analytics data...');
+      
+      // Fetch dashboard analytics
+      const dashboardResponse = await analyticsAPI.getDashboardAnalytics();
+      console.log('📊 Dashboard response:', dashboardResponse);
+      
+      if (dashboardResponse && dashboardResponse.data) {
+        const data = dashboardResponse.data;
         setAnalyticsData({
-          totalUsers: 15,
-          activeUsers: 12,
-          totalTickets: 28,
-          resolvedTickets: 22,
-          cvBatches: 45,
-          systemHealth: 'Excellent'
+          totalUsers: data.totalUsers || 0,
+          activeUsers: data.activeUsers || 0,
+          totalTickets: data.totalTickets || 0,
+          resolvedTickets: (data.totalTickets || 0) - (data.openTickets || 0),
+          cvBatches: data.totalBatches || 0,
+          systemHealth: data.systemHealth || 'Good'
         });
-        
-        setUserAnalytics([
-          { department: 'Human Resources', users: 5, active: 4 },
-          { department: 'Finance', users: 3, active: 3 },
-          { department: 'Sales & Marketing', users: 4, active: 3 },
-          { department: 'IT', users: 3, active: 2 }
-        ]);
-        
-        setIsLoading(false);
-      }, 1000);
+      }
+      
+      // Fetch user analytics
+      const userResponse = await analyticsAPI.getUserAnalytics();
+      console.log('👥 User analytics response:', userResponse);
+      
+      if (userResponse && userResponse.data && userResponse.data.userStats) {
+        const userStats = userResponse.data.userStats.map(stat => ({
+          department: stat.role || 'Unknown',
+          users: parseInt(stat.count) || 0,
+          active: parseInt(stat.active_count) || 0
+        }));
+        setUserAnalytics(userStats);
+      }
+      
     } catch (error) {
-      console.error('Error fetching analytics:', error);
+      console.error('❌ Error fetching analytics:', error);
+      toast.error(`Failed to fetch analytics: ${error.response?.data?.message || error.message}`);
+      
+      // Set default values on error
+      setAnalyticsData({
+        totalUsers: 0,
+        activeUsers: 0,
+        totalTickets: 0,
+        resolvedTickets: 0,
+        cvBatches: 0,
+        systemHealth: 'Unknown'
+      });
+      setUserAnalytics([]);
+    } finally {
       setIsLoading(false);
     }
   };
