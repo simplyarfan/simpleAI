@@ -259,6 +259,10 @@ export const systemAPI = {
   getServices: () => api.get('/system/services')
 };
 
+export const adminAPI = {
+  seedDatabase: () => api.post('/admin/seed-database')
+};
+
 export const supportAPI = {
   createTicket: (ticketData) => api.post('/support', ticketData),
   getMyTickets: (params) => api.get('/support/my-tickets', { params }),

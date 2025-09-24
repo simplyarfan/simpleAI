@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
+import { adminAPI } from '../../utils/api';
+import toast from 'react-hot-toast';
 import { 
   Users, 
   LifeBuoy, 
@@ -22,7 +24,8 @@ import {
   Database,
   Cpu,
   HardDrive,
-  Wifi
+  Wifi,
+  RefreshCw
 } from 'lucide-react';
 
 export default function ImprovedSuperAdminDashboard() {
@@ -36,6 +39,7 @@ export default function ImprovedSuperAdminDashboard() {
     systemHealth: 'Excellent',
     uptime: '99.9%'
   });
+  const [isSeeding, setIsSeeding] = useState(false);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -51,6 +55,23 @@ export default function ImprovedSuperAdminDashboard() {
       router.push('/landing');
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const handleSeedDatabase = async () => {
+    try {
+      setIsSeeding(true);
+      const response = await adminAPI.seedDatabase();
+      if (response.success) {
+        toast.success('Database seeded successfully! Test data has been created.');
+      } else {
+        toast.error('Failed to seed database');
+      }
+    } catch (error) {
+      console.error('Database seeding error:', error);
+      toast.error(`Failed to seed database: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setIsSeeding(false);
     }
   };
 
@@ -215,6 +236,21 @@ export default function ImprovedSuperAdminDashboard() {
               >
                 Welcome back, <span className="text-white font-medium">{user?.first_name || 'Admin'}</span>
               </motion.div>
+              <motion.button
+                onClick={handleSeedDatabase}
+                disabled={isSeeding}
+                className="px-3 py-2 bg-green-600/20 border border-green-500/30 text-green-400 rounded-lg hover:bg-green-600/30 transition-colors text-sm font-medium disabled:opacity-50 flex items-center"
+                title="Seed Database with Test Data"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {isSeeding ? (
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Database className="w-4 h-4 mr-2" />
+                )}
+                {isSeeding ? 'Seeding...' : 'Seed DB'}
+              </motion.button>
               <motion.button
                 onClick={handleLogout}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white group"
