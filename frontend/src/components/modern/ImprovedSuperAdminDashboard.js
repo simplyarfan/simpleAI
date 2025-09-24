@@ -39,12 +39,11 @@ export default function ImprovedSuperAdminDashboard() {
     systemHealth: 'Excellent',
     uptime: '99.9%'
   });
-  const [isSeeding, setIsSeeding] = useState(false);
-
   useEffect(() => {
     const handleMouseMove = (e) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
+
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
@@ -58,21 +57,8 @@ export default function ImprovedSuperAdminDashboard() {
     }
   };
 
-  const handleSeedDatabase = async () => {
-    try {
-      setIsSeeding(true);
-      const response = await adminAPI.seedDatabase();
-      if (response.success) {
-        toast.success('Database seeded successfully! Test data has been created.');
-      } else {
-        toast.error('Failed to seed database');
-      }
-    } catch (error) {
-      console.error('Database seeding error:', error);
-      toast.error(`Failed to seed database: ${error.response?.data?.message || error.message}`);
-    } finally {
-      setIsSeeding(false);
-    }
+  const handleProfileSettings = () => {
+    router.push('/profile');
   };
 
   const adminTools = [
@@ -237,19 +223,14 @@ export default function ImprovedSuperAdminDashboard() {
                 Welcome back, <span className="text-white font-medium">{user?.first_name || 'Admin'}</span>
               </motion.div>
               <motion.button
-                onClick={handleSeedDatabase}
-                disabled={isSeeding}
-                className="px-3 py-2 bg-green-600/20 border border-green-500/30 text-green-400 rounded-lg hover:bg-green-600/30 transition-colors text-sm font-medium disabled:opacity-50 flex items-center"
-                title="Seed Database with Test Data"
+                onClick={handleProfileSettings}
+                className="px-3 py-2 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-lg hover:bg-blue-600/30 transition-colors text-sm font-medium flex items-center"
+                title="Profile Settings"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                {isSeeding ? (
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Database className="w-4 h-4 mr-2" />
-                )}
-                {isSeeding ? 'Seeding...' : 'Seed DB'}
+                <Settings className="w-4 h-4 mr-2" />
+                Profile
               </motion.button>
               <motion.button
                 onClick={handleLogout}
