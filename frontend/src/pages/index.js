@@ -6,6 +6,7 @@ import LivelyFinanceDashboard from '../components/modern/LivelyFinanceDashboard'
 import LivelySalesDashboard from '../components/modern/LivelySalesDashboard';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import WaitingDashboard from '../components/user/WaitingDashboard';
+import LandingPage from './landing';
 
 const Dashboard = () => {
   const { user, loading, isAuthenticated } = useAuth();
@@ -30,10 +31,9 @@ const Dashboard = () => {
     );
   }
 
-  // If not authenticated, redirect to landing page
+  // If not authenticated, show landing page directly
   if (!isAuthenticated || !user) {
-    router.push('/landing');
-    return null;
+    return <LandingPage />;
   }
 
   // If superadmin, show loading while redirecting (prevents flash)

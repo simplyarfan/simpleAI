@@ -31,14 +31,14 @@ export default function LandingPage() {
   const features = [
     {
       icon: Brain,
-      title: "AI-Powered Analysis",
-      description: "Advanced machine learning algorithms analyze CVs with 95% accuracy",
+      title: "AI-Powered Intelligence",
+      description: "Advanced AI agents for HR, Finance, Sales & Marketing departments",
       gradient: "from-purple-500 to-pink-500"
     },
     {
-      icon: Zap,
-      title: "Lightning Fast",
-      description: "Process hundreds of CVs in seconds, not hours",
+      icon: Users,
+      title: "Multi-Department Suite",
+      description: "Specialized AI agents tailored for each department's unique needs",
       gradient: "from-blue-500 to-cyan-500"
     },
     {
@@ -48,25 +48,49 @@ export default function LandingPage() {
       gradient: "from-green-500 to-emerald-500"
     },
     {
+      icon: BarChart3,
+      title: "Smart Analytics",
+      description: "Real-time insights and reporting across all departments",
+      gradient: "from-orange-500 to-red-500"
+    }
+  ];
+
+  const departments = [
+    {
       icon: Users,
-      title: "Team Collaboration",
-      description: "Seamless workflows for HR, Finance, and Sales teams",
+      title: "Human Resources",
+      agents: ["CV Intelligence", "Interview Coordinator"],
+      description: "Streamline recruitment with AI-powered CV analysis and interview scheduling",
+      gradient: "from-blue-500 to-purple-500"
+    },
+    {
+      icon: BarChart3,
+      title: "Finance",
+      agents: ["Invoice Processor", "Expense Auditor"],
+      description: "Automate financial workflows with intelligent document processing",
+      gradient: "from-green-500 to-emerald-500"
+    },
+    {
+      icon: Sparkles,
+      title: "Sales & Marketing",
+      agents: ["Lead Generator", "Campaign Optimizer"],
+      description: "Boost sales performance with AI-driven lead generation and campaign optimization",
       gradient: "from-orange-500 to-red-500"
     }
   ];
 
   const stats = [
-    { number: "10,000+", label: "CVs Analyzed" },
-    { number: "95%", label: "Accuracy Rate" },
-    { number: "500+", label: "Companies" },
-    { number: "24/7", label: "Support" }
+    { number: "3", label: "AI Departments" },
+    { number: "6+", label: "Specialized Agents" },
+    { number: "100%", label: "Automation Ready" },
+    { number: "24/7", label: "AI Support" }
   ];
 
   return (
     <>
       <Head>
-        <title>SimpleAI - The Future of AI-Powered Recruitment</title>
-        <meta name="description" content="Transform your hiring process with intelligent CV analysis, automated workflows, and data-driven insights." />
+        <title>SimpleAI - Enterprise AI Suite for Every Department</title>
+        <meta name="description" content="Transform your business with specialized AI agents for HR, Finance, and Sales & Marketing departments. Streamline workflows with intelligent automation." />
       </Head>
 
       <div className="min-h-screen bg-black text-white overflow-hidden">
@@ -104,8 +128,8 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
+              <a href="#departments" className="text-gray-300 hover:text-white transition-colors">Departments</a>
               <a href="#features" className="text-gray-300 hover:text-white transition-colors">Features</a>
-              <a href="#pricing" className="text-gray-300 hover:text-white transition-colors">Pricing</a>
               <a href="#about" className="text-gray-300 hover:text-white transition-colors">About</a>
               <Link href="/auth/login" className="text-gray-300 hover:text-white transition-colors">
                 Log in
@@ -138,10 +162,11 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              The system for modern{' '}
+              Enterprise{' '}
               <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                AI recruitment
+                AI Suite
               </span>
+              {' '}for Every Department
             </motion.h1>
 
             <motion.p
@@ -150,8 +175,8 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
             >
-              Transform your hiring process with intelligent CV analysis, automated workflows, 
-              and data-driven insights that help you find the perfect candidates faster.
+              Transform your business with specialized AI agents for HR, Finance, and Sales & Marketing. 
+              Streamline workflows, automate processes, and boost productivity across all departments.
             </motion.p>
 
             <motion.div
@@ -192,8 +217,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section id="features" className="relative z-10 px-6 py-32">
+        {/* Departments Section */}
+        <section id="departments" className="relative z-10 px-6 py-32">
           <div className="max-w-6xl mx-auto">
             <motion.div
               className="text-center mb-20"
@@ -202,10 +227,58 @@ export default function LandingPage() {
               transition={{ duration: 0.8 }}
             >
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Built for the future of work
+                AI Agents for Every Department
               </h2>
               <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                Every feature designed to streamline your recruitment process and help you make better hiring decisions.
+                Specialized AI solutions tailored to meet the unique needs of each department in your organization.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+              {departments.map((dept, index) => (
+                <motion.div
+                  key={dept.title}
+                  className="group relative bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 transition-all duration-300"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.1 * index }}
+                  whileHover={{ y: -5 }}
+                >
+                  <div className={`w-12 h-12 bg-gradient-to-r ${dept.gradient} rounded-xl flex items-center justify-center mb-6`}>
+                    <dept.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">{dept.title}</h3>
+                  <div className="mb-4">
+                    {dept.agents.map((agent, agentIndex) => (
+                      <span key={agent} className="inline-block bg-white/10 text-xs px-2 py-1 rounded-full mr-2 mb-2">
+                        {agent}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-gray-400 leading-relaxed">{dept.description}</p>
+                  <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section id="features" className="relative z-10 px-6 py-32 border-t border-white/10">
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              className="text-center mb-20"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                Enterprise-Grade Features
+              </h2>
+              <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+                Powerful capabilities designed to transform how your organization operates with AI-driven automation.
               </p>
             </motion.div>
 
@@ -234,7 +307,7 @@ export default function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="relative z-10 px-6 py-32 border-t border-white/10">
+        <section id="about" className="relative z-10 px-6 py-32 border-t border-white/10">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -242,13 +315,13 @@ export default function LandingPage() {
               transition={{ duration: 0.8 }}
             >
               <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Ready to transform your hiring?
+                Ready to transform your business?
               </h2>
               <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
-                Join thousands of companies already using SimpleAI to find their next great hire.
+                Join forward-thinking organizations using SimpleAI to automate workflows and boost productivity across all departments.
               </p>
               <Link href="/auth/register" className="bg-white text-black px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-200 transform hover:scale-105 inline-flex items-center space-x-2">
-                <span>Get started for free</span>
+                <span>Get started today</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
