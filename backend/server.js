@@ -60,13 +60,16 @@ const PORT = process.env.PORT || 5000;
 // Starting SimpleAI Enterprise Backend
 
 // Validate required environment variables
-const requiredEnvVars = ['JWT_SECRET', 'JWT_REFRESH_SECRET'];
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
-
-if (missingEnvVars.length > 0) {
-  console.error('❌ Missing required environment variables:', missingEnvVars.join(', '));
-  console.error('❌ Application cannot start without proper JWT configuration');
+if (!process.env.JWT_SECRET) {
+  console.error('❌ Missing JWT_SECRET environment variable');
+  console.error('❌ Application cannot start without JWT_SECRET');
   process.exit(1);
+}
+
+// JWT_REFRESH_SECRET is optional - will use JWT_SECRET as fallback
+if (!process.env.JWT_REFRESH_SECRET) {
+  console.log('⚠️ JWT_REFRESH_SECRET not set, using JWT_SECRET as fallback');
+  process.env.JWT_REFRESH_SECRET = process.env.JWT_SECRET;
 }
 
 // Initialize database connection (non-blocking)

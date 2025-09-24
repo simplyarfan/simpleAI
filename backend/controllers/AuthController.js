@@ -10,9 +10,9 @@ const generateTokens = (userId, email, role) => {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET environment variable is required');
   }
-  if (!process.env.JWT_REFRESH_SECRET) {
-    throw new Error('JWT_REFRESH_SECRET environment variable is required');
-  }
+  
+  // Use JWT_SECRET as fallback for refresh token if not set
+  const refreshSecret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
 
   const accessToken = jwt.sign(
     { userId, email, role, type: 'access' },
@@ -22,7 +22,7 @@ const generateTokens = (userId, email, role) => {
   
   const refreshToken = jwt.sign(
     { userId, type: 'refresh' },
-    process.env.JWT_REFRESH_SECRET,
+    refreshSecret,
     { expiresIn: '7d' }
   );
   
@@ -850,10 +850,8 @@ const refreshToken = async (req, res) => {
       });
     }
 
-    if (!process.env.JWT_REFRESH_SECRET) {
-      throw new Error('JWT_REFRESH_SECRET environment variable is required');
-    }
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const refreshSecret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
+    const decoded = jwt.verify(refreshToken, refreshSecret);
     
     await database.connect();
     const user = await database.get(
