@@ -2,11 +2,10 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import WaitingDashboard from '../components/user/WaitingDashboard';
-import HRDashboard from '../components/user/HRDashboard';
-import FinanceDashboard from '../components/user/FinanceDashboard';
-import SalesMarketingDashboard from '../components/user/SalesMarketingDashboard';
+import LinearHRDashboard from '../components/modern/LinearHRDashboard';
+import LinearFinanceDashboard from '../components/modern/LinearFinanceDashboard';
+import LinearSalesDashboard from '../components/modern/LinearSalesDashboard';
 import AdminDashboard from '../components/admin/AdminDashboard';
-import Login from './auth/login';
 
 const Dashboard = () => {
   const { user, loading, isAuthenticated } = useAuth();
@@ -31,9 +30,10 @@ const Dashboard = () => {
     );
   }
 
-  // If not authenticated, show login page
+  // If not authenticated, redirect to landing page
   if (!isAuthenticated || !user) {
-    return <Login />;
+    router.push('/landing');
+    return null;
   }
 
   // If superadmin, show loading while redirecting (prevents flash)
@@ -58,11 +58,11 @@ const Dashboard = () => {
     // Route based on department
     switch (user.department) {
       case 'Human Resources':
-        return <HRDashboard />;
+        return <LinearHRDashboard />;
       case 'Finance':
-        return <FinanceDashboard />;
+        return <LinearFinanceDashboard />;
       case 'Sales & Marketing':
-        return <SalesMarketingDashboard />;
+        return <LinearSalesDashboard />;
       default:
         // If department is not recognized, show waiting dashboard
         return <WaitingDashboard />;
