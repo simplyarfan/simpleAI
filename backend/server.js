@@ -245,22 +245,48 @@ app.get('/api/test', async (req, res) => {
       results.checks.table_schema = { status: 'ERROR', message: error.message };
     }
 
-    // Test 5: Routes loaded
-    results.checks.routes = {
-      status: authRoutes ? 'OK' : 'ERROR',
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    routes: {
       auth: !!authRoutes,
       analytics: !!analyticsRoutes,
       support: !!supportRoutes,
-      cv: !!cvRoutes,
+      cvRoutes: !!cvRoutes,
       notifications: !!notificationRoutes
-    };
+    }
+  });
+});
 
+// Database seeding endpoint (development only)
+app.post('/api/admin/seed-database', async (req, res) => {
+  try {
+    // Only allow in development or with special header
+    if (process.env.NODE_ENV === 'production' && req.headers['x-admin-secret'] !== process.env.ADMIN_SECRET) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+    
+    const { seedDatabase } = require('./scripts/seed-database');
+    await seedDatabase();
+    
+    res.json({
+      success: true,
+      message: 'Database seeded successfully'
+    });
   } catch (error) {
-    results.success = false;
-    results.checks.database_connection = { status: 'ERROR', message: error.message };
+    console.error('Database seeding error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Database seeding failed',
+      error: error.message
+    });
   }
-
-  res.json(results);
 });
 
 // Admin creation endpoint removed - use proper registration flow
