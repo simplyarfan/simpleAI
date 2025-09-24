@@ -4,6 +4,7 @@
  */
 
 const axios = require('axios');
+const cacheService = require('./cacheService');
 
 class CVAnalysisService {
   constructor() {
@@ -13,6 +14,7 @@ class CVAnalysisService {
       this.apiUrl = 'https://api.openai.com/v1/chat/completions';
       this.model = 'gpt-3.5-turbo';
       this.initialized = true;
+      this.cache = cacheService;
       
       console.log('🤖 OpenAI CV Analysis Service initializing...');
       console.log('🧠 Using model:', this.model);
@@ -45,25 +47,58 @@ class CVAnalysisService {
   }
 
   /**
-   * Main CV Analysis Method - Uses OpenAI for intelligent analysis
+   * Main CV Analysis Method - Uses OpenAI for intelligent analysis with Redis caching
    */
   async analyzeCV(jobDescription, cvText, fileName) {
     console.log('🧠 Starting OpenAI CV analysis for:', fileName);
     console.log('📝 Job Description length:', jobDescription.length, 'characters');
     console.log('📄 CV Text length:', cvText.length, 'characters');
     
+    // Generate cache key based on content hash
+    const crypto = require('crypto');
+    const contentHash = crypto.createHash('md5')
+      .update(jobDescription + cvText)
+      .digest('hex')
+      .substring(0, 16);
+    
+    const cacheKey = `${fileName}_${contentHash}`;
+    
+    // Try to get cached result first
+    console.log('🔍 Checking cache for analysis...');
+    const cachedResult = await this.cache.getCachedCVAnalysis(cacheKey);
+    if (cachedResult) {
+      console.log('🎯 Using cached analysis result - 100% cost savings!');
+      return cachedResult;
+    }
+    
+    console.log('❌ No cache found, performing fresh analysis...');
+    
     try {
+      let analysisResult;
+      
       if (this.apiKey) {
         console.log('🚀 Using OpenAI for intelligent analysis...');
-        return await this.performOpenAIAnalysis(jobDescription, cvText, fileName);
+        analysisResult = await this.performOpenAIAnalysis(jobDescription, cvText, fileName);
       } else {
         console.log('⚡ No API key - using enhanced fallback analysis...');
-        return await this.performFallbackAnalysis(jobDescription, cvText, fileName);
+        analysisResult = await this.performFallbackAnalysis(jobDescription, cvText, fileName);
       }
+      
+      // Cache the result for 24 hours
+      console.log('💾 Caching analysis result for future requests...');
+      await this.cache.cacheCVAnalysis(cacheKey, analysisResult, 86400);
+      
+      return analysisResult;
+      
     } catch (error) {
       console.error('❌ OpenAI analysis failed:', error.message);
       console.log('⚡ Falling back to enhanced analysis...');
-      return await this.performFallbackAnalysis(jobDescription, cvText, fileName);
+      const fallbackResult = await this.performFallbackAnalysis(jobDescription, cvText, fileName);
+      
+      // Cache fallback result for shorter time (1 hour)
+      await this.cache.cacheCVAnalysis(cacheKey, fallbackResult, 3600);
+      
+      return fallbackResult;
     }
   }
 

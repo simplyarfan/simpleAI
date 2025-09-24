@@ -166,6 +166,43 @@ app.get('/cors-test', (req, res) => {
   });
 });
 
+// Cache management endpoints
+const cacheService = require('./services/cacheService');
+
+app.get('/api/cache/stats', async (req, res) => {
+  try {
+    const stats = await cacheService.getCacheStats();
+    res.json({
+      success: true,
+      data: stats,
+      message: 'Cache statistics retrieved'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get cache stats',
+      error: error.message
+    });
+  }
+});
+
+app.delete('/api/cache/clear/:pattern', async (req, res) => {
+  try {
+    const { pattern } = req.params;
+    await cacheService.clearCache(pattern);
+    res.json({
+      success: true,
+      message: `Cache cleared for pattern: ${pattern}`
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to clear cache',
+      error: error.message
+    });
+  }
+});
+
 // Test endpoint - comprehensive health check
 app.get('/api/test', async (req, res) => {
   const results = {
@@ -247,23 +284,26 @@ app.get('/', (req, res) => {
 
 // Route loading status check removed
 
-// API Routes (conditional)
+// Import cache middleware
+const { longCacheMiddleware, shortCacheMiddleware, cacheInvalidationMiddleware } = require('./middleware/cache');
+
+// API Routes with caching (conditional)
 if (authRoutes) {
-  app.use('/api/auth', authRoutes);
+  app.use('/api/auth', cacheInvalidationMiddleware(['session:*', 'api:*']), authRoutes);
 }
 if (analyticsRoutes) {
-  app.use('/api/analytics', analyticsRoutes);
+  app.use('/api/analytics', longCacheMiddleware, analyticsRoutes);
 }
 if (supportRoutes) {
-  app.use('/api/support', supportRoutes);
+  app.use('/api/support', shortCacheMiddleware, cacheInvalidationMiddleware(['api:support*']), supportRoutes);
 }
 if (cvRoutes) {
-  app.use('/api/cv-intelligence', cvRoutes);
+  app.use('/api/cv-intelligence', cacheInvalidationMiddleware(['cv_analysis:*', 'api:cv-intelligence*']), cvRoutes);
 } else {
   console.error('❌ CV Intelligence routes failed to load');
 }
 if (notificationRoutes) {
-  app.use('/api/notifications', notificationRoutes);
+  app.use('/api/notifications', shortCacheMiddleware, cacheInvalidationMiddleware(['api:notifications*']), notificationRoutes);
 }
 if (initRoutes) {
   app.use('/api/init', initRoutes);
