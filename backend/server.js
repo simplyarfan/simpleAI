@@ -12,43 +12,36 @@ let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes, in
 // Load each route individually with error handling
 try {
   authRoutes = require('./routes/auth');
-  console.log('✅ Auth routes loaded');
 } catch (error) {
   console.error('❌ Error loading auth routes:', error.message);
 }
 
 try {
   analyticsRoutes = require('./routes/analytics');
-  console.log('✅ Analytics routes loaded');
 } catch (error) {
   console.error('❌ Error loading analytics routes:', error.message);
 }
 
 try {
   supportRoutes = require('./routes/support');
-  console.log('✅ Support routes loaded');
 } catch (error) {
   console.error('❌ Error loading support routes:', error.message);
 }
 
 try {
   cvRoutes = require('./routes/cv-intelligence-working');
-  console.log('✅ CV Intelligence routes loaded (working version) - Updated 2025-01-21');
 } catch (error) {
   console.error('❌ Error loading CV Intelligence routes:', error.message);
-  console.error('❌ CV Intelligence stack:', error.stack);
 }
 
 try {
   notificationRoutes = require('./routes/notifications');
-  console.log('✅ Notification routes loaded');
 } catch (error) {
   console.error('❌ Error loading notification routes:', error.message);
 }
 
 try {
   initRoutes = require('./routes/init');
-  console.log('✅ Init routes loaded');
 } catch (error) {
   console.error('❌ Error loading init routes:', error.message);
 }
@@ -62,7 +55,7 @@ const requestLogger = (req, res, next) => {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-console.log('🚀 Starting SimpleAI Enterprise Backend...');
+// Starting SimpleAI Enterprise Backend
 
 // Initialize database connection (non-blocking)
 database.connect().catch(error => {
@@ -162,28 +155,7 @@ app.get('/api/test', async (req, res) => {
   res.json(results);
 });
 
-// Manual admin creation endpoint (for debugging)
-app.post('/api/create-admin', async (req, res) => {
-  try {
-    await database.connect();
-    await database.createDefaultAdmin();
-    
-    res.json({
-      success: true,
-      message: 'Admin user creation attempted',
-      credentials: {
-        email: 'syedarfan@securemaxtech.com',
-        password: 'admin123'
-      }
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Failed to create admin user',
-      error: error.message
-    });
-  }
-});
+// Admin creation endpoint removed - use proper registration flow
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -202,164 +174,35 @@ app.get('/', (req, res) => {
   });
 });
 
-// Debug: Check which routes are loaded
-console.log('🔍 Route loading status:');
-console.log('- authRoutes:', !!authRoutes);
-console.log('- analyticsRoutes:', !!analyticsRoutes);
-console.log('- supportRoutes:', !!supportRoutes);
-console.log('- cvRoutes:', !!cvRoutes);
-console.log('- notificationRoutes:', !!notificationRoutes);
-console.log('- initRoutes:', !!initRoutes);
+// Route loading status check removed
 
 // API Routes (conditional)
 if (authRoutes) {
   app.use('/api/auth', authRoutes);
-  console.log('✅ Mounted /api/auth');
 }
 if (analyticsRoutes) {
   app.use('/api/analytics', analyticsRoutes);
-  console.log('✅ Mounted /api/analytics');
 }
 if (supportRoutes) {
   app.use('/api/support', supportRoutes);
-  console.log('✅ Mounted /api/support');
 }
 if (cvRoutes) {
   app.use('/api/cv-intelligence', cvRoutes);
-  console.log('✅ Mounted /api/cv-intelligence');
 } else {
-  console.log('❌ cvRoutes is null/undefined - NOT MOUNTED');
+  console.error('❌ CV Intelligence routes failed to load');
 }
 if (notificationRoutes) {
   app.use('/api/notifications', notificationRoutes);
-  console.log('✅ Mounted /api/notifications');
 }
 if (initRoutes) {
   app.use('/api/init', initRoutes);
-  console.log('✅ Mounted /api/init');
 }
 
-// Debug endpoint to list all routes
-app.get('/api/debug/routes', (req, res) => {
-  const routes = [];
-  app._router.stack.forEach((middleware) => {
-    if (middleware.route) {
-      routes.push({
-        path: middleware.route.path,
-        methods: Object.keys(middleware.route.methods)
-      });
-    } else if (middleware.name === 'router') {
-      middleware.handle.stack.forEach((handler) => {
-        if (handler.route) {
-          routes.push({
-            path: handler.route.path,
-            methods: Object.keys(handler.route.methods)
-          });
-        }
-      });
-    }
-  });
-  
-  res.json({
-    success: true,
-    routes: routes,
-    routeCount: routes.length,
-    loadedModules: {
-      authRoutes: !!authRoutes,
-      analyticsRoutes: !!analyticsRoutes,
-      supportRoutes: !!supportRoutes,
-      cvRoutes: !!cvRoutes,
-      notificationRoutes: !!notificationRoutes,
-      initRoutes: !!initRoutes
-    }
-  });
-});
+// Debug routes removed - not needed in production
 
-// Debug endpoint to check user authentication
-app.get('/api/debug/user', async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.json({ success: false, message: 'No auth header', headers: req.headers });
-    }
-    
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-      return res.json({ success: false, message: 'No token', authHeader });
-    }
-    
-    const jwt = require('jsonwebtoken');
-    console.log('🔍 [DEBUG] Token received:', token.substring(0, 20) + '...');
-    console.log('🔍 [DEBUG] JWT_SECRET:', process.env.JWT_SECRET ? 'present' : 'missing');
-    
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    
-    await database.connect();
-    const user = await database.get('SELECT id, email, role FROM users WHERE id = $1', [decoded.userId]);
-    
-    res.json({
-      success: true,
-      decoded,
-      user,
-      hasRequiredRole: ['admin', 'superadmin'].includes(user?.role),
-      tokenPreview: token.substring(0, 20) + '...'
-    });
-  } catch (error) {
-    console.log('🔍 [DEBUG] JWT Error:', error.message);
-    res.json({ 
-      success: false, 
-      error: error.message,
-      tokenPreview: req.headers.authorization ? req.headers.authorization.substring(0, 30) + '...' : 'none'
-    });
-  }
-});
+// Debug user endpoint removed - security risk in production
 
-// Debug endpoint to force re-login and get fresh token
-app.post('/api/debug/refresh-token', async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.json({ success: false, message: 'Email required' });
-    }
-    
-    await database.connect();
-    const user = await database.get('SELECT * FROM users WHERE email = $1', [email]);
-    
-    if (!user) {
-      return res.json({ success: false, message: 'User not found' });
-    }
-    
-    const jwt = require('jsonwebtoken');
-    const accessToken = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '24h' }
-    );
-    
-    const refreshToken = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    );
-    
-    res.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        role: user.role
-      },
-      tokens: {
-        accessToken,
-        refreshToken
-      }
-    });
-  } catch (error) {
-    res.json({ success: false, error: error.message });
-  }
-});
+// Debug refresh token endpoint removed - security risk in production
 
 // Simple endpoints for basic functionality (fallback)
 app.get('/api/users', async (req, res) => {
@@ -390,35 +233,7 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// Debug endpoint to check support tickets table
-app.get('/api/debug/support-tickets', async (req, res) => {
-  try {
-    await database.connect();
-    
-    // Check if table exists
-    const tableExists = await database.get(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_name = 'support_tickets'
-      );
-    `);
-    
-    let ticketCount = 0;
-    if (tableExists.exists) {
-      const count = await database.get('SELECT COUNT(*) as count FROM support_tickets');
-      ticketCount = count.count;
-    }
-    
-    res.json({
-      success: true,
-      tableExists: tableExists.exists,
-      ticketCount
-    });
-  } catch (error) {
-    res.json({ success: false, error: error.message });
-  }
-});
+// Debug support tickets endpoint removed - not needed in production
 
 app.get('/api/system/health', async (req, res) => {
   try {
@@ -519,9 +334,7 @@ app.use('*', (req, res) => {
 // Start server (only in non-Vercel environments)
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
-    console.log(`✅ SimpleAI Enterprise Backend running on port ${PORT}`);
-    console.log(`🔗 Health check: http://localhost:${PORT}/health`);
-    console.log(`📊 API endpoints: http://localhost:${PORT}/api/*`);
+    console.log(`SimpleAI Enterprise Backend running on port ${PORT}`);
   });
 }
 
