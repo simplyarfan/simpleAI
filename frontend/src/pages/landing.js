@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Brain, Users, BarChart3, FileText, Sparkles, Download } from 'lucide-react';
+import { Brain, Users, BarChart3, FileText, Sparkles, Download, Linkedin, Github } from 'lucide-react';
 
 export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,18 +41,18 @@ export default function LandingPage() {
             </motion.div>
 
             <div className="hidden md:flex space-x-8 text-sm font-medium">
-              <button className="text-gray-600 hover:text-gray-900 transition-colors">Use Cases</button>
-              <button className="text-gray-600 hover:text-gray-900 transition-colors">Enterprise</button>
-              <button className="text-gray-600 hover:text-gray-900 transition-colors">Resources</button>
+              <button className="text-gray-600 hover:text-gray-900 transition-colors">Features</button>
+              <button className="text-gray-600 hover:text-gray-900 transition-colors">About</button>
+              <button className="text-gray-600 hover:text-gray-900 transition-colors">Contact</button>
             </div>
 
             <Link href="/auth/login">
               <motion.button 
-                className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-full hover:shadow-lg transition-all duration-300"
+                className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg transition-all duration-300"
                 whileHover={{ scale: 1.05, y: -1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                Get Started for Free
+                Get Started
               </motion.button>
             </Link>
           </div>
@@ -344,37 +344,37 @@ export default function LandingPage() {
                 transition={{ duration: 0.8 }}
               >
                 <div className="inline-block bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
-                  🚨 Last Warning
+                  Ready to Transform Your Business?
                 </div>
                 <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-6">
-                  Your next meeting is in 
+                  Your departments are waiting for 
                   <br />
                   <span className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 bg-clip-text text-transparent">
-                    3 hours.
+                    their AI agents.
                   </span>
                 </h2>
                 <p className="text-xl text-gray-700 mb-8 font-medium">
-                  Are you going to wing it again? Or are you finally going to show up prepared?
+                  Stop paying consultants thousands of dollars for work AI can do in minutes.
                 </p>
                 
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-orange-200 shadow-xl">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
                     <div>
-                      <h4 className="font-bold text-red-600 mb-3">😰 Without SimpleAI:</h4>
+                      <h4 className="font-bold text-red-600 mb-3">Without Nexus:</h4>
                       <ul className="space-y-2 text-sm text-gray-600">
-                        <li>• "Uh, let me get back to you on that..."</li>
-                        <li>• Awkward silences when asked for data</li>
-                        <li>• Looking unprepared in front of your boss</li>
-                        <li>• Missing out on promotions</li>
+                        <li>• Paying $15K/month for recruiting consultants</li>
+                        <li>• Waiting weeks for expense audits</li>
+                        <li>• Manual CV screening taking forever</li>
+                        <li>• Expensive marketing agencies with slow results</li>
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-bold text-green-600 mb-3">😎 With SimpleAI:</h4>
+                      <h4 className="font-bold text-green-600 mb-3">With Nexus:</h4>
                       <ul className="space-y-2 text-sm text-gray-600">
-                        <li>• "Actually, the data shows..."</li>
-                        <li>• Instant credibility and respect</li>
-                        <li>• Always the smartest person in the room</li>
-                        <li>• Fast-track to leadership roles</li>
+                        <li>• AI agents working 24/7 for $99/month</li>
+                        <li>• Instant invoice processing and fraud detection</li>
+                        <li>• 100 CVs analyzed in seconds</li>
+                        <li>• Lead generation and campaign optimization automated</li>
                       </ul>
                     </div>
                   </div>
@@ -386,12 +386,12 @@ export default function LandingPage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    🚀 DOWNLOAD NOW - IT'S FREE
+                    START YOUR FREE TRIAL
                   </motion.button>
                 </Link>
                 
                 <p className="text-sm text-gray-500">
-                  ⏰ Setup takes 2 minutes. Your next meeting will never be the same.
+                  Setup takes 5 minutes. Your first AI agent can be working today.
                 </p>
               </motion.div>
             </div>
@@ -408,11 +408,25 @@ export default function LandingPage() {
                   <span className="text-lg font-bold text-gray-900">Nexus</span>
                 </div>
                 
-                <div className="flex items-center space-x-8 text-sm text-gray-600">
-                  <Link href="/auth/login" className="hover:text-gray-900 transition-colors">Sign In</Link>
-                  <Link href="/auth/register" className="hover:text-gray-900 transition-colors">Get Started</Link>
-                  <button className="hover:text-gray-900 transition-colors">Support</button>
-                  <button className="hover:text-gray-900 transition-colors">Privacy</button>
+                <div className="flex items-center space-x-6">
+                  <motion.a
+                    href="https://linkedin.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-transparent hover:bg-gradient-to-r hover:from-orange-600 hover:to-red-600 hover:bg-clip-text transition-all duration-300"
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    <Linkedin className="w-5 h-5" />
+                  </motion.a>
+                  <motion.a
+                    href="https://github.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-transparent hover:bg-gradient-to-r hover:from-orange-600 hover:to-red-600 hover:bg-clip-text transition-all duration-300"
+                    whileHover={{ scale: 1.1 }}
+                  >
+                    <Github className="w-5 h-5" />
+                  </motion.a>
                 </div>
                 
                 <div className="text-sm text-gray-500">
