@@ -256,19 +256,28 @@ export default function ProfileSettings() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Department
+                      {(user?.role === 'user') && (
+                        <span className="text-xs text-gray-500 ml-2">(Contact admin to change)</span>
+                      )}
                     </label>
-                    <select
-                      value={profileData.department}
-                      onChange={(e) => handleInputChange('profile', 'department', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                    >
-                      <option value="">Select Department</option>
-                      <option value="Human Resources">Human Resources</option>
-                      <option value="Finance">Finance</option>
-                      <option value="Sales & Marketing">Sales & Marketing</option>
-                      <option value="IT">IT</option>
-                      <option value="Operations">Operations</option>
-                    </select>
+                    {user?.role === 'user' ? (
+                      <div className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-600">
+                        {profileData.department || 'No department assigned'}
+                      </div>
+                    ) : (
+                      <select
+                        value={profileData.department}
+                        onChange={(e) => handleInputChange('profile', 'department', e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                      >
+                        <option value="">Select Department</option>
+                        <option value="Human Resources">Human Resources</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Sales & Marketing">Sales & Marketing</option>
+                        <option value="IT">IT</option>
+                        <option value="Operations">Operations</option>
+                      </select>
+                    )}
                   </div>
                 </div>
 

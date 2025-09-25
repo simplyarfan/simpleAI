@@ -152,12 +152,7 @@ export default function Analytics() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-black relative overflow-hidden">
-        {/* Subtle animated background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" style={{ left: '10%', top: '20%' }} />
-          <div className="absolute w-64 h-64 bg-blue-500/3 rounded-full blur-2xl" style={{ right: '10%', bottom: '20%' }} />
-        </div>
+      <div className="min-h-screen bg-gray-50 relative overflow-hidden">
 
         <Head>
           <title>Analytics - SimpleAI</title>

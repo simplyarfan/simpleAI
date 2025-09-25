@@ -53,13 +53,21 @@ const ModernCVIntelligence = () => {
   const fetchBatches = async () => {
     try {
       setLoading(true);
+      console.log('🎯 Fetching CV batches...');
       const response = await cvAPI.getBatches();
+      console.log('🎯 Fetch batches response:', response);
+      
       if (response.success) {
         setBatches(response.data || []);
+        console.log('🎯 Batches loaded:', response.data?.length || 0);
+      } else {
+        console.error('🎯 Failed to fetch batches:', response);
+        toast.error(response.message || 'Failed to load CV batches');
       }
     } catch (error) {
-      console.error('Error fetching batches:', error);
-      toast.error('Failed to load CV batches');
+      console.error('🎯 Error fetching batches:', error);
+      console.error('🎯 Error details:', error.response?.data);
+      toast.error(`Failed to load CV batches: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -73,20 +81,29 @@ const ModernCVIntelligence = () => {
     }
 
     try {
+      console.log('🎯 Creating batch with name:', batchName);
+      console.log('🎯 CV files count:', selectedFiles.cvFiles.length);
+      console.log('🎯 JD file:', selectedFiles.jdFile ? 'present' : 'none');
+
       const formData = new FormData();
       formData.append('name', batchName);
       
       // Add CV files if any
       selectedFiles.cvFiles.forEach((file, index) => {
         formData.append(`cvFiles`, file);
+        console.log(`🎯 Added CV file ${index + 1}:`, file.name);
       });
       
       // Add JD file if any
       if (selectedFiles.jdFile) {
         formData.append('jdFile', selectedFiles.jdFile);
+        console.log('🎯 Added JD file:', selectedFiles.jdFile.name);
       }
 
+      console.log('🎯 Sending request to create batch...');
       const response = await cvAPI.createBatch(formData);
+      console.log('🎯 Create batch response:', response);
+      
       if (response.success) {
         toast.success('Batch created successfully!');
         setShowUploadModal(false);
@@ -94,11 +111,13 @@ const ModernCVIntelligence = () => {
         setSelectedFiles({ cvFiles: [], jdFile: null });
         fetchBatches();
       } else {
+        console.error('🎯 Batch creation failed:', response);
         toast.error(response.message || 'Failed to create batch');
       }
     } catch (error) {
-      console.error('Error creating batch:', error);
-      toast.error('Failed to create batch');
+      console.error('🎯 Error creating batch:', error);
+      console.error('🎯 Error details:', error.response?.data);
+      toast.error(`Failed to create batch: ${error.response?.data?.message || error.message}`);
     }
   };
 
