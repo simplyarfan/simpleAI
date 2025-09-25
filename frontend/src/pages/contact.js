@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, CheckCircle } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, ArrowRight } from 'lucide-react';
+import Navbar from '../components/shared/Navbar';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -36,48 +36,20 @@ export default function Contact() {
       </Head>
 
       <div className="relative min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 text-gray-900">
-        {/* Navigation */}
-        <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <Link href="/">
-              <div className="flex items-center space-x-2 cursor-pointer hover:scale-105 transition-transform duration-300">
-                <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
-                </div>
-                <span className="text-xl font-bold text-gray-900">Nexus</span>
-              </div>
-            </Link>
-
-            <div className="hidden md:flex space-x-8 text-sm font-medium">
-              <Link href="/" className="text-gray-600 hover:text-gray-900 transition-colors">Home</Link>
-              <Link href="/features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</Link>
-              <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">About</Link>
-              <span className="text-gray-900 font-semibold">Contact</span>
-            </div>
-
-            <Link href="/auth/login">
-              <button className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300">
-                Get Started
-              </button>
-            </Link>
-          </div>
-        </nav>
+        <Navbar />
 
         {/* Hero Section */}
         <section className="pt-32 pb-10">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
+            <div
+                          >
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
                 Get in Touch
               </h1>
               <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
                 Have questions about our AI agents? Want to discuss enterprise solutions? We're here to help you transform your business.
               </p>
-            </motion.div>
+            </div>
           </div>
         </section>
 
@@ -86,25 +58,22 @@ export default function Contact() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Contact Form */}
-              <motion.div
+              <div
                 className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40"
-                initial={{ opacity: 0, x: -30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-              >
+                              >
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a message</h2>
                 
                 {isSubmitted ? (
-                  <motion.div
+                  <div
                     className="text-center py-12"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5 }}
+                    }
+                    }
+                    }
                   >
                     <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">Message Sent!</h3>
                     <p className="text-gray-600">We'll get back to you within 24 hours.</p>
-                  </motion.div>
+                  </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -187,25 +156,23 @@ export default function Contact() {
                       />
                     </div>
 
-                    <motion.button
+                    <button
                       type="submit"
                       className="w-full px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2"
-                      whileHover={{ scale: 1.02, y: -1 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
+                                          >
                       <Send className="w-5 h-5" />
                       <span>Send Message</span>
-                    </motion.button>
+                    </button>
                   </form>
                 )}
-              </motion.div>
+              </div>
 
               {/* Contact Info */}
-              <motion.div
+              <div
                 className="space-y-8"
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
+                }
+                }
+                }
               >
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 mb-6">Let's start a conversation</h2>
@@ -263,16 +230,16 @@ export default function Contact() {
                     Looking for custom AI solutions for your enterprise? Our team can help you build tailored AI agents for your specific needs.
                   </p>
                   <Link href="/auth/register">
-                    <motion.button 
+                    <button 
                       className="px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
-                      whileHover={{ scale: 1.05, y: -1 }}
-                      whileTap={{ scale: 0.95 }}
+                      }
+                      }
                     >
                       Schedule a Demo
-                    </motion.button>
+                    </button>
                   </Link>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
@@ -280,64 +247,61 @@ export default function Contact() {
         {/* FAQ Section */}
         <section className="py-20 bg-white/50 backdrop-blur-sm">
           <div className="max-w-4xl mx-auto px-6">
-            <motion.div
+            <div
               className="text-center mb-16"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
+                          >
               <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
               <p className="text-lg text-gray-600">Quick answers to common questions</p>
-            </motion.div>
+            </div>
 
             <div className="space-y-6">
-              <motion.div
+              <div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
+                }
+                }
+                }
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">How quickly can I get started?</h3>
                 <p className="text-gray-600">
                   You can get started immediately with our free tier. Simply sign up and you'll have access to our AI agents within minutes.
                 </p>
-              </motion.div>
+              </div>
 
-              <motion.div
+              <div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
+                }
+                }
+                }
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you offer enterprise support?</h3>
                 <p className="text-gray-600">
                   Yes, we provide dedicated enterprise support with SLA guarantees, priority assistance, and custom integration help.
                 </p>
-              </motion.div>
+              </div>
 
-              <motion.div
+              <div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                }
+                }
+                }
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">What pricing plans do you offer?</h3>
                 <p className="text-gray-600">
                   We offer flexible pricing from free tier to enterprise plans. Contact our sales team for custom enterprise pricing.
                 </p>
-              </motion.div>
+              </div>
 
-              <motion.div
+              <div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
+                }
+                }
+                }
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Is there a free trial available?</h3>
                 <p className="text-gray-600">
                   Yes, we offer a 14-day free trial with full access to our platform features. No credit card required.
                 </p>
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
@@ -351,12 +315,6 @@ export default function Contact() {
                   <div className="w-3 h-3 bg-white rounded-sm transform rotate-45"></div>
                 </div>
                 <span className="text-lg font-bold text-gray-900">Nexus</span>
-              </div>
-              
-              <div className="flex items-center space-x-6 text-sm text-gray-600">
-                <Link href="/features" className="hover:text-gray-900 transition-colors">Features</Link>
-                <Link href="/about" className="hover:text-gray-900 transition-colors">About</Link>
-                <Link href="/contact" className="hover:text-gray-900 transition-colors">Contact</Link>
               </div>
               
               <div className="text-sm text-gray-500">
