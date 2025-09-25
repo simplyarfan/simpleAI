@@ -23,22 +23,16 @@ export default function LandingPage() {
         </div>
 
         {/* Navigation */}
-        <motion.nav 
-          className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <motion.div
-              className="flex items-center space-x-2"
-              whileHover={{ scale: 1.02 }}
-            >
-              <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
-                <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
+            <Link href="/">
+              <div className="flex items-center space-x-2 cursor-pointer hover:scale-105 transition-transform duration-300">
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
+                  <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
+                </div>
+                <span className="text-xl font-bold text-gray-900">Nexus</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">Nexus</span>
-            </motion.div>
+            </Link>
 
             <div className="hidden md:flex space-x-8 text-sm font-medium">
               <Link href="/features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</Link>
@@ -47,16 +41,12 @@ export default function LandingPage() {
             </div>
 
             <Link href="/auth/login">
-              <motion.button 
-                className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg transition-all duration-300"
-                whileHover={{ scale: 1.05, y: -1 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <button className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300">
                 Get Started
-              </motion.button>
+              </button>
             </Link>
           </div>
-        </motion.nav>
+        </nav>
 
         {/* Loading Transition */}
         <AnimatePresence>
@@ -81,83 +71,39 @@ export default function LandingPage() {
           {/* Hero Section */}
           <section className="relative min-h-screen flex items-center justify-center pt-24 pb-20">
             <div className="max-w-6xl mx-auto px-6 text-center">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-                className="mb-8"
-              >
+              <div className="mb-8">
                 <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-sm border border-white/40 rounded-full px-6 py-3 mb-8 shadow-lg">
                   <div className="w-4 h-4 bg-gradient-to-br from-orange-600 to-red-600 rounded-sm transform rotate-45"></div>
                   <span className="text-sm font-medium text-gray-700">AI Agents That Actually Work</span>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.h1
-                className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-[0.85] tracking-tight"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-[0.85] tracking-tight">
                 <span className="text-gray-900">Stop hiring expensive</span>
                 <br />
                 <span className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
                   consultants
                 </span>
-              </motion.h1>
+              </h1>
 
-              <motion.p
-                className="text-xl md:text-2xl text-gray-700 mb-6 max-w-3xl mx-auto leading-relaxed font-medium"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.5 }}
-              >
+              <p className="text-xl md:text-2xl text-gray-700 mb-6 max-w-3xl mx-auto leading-relaxed font-medium">
                 Get specialized AI agents for HR, Finance, and Sales that work 24/7 and never ask for a raise.
-              </motion.p>
+              </p>
 
-              <motion.p
-                className="text-lg text-gray-500 mb-12 max-w-2xl mx-auto italic"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-              >
+              <p className="text-lg text-gray-500 mb-12 max-w-2xl mx-auto italic">
                 "Wait, you fired the whole consulting team?" - Your CFO, probably
-              </motion.p>
+              </p>
 
-              <motion.div
-                className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-16"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-              >
-                <Link href="/auth/register">
-                  <motion.button 
-                    className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300"
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Start Free Trial
-                  </motion.button>
-                </Link>
-                
+              <div className="flex justify-center mb-16">
                 <Link href="/auth/login">
-                  <motion.button 
-                    className="px-8 py-4 bg-white text-gray-900 font-semibold rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-300"
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Sign In
-                  </motion.button>
+                  <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300">
+                    Try today
+                  </button>
                 </Link>
-              </motion.div>
+              </div>
 
               {/* Question Card like Cluely */}
-              <motion.div
-                className="max-w-2xl mx-auto"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-              >
+              <div className="max-w-2xl mx-auto">
                 <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/40">
                   <div className="flex items-center space-x-3 mb-6">
                     <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -187,71 +133,10 @@ export default function LandingPage() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            </div>
-          </section>
-
-          {/* Features Section */}
-          <section className="py-32 bg-white/50 backdrop-blur-sm">
-            <div className="max-w-7xl mx-auto px-6">
-              <motion.div 
-                className="text-center mb-20"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-              >
-                <div className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-sm font-semibold mb-4">
-                  AI second brain for every meeting
-                </div>
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                  Thinking is the slowest thing you do.
-                  <br />
-                  Let AI do it for you instead.
-                </h2>
-              </motion.div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-                <motion.div
-                  className="text-center"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Sparkles className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-blue-600 mb-2">Live insights</h3>
-                  <p className="text-gray-600">Real-time AI analysis during meetings</p>
-                </motion.div>
-
-                <motion.div
-                  className="text-center"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Brain className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-purple-600 mb-2">Instant answers</h3>
-                  <p className="text-gray-600">Get answers you didn't study for</p>
-                </motion.div>
-
-                <motion.div
-                  className="text-center"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.6 }}
-                >
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <FileText className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-emerald-600 mb-2">Knowledge search</h3>
-                  <p className="text-gray-600">Search through all your documents</p>
-                </motion.div>
               </div>
             </div>
           </section>
+
 
           {/* Use Cases Section */}
           <section className="py-32 bg-black text-white relative overflow-hidden">
@@ -260,12 +145,7 @@ export default function LandingPage() {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]"></div>
             
             <div className="max-w-7xl mx-auto px-6 relative z-10">
-              <motion.div 
-                className="text-center mb-20"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-              >
+              <div className="text-center mb-20">
                 <div className="inline-block bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
                   Unfair Advantage Mode
                 </div>
@@ -276,7 +156,7 @@ export default function LandingPage() {
                     Start actually knowing everything.
                   </span>
                 </h2>
-              </motion.div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
                 {[
@@ -305,13 +185,9 @@ export default function LandingPage() {
                     benefit: "24/7 lead generation and campaign optimization"
                   }
                 ].map((useCase, index) => (
-                  <motion.div
+                  <div
                     key={useCase.title}
-                    className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    whileHover={{ scale: 1.05, y: -5 }}
+                    className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:scale-105 hover:-translate-y-2 transition-all duration-500 ease-out cursor-pointer"
                   >
                     <div className="mb-4">
                       <useCase.icon className="w-12 h-12 text-white" />
@@ -324,7 +200,7 @@ export default function LandingPage() {
                     <div className="text-xs font-bold text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full">
                       {useCase.benefit}
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
 
@@ -338,11 +214,7 @@ export default function LandingPage() {
           <section className="py-32 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-red-100/50 to-orange-100/50"></div>
             <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-              >
+              <div>
                 <div className="inline-block bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
                   Ready to Transform Your Business?
                 </div>
@@ -380,20 +252,16 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <Link href="/auth/register">
-                  <motion.button 
-                    className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 text-white font-black px-16 py-6 rounded-2xl text-2xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 mb-4"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    START YOUR FREE TRIAL
-                  </motion.button>
+                <Link href="/auth/login">
+                  <button className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 text-white font-bold px-16 py-6 rounded-2xl text-2xl hover:shadow-2xl hover:scale-105 hover:-translate-y-1 transition-all duration-500 ease-out mb-4">
+                    Try today
+                  </button>
                 </Link>
                 
                 <p className="text-sm text-gray-500">
                   Setup takes 5 minutes. Your first AI agent can be working today.
                 </p>
-              </motion.div>
+              </div>
             </div>
           </section>
 

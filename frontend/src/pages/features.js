@@ -14,23 +14,15 @@ export default function Features() {
 
       <div className="relative min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 text-gray-900">
         {/* Navigation */}
-        <motion.nav 
-          className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <Link href="/">
-              <motion.div
-                className="flex items-center space-x-2 cursor-pointer"
-                whileHover={{ scale: 1.02 }}
-              >
+              <div className="flex items-center space-x-2 cursor-pointer hover:scale-105 transition-transform duration-300">
                 <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
                   <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
                 </div>
                 <span className="text-xl font-bold text-gray-900">Nexus</span>
-              </motion.div>
+              </div>
             </Link>
 
             <div className="hidden md:flex space-x-8 text-sm font-medium">
@@ -41,25 +33,17 @@ export default function Features() {
             </div>
 
             <Link href="/auth/login">
-              <motion.button 
-                className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg transition-all duration-300"
-                whileHover={{ scale: 1.05, y: -1 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <button className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300">
                 Get Started
-              </motion.button>
+              </button>
             </Link>
           </div>
-        </motion.nav>
+        </nav>
 
         {/* Hero Section */}
         <section className="pt-32 pb-20">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
+            <div>
               <div className="inline-block bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
                 Powerful AI Features
               </div>
@@ -73,7 +57,7 @@ export default function Features() {
               <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
                 Transform your business operations with specialized AI agents designed for HR, Finance, and Sales departments.
               </p>
-            </motion.div>
+            </div>
           </div>
         </section>
 
@@ -82,12 +66,7 @@ export default function Features() {
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               {/* HR Features */}
-              <motion.div
-                className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40">
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-6">
                   <Users className="w-8 h-8 text-white" />
                 </div>
@@ -117,15 +96,10 @@ export default function Features() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Finance Features */}
-              <motion.div
-                className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40">
                 <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6">
                   <BarChart3 className="w-8 h-8 text-white" />
                 </div>
@@ -155,15 +129,10 @@ export default function Features() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Sales Features */}
-              <motion.div
-                className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-              >
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40">
                 <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6">
                   <Brain className="w-8 h-8 text-white" />
                 </div>
@@ -193,7 +162,7 @@ export default function Features() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </section>
@@ -201,28 +170,20 @@ export default function Features() {
         {/* CTA Section */}
         <section className="py-20">
           <div className="max-w-4xl mx-auto px-6 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
+            <div>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
                 Ready to Transform Your Business?
               </h2>
               <p className="text-xl text-gray-600 mb-8">
                 Start using AI agents today and see the difference they make.
               </p>
-              <Link href="/auth/register">
-                <motion.button 
-                  className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300 inline-flex items-center space-x-2"
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <span>Start Free Trial</span>
+              <Link href="/auth/login">
+                <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 inline-flex items-center space-x-2">
+                  <span>Try today</span>
                   <ArrowRight className="w-5 h-5" />
-                </motion.button>
+                </button>
               </Link>
-            </motion.div>
+            </div>
           </div>
         </section>
 
