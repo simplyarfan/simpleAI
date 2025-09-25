@@ -24,7 +24,7 @@ export default function ModernLogin({ onLogin, loading = false }) {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl mb-6">
             <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
               <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
             </div>
@@ -44,7 +44,7 @@ export default function ModernLogin({ onLogin, loading = false }) {
               <input
                 type="email"
                 required
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
@@ -60,7 +60,7 @@ export default function ModernLogin({ onLogin, loading = false }) {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
@@ -88,7 +88,7 @@ export default function ModernLogin({ onLogin, loading = false }) {
                 />
                 <span className="ml-2 text-sm text-gray-600">Remember me</span>
               </label>
-              <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-500 transition-colors">
+              <Link href="/auth/forgot-password" className="text-sm text-orange-600 hover:text-orange-500 transition-colors">
                 Forgot your password?
               </Link>
             </div>
@@ -97,7 +97,7 @@ export default function ModernLogin({ onLogin, loading = false }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold py-3 px-4 rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Signing in..." : "Sign in"}
             </button>
@@ -108,7 +108,7 @@ export default function ModernLogin({ onLogin, loading = false }) {
         <div className="text-center mt-6">
           <p className="text-gray-600">
             Don't have an account?{' '}
-            <Link href="/auth/register" className="text-blue-600 hover:text-blue-500 font-semibold transition-colors">
+            <Link href="/auth/register" className="text-orange-600 hover:text-orange-500 font-semibold transition-colors">
               Sign up for free
             </Link>
           </p>

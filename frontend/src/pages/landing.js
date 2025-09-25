@@ -276,12 +276,6 @@ export default function LandingPage() {
                   <span className="text-lg font-bold text-gray-900">Nexus</span>
                 </div>
                 
-                <div className="flex items-center space-x-6 text-sm text-gray-600">
-                  <Link href="/features" className="hover:text-gray-900 transition-colors">Features</Link>
-                  <Link href="/about" className="hover:text-gray-900 transition-colors">About</Link>
-                  <Link href="/contact" className="hover:text-gray-900 transition-colors">Contact</Link>
-                </div>
-                
                 <div className="text-sm text-gray-500">
                   © 2025 Nexus. All rights reserved.
                 </div>

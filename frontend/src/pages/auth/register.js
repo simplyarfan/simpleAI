@@ -132,7 +132,7 @@ const Register = () => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-6">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl mb-6">
             <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
               <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
             </div>
@@ -160,7 +160,7 @@ const Register = () => {
                   onChange={handleChange}
                   className={`w-full px-4 py-3 border ${
                     errors.first_name ? 'border-red-300' : 'border-gray-200'
-                  } rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                  } rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
                   placeholder="John"
                 />
                 {errors.first_name && (
@@ -182,7 +182,7 @@ const Register = () => {
                   onChange={handleChange}
                   className={`w-full px-4 py-3 border ${
                     errors.last_name ? 'border-red-300' : 'border-gray-200'
-                  } rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                  } rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
                   placeholder="Doe"
                 />
                 {errors.last_name && (
@@ -206,7 +206,7 @@ const Register = () => {
                 onChange={handleChange}
                 className={`w-full px-4 py-3 border ${
                   errors.email ? 'border-red-300' : 'border-gray-200'
-                } rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                } rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
                 placeholder="john@example.com"
               />
               {errors.email && (
@@ -217,7 +217,7 @@ const Register = () => {
             {/* Job Title (Optional) */}
             <div>
               <label htmlFor="job_title" className="block text-sm font-medium text-gray-700 mb-2">
-                Company (optional)
+                Role (optional)
               </label>
               <input
                 id="job_title"
@@ -225,8 +225,8 @@ const Register = () => {
                 type="text"
                 value={formData.job_title}
                 onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Acme Inc."
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                placeholder="Software Engineer"
               />
             </div>
 
@@ -246,7 +246,7 @@ const Register = () => {
                   onChange={handleChange}
                   className={`w-full px-4 py-3 pr-12 border ${
                     errors.password ? 'border-red-300' : 'border-gray-200'
-                  } rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                  } rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
                   placeholder="Create a strong password"
                 />
                 <button
@@ -278,7 +278,7 @@ const Register = () => {
                   onChange={handleChange}
                   className={`w-full px-4 py-3 pr-12 border ${
                     errors.confirmPassword ? 'border-red-300' : 'border-gray-200'
-                  } rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all`}
+                  } rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
                   placeholder="Confirm your password"
                 />
                 <button
@@ -294,30 +294,12 @@ const Register = () => {
               )}
             </div>
 
-            {/* Terms and Privacy */}
-            <div className="flex items-start">
-              <input
-                type="checkbox"
-                required
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 mt-0.5"
-              />
-              <label className="ml-2 text-sm text-gray-600">
-                I agree to the{' '}
-                <Link href="/terms" className="text-blue-600 hover:text-blue-500">
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link href="/privacy" className="text-blue-600 hover:text-blue-500">
-                  Privacy Policy
-                </Link>
-              </label>
-            </div>
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold py-3 px-4 rounded-xl hover:from-orange-600 hover:to-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "Creating account..." : "Create account"}
             </button>
@@ -328,7 +310,7 @@ const Register = () => {
         <div className="text-center mt-6">
           <p className="text-gray-600">
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-blue-600 hover:text-blue-500 font-semibold transition-colors">
+            <Link href="/auth/login" className="text-orange-600 hover:text-orange-500 font-semibold transition-colors">
               Sign in here
             </Link>
           </p>
