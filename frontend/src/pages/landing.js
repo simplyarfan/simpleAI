@@ -158,25 +158,34 @@ export default function LandingPage() {
               </motion.div>
 
               <motion.h1
-                className="text-5xl md:text-7xl lg:text-8xl font-medium mb-8 leading-[0.9] tracking-tight"
+                className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-[0.85] tracking-tight"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                <span className="text-gray-900">Invisible AI That</span>
+                <span className="text-gray-900">Never get caught</span>
                 <br />
-                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  Thinks for You
+                <span className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
+                  unprepared again
                 </span>
               </motion.h1>
 
               <motion.p
-                className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light"
+                className="text-xl md:text-2xl text-gray-700 mb-6 max-w-3xl mx-auto leading-relaxed font-medium"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
               >
-                SimpleAI is an undetectable desktop app that gives you the answers you didn't study for in every meeting and conversation.
+                Your secret AI assistant that whispers the right answers during every meeting, interview, and presentation.
+              </motion.p>
+
+              <motion.p
+                className="text-lg text-gray-500 mb-12 max-w-2xl mx-auto italic"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+              >
+                "Holy shit, how did you know that?" - Your colleagues, probably
               </motion.p>
 
               <motion.div
@@ -224,22 +233,24 @@ export default function LandingPage() {
                   </div>
                   
                   <div className="text-left space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">When's the last time you froze in a meeting?</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Remember that time you got completely destroyed?</h3>
                     <div className="space-y-3">
                       {[
-                        '"Can you analyze this CV quickly?" [What should I look for?]',
-                        '"What\'s our Q4 expense breakdown?" [Let me check...]',
-                        '"How are our sales campaigns performing?" [Good question...]'
+                        '"So what\'s your take on the blockchain integration?" [Fuck, what blockchain?]',
+                        '"Can you walk us through the Q3 metrics?" [Shit, which metrics again?]',
+                        '"What do you think about Sarah\'s proposal?" [Who the hell is Sarah?]'
                       ].map((scenario, index) => (
                         <div key={index} className="flex items-start space-x-2">
-                          <span className="text-gray-400 mt-1">•</span>
+                          <span className="text-red-500 mt-1">💀</span>
                           <span className="text-gray-700 font-medium">{scenario}</span>
                         </div>
                       ))}
                     </div>
-                    <p className="text-sm text-gray-500 italic mt-6">
-                      Suggestion: Scroll down to see SimpleAI in action.
-                    </p>
+                    <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                      <p className="text-sm text-green-700 font-medium">
+                        <span className="text-green-600">✨ With SimpleAI:</span> You become the person who always has the perfect answer, the right data, and the brilliant insight. Every. Single. Time.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -309,68 +320,155 @@ export default function LandingPage() {
           </section>
 
           {/* Use Cases Section */}
-          <section className="py-32 bg-gradient-to-br from-slate-50 to-blue-50">
-            <div className="max-w-7xl mx-auto px-6">
+          <section className="py-32 bg-black text-white relative overflow-hidden">
+            {/* Dark background with subtle pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+            
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
               <motion.div 
                 className="text-center mb-20"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                  It's time to cheat
-                </h2>
-                <div className="text-6xl md:text-8xl font-bold leading-tight">
-                  <span className="text-gray-900">Interviews.</span>
-                  <span className="text-gray-400"> Sales calls.</span>
-                  <br />
-                  <span className="text-gray-300">Homework.</span>
-                  <span className="text-gray-200"> Meetings.</span>
-                  <br />
-                  <span className="text-gray-100">Really everything.</span>
+                <div className="inline-block bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
+                  ⚠️ Unfair Advantage Mode
                 </div>
+                <h2 className="text-4xl md:text-6xl font-black text-white mb-8">
+                  Stop pretending you know everything.
+                  <br />
+                  <span className="bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent">
+                    Start actually knowing everything.
+                  </span>
+                </h2>
               </motion.div>
 
-              <div className="text-center">
-                <Link href="/auth/register">
-                  <motion.button 
-                    className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300 mx-auto"
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                {[
+                  { 
+                    title: "Job Interviews", 
+                    subtitle: "Never stumble again",
+                    description: "Technical questions? Behavioral scenarios? Company history? You'll have every answer before they finish asking.",
+                    emoji: "🎯",
+                    color: "from-green-400 to-emerald-600"
+                  },
+                  { 
+                    title: "Client Meetings", 
+                    subtitle: "Become the expert",
+                    description: "Industry insights, competitor analysis, market trends - you'll sound like you've been studying this for years.",
+                    emoji: "💼",
+                    color: "from-blue-400 to-indigo-600"
+                  },
+                  { 
+                    title: "Sales Calls", 
+                    subtitle: "Close every deal",
+                    description: "Objection handling, pricing strategies, competitor weaknesses - you'll know exactly what to say.",
+                    emoji: "💰",
+                    color: "from-purple-400 to-pink-600"
+                  },
+                  { 
+                    title: "Board Meetings", 
+                    subtitle: "Command the room",
+                    description: "Financial data, strategic insights, industry benchmarks - you'll be the smartest person at the table.",
+                    emoji: "👑",
+                    color: "from-yellow-400 to-orange-600"
+                  }
+                ].map((useCase, index) => (
+                  <motion.div
+                    key={useCase.title}
+                    className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    whileHover={{ scale: 1.05, y: -5 }}
                   >
-                    <Download className="w-5 h-5" />
-                    <span>Get for Mac</span>
-                  </motion.button>
-                </Link>
+                    <div className="text-4xl mb-4">{useCase.emoji}</div>
+                    <h3 className="text-xl font-bold text-white mb-2">{useCase.title}</h3>
+                    <div className={`text-sm font-semibold bg-gradient-to-r ${useCase.color} bg-clip-text text-transparent mb-3`}>
+                      {useCase.subtitle}
+                    </div>
+                    <p className="text-gray-300 text-sm leading-relaxed">{useCase.description}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="text-center">
+                <motion.div
+                  className="inline-block"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link href="/auth/register">
+                    <button className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 text-black font-black px-12 py-6 rounded-2xl text-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+                      🔥 GET YOUR UNFAIR ADVANTAGE
+                    </button>
+                  </Link>
+                </motion.div>
+                <p className="text-gray-400 text-sm mt-4">Join 10,000+ professionals who stopped playing fair</p>
               </div>
             </div>
           </section>
 
           {/* Final CTA */}
-          <section className="py-32 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-            <div className="max-w-4xl mx-auto px-6 text-center">
+          <section className="py-32 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-100/50 to-orange-100/50"></div>
+            <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                  Meeting AI that helps during the call, not after.
+                <div className="inline-block bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
+                  🚨 Last Warning
+                </div>
+                <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-6">
+                  Your next meeting is in 
+                  <br />
+                  <span className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 bg-clip-text text-transparent">
+                    3 hours.
+                  </span>
                 </h2>
-                <p className="text-xl text-gray-600 mb-12">
-                  Try SimpleAI on your next meeting today.
+                <p className="text-xl text-gray-700 mb-8 font-medium">
+                  Are you going to wing it again? Or are you finally going to show up prepared?
                 </p>
+                
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-orange-200 shadow-xl">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                    <div>
+                      <h4 className="font-bold text-red-600 mb-3">😰 Without SimpleAI:</h4>
+                      <ul className="space-y-2 text-sm text-gray-600">
+                        <li>• "Uh, let me get back to you on that..."</li>
+                        <li>• Awkward silences when asked for data</li>
+                        <li>• Looking unprepared in front of your boss</li>
+                        <li>• Missing out on promotions</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-green-600 mb-3">😎 With SimpleAI:</h4>
+                      <ul className="space-y-2 text-sm text-gray-600">
+                        <li>• "Actually, the data shows..."</li>
+                        <li>• Instant credibility and respect</li>
+                        <li>• Always the smartest person in the room</li>
+                        <li>• Fast-track to leadership roles</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
 
                 <Link href="/auth/register">
                   <motion.button 
-                    className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300 mx-auto"
-                    whileHover={{ scale: 1.05, y: -2 }}
+                    className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 text-white font-black px-16 py-6 rounded-2xl text-2xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 mb-4"
+                    whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Download className="w-5 h-5" />
-                    <span>Get for Mac</span>
+                    🚀 DOWNLOAD NOW - IT'S FREE
                   </motion.button>
                 </Link>
+                
+                <p className="text-sm text-gray-500">
+                  ⏰ Setup takes 2 minutes. Your next meeting will never be the same.
+                </p>
               </motion.div>
             </div>
           </section>
