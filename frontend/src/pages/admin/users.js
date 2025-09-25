@@ -119,8 +119,37 @@ export default function UsersManagement() {
     setIsSubmitting(true);
     
     try {
+      console.log('➕ Creating user:', formData);
       const response = await authAPI.createUser(formData);
-      if (response.success) {
+      console.log('➕ Create response:', response);
+      
+      // Check if response.data exists and has success property
+      const isSuccess = response?.data?.success || response?.success;
+      
+      if (isSuccess) {
+        toast.success('User created successfully');
+        setShowAddModal(false);
+        setFormData({
+          email: '',
+          password: '',
+          first_name: '',
+          last_name: '',
+          department: '',
+          job_title: '',
+          role: 'user'
+        });
+        fetchUsers(); // Refresh the user list
+      } else {
+        const errorMessage = response?.data?.message || response?.message || 'Failed to create user';
+        console.error('❌ Create failed:', response);
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('❌ Error creating user:', error);
+      console.error('Error details:', error.response?.data);
+      
+      // Check if the error is actually a successful creation (status 200/201)
+      if (error.response?.status === 200 || error.response?.status === 201 || error.response?.data?.success) {
         toast.success('User created successfully');
         setShowAddModal(false);
         setFormData({
@@ -134,11 +163,8 @@ export default function UsersManagement() {
         });
         fetchUsers();
       } else {
-        toast.error(response.message || 'Failed to create user');
+        toast.error(`Failed to create user: ${error.response?.data?.message || error.message}`);
       }
-    } catch (error) {
-      console.error('Error creating user:', error);
-      toast.error('Failed to create user');
     } finally {
       setIsSubmitting(false);
     }
