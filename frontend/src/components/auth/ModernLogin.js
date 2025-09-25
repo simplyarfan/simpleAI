@@ -20,34 +20,31 @@ export default function ModernLogin({ onLogin, loading = false }) {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-10 h-10 bg-white rounded-lg mb-4">
-            <div className="w-6 h-6 bg-black rounded-sm"></div>
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-6">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
+              <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
+            </div>
           </div>
-          <h1 className="text-white text-xl font-medium">SimpleAI</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h1>
+          <p className="text-gray-600">Sign in to your account to continue</p>
         </div>
 
-        {/* Login Form */}
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-white text-lg font-medium mb-1">
-              Log in to SimpleAI
-            </h2>
-            <p className="text-gray-400 text-sm mb-6">
-              Sign in to your account to continue
-            </p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Login Form Card */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email address
+              </label>
               <input
                 type="email"
                 required
-                className="w-full px-3 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
@@ -55,47 +52,66 @@ export default function ModernLogin({ onLogin, loading = false }) {
             </div>
 
             {/* Password Field */}
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                className="w-full px-3 py-3 pr-10 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 transition-colors"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember me and Forgot password */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-gray-600">Remember me</span>
+              </label>
+              <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-500 transition-colors">
+                Forgot your password?
+              </Link>
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-white text-black font-medium py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold py-3 px-4 rounded-xl hover:from-blue-600 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Signing in..." : "Continue"}
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
+        </div>
 
-          {/* Create Account */}
-          <div className="text-center pt-4 border-t border-gray-800">
-            <p className="text-gray-400 text-sm">
-              Don't have an account?{' '}
-              <Link href="/auth/register" className="text-white hover:text-gray-300 transition-colors">
-                Create account
-              </Link>
-            </p>
-          </div>
+        {/* Create Account */}
+        <div className="text-center mt-6">
+          <p className="text-gray-600">
+            Don't have an account?{' '}
+            <Link href="/auth/register" className="text-blue-600 hover:text-blue-500 font-semibold transition-colors">
+              Sign up for free
+            </Link>
+          </p>
         </div>
       </div>
     </div>

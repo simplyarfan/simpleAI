@@ -37,23 +37,15 @@ export default function Contact() {
 
       <div className="relative min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 text-gray-900">
         {/* Navigation */}
-        <motion.nav 
-          className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <Link href="/">
-              <motion.div
-                className="flex items-center space-x-2 cursor-pointer"
-                whileHover={{ scale: 1.02 }}
-              >
+              <div className="flex items-center space-x-2 cursor-pointer hover:scale-105 transition-transform duration-300">
                 <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
                   <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
                 </div>
                 <span className="text-xl font-bold text-gray-900">Nexus</span>
-              </motion.div>
+              </div>
             </Link>
 
             <div className="hidden md:flex space-x-8 text-sm font-medium">
@@ -64,19 +56,15 @@ export default function Contact() {
             </div>
 
             <Link href="/auth/login">
-              <motion.button 
-                className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg transition-all duration-300"
-                whileHover={{ scale: 1.05, y: -1 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <button className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300">
                 Get Started
-              </motion.button>
+              </button>
             </Link>
           </div>
-        </motion.nav>
+        </nav>
 
         {/* Hero Section */}
-        <section className="pt-32 pb-20">
+        <section className="pt-32 pb-10">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
@@ -94,7 +82,7 @@ export default function Contact() {
         </section>
 
         {/* Contact Section */}
-        <section className="py-20">
+        <section className="py-10">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Contact Form */}

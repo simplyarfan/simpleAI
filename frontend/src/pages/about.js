@@ -14,23 +14,15 @@ export default function About() {
 
       <div className="relative min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 text-gray-900">
         {/* Navigation */}
-        <motion.nav 
-          className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <Link href="/">
-              <motion.div
-                className="flex items-center space-x-2 cursor-pointer"
-                whileHover={{ scale: 1.02 }}
-              >
+              <div className="flex items-center space-x-2 cursor-pointer hover:scale-105 transition-transform duration-300">
                 <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
                   <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
                 </div>
                 <span className="text-xl font-bold text-gray-900">Nexus</span>
-              </motion.div>
+              </div>
             </Link>
 
             <div className="hidden md:flex space-x-8 text-sm font-medium">
@@ -41,16 +33,12 @@ export default function About() {
             </div>
 
             <Link href="/auth/login">
-              <motion.button 
-                className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg transition-all duration-300"
-                whileHover={{ scale: 1.05, y: -1 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <button className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300">
                 Get Started
-              </motion.button>
+              </button>
             </Link>
           </div>
-        </motion.nav>
+        </nav>
 
         {/* Hero Section */}
         <section className="pt-32 pb-20">
@@ -74,45 +62,6 @@ export default function About() {
           </div>
         </section>
 
-        {/* Stats Section */}
-        <section className="py-20">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-              >
-                <div className="text-4xl font-bold text-orange-600 mb-2">150+</div>
-                <div className="text-sm text-gray-600">Team Members</div>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-              >
-                <div className="text-4xl font-bold text-orange-600 mb-2">120+</div>
-                <div className="text-sm text-gray-600">Countries Served</div>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-              >
-                <div className="text-4xl font-bold text-orange-600 mb-2">500+</div>
-                <div className="text-sm text-gray-600">Enterprise Clients</div>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
-                <div className="text-4xl font-bold text-orange-600 mb-2">8+</div>
-                <div className="text-sm text-gray-600">Years of Experience</div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
 
         {/* Mission Section */}
         <section className="py-20">
@@ -241,12 +190,7 @@ export default function About() {
               <div className="absolute left-1/2 transform -translate-x-px h-full w-0.5 bg-gradient-to-b from-orange-500 to-red-600"></div>
               
               <div className="space-y-12">
-                <motion.div
-                  className="relative flex items-center"
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                >
+                <div className="relative flex items-center">
                   <div className="flex-1 text-right pr-8">
                     <h3 className="text-xl font-bold text-gray-900">Company Founded</h3>
                     <p className="text-gray-600">Started with a vision to democratize AI access for businesses worldwide.</p>
@@ -255,14 +199,9 @@ export default function About() {
                   <div className="flex-1 pl-8">
                     <div className="text-sm font-semibold text-orange-600">2019</div>
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  className="relative flex items-center"
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                >
+                <div className="relative flex items-center">
                   <div className="flex-1 text-right pr-8">
                     <div className="text-sm font-semibold text-orange-600">2020</div>
                   </div>
@@ -271,14 +210,9 @@ export default function About() {
                     <h3 className="text-xl font-bold text-gray-900">Series A Funding</h3>
                     <p className="text-gray-600">Raised funding to accelerate product development and team expansion.</p>
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  className="relative flex items-center"
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                >
+                <div className="relative flex items-center">
                   <div className="flex-1 text-right pr-8">
                     <h3 className="text-xl font-bold text-gray-900">Global Expansion</h3>
                     <p className="text-gray-600">Launched in 25 countries with localized AI models and support.</p>
@@ -287,14 +221,9 @@ export default function About() {
                   <div className="flex-1 pl-8">
                     <div className="text-sm font-semibold text-orange-600">2021</div>
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  className="relative flex items-center"
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.4 }}
-                >
+                <div className="relative flex items-center">
                   <div className="flex-1 text-right pr-8">
                     <div className="text-sm font-semibold text-orange-600">2022</div>
                   </div>
@@ -303,14 +232,9 @@ export default function About() {
                     <h3 className="text-xl font-bold text-gray-900">Enterprise Milestone</h3>
                     <p className="text-gray-600">Reached 100+ enterprise clients including Fortune 500 companies.</p>
                   </div>
-                </motion.div>
+                </div>
 
-                <motion.div
-                  className="relative flex items-center"
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: 0.5 }}
-                >
+                <div className="relative flex items-center">
                   <div className="flex-1 text-right pr-8">
                     <h3 className="text-xl font-bold text-gray-900">Market Leader</h3>
                     <p className="text-gray-600">Became the leading AI platform with 50,000+ active developers.</p>
@@ -319,7 +243,7 @@ export default function About() {
                   <div className="flex-1 pl-8">
                     <div className="text-sm font-semibold text-orange-600">2024</div>
                   </div>
-                </motion.div>
+                </div>
               </div>
             </div>
           </div>
