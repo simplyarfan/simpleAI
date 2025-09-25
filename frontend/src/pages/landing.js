@@ -2,95 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { Brain, Users, BarChart3, FileText, Sparkles, Download } from 'lucide-react';
 
 export default function LandingPage() {
-  const [currentPage, setCurrentPage] = useState('home');
   const [isLoading, setIsLoading] = useState(false);
-  const canvasRef = useRef(null);
-  const { scrollY } = useScroll();
-  
-  // Parallax transforms
-  const y1 = useTransform(scrollY, [0, 500], [0, -100]);
-  const opacity = useTransform(scrollY, [0, 200], [1, 0]);
-
-  // Enhanced floating particles
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    
-    const particles = [];
-    for (let i = 0; i < 15; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 1.5 + 0.5,
-        speedX: (Math.random() - 0.5) * 0.2,
-        speedY: (Math.random() - 0.5) * 0.2,
-        opacity: Math.random() * 0.15 + 0.05
-      });
-    }
-    
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      particles.forEach(particle => {
-        particle.x += particle.speedX;
-        particle.y += particle.speedY;
-        
-        if (particle.x < 0 || particle.x > canvas.width) particle.speedX *= -1;
-        if (particle.y < 0 || particle.y > canvas.height) particle.speedY *= -1;
-        
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(99, 102, 241, ${particle.opacity})`;
-        ctx.fill();
-      });
-      
-      requestAnimationFrame(animate);
-    };
-    
-    animate();
-  }, []);
-
-  const handleNavigation = (page) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setCurrentPage(page);
-      setIsLoading(false);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 300);
-  };
-
-  const useCases = [
-    {
-      title: 'HR Interviews',
-      description: 'Get real-time insights and suggested questions during candidate interviews. Never run out of things to ask.',
-      examples: ['CV Intelligence analysis', 'Interview coordination', 'Candidate background research'],
-      color: 'from-blue-500 to-indigo-500'
-    },
-    {
-      title: 'Financial Analysis',
-      description: 'Instant processing of invoices, expenses, and financial documents with AI-powered insights.',
-      examples: ['Invoice processing', 'Expense auditing', 'Financial report analysis'],
-      color: 'from-green-500 to-emerald-500'
-    },
-    {
-      title: 'Sales & Marketing',
-      description: 'AI-driven lead generation and campaign optimization to boost your sales performance.',
-      examples: ['Lead generation', 'Campaign optimization', 'Sales analytics'],
-      color: 'from-purple-500 to-pink-500'
-    },
-    {
-      title: 'Document Processing',
-      description: 'Intelligent document analysis across all departments with real-time insights.',
-      examples: ['Contract review', 'Report summarization', 'Data extraction'],
-      color: 'from-orange-500 to-red-500'
-    }
-  ];
 
   return (
     <>
@@ -99,27 +14,94 @@ export default function LandingPage() {
         <meta name="description" content="AI that understands your business and amplifies human potential across HR, Finance, and Sales departments. Never freeze in a meeting again." />
       </Head>
 
-      <div className="relative min-h-screen bg-white text-gray-900 overflow-hidden" style={{ fontFamily: 'Inter, system-ui, sans-serif' }}>
-        {/* Floating Particles Canvas */}
-        <canvas 
-          ref={canvasRef}
-          className="fixed inset-0 pointer-events-none opacity-20 z-0"
-        />
+      <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 text-gray-900 overflow-hidden">
+        {/* Floating 3D Elements */}
+        <div className="fixed inset-0 pointer-events-none z-0">
+          {/* Floating App Icons */}
+          <motion.div
+            className="absolute top-20 left-10 w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-2xl flex items-center justify-center"
+            animate={{ 
+              y: [0, -20, 0],
+              rotate: [0, 5, 0]
+            }}
+            transition={{ 
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <Brain className="w-8 h-8 text-white" />
+          </motion.div>
+
+          <motion.div
+            className="absolute top-40 right-20 w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl shadow-2xl flex items-center justify-center"
+            animate={{ 
+              y: [0, 15, 0],
+              rotate: [0, -3, 0]
+            }}
+            transition={{ 
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1
+            }}
+          >
+            <Users className="w-10 h-10 text-white" />
+          </motion.div>
+
+          <motion.div
+            className="absolute bottom-40 left-20 w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-2xl flex items-center justify-center"
+            animate={{ 
+              y: [0, -25, 0],
+              rotate: [0, 8, 0]
+            }}
+            transition={{ 
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2
+            }}
+          >
+            <BarChart3 className="w-7 h-7 text-white" />
+          </motion.div>
+
+          <motion.div
+            className="absolute bottom-20 right-10 w-18 h-18 bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl shadow-2xl flex items-center justify-center"
+            animate={{ 
+              y: [0, 20, 0],
+              rotate: [0, -5, 0]
+            }}
+            transition={{ 
+              duration: 9,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.5
+            }}
+          >
+            <FileText className="w-8 h-8 text-white" />
+          </motion.div>
+
+          {/* Gradient Orbs */}
+          <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000" />
+        </div>
 
         {/* Navigation */}
         <motion.nav 
-          className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/95 border-b border-gray-100"
+          className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <motion.div
-              className="text-2xl font-medium tracking-tight text-gray-900"
-              style={{ fontFamily: 'Space Grotesk, system-ui, sans-serif' }}
+              className="flex items-center space-x-2"
               whileHover={{ scale: 1.02 }}
             >
-              SimpleAI
+              <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-semibold text-gray-900">SimpleAI</span>
             </motion.div>
 
             <div className="hidden md:flex space-x-8 text-sm font-medium">
@@ -130,11 +112,11 @@ export default function LandingPage() {
 
             <Link href="/auth/login">
               <motion.button 
-                className="px-6 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-all duration-300"
-                whileHover={{ scale: 1.02, y: -1 }}
-                whileTap={{ scale: 0.98 }}
+                className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-medium rounded-full hover:shadow-lg transition-all duration-300"
+                whileHover={{ scale: 1.05, y: -1 }}
+                whileTap={{ scale: 0.95 }}
               >
-                Sign In
+                Get Started for Free
               </motion.button>
             </Link>
           </div>
@@ -161,232 +143,234 @@ export default function LandingPage() {
         {/* Main Content */}
         <div className="relative z-10">
           {/* Hero Section */}
-          <section className="relative min-h-screen flex items-center justify-center pt-24 md:pt-32 pb-20">
-            <motion.div 
-              className="text-center space-y-8 md:space-y-12 max-w-6xl mx-auto px-6 md:px-8"
-              style={{ y: y1, opacity }}
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.3 }}
-                className="space-y-8"
-              >
-                <div 
-                  className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light leading-[0.9] tracking-tight text-gray-900"
-                  style={{ fontFamily: 'Space Grotesk, system-ui, sans-serif' }}
-                >
-                  <div>Invisible AI That</div>
-                  <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent font-medium">
-                    Thinks for Your Business
-                  </div>
-                </div>
-                
-                <motion.p 
-                  className="text-xl md:text-2xl text-gray-600 font-light max-w-4xl mx-auto leading-relaxed"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.8 }}
-                >
-                  Thinking is the slowest thing you do. Let AI do it for you instead.
-                  <br />
-                  <span className="text-lg text-gray-500 mt-2 block">
-                    AI agents for HR, Finance, and Sales that understand your business and amplify human potential.
-                  </span>
-                </motion.p>
-              </motion.div>
-
+          <section className="relative min-h-screen flex items-center justify-center pt-24 pb-20">
+            <div className="max-w-6xl mx-auto px-6 text-center">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 }}
-                className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6"
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="mb-8"
+              >
+                <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-sm border border-white/40 rounded-full px-6 py-3 mb-8 shadow-lg">
+                  <Sparkles className="w-5 h-5 text-indigo-600" />
+                  <span className="text-sm font-medium text-gray-700">Invisible AI That Thinks for You</span>
+                </div>
+              </motion.div>
+
+              <motion.h1
+                className="text-5xl md:text-7xl lg:text-8xl font-medium mb-8 leading-[0.9] tracking-tight"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                <span className="text-gray-900">Invisible AI That</span>
+                <br />
+                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Thinks for You
+                </span>
+              </motion.h1>
+
+              <motion.p
+                className="text-xl md:text-2xl text-gray-600 mb-12 max-w-4xl mx-auto leading-relaxed font-light"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.5 }}
+              >
+                SimpleAI is an undetectable desktop app that gives you the answers you didn't study for in every meeting and conversation.
+              </motion.p>
+
+              <motion.div
+                className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-16"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
               >
                 <Link href="/auth/register">
                   <motion.button 
-                    className="px-10 py-4 bg-black text-white text-base font-medium rounded-lg hover:bg-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl"
-                    whileHover={{ scale: 1.02, y: -1 }}
-                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    Get Started Free
+                    <Download className="w-5 h-5" />
+                    <span>Get for Mac</span>
                   </motion.button>
                 </Link>
                 
                 <Link href="/auth/login">
                   <motion.button 
-                    className="px-10 py-4 bg-gray-100 text-gray-900 text-base font-medium rounded-lg hover:bg-gray-200 transition-all duration-300"
-                    whileHover={{ scale: 1.02, y: -1 }}
-                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center space-x-2 px-8 py-4 bg-gray-800 text-white font-semibold rounded-xl hover:bg-gray-700 transition-all duration-300"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    Sign In
+                    <Download className="w-5 h-5" />
+                    <span>Get for Windows</span>
                   </motion.button>
                 </Link>
               </motion.div>
 
-              {/* Problem Statement Section */}
-              <motion.div 
-                className="max-w-3xl mx-auto pt-16 md:pt-20"
+              {/* Question Card like Cluely */}
+              <motion.div
+                className="max-w-2xl mx-auto"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.5 }}
+                transition={{ duration: 0.8, delay: 0.8 }}
               >
-                <motion.div
-                  className="text-center space-y-6"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.7 }}
-                >
-                  <h3 
-                    className="text-xl md:text-2xl font-medium text-gray-900 mb-6 md:mb-8"
-                    style={{ fontFamily: 'Space Grotesk, system-ui, sans-serif' }}
-                  >
-                    When's the last time you froze in a meeting?
-                  </h3>
-                  
-                  <div className="space-y-4 text-left max-w-2xl mx-auto">
-                    {[
-                      '"Can you analyze this CV quickly?" [What should I look for?]',
-                      '"What\'s our Q4 expense breakdown?" [Let me check...]',
-                      '"How are our sales campaigns performing?" [Good question...]'
-                    ].map((scenario, index) => (
-                      <motion.div
-                        key={index}
-                        className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 1.9 + index * 0.1 }}
-                      >
-                        <span className="text-gray-400 text-lg">•</span>
-                        <span className="text-gray-700 font-medium">
-                          {scenario}
-                        </span>
-                      </motion.div>
-                    ))}
+                <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/40">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-500">Question: "Why would I even use SimpleAI?"</span>
                   </div>
                   
-                  <motion.p 
-                    className="text-sm text-gray-500 italic pt-4"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 2.3 }}
-                  >
-                    Suggestion: Scroll down to see SimpleAI in action.
-                  </motion.p>
-                </motion.div>
+                  <div className="text-left space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">When's the last time you froze in a meeting?</h3>
+                    <div className="space-y-3">
+                      {[
+                        '"Can you analyze this CV quickly?" [What should I look for?]',
+                        '"What\'s our Q4 expense breakdown?" [Let me check...]',
+                        '"How are our sales campaigns performing?" [Good question...]'
+                      ].map((scenario, index) => (
+                        <div key={index} className="flex items-start space-x-2">
+                          <span className="text-gray-400 mt-1">•</span>
+                          <span className="text-gray-700 font-medium">{scenario}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-sm text-gray-500 italic mt-6">
+                      Suggestion: Scroll down to see SimpleAI in action.
+                    </p>
+                  </div>
+                </div>
               </motion.div>
-            </motion.div>
+            </div>
           </section>
 
-          {/* Use Cases Section */}
-          <section className="py-20 bg-gray-50">
-            <div className="max-w-7xl mx-auto px-8">
+          {/* Features Section */}
+          <section className="py-32 bg-white/50 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-6">
               <motion.div 
                 className="text-center mb-20"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <h2 
-                  className="text-5xl md:text-6xl font-medium mb-8 leading-tight text-gray-900"
-                  style={{ fontFamily: 'Space Grotesk, system-ui, sans-serif' }}
-                >
-                  Use Cases
+                <div className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-sm font-semibold mb-4">
+                  AI second brain for every meeting
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                  Thinking is the slowest thing you do.
+                  <br />
+                  Let AI do it for you instead.
                 </h2>
-                <p className="text-xl text-gray-600 font-light max-w-3xl mx-auto leading-relaxed">
-                  AI that helps during interviews, financial analysis, sales calls, and everything in between.
-                </p>
               </motion.div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-                {useCases.map((useCase, index) => (
-                  <motion.div
-                    key={useCase.title}
-                    className="group relative bg-white/90 backdrop-blur-sm border border-gray-200 rounded-2xl p-8 hover:bg-white hover:shadow-xl transition-all duration-500"
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.2 }}
-                    whileHover={{ y: -5 }}
-                  >
-                    <div className="mb-6">
-                      <h3 
-                        className={`text-2xl font-semibold bg-gradient-to-r ${useCase.color} bg-clip-text text-transparent mb-4`}
-                        style={{ fontFamily: 'Space Grotesk, system-ui, sans-serif' }}
-                      >
-                        {useCase.title}
-                      </h3>
-                      
-                      <p className="text-gray-600 font-light leading-relaxed mb-6">
-                        {useCase.description}
-                      </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+                <motion.div
+                  className="text-center"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.2 }}
+                >
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-blue-600 mb-2">Live insights</h3>
+                  <p className="text-gray-600">Real-time AI analysis during meetings</p>
+                </motion.div>
 
-                      <div className="space-y-2">
-                        {useCase.examples.map((example, exampleIndex) => (
-                          <div key={exampleIndex} className="flex items-center space-x-2">
-                            <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${useCase.color}`}></div>
-                            <span className="text-sm text-gray-700 font-medium">
-                              {example}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+                <motion.div
+                  className="text-center"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.4 }}
+                >
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <Brain className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-purple-600 mb-2">Instant answers</h3>
+                  <p className="text-gray-600">Get answers you didn't study for</p>
+                </motion.div>
+
+                <motion.div
+                  className="text-center"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                >
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <FileText className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-emerald-600 mb-2">Knowledge search</h3>
+                  <p className="text-gray-600">Search through all your documents</p>
+                </motion.div>
               </div>
             </div>
           </section>
 
-          {/* CTA Section */}
-          <section className="py-20 bg-white">
-            <div className="max-w-4xl mx-auto px-8 text-center">
+          {/* Use Cases Section */}
+          <section className="py-32 bg-gradient-to-br from-slate-50 to-blue-50">
+            <div className="max-w-7xl mx-auto px-6">
+              <motion.div 
+                className="text-center mb-20"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+              >
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                  It's time to cheat
+                </h2>
+                <div className="text-6xl md:text-8xl font-bold leading-tight">
+                  <span className="text-gray-900">Interviews.</span>
+                  <span className="text-gray-400"> Sales calls.</span>
+                  <br />
+                  <span className="text-gray-300">Homework.</span>
+                  <span className="text-gray-200"> Meetings.</span>
+                  <br />
+                  <span className="text-gray-100">Really everything.</span>
+                </div>
+              </motion.div>
+
+              <div className="text-center">
+                <Link href="/auth/register">
+                  <motion.button 
+                    className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300 mx-auto"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Download className="w-5 h-5" />
+                    <span>Get for Mac</span>
+                  </motion.button>
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* Final CTA */}
+          <section className="py-32 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+            <div className="max-w-4xl mx-auto px-6 text-center">
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <h2 
-                  className="text-6xl md:text-7xl font-thin mb-8 leading-tight text-gray-900"
-                  style={{ fontFamily: 'Space Grotesk, system-ui, sans-serif' }}
-                >
-                  Ready for
-                  <br />
-                  <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    SimpleAI?
-                  </span>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                  Meeting AI that helps during the call, not after.
                 </h2>
-                
-                <p className="text-xl text-gray-600 font-light mb-12 max-w-2xl mx-auto leading-relaxed">
-                  Transform your organization with AI that understands your business.
+                <p className="text-xl text-gray-600 mb-12">
+                  Try SimpleAI on your next meeting today.
                 </p>
 
-                <div className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-3xl p-10 max-w-md mx-auto mb-12">
-                  <div className="space-y-6">
-                    <input
-                      type="email"
-                      placeholder="Work email"
-                      className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Company name"
-                      className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                    />
-                    
-                    <Link href="/auth/register">
-                      <motion.button 
-                        className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-2xl hover:shadow-lg transition-all duration-300"
-                        whileHover={{ scale: 1.02, y: -1 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        Start Free Trial →
-                      </motion.button>
-                    </Link>
-                  </div>
-                </div>
-
-                <p className="text-sm text-gray-500 max-w-md mx-auto">
-                  No credit card required. 14-day free trial.
-                </p>
+                <Link href="/auth/register">
+                  <motion.button 
+                    className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300 mx-auto"
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Download className="w-5 h-5" />
+                    <span>Get for Mac</span>
+                  </motion.button>
+                </Link>
               </motion.div>
             </div>
           </section>
