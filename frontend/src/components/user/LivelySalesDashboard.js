@@ -195,16 +195,10 @@ export default function LivelySalesDashboard() {
           <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-8 text-white mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold mb-2">Welcome to Sales Intelligence</h2>
-                <p className="text-orange-100 mb-4">
-                  Boost your sales performance with AI-powered lead generation and campaign optimization
+                <h2 className="text-2xl font-bold mb-2">Sales Intelligence Hub</h2>
+                <p className="text-orange-100">
+                  Access your AI-powered sales tools and campaign management systems
                 </p>
-                <button
-                  onClick={() => router.push('/lead-generator')}
-                  className="bg-white text-orange-600 px-6 py-3 rounded-lg font-medium hover:bg-orange-50 transition-colors"
-                >
-                  Generate Leads
-                </button>
               </div>
               <div className="hidden md:block">
                 <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
@@ -239,42 +233,6 @@ export default function LivelySalesDashboard() {
             ))}
           </div>
 
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Active Leads</p>
-                  <p className="text-2xl font-bold text-gray-900">127</p>
-                </div>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-blue-600" />
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Monthly Revenue</p>
-                  <p className="text-2xl font-bold text-gray-900">$89.2K</p>
-                </div>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <BarChart3 className="w-6 h-6 text-green-600" />
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 mb-1">Campaigns Running</p>
-                  <p className="text-2xl font-bold text-gray-900">12</p>
-                </div>
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <FileText className="w-6 h-6 text-purple-600" />
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -149,18 +149,23 @@ export default function UsersManagement() {
     setIsSubmitting(true);
     
     try {
+      console.log('🔧 Updating user:', selectedUser.id, formData);
       const response = await authAPI.updateUser(selectedUser.id, formData);
+      console.log('📝 Update response:', response);
+      
       if (response.success) {
         toast.success('User updated successfully');
         setShowEditModal(false);
         setSelectedUser(null);
         fetchUsers();
       } else {
+        console.error('❌ Update failed:', response);
         toast.error(response.message || 'Failed to update user');
       }
     } catch (error) {
-      console.error('Error updating user:', error);
-      toast.error('Failed to update user');
+      console.error('❌ Error updating user:', error);
+      console.error('Error details:', error.response?.data);
+      toast.error(`Failed to update user: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -170,18 +175,23 @@ export default function UsersManagement() {
     setIsSubmitting(true);
     
     try {
+      console.log('🗑️ Deleting user:', selectedUser.id);
       const response = await authAPI.deleteUser(selectedUser.id);
+      console.log('🗑️ Delete response:', response);
+      
       if (response.success) {
         toast.success('User deleted successfully');
         setShowDeleteModal(false);
         setSelectedUser(null);
         fetchUsers();
       } else {
+        console.error('❌ Delete failed:', response);
         toast.error(response.message || 'Failed to delete user');
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
-      toast.error('Failed to delete user');
+      console.error('❌ Error deleting user:', error);
+      console.error('Error details:', error.response?.data);
+      toast.error(`Failed to delete user: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsSubmitting(false);
     }
