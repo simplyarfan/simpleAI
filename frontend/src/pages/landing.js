@@ -41,9 +41,9 @@ export default function LandingPage() {
             </motion.div>
 
             <div className="hidden md:flex space-x-8 text-sm font-medium">
-              <button className="text-gray-600 hover:text-gray-900 transition-colors">Features</button>
-              <button className="text-gray-600 hover:text-gray-900 transition-colors">About</button>
-              <button className="text-gray-600 hover:text-gray-900 transition-colors">Contact</button>
+              <Link href="/features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</Link>
+              <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">About</Link>
+              <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</Link>
             </div>
 
             <Link href="/auth/login">
@@ -132,23 +132,21 @@ export default function LandingPage() {
               >
                 <Link href="/auth/register">
                   <motion.button 
-                    className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300"
+                    className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300"
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Download className="w-5 h-5" />
-                    <span>Get for Mac</span>
+                    Start Free Trial
                   </motion.button>
                 </Link>
                 
                 <Link href="/auth/login">
                   <motion.button 
-                    className="flex items-center space-x-2 px-8 py-4 bg-gray-800 text-white font-semibold rounded-xl hover:bg-gray-700 transition-all duration-300"
+                    className="px-8 py-4 bg-white text-gray-900 font-semibold rounded-xl border-2 border-gray-200 hover:border-gray-300 transition-all duration-300"
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Download className="w-5 h-5" />
-                    <span>Get for Windows</span>
+                    Sign In
                   </motion.button>
                 </Link>
               </motion.div>
@@ -169,22 +167,22 @@ export default function LandingPage() {
                   </div>
                   
                   <div className="text-left space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Tired of paying $300/hour for basic shit?</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Tired of waiting weeks for basic tasks?</h3>
                     <div className="space-y-3">
                       {[
-                        '"We need CV analysis for 50 candidates" [$15,000 consulting fee]',
-                        '"Can you audit our Q3 expenses?" [$8,000 for a basic report]',
-                        '"Help us optimize our sales funnel" [$25,000 and 6 weeks later...]'
+                        '"We need CV analysis for 50 candidates" [Weeks of manual work]',
+                        '"Can you audit our Q3 expenses?" [Days of spreadsheet hell]',
+                        '"Help us optimize our sales funnel" [Months of trial and error]'
                       ].map((scenario, index) => (
                         <div key={index} className="flex items-start space-x-2">
-                          <span className="text-red-500 mt-1">💸</span>
+                          <span className="text-red-500 mt-1">•</span>
                           <span className="text-gray-700 font-medium">{scenario}</span>
                         </div>
                       ))}
                     </div>
                     <div className="mt-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
                       <p className="text-sm text-orange-700 font-medium">
-                        <span className="text-orange-600">🔥 With Nexus:</span> Get the same results instantly for $99/month. Your AI agents never sleep, never complain, and never send you a $50K invoice.
+                        <span className="text-orange-600">With Nexus:</span> Get the same results instantly with our free AI agents. They work 24/7 and never complain.
                       </p>
                     </div>
                   </div>
@@ -269,7 +267,7 @@ export default function LandingPage() {
                 transition={{ duration: 0.8 }}
               >
                 <div className="inline-block bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
-                  ⚠️ Unfair Advantage Mode
+                  Unfair Advantage Mode
                 </div>
                 <h2 className="text-4xl md:text-6xl font-black text-white mb-8">
                   Stop pretending you know everything.
@@ -286,25 +284,25 @@ export default function LandingPage() {
                     title: "HR Department", 
                     subtitle: "CV Intelligence + Interview Coordinator",
                     description: "Analyze 100 CVs in seconds. Find the perfect candidates. Schedule interviews automatically. What used to take weeks now takes minutes.",
-                    emoji: "👥",
+                    icon: Users,
                     color: "from-orange-400 to-red-600",
-                    savings: "Save $15K/month on recruiting consultants"
+                    benefit: "Instant candidate screening and interview scheduling"
                   },
                   { 
                     title: "Finance Department", 
                     subtitle: "Invoice Processor + Expense Auditor",
                     description: "Process invoices instantly. Audit expenses automatically. Catch fraud before it happens. Your CFO will think you hired a team of 10.",
-                    emoji: "💰",
+                    icon: BarChart3,
                     color: "from-red-400 to-pink-600",
-                    savings: "Save $8K/month on accounting firms"
+                    benefit: "Automated financial processing and fraud detection"
                   },
                   { 
                     title: "Sales & Marketing", 
                     subtitle: "Lead Generator + Campaign Optimizer",
-                    description: "Generate qualified leads 24/7. Optimize campaigns in real-time. Turn your marketing budget into a money-printing machine.",
-                    emoji: "🚀",
+                    description: "Generate qualified leads 24/7. Optimize campaigns in real-time. Turn your marketing budget into a revenue machine.",
+                    icon: Brain,
                     color: "from-yellow-400 to-orange-600",
-                    savings: "Save $25K/month on marketing agencies"
+                    benefit: "24/7 lead generation and campaign optimization"
                   }
                 ].map((useCase, index) => (
                   <motion.div
@@ -315,14 +313,16 @@ export default function LandingPage() {
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                     whileHover={{ scale: 1.05, y: -5 }}
                   >
-                    <div className="text-4xl mb-4">{useCase.emoji}</div>
+                    <div className="mb-4">
+                      <useCase.icon className="w-12 h-12 text-white" />
+                    </div>
                     <h3 className="text-xl font-bold text-white mb-2">{useCase.title}</h3>
                     <div className={`text-sm font-semibold bg-gradient-to-r ${useCase.color} bg-clip-text text-transparent mb-3`}>
                       {useCase.subtitle}
                     </div>
                     <p className="text-gray-300 text-sm leading-relaxed mb-4">{useCase.description}</p>
-                    <div className="text-xs font-bold text-green-400 bg-green-400/10 px-3 py-1 rounded-full">
-                      {useCase.savings}
+                    <div className="text-xs font-bold text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full">
+                      {useCase.benefit}
                     </div>
                   </motion.div>
                 ))}
@@ -354,7 +354,7 @@ export default function LandingPage() {
                   </span>
                 </h2>
                 <p className="text-xl text-gray-700 mb-8 font-medium">
-                  Stop paying consultants thousands of dollars for work AI can do in minutes.
+                  Stop waiting weeks for work AI can do in minutes.
                 </p>
                 
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-orange-200 shadow-xl">
@@ -362,16 +362,16 @@ export default function LandingPage() {
                     <div>
                       <h4 className="font-bold text-red-600 mb-3">Without Nexus:</h4>
                       <ul className="space-y-2 text-sm text-gray-600">
-                        <li>• Paying $15K/month for recruiting consultants</li>
+                        <li>• Hiring external recruiting consultants</li>
                         <li>• Waiting weeks for expense audits</li>
                         <li>• Manual CV screening taking forever</li>
-                        <li>• Expensive marketing agencies with slow results</li>
+                        <li>• Slow marketing agencies with delayed results</li>
                       </ul>
                     </div>
                     <div>
                       <h4 className="font-bold text-green-600 mb-3">With Nexus:</h4>
                       <ul className="space-y-2 text-sm text-gray-600">
-                        <li>• AI agents working 24/7 for $99/month</li>
+                        <li>• Free AI agents working 24/7</li>
                         <li>• Instant invoice processing and fraud detection</li>
                         <li>• 100 CVs analyzed in seconds</li>
                         <li>• Lead generation and campaign optimization automated</li>
@@ -408,29 +408,14 @@ export default function LandingPage() {
                   <span className="text-lg font-bold text-gray-900">Nexus</span>
                 </div>
                 
-                <div className="flex items-center space-x-6">
-                  <motion.a
-                    href="https://linkedin.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-transparent hover:bg-gradient-to-r hover:from-orange-600 hover:to-red-600 hover:bg-clip-text transition-all duration-300"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <Linkedin className="w-5 h-5" />
-                  </motion.a>
-                  <motion.a
-                    href="https://github.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-transparent hover:bg-gradient-to-r hover:from-orange-600 hover:to-red-600 hover:bg-clip-text transition-all duration-300"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <Github className="w-5 h-5" />
-                  </motion.a>
+                <div className="flex items-center space-x-6 text-sm text-gray-600">
+                  <Link href="/features" className="hover:text-gray-900 transition-colors">Features</Link>
+                  <Link href="/about" className="hover:text-gray-900 transition-colors">About</Link>
+                  <Link href="/contact" className="hover:text-gray-900 transition-colors">Contact</Link>
                 </div>
                 
                 <div className="text-sm text-gray-500">
-                  © 2024 Nexus. All rights reserved.
+                  © 2025 Nexus. All rights reserved.
                 </div>
               </div>
             </div>

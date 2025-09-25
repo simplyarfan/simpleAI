@@ -1,0 +1,255 @@
+import { useState } from 'react';
+import Link from 'next/link';
+import Head from 'next/head';
+import { motion } from 'framer-motion';
+import { Brain, Users, BarChart3, FileText, Sparkles, CheckCircle, ArrowRight } from 'lucide-react';
+
+export default function Features() {
+  return (
+    <>
+      <Head>
+        <title>Features - Nexus AI Agents</title>
+        <meta name="description" content="Discover the powerful AI agents that transform your HR, Finance, and Sales departments with intelligent automation." />
+      </Head>
+
+      <div className="relative min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 text-gray-900">
+        {/* Navigation */}
+        <motion.nav 
+          className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <Link href="/">
+              <motion.div
+                className="flex items-center space-x-2 cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
+                  <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
+                </div>
+                <span className="text-xl font-bold text-gray-900">Nexus</span>
+              </motion.div>
+            </Link>
+
+            <div className="hidden md:flex space-x-8 text-sm font-medium">
+              <Link href="/" className="text-gray-600 hover:text-gray-900 transition-colors">Home</Link>
+              <span className="text-gray-900 font-semibold">Features</span>
+              <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">About</Link>
+              <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</Link>
+            </div>
+
+            <Link href="/auth/login">
+              <motion.button 
+                className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg transition-all duration-300"
+                whileHover={{ scale: 1.05, y: -1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Get Started
+              </motion.button>
+            </Link>
+          </div>
+        </motion.nav>
+
+        {/* Hero Section */}
+        <section className="pt-32 pb-20">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="inline-block bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
+                Powerful AI Features
+              </div>
+              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                AI Agents That Actually
+                <br />
+                <span className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
+                  Get Things Done
+                </span>
+              </h1>
+              <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
+                Transform your business operations with specialized AI agents designed for HR, Finance, and Sales departments.
+              </p>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Features Grid */}
+        <section className="py-20">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+              {/* HR Features */}
+              <motion.div
+                className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-6">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">HR Department</h3>
+                <p className="text-gray-600 mb-6">Revolutionize your hiring and employee management processes.</p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">CV Intelligence</h4>
+                      <p className="text-sm text-gray-600">Analyze hundreds of CVs in seconds, extract key skills, and rank candidates automatically.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Interview Coordinator</h4>
+                      <p className="text-sm text-gray-600">Schedule interviews, send reminders, and generate interview questions based on job requirements.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Candidate Matching</h4>
+                      <p className="text-sm text-gray-600">Match candidates to job requirements using advanced AI algorithms.</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Finance Features */}
+              <motion.div
+                className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6">
+                  <BarChart3 className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Finance Department</h3>
+                <p className="text-gray-600 mb-6">Automate financial processes and ensure accuracy at scale.</p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Invoice Processor</h4>
+                      <p className="text-sm text-gray-600">Process invoices instantly, extract data, and integrate with accounting systems.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Expense Auditor</h4>
+                      <p className="text-sm text-gray-600">Audit expenses automatically, detect anomalies, and flag potential fraud.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Financial Analytics</h4>
+                      <p className="text-sm text-gray-600">Generate insights and reports from financial data automatically.</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Sales Features */}
+              <motion.div
+                className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40"
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6">
+                  <Brain className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Sales & Marketing</h3>
+                <p className="text-gray-600 mb-6">Supercharge your sales and marketing efforts with AI.</p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Lead Generator</h4>
+                      <p className="text-sm text-gray-600">Generate qualified leads 24/7 using advanced targeting and outreach.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Campaign Optimizer</h4>
+                      <p className="text-sm text-gray-600">Optimize marketing campaigns in real-time for maximum ROI.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Sales Analytics</h4>
+                      <p className="text-sm text-gray-600">Track performance, predict trends, and identify opportunities.</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-20">
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                Ready to Transform Your Business?
+              </h2>
+              <p className="text-xl text-gray-600 mb-8">
+                Start using AI agents today and see the difference they make.
+              </p>
+              <Link href="/auth/register">
+                <motion.button 
+                  className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300 inline-flex items-center space-x-2"
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span>Start Free Trial</span>
+                  <ArrowRight className="w-5 h-5" />
+                </motion.button>
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-12 bg-white border-t border-gray-100">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <div className="flex items-center space-x-2">
+                <div className="w-6 h-6 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
+                  <div className="w-3 h-3 bg-white rounded-sm transform rotate-45"></div>
+                </div>
+                <span className="text-lg font-bold text-gray-900">Nexus</span>
+              </div>
+              
+              <div className="flex items-center space-x-6 text-sm text-gray-600">
+                <Link href="/features" className="hover:text-gray-900 transition-colors">Features</Link>
+                <Link href="/about" className="hover:text-gray-900 transition-colors">About</Link>
+                <Link href="/contact" className="hover:text-gray-900 transition-colors">Contact</Link>
+              </div>
+              
+              <div className="text-sm text-gray-500">
+                © 2025 Nexus. All rights reserved.
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </>
+  );
+}
