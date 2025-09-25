@@ -42,7 +42,7 @@ export default function Contact() {
         <section className="pt-32 pb-10">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <div
-                          >
+              >
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
                 Get in Touch
               </h1>
@@ -60,16 +60,13 @@ export default function Contact() {
               {/* Contact Form */}
               <div
                 className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40"
-                              >
+              >
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a message</h2>
                 
                 {isSubmitted ? (
                   <div
                     className="text-center py-12"
-                    }
-                    }
-                    }
-                  >
+              >
                     <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">Message Sent!</h3>
                     <p className="text-gray-600">We'll get back to you within 24 hours.</p>
@@ -159,7 +156,7 @@ export default function Contact() {
                     <button
                       type="submit"
                       className="w-full px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300 flex items-center justify-center space-x-2"
-                                          >
+                    >
                       <Send className="w-5 h-5" />
                       <span>Send Message</span>
                     </button>
@@ -170,9 +167,6 @@ export default function Contact() {
               {/* Contact Info */}
               <div
                 className="space-y-8"
-                }
-                }
-                }
               >
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 mb-6">Let's start a conversation</h2>
@@ -232,9 +226,7 @@ export default function Contact() {
                   <Link href="/auth/register">
                     <button 
                       className="px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
-                      }
-                      }
-                    >
+                >
                       Schedule a Demo
                     </button>
                   </Link>
@@ -249,7 +241,7 @@ export default function Contact() {
           <div className="max-w-4xl mx-auto px-6">
             <div
               className="text-center mb-16"
-                          >
+              >
               <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
               <p className="text-lg text-gray-600">Quick answers to common questions</p>
             </div>
@@ -257,9 +249,6 @@ export default function Contact() {
             <div className="space-y-6">
               <div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-                }
-                }
-                }
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">How quickly can I get started?</h3>
                 <p className="text-gray-600">
@@ -269,9 +258,6 @@ export default function Contact() {
 
               <div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-                }
-                }
-                }
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you offer enterprise support?</h3>
                 <p className="text-gray-600">
@@ -281,9 +267,6 @@ export default function Contact() {
 
               <div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-                }
-                }
-                }
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">What pricing plans do you offer?</h3>
                 <p className="text-gray-600">
@@ -293,9 +276,6 @@ export default function Contact() {
 
               <div
                 className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-                }
-                }
-                }
               >
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Is there a free trial available?</h3>
                 <p className="text-gray-600">
