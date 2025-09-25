@@ -277,7 +277,7 @@ const AdminDashboard = () => {
               </div>
               <div className="flex items-center gap-4">
                 <button 
-                  onClick={() => router.push('/admin/admin-users')}
+                  onClick={() => router.push('/admin/users')}
                   className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all"
                 >
                   <Users className="w-4 h-4 mr-2" />
