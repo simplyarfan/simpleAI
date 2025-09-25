@@ -343,11 +343,21 @@ const { longCacheMiddleware, shortCacheMiddleware, cacheInvalidationMiddleware }
 
 // API Routes with caching (conditional)
 if (authRoutes) {
-  app.use('/api/auth', cacheInvalidationMiddleware(['session:*', 'api:*']), authRoutes);
-  console.log('✅ Auth routes mounted at /api/auth');
+  app.use('/api/auth', authRoutes);
+  console.log('✅ Auth routes mounted at /api/auth (cache middleware temporarily removed)');
 } else {
   console.error('❌ Auth routes NOT mounted - authRoutes is falsy');
 }
+
+// Test route to verify auth routes are working
+app.get('/api/auth-test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Auth test endpoint working',
+    authRoutesLoaded: !!authRoutes,
+    timestamp: new Date().toISOString()
+  });
+});
 if (analyticsRoutes) {
   app.use('/api/analytics', longCacheMiddleware, analyticsRoutes);
 }
