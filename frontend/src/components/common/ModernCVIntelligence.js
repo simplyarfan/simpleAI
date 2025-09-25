@@ -177,13 +177,6 @@ const ModernCVIntelligence = () => {
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => setShowUploadModal(true)}
-                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-4 py-2 rounded-lg inline-flex items-center text-sm font-medium transition-colors"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                New Batch
-              </button>
-              <button
                 onClick={handleLogout}
                 className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                 title="Logout"

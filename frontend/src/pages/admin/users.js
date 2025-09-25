@@ -307,12 +307,7 @@ export default function UsersManagement() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-black relative overflow-hidden">
-        {/* Subtle animated background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" style={{ left: '10%', top: '20%' }} />
-          <div className="absolute w-64 h-64 bg-purple-500/3 rounded-full blur-2xl" style={{ right: '10%', bottom: '20%' }} />
-        </div>
+      <div className="min-h-screen bg-gray-50 relative overflow-hidden">
 
         <Head>
           <title>User Management - SimpleAI</title>
@@ -322,56 +317,38 @@ export default function UsersManagement() {
         <div className="relative z-10">
         
           <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Back to Dashboard Button */}
-            <div className="mb-6">
-              <motion.button
-                onClick={() => router.push('/superadmin')}
-                className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
-              </motion.button>
-            </div>
-            
             {/* Header */}
-            <motion.div 
-              className="mb-8"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
-                <div className="flex items-center justify-between">
+            <div className="bg-white border border-gray-200 rounded-2xl p-8 mb-8 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => router.push('/superadmin')}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5 text-gray-600" />
+                  </button>
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-white/10 border border-white/20 rounded-lg">
-                      <Users className="w-6 h-6 text-blue-400" />
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+                      <Users className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">User Management</h1>
-                      <p className="text-gray-400">Manage system users and their permissions</p>
+                      <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+                      <p className="text-gray-600">Manage system users and their permissions</p>
                     </div>
                   </div>
-                  <motion.button
-                    onClick={() => setShowAddModal(true)}
-                    className="inline-flex items-center px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-sm font-medium text-white hover:bg-white/20 transition-colors"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <UserPlus className="w-4 h-4 mr-2 text-blue-400" />
-                    Add User
-                  </motion.button>
                 </div>
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Add User
+                </button>
               </div>
-            </motion.div>
+            </div>
 
             {/* Filters */}
-            <motion.div 
-              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6 shadow-sm">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <div className="relative">
@@ -381,7 +358,7 @@ export default function UsersManagement() {
                       placeholder="Search users..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-3 w-full bg-white/10 border border-white/20 text-white placeholder-gray-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="pl-10 pr-4 py-3 w-full border border-gray-300 text-gray-900 placeholder-gray-500 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -398,7 +375,7 @@ export default function UsersManagement() {
                   </select>
                 </div>
               </div>
-            </motion.div>
+            </div>
 
             {/* Users Table */}
             <motion.div 

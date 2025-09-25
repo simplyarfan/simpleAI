@@ -145,13 +145,6 @@ export default function MyTickets() {
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => router.push('/support/create-ticket')}
-                  className="flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors font-medium"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Ticket
-                </button>
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-gray-600" />
