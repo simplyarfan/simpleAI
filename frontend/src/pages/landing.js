@@ -15,75 +15,11 @@ export default function LandingPage() {
       </Head>
 
       <div className="relative min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 text-gray-900 overflow-hidden">
-        {/* Floating 3D Elements */}
+        {/* Clean Background - No Floating Elements */}
         <div className="fixed inset-0 pointer-events-none z-0">
-          {/* Floating Department Icons */}
-          <motion.div
-            className="absolute top-20 left-10 w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl shadow-2xl flex items-center justify-center"
-            animate={{ 
-              y: [0, -20, 0],
-              rotate: [0, 5, 0]
-            }}
-            transition={{ 
-              duration: 6,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <Users className="w-8 h-8 text-white" />
-          </motion.div>
-
-          <motion.div
-            className="absolute top-40 right-20 w-20 h-20 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-3xl shadow-2xl flex items-center justify-center"
-            animate={{ 
-              y: [0, 15, 0],
-              rotate: [0, -3, 0]
-            }}
-            transition={{ 
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1
-            }}
-          >
-            <BarChart3 className="w-10 h-10 text-white" />
-          </motion.div>
-
-          <motion.div
-            className="absolute bottom-40 left-20 w-14 h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl shadow-2xl flex items-center justify-center"
-            animate={{ 
-              y: [0, -25, 0],
-              rotate: [0, 8, 0]
-            }}
-            transition={{ 
-              duration: 7,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 2
-            }}
-          >
-            <Brain className="w-7 h-7 text-white" />
-          </motion.div>
-
-          <motion.div
-            className="absolute bottom-20 right-10 w-18 h-18 bg-gradient-to-br from-orange-600 to-yellow-500 rounded-3xl shadow-2xl flex items-center justify-center"
-            animate={{ 
-              y: [0, 20, 0],
-              rotate: [0, -5, 0]
-            }}
-            transition={{ 
-              duration: 9,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 0.5
-            }}
-          >
-            <FileText className="w-8 h-8 text-white" />
-          </motion.div>
-
-          {/* Orange Gradient Orbs */}
-          <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-gradient-to-r from-orange-400/20 to-red-600/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-yellow-400/20 to-orange-600/20 rounded-full blur-3xl animate-pulse delay-1000" />
+          {/* Subtle Gradient Orbs Only */}
+          <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-gradient-to-r from-orange-400/10 to-red-600/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-yellow-400/10 to-orange-600/10 rounded-full blur-3xl animate-pulse delay-1000" />
         </div>
 
         {/* Navigation */}
@@ -152,8 +88,8 @@ export default function LandingPage() {
                 className="mb-8"
               >
                 <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-sm border border-white/40 rounded-full px-6 py-3 mb-8 shadow-lg">
-                  <Sparkles className="w-5 h-5 text-indigo-600" />
-                  <span className="text-sm font-medium text-gray-700">Invisible AI That Thinks for You</span>
+                  <div className="w-4 h-4 bg-gradient-to-br from-orange-600 to-red-600 rounded-sm transform rotate-45"></div>
+                  <span className="text-sm font-medium text-gray-700">AI Agents That Actually Work</span>
                 </div>
               </motion.div>
 
@@ -229,7 +165,7 @@ export default function LandingPage() {
                     <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-sm font-medium text-gray-500">Question: "Why would I even use SimpleAI?"</span>
+                    <span className="text-sm font-medium text-gray-500">Question: "Why would I even use Nexus?"</span>
                   </div>
                   
                   <div className="text-left space-y-4">
@@ -393,18 +329,7 @@ export default function LandingPage() {
               </div>
 
               <div className="text-center">
-                <motion.div
-                  className="inline-block"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link href="/auth/register">
-                    <button className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 text-black font-black px-12 py-6 rounded-2xl text-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                      🔥 GET YOUR UNFAIR ADVANTAGE
-                    </button>
-                  </Link>
-                </motion.div>
-                <p className="text-gray-400 text-sm mt-4">Join 10,000+ professionals who stopped playing fair</p>
+                <p className="text-gray-400 text-lg font-medium">Join 10,000+ professionals who stopped playing fair</p>
               </div>
             </div>
           </section>
@@ -471,6 +396,31 @@ export default function LandingPage() {
               </motion.div>
             </div>
           </section>
+
+          {/* Clean Minimalistic Footer */}
+          <footer className="py-12 bg-white border-t border-gray-100">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div className="flex items-center space-x-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
+                    <div className="w-3 h-3 bg-white rounded-sm transform rotate-45"></div>
+                  </div>
+                  <span className="text-lg font-bold text-gray-900">Nexus</span>
+                </div>
+                
+                <div className="flex items-center space-x-8 text-sm text-gray-600">
+                  <Link href="/auth/login" className="hover:text-gray-900 transition-colors">Sign In</Link>
+                  <Link href="/auth/register" className="hover:text-gray-900 transition-colors">Get Started</Link>
+                  <button className="hover:text-gray-900 transition-colors">Support</button>
+                  <button className="hover:text-gray-900 transition-colors">Privacy</button>
+                </div>
+                
+                <div className="text-sm text-gray-500">
+                  © 2024 Nexus. All rights reserved.
+                </div>
+              </div>
+            </div>
+          </footer>
         </div>
       </div>
     </>
