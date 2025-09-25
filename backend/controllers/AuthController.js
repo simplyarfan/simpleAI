@@ -665,7 +665,9 @@ const createUser = async (req, res) => {
 // Update user
 const updateUser = async (req, res) => {
   try {
-    console.log('🔧 Update user request:', { params: req.params, body: req.body });
+    console.log('🔧 [UPDATE USER] Request params:', req.params);
+    console.log('🔧 [UPDATE USER] Request body:', req.body);
+    console.log('🔧 [UPDATE USER] Request user:', req.user);
     
     const { user_id } = req.params;
     const { 
@@ -735,6 +737,8 @@ const updateUser = async (req, res) => {
 // Delete user
 const deleteUser = async (req, res) => {
   try {
+    console.log('🗑️ [DELETE USER] Request params:', req.params);
+    console.log('🗑️ [DELETE USER] Request user:', req.user);
     const { user_id } = req.params;
 
     if (parseInt(user_id) === req.user.id) {
