@@ -157,7 +157,7 @@ export default function LivelySalesDashboard() {
       </div>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 min-h-screen">
         {/* Top bar */}
         <div className="bg-white shadow-sm border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-6">
@@ -190,7 +190,7 @@ export default function LivelySalesDashboard() {
         </div>
 
         {/* Dashboard content */}
-        <div className="p-6">
+        <div className="p-6 pb-20">
           {/* Welcome section */}
           <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-8 text-white mb-8">
             <div className="flex items-center justify-between">

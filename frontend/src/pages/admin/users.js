@@ -153,19 +153,32 @@ export default function UsersManagement() {
       const response = await authAPI.updateUser(selectedUser.id, formData);
       console.log('📝 Update response:', response);
       
-      if (response.success) {
+      // Check if response.data exists and has success property
+      const isSuccess = response?.data?.success || response?.success;
+      
+      if (isSuccess) {
+        toast.success('User updated successfully');
+        setShowEditModal(false);
+        setSelectedUser(null);
+        fetchUsers(); // Refresh the user list
+      } else {
+        const errorMessage = response?.data?.message || response?.message || 'Failed to update user';
+        console.error('❌ Update failed:', response);
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('❌ Error updating user:', error);
+      console.error('Error details:', error.response?.data);
+      
+      // Check if the error is actually a successful update (status 200)
+      if (error.response?.status === 200 || error.response?.data?.success) {
         toast.success('User updated successfully');
         setShowEditModal(false);
         setSelectedUser(null);
         fetchUsers();
       } else {
-        console.error('❌ Update failed:', response);
-        toast.error(response.message || 'Failed to update user');
+        toast.error(`Failed to update user: ${error.response?.data?.message || error.message}`);
       }
-    } catch (error) {
-      console.error('❌ Error updating user:', error);
-      console.error('Error details:', error.response?.data);
-      toast.error(`Failed to update user: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -179,19 +192,32 @@ export default function UsersManagement() {
       const response = await authAPI.deleteUser(selectedUser.id);
       console.log('🗑️ Delete response:', response);
       
-      if (response.success) {
+      // Check if response.data exists and has success property
+      const isSuccess = response?.data?.success || response?.success;
+      
+      if (isSuccess) {
+        toast.success('User deleted successfully');
+        setShowDeleteModal(false);
+        setSelectedUser(null);
+        fetchUsers(); // Refresh the user list
+      } else {
+        const errorMessage = response?.data?.message || response?.message || 'Failed to delete user';
+        console.error('❌ Delete failed:', response);
+        toast.error(errorMessage);
+      }
+    } catch (error) {
+      console.error('❌ Error deleting user:', error);
+      console.error('Error details:', error.response?.data);
+      
+      // Check if the error is actually a successful deletion (status 200)
+      if (error.response?.status === 200 || error.response?.data?.success) {
         toast.success('User deleted successfully');
         setShowDeleteModal(false);
         setSelectedUser(null);
         fetchUsers();
       } else {
-        console.error('❌ Delete failed:', response);
-        toast.error(response.message || 'Failed to delete user');
+        toast.error(`Failed to delete user: ${error.response?.data?.message || error.message}`);
       }
-    } catch (error) {
-      console.error('❌ Error deleting user:', error);
-      console.error('Error details:', error.response?.data);
-      toast.error(`Failed to delete user: ${error.response?.data?.message || error.message}`);
     } finally {
       setIsSubmitting(false);
     }
