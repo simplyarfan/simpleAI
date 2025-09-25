@@ -124,44 +124,38 @@ const CleanCVIntelligence = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
-          <p className="mt-4 text-white text-sm">Loading CV Intelligence...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 text-sm">Loading CV Intelligence...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden">
       <Head>
         <title>CV Intelligence - SimpleAI</title>
         <meta name="description" content="AI-powered CV analysis and candidate ranking" />
       </Head>
 
-      {/* Subtle animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" style={{ left: '10%', top: '20%' }} />
-        <div className="absolute w-64 h-64 bg-pink-500/3 rounded-full blur-2xl" style={{ right: '10%', bottom: '20%' }} />
-      </div>
-
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 border-b border-white/10 bg-black/95 backdrop-blur-sm"
+        className="relative z-10 border-b border-gray-200 bg-white shadow-sm"
       >
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <motion.button
                 onClick={() => router.push('/')}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <ArrowLeft className="w-4 h-4 text-gray-400 hover:text-white" />
+                <ArrowLeft className="w-4 h-4 text-gray-600 hover:text-gray-900" />
               </motion.button>
               <motion.div 
                 className="flex items-center space-x-3"
@@ -170,8 +164,8 @@ const CleanCVIntelligence = () => {
                 transition={{ delay: 0.2 }}
               >
                 <div className="relative">
-                  <div className="w-10 h-10 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center shadow-lg">
-                    <Brain className="w-5 h-5 text-purple-400" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <Brain className="w-5 h-5 text-white" />
                   </div>
                   <motion.div 
                     className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
@@ -180,10 +174,10 @@ const CleanCVIntelligence = () => {
                   />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                  <h1 className="text-xl font-bold text-gray-900">
                     CV Intelligence
                   </h1>
-                  <p className="text-sm text-gray-400">AI-powered resume analysis and candidate ranking</p>
+                  <p className="text-sm text-gray-500">AI-powered resume analysis and candidate ranking</p>
                 </div>
               </motion.div>
             </div>
@@ -191,7 +185,7 @@ const CleanCVIntelligence = () => {
             <div className="flex items-center space-x-3">
               <motion.button
                 onClick={handleLogout}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white group"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-gray-900 group"
                 title="Logout"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -212,18 +206,18 @@ const CleanCVIntelligence = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="w-20 h-20 bg-white/10 border border-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Brain className="w-10 h-10 text-purple-400" />
+              <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Brain className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2">No CV batches yet</h3>
-              <p className="text-gray-400 mb-8 text-lg">Upload your first batch of CVs to get started with AI analysis</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">No CV batches yet</h3>
+              <p className="text-gray-600 mb-8 text-lg">Upload your first batch of CVs to get started with AI analysis</p>
               <motion.button
                 onClick={() => setShowUploadModal(true)}
-                className="bg-white/10 border border-white/20 hover:bg-white/20 text-white px-8 py-4 rounded-xl transition-all duration-300 inline-flex items-center"
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-8 py-4 rounded-xl transition-all duration-300 inline-flex items-center shadow-lg"
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Plus className="w-5 h-5 mr-2 text-purple-400" />
+                <Plus className="w-5 h-5 mr-2 text-white" />
                 Create New Batch
               </motion.button>
             </motion.div>
@@ -327,30 +321,30 @@ const CleanCVIntelligence = () => {
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <motion.div 
-            className="bg-black/90 border border-white/20 rounded-2xl p-8 w-full max-w-2xl"
+            className="bg-white rounded-2xl p-8 w-full max-w-2xl shadow-2xl"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Create New Batch</h3>
+              <h3 className="text-2xl font-bold text-gray-900">Create New Batch</h3>
               <button
                 onClick={() => setShowUploadModal(false)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-400" />
+                <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
 
             <form onSubmit={handleFileUpload} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Batch Name
                 </label>
                 <input
                   type="text"
                   value={batchName}
                   onChange={(e) => setBatchName(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   placeholder="Enter batch name..."
                   required
                 />

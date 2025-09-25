@@ -43,7 +43,7 @@ export default function MyTickets() {
   const fetchTickets = async () => {
     try {
       setLoading(true);
-      const response = await supportAPI.getUserTickets(user?.id);
+      const response = await supportAPI.getMyTickets();
       if (response.success) {
         setTickets(response.data || []);
       } else {
