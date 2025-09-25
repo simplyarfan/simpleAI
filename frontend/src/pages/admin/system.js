@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
-import ErrorBoundary from '../../components/ErrorBoundary';
+import ErrorBoundary from '../../components/shared/ErrorBoundary';
 import { systemAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';

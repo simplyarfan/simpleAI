@@ -102,16 +102,20 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data.success) {
-        // Store tokens and auto-login (backend sends accessToken and refreshToken in data object)
-        if (data.data?.accessToken && data.data?.user) {
-          tokenManager.setTokens(data.data.accessToken, data.data.refreshToken);
-          setUser(data.data.user);
+        // Store tokens and auto-login (handle both response formats)
+        const accessToken = data.data?.accessToken || data.token || data.accessToken;
+        const refreshToken = data.data?.refreshToken || data.refreshToken;
+        const userData = data.data?.user || data.user;
+        
+        if (accessToken && userData) {
+          tokenManager.setTokens(accessToken, refreshToken);
+          setUser(userData);
           setIsAuthenticated(true);
           toast.success(data.message || 'Registration successful! You are now logged in.');
           return {
             success: true,
             message: data.message,
-            user: data.data.user,
+            user: userData,
             autoLogin: true
           };
         } else {
@@ -164,7 +168,7 @@ export const AuthProvider = ({ children }) => {
 
       if (data.success) {
         // Store tokens from backend (backend sends token and refreshToken at top level)
-        const accessToken = data.token;
+        const accessToken = data.token || data.accessToken;
         const refreshToken = data.refreshToken;
         if (accessToken) {
           tokenManager.setTokens(accessToken, refreshToken);

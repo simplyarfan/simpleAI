@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useAuth } from '../../contexts/AuthContext';
-import ErrorBoundary from '../../components/ErrorBoundary';
+import ErrorBoundary from '../../components/shared/ErrorBoundary';
 import { 
   Users, 
   Search, 
