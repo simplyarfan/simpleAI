@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-import { Brain, Users, BarChart3, FileText, Sparkles, CheckCircle, ArrowRight } from 'lucide-react';
+import { Brain, Users, BarChart3, FileText, Sparkles, CheckCircle, ArrowRight, Rocket, Target, Award, TrendingUp } from 'lucide-react';
 import Navbar from '../components/shared/Navbar';
 
 export default function About() {
