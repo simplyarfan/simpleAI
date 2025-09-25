@@ -59,9 +59,19 @@ const requestLogger = (req, res, next) => {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// EMERGENCY CORS FIX - Add headers to ALL responses
+// CORS FIX - Specific origin for credentials
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    'https://thesimpleai.netlify.app',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+  ];
+  
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
   res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization,X-Request-ID,X-Admin-Secret');
@@ -94,27 +104,7 @@ database.connect().catch(error => {
   // Don't exit process, let it continue for health checks
 });
 
-// CORS Configuration - Ultra permissive to fix login
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  console.log('🔍 Request from origin:', origin, 'to:', req.url);
-  
-  // Set CORS headers for all requests
-  res.header('Access-Control-Allow-Origin', origin || '*');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
-  res.header('Access-Control-Allow-Headers', 'Origin,X-Requested-With,Content-Type,Accept,Authorization,X-Request-ID,X-Admin-Secret');
-  res.header('Access-Control-Expose-Headers', 'Content-Length,X-Request-ID');
-  res.header('Access-Control-Max-Age', '86400');
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    console.log('✅ Handling OPTIONS preflight for:', req.url);
-    return res.sendStatus(200);
-  }
-  
-  next();
-});
+// Duplicate CORS configuration removed - using the specific origin one above
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
