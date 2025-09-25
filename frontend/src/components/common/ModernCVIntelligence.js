@@ -56,17 +56,30 @@ const ModernCVIntelligence = () => {
       console.log('🎯 Fetching CV batches...');
       const response = await cvAPI.getBatches();
       console.log('🎯 Fetch batches response:', response);
+      console.log('🎯 Response structure:', {
+        success: response.success,
+        data: response.data,
+        dataType: typeof response.data,
+        isArray: Array.isArray(response.data)
+      });
       
-      if (response.success) {
-        setBatches(response.data || []);
-        console.log('🎯 Batches loaded:', response.data?.length || 0);
+      // Handle different response structures
+      const isSuccess = response.success || (response.data && response.data.success);
+      const batchesData = response.data?.data || response.data || [];
+      
+      if (isSuccess) {
+        console.log('🎯 Setting batches:', batchesData);
+        setBatches(Array.isArray(batchesData) ? batchesData : []);
+        console.log('🎯 Batches loaded:', Array.isArray(batchesData) ? batchesData.length : 0);
       } else {
         console.error('🎯 Failed to fetch batches:', response);
-        toast.error(response.message || 'Failed to load CV batches');
+        setBatches([]);
+        toast.error(response.message || response.data?.message || 'Failed to load CV batches');
       }
     } catch (error) {
       console.error('🎯 Error fetching batches:', error);
       console.error('🎯 Error details:', error.response?.data);
+      setBatches([]);
       toast.error(`Failed to load CV batches: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
@@ -104,15 +117,26 @@ const ModernCVIntelligence = () => {
       const response = await cvAPI.createBatch(formData);
       console.log('🎯 Create batch response:', response);
       
-      if (response.success) {
+      // Handle nested response structure - check both response.success and response.data.success
+      const isSuccess = response.success || (response.data && response.data.success);
+      const batchId = response.data?.data?.batchId || response.data?.batchId || response.batchId;
+      
+      if (isSuccess && batchId) {
+        console.log('🎯 Batch created successfully with ID:', batchId);
         toast.success('Batch created successfully!');
         setShowUploadModal(false);
         setBatchName('');
         setSelectedFiles({ cvFiles: [], jdFile: null });
-        fetchBatches();
+        
+        // Force refresh the batches list with a small delay to ensure backend processing
+        console.log('🎯 Refreshing batches list...');
+        setTimeout(async () => {
+          await fetchBatches();
+          console.log('🎯 Batches refreshed after batch creation');
+        }, 1000);
       } else {
         console.error('🎯 Batch creation failed:', response);
-        toast.error(response.message || 'Failed to create batch');
+        toast.error(response.message || response.data?.message || 'Failed to create batch');
       }
     } catch (error) {
       console.error('🎯 Error creating batch:', error);
