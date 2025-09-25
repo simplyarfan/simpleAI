@@ -220,11 +220,11 @@ const ModernCVIntelligence = () => {
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={handleLogout}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-                title="Logout"
+                onClick={() => setShowUploadModal(true)}
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-4 py-2 rounded-lg inline-flex items-center text-sm font-medium transition-colors"
               >
-                <LogOut className="w-5 h-5" />
+                <Plus className="w-4 h-4 mr-2" />
+                New Batch
               </button>
             </div>
           </div>
@@ -290,8 +290,7 @@ const ModernCVIntelligence = () => {
             {filteredBatches.map((batch) => (
               <div
                 key={batch.id}
-                className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer group"
-                onClick={() => router.push(`/cv-intelligence/batch/${batch.id}`)}
+                className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow group"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
@@ -322,28 +321,28 @@ const ModernCVIntelligence = () => {
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">CVs</span>
+                    <span className="text-sm text-gray-600">CVs Uploaded</span>
                     <span className="text-sm font-medium text-gray-900">{batch.cv_count || 0}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Candidates</span>
-                    <span className="text-sm font-medium text-gray-900">{batch.candidate_count || 0}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div className="flex items-center space-x-2">
-                    <Users className="w-4 h-4 text-gray-400" />
+                    <FileText className="w-4 h-4 text-gray-400" />
                     <span className="text-sm text-gray-600">
-                      {batch.candidate_count || 0} candidates
+                      {batch.cv_count || 0} CVs uploaded
                     </span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Eye className="w-4 h-4 text-gray-400 group-hover:text-orange-500 transition-colors" />
-                    <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">
-                      View Details
-                    </span>
-                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/cv-intelligence/batch/${batch.id}`);
+                    }}
+                    className="flex items-center space-x-2 text-orange-600 hover:text-orange-700 transition-colors"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span className="text-sm font-medium">View Details</span>
+                  </button>
                 </div>
               </div>
             ))}
