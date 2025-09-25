@@ -10,16 +10,16 @@ export default function LandingPage() {
   return (
     <>
       <Head>
-        <title>SimpleAI - Invisible AI That Thinks for Your Business</title>
-        <meta name="description" content="AI that understands your business and amplifies human potential across HR, Finance, and Sales departments. Never freeze in a meeting again." />
+        <title>Nexus - AI Agents That Actually Work for Your Business</title>
+        <meta name="description" content="Stop hiring expensive consultants. Get specialized AI agents for HR, Finance, and Sales that work 24/7 and never ask for a raise." />
       </Head>
 
-      <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 text-gray-900 overflow-hidden">
+      <div className="relative min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 text-gray-900 overflow-hidden">
         {/* Floating 3D Elements */}
         <div className="fixed inset-0 pointer-events-none z-0">
-          {/* Floating App Icons */}
+          {/* Floating Department Icons */}
           <motion.div
-            className="absolute top-20 left-10 w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-2xl flex items-center justify-center"
+            className="absolute top-20 left-10 w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl shadow-2xl flex items-center justify-center"
             animate={{ 
               y: [0, -20, 0],
               rotate: [0, 5, 0]
@@ -30,11 +30,11 @@ export default function LandingPage() {
               ease: "easeInOut"
             }}
           >
-            <Brain className="w-8 h-8 text-white" />
+            <Users className="w-8 h-8 text-white" />
           </motion.div>
 
           <motion.div
-            className="absolute top-40 right-20 w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl shadow-2xl flex items-center justify-center"
+            className="absolute top-40 right-20 w-20 h-20 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-3xl shadow-2xl flex items-center justify-center"
             animate={{ 
               y: [0, 15, 0],
               rotate: [0, -3, 0]
@@ -46,11 +46,11 @@ export default function LandingPage() {
               delay: 1
             }}
           >
-            <Users className="w-10 h-10 text-white" />
+            <BarChart3 className="w-10 h-10 text-white" />
           </motion.div>
 
           <motion.div
-            className="absolute bottom-40 left-20 w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-2xl flex items-center justify-center"
+            className="absolute bottom-40 left-20 w-14 h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl shadow-2xl flex items-center justify-center"
             animate={{ 
               y: [0, -25, 0],
               rotate: [0, 8, 0]
@@ -62,11 +62,11 @@ export default function LandingPage() {
               delay: 2
             }}
           >
-            <BarChart3 className="w-7 h-7 text-white" />
+            <Brain className="w-7 h-7 text-white" />
           </motion.div>
 
           <motion.div
-            className="absolute bottom-20 right-10 w-18 h-18 bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl shadow-2xl flex items-center justify-center"
+            className="absolute bottom-20 right-10 w-18 h-18 bg-gradient-to-br from-orange-600 to-yellow-500 rounded-3xl shadow-2xl flex items-center justify-center"
             animate={{ 
               y: [0, 20, 0],
               rotate: [0, -5, 0]
@@ -81,9 +81,9 @@ export default function LandingPage() {
             <FileText className="w-8 h-8 text-white" />
           </motion.div>
 
-          {/* Gradient Orbs */}
-          <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-purple-600/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-purple-400/20 to-pink-600/20 rounded-full blur-3xl animate-pulse delay-1000" />
+          {/* Orange Gradient Orbs */}
+          <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-gradient-to-r from-orange-400/20 to-red-600/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-yellow-400/20 to-orange-600/20 rounded-full blur-3xl animate-pulse delay-1000" />
         </div>
 
         {/* Navigation */}
@@ -98,10 +98,10 @@ export default function LandingPage() {
               className="flex items-center space-x-2"
               whileHover={{ scale: 1.02 }}
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
+                <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
               </div>
-              <span className="text-xl font-semibold text-gray-900">SimpleAI</span>
+              <span className="text-xl font-bold text-gray-900">Nexus</span>
             </motion.div>
 
             <div className="hidden md:flex space-x-8 text-sm font-medium">
@@ -163,10 +163,10 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                <span className="text-gray-900">Never get caught</span>
+                <span className="text-gray-900">Stop hiring expensive</span>
                 <br />
                 <span className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
-                  unprepared again
+                  consultants
                 </span>
               </motion.h1>
 
@@ -176,7 +176,7 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
               >
-                Your secret AI assistant that whispers the right answers during every meeting, interview, and presentation.
+                Get specialized AI agents for HR, Finance, and Sales that work 24/7 and never ask for a raise.
               </motion.p>
 
               <motion.p
@@ -185,7 +185,7 @@ export default function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.6 }}
               >
-                "Holy shit, how did you know that?" - Your colleagues, probably
+                "Wait, you fired the whole consulting team?" - Your CFO, probably
               </motion.p>
 
               <motion.div
@@ -233,22 +233,22 @@ export default function LandingPage() {
                   </div>
                   
                   <div className="text-left space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Remember that time you got completely destroyed?</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Tired of paying $300/hour for basic shit?</h3>
                     <div className="space-y-3">
                       {[
-                        '"So what\'s your take on the blockchain integration?" [Fuck, what blockchain?]',
-                        '"Can you walk us through the Q3 metrics?" [Shit, which metrics again?]',
-                        '"What do you think about Sarah\'s proposal?" [Who the hell is Sarah?]'
+                        '"We need CV analysis for 50 candidates" [$15,000 consulting fee]',
+                        '"Can you audit our Q3 expenses?" [$8,000 for a basic report]',
+                        '"Help us optimize our sales funnel" [$25,000 and 6 weeks later...]'
                       ].map((scenario, index) => (
                         <div key={index} className="flex items-start space-x-2">
-                          <span className="text-red-500 mt-1">💀</span>
+                          <span className="text-red-500 mt-1">💸</span>
                           <span className="text-gray-700 font-medium">{scenario}</span>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
-                      <p className="text-sm text-green-700 font-medium">
-                        <span className="text-green-600">✨ With SimpleAI:</span> You become the person who always has the perfect answer, the right data, and the brilliant insight. Every. Single. Time.
+                    <div className="mt-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
+                      <p className="text-sm text-orange-700 font-medium">
+                        <span className="text-orange-600">🔥 With Nexus:</span> Get the same results instantly for $99/month. Your AI agents never sleep, never complain, and never send you a $50K invoice.
                       </p>
                     </div>
                   </div>
@@ -344,35 +344,31 @@ export default function LandingPage() {
                 </h2>
               </motion.div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
                 {[
                   { 
-                    title: "Job Interviews", 
-                    subtitle: "Never stumble again",
-                    description: "Technical questions? Behavioral scenarios? Company history? You'll have every answer before they finish asking.",
-                    emoji: "🎯",
-                    color: "from-green-400 to-emerald-600"
+                    title: "HR Department", 
+                    subtitle: "CV Intelligence + Interview Coordinator",
+                    description: "Analyze 100 CVs in seconds. Find the perfect candidates. Schedule interviews automatically. What used to take weeks now takes minutes.",
+                    emoji: "👥",
+                    color: "from-orange-400 to-red-600",
+                    savings: "Save $15K/month on recruiting consultants"
                   },
                   { 
-                    title: "Client Meetings", 
-                    subtitle: "Become the expert",
-                    description: "Industry insights, competitor analysis, market trends - you'll sound like you've been studying this for years.",
-                    emoji: "💼",
-                    color: "from-blue-400 to-indigo-600"
-                  },
-                  { 
-                    title: "Sales Calls", 
-                    subtitle: "Close every deal",
-                    description: "Objection handling, pricing strategies, competitor weaknesses - you'll know exactly what to say.",
+                    title: "Finance Department", 
+                    subtitle: "Invoice Processor + Expense Auditor",
+                    description: "Process invoices instantly. Audit expenses automatically. Catch fraud before it happens. Your CFO will think you hired a team of 10.",
                     emoji: "💰",
-                    color: "from-purple-400 to-pink-600"
+                    color: "from-red-400 to-pink-600",
+                    savings: "Save $8K/month on accounting firms"
                   },
                   { 
-                    title: "Board Meetings", 
-                    subtitle: "Command the room",
-                    description: "Financial data, strategic insights, industry benchmarks - you'll be the smartest person at the table.",
-                    emoji: "👑",
-                    color: "from-yellow-400 to-orange-600"
+                    title: "Sales & Marketing", 
+                    subtitle: "Lead Generator + Campaign Optimizer",
+                    description: "Generate qualified leads 24/7. Optimize campaigns in real-time. Turn your marketing budget into a money-printing machine.",
+                    emoji: "🚀",
+                    color: "from-yellow-400 to-orange-600",
+                    savings: "Save $25K/month on marketing agencies"
                   }
                 ].map((useCase, index) => (
                   <motion.div
@@ -388,7 +384,10 @@ export default function LandingPage() {
                     <div className={`text-sm font-semibold bg-gradient-to-r ${useCase.color} bg-clip-text text-transparent mb-3`}>
                       {useCase.subtitle}
                     </div>
-                    <p className="text-gray-300 text-sm leading-relaxed">{useCase.description}</p>
+                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{useCase.description}</p>
+                    <div className="text-xs font-bold text-green-400 bg-green-400/10 px-3 py-1 rounded-full">
+                      {useCase.savings}
+                    </div>
                   </motion.div>
                 ))}
               </div>
