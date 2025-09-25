@@ -1,5 +1,5 @@
-import CleanCVIntelligence from '../components/common/CleanCVIntelligence';
+import ModernCVIntelligence from '../components/common/ModernCVIntelligence';
 
 export default function CVIntelligence() {
-  return <CleanCVIntelligence />;
+  return <ModernCVIntelligence />;
 }

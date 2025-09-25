@@ -16,13 +16,15 @@ import {
   Plus,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  ChevronUp
 } from 'lucide-react';
 
 export default function LivelySalesDashboard() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -110,47 +112,53 @@ export default function LivelySalesDashboard() {
             ))}
           </div>
 
-          <div className="mt-8 space-y-1">
-            <div className="px-3 py-2">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Quick Actions</p>
-            </div>
-            {quickActions.map((action) => (
-              <button
-                key={action.name}
-                onClick={() => router.push(action.route)}
-                className="w-full flex items-center px-3 py-2 text-left text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <action.icon className="w-5 h-5 mr-3 text-gray-400" />
-                <span className="text-sm font-medium">{action.name}</span>
-              </button>
-            ))}
-          </div>
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-          <div className="flex items-center space-x-3 mb-3">
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-gray-600" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
-              <p className="text-xs text-gray-500 truncate">Sales & Marketing</p>
-            </div>
-          </div>
-          <div className="flex space-x-2">
+          <div className="relative">
+            {/* Dropdown Menu */}
+            {userDropdownOpen && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg py-2">
+                {quickActions.map((action) => (
+                  <button
+                    key={action.name}
+                    onClick={() => {
+                      router.push(action.route);
+                      setUserDropdownOpen(false);
+                    }}
+                    className="w-full flex items-center px-4 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <action.icon className="w-4 h-4 mr-3 text-gray-400" />
+                    <span className="text-sm font-medium">{action.name}</span>
+                  </button>
+                ))}
+                <div className="border-t border-gray-200 my-1"></div>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setUserDropdownOpen(false);
+                  }}
+                  className="w-full flex items-center px-4 py-2 text-left text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4 mr-3" />
+                  <span className="text-sm font-medium">Logout</span>
+                </button>
+              </div>
+            )}
+            
+            {/* User Profile Button */}
             <button
-              onClick={() => router.push('/profile')}
-              className="flex-1 flex items-center justify-center px-3 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+              className="w-full flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <Settings className="w-4 h-4 mr-2" />
-              Settings
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex-1 flex items-center justify-center px-3 py-2 text-sm text-white bg-gradient-to-r from-orange-500 to-red-600 rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
+              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-gray-600" />
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
+                <p className="text-xs text-gray-500 truncate">Sales & Marketing</p>
+              </div>
+              <ChevronUp className={`w-4 h-4 text-gray-400 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
           </div>
         </div>

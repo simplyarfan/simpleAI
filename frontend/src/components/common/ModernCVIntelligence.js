@@ -1,0 +1,427 @@
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useAuth } from '../../contexts/AuthContext';
+import Head from 'next/head';
+import { 
+  ArrowLeft,
+  Brain,
+  Upload,
+  FileText,
+  Users,
+  TrendingUp,
+  Calendar,
+  Plus,
+  Search,
+  Filter,
+  MoreVertical,
+  Eye,
+  Download,
+  Trash2,
+  LogOut,
+  X
+} from 'lucide-react';
+import { cvAPI } from '../../utils/api';
+import toast from 'react-hot-toast';
+
+const ModernCVIntelligence = () => {
+  const { user, logout } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [batches, setBatches] = useState([]);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [batchName, setBatchName] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState({
+    cvFiles: [],
+    jdFile: null
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/landing');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchBatches();
+  }, []);
+
+  const fetchBatches = async () => {
+    try {
+      setLoading(true);
+      const response = await cvAPI.getBatches();
+      if (response.success) {
+        setBatches(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching batches:', error);
+      toast.error('Failed to load CV batches');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    e.preventDefault();
+    if (!batchName.trim()) {
+      toast.error('Please enter a batch name');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('name', batchName);
+      
+      // Add CV files if any
+      selectedFiles.cvFiles.forEach((file, index) => {
+        formData.append(`cvFiles`, file);
+      });
+      
+      // Add JD file if any
+      if (selectedFiles.jdFile) {
+        formData.append('jdFile', selectedFiles.jdFile);
+      }
+
+      const response = await cvAPI.createBatch(formData);
+      if (response.success) {
+        toast.success('Batch created successfully!');
+        setShowUploadModal(false);
+        setBatchName('');
+        setSelectedFiles({ cvFiles: [], jdFile: null });
+        fetchBatches();
+      } else {
+        toast.error(response.message || 'Failed to create batch');
+      }
+    } catch (error) {
+      console.error('Error creating batch:', error);
+      toast.error('Failed to create batch');
+    }
+  };
+
+  const handleCVFilesChange = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles(prev => ({ ...prev, cvFiles: files }));
+  };
+
+  const handleJDFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFiles(prev => ({ ...prev, jdFile: file }));
+  };
+
+  const filteredBatches = batches.filter(batch => {
+    const matchesSearch = batch.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filterStatus === 'all' || batch.status === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'processing': return 'bg-blue-100 text-blue-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'completed': return '✓';
+      case 'processing': return '⟳';
+      case 'pending': return '⏳';
+      default: return '•';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 text-sm">Loading CV Intelligence...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Head>
+        <title>CV Intelligence - Nexus</title>
+        <meta name="description" content="AI-powered resume analysis and candidate ranking" />
+      </Head>
+
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-600" />
+              </button>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+                  <Brain className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-semibold text-gray-900">CV Intelligence</h1>
+                  <p className="text-sm text-gray-500">AI-powered resume analysis</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-4 py-2 rounded-lg inline-flex items-center text-sm font-medium transition-colors"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                New Batch
+              </button>
+              <button
+                onClick={handleLogout}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search and Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search batches..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <Filter className="w-4 h-4 text-gray-400" />
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Batches Grid */}
+        {filteredBatches.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Brain className="w-10 h-10 text-white" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              {searchQuery || filterStatus !== 'all' ? 'No batches found' : 'No CV batches yet'}
+            </h3>
+            <p className="text-gray-600 mb-8">
+              {searchQuery || filterStatus !== 'all' 
+                ? 'Try adjusting your search or filters' 
+                : 'Upload your first batch of CVs to get started with AI analysis'
+              }
+            </p>
+            {(!searchQuery && filterStatus === 'all') && (
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-6 py-3 rounded-lg inline-flex items-center font-medium transition-colors"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Create Your First Batch
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredBatches.map((batch) => (
+              <div
+                key={batch.id}
+                className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer group"
+                onClick={() => router.push(`/cv-intelligence/batch/${batch.id}`)}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
+                        {batch.name}
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Created {new Date(batch.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <button className="p-1 hover:bg-gray-100 rounded transition-colors">
+                      <MoreVertical className="w-4 h-4 text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Status</span>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(batch.status)}`}>
+                      {getStatusIcon(batch.status)} {batch.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">CVs</span>
+                    <span className="text-sm font-medium text-gray-900">{batch.cv_count || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Candidates</span>
+                    <span className="text-sm font-medium text-gray-900">{batch.candidate_count || 0}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm text-gray-600">
+                      {batch.candidate_count || 0} candidates
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Eye className="w-4 h-4 text-gray-400 group-hover:text-orange-500 transition-colors" />
+                    <span className="text-sm text-gray-600 group-hover:text-orange-600 transition-colors">
+                      View Details
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-2xl shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-900">Create New Batch</h3>
+              <button
+                onClick={() => setShowUploadModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <form onSubmit={handleFileUpload} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Batch Name *
+                </label>
+                <input
+                  type="text"
+                  value={batchName}
+                  onChange={(e) => setBatchName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  placeholder="Enter batch name..."
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  CV Files (PDF only) - Optional
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-400 transition-colors">
+                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600 mb-2">Drop CV files here or click to browse</p>
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf"
+                    onChange={handleCVFilesChange}
+                    className="hidden"
+                    id="cv-files"
+                  />
+                  <label
+                    htmlFor="cv-files"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
+                  >
+                    Choose Files
+                  </label>
+                  {selectedFiles.cvFiles.length > 0 && (
+                    <p className="text-sm text-green-600 mt-2">
+                      {selectedFiles.cvFiles.length} file(s) selected
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Job Description (PDF/TXT) - Optional
+                </label>
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-400 transition-colors">
+                  <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-600 mb-2">Upload job description for better matching</p>
+                  <input
+                    type="file"
+                    accept=".pdf,.txt"
+                    onChange={handleJDFileChange}
+                    className="hidden"
+                    id="jd-file"
+                  />
+                  <label
+                    htmlFor="jd-file"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
+                  >
+                    Choose File
+                  </label>
+                  {selectedFiles.jdFile && (
+                    <p className="text-sm text-green-600 mt-2">
+                      {selectedFiles.jdFile.name} selected
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(false)}
+                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Create Batch
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ModernCVIntelligence;
