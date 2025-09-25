@@ -1,30 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import { 
-  TrendingUp, 
+  Users, 
   FileText, 
   Calendar, 
   Settings,
   LogOut,
   User,
-  ArrowRight,
-  Sparkles,
-  Zap,
-  Target,
+  Brain,
+  MessageSquare,
   BarChart3,
-  Rocket,
-  Users,
-  Award,
-  Star
+  Bell,
+  Search,
+  Plus,
+  Menu,
+  X,
+  ChevronRight
 } from 'lucide-react';
 
 export default function LivelySalesDashboard() {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [hoveredAgent, setHoveredAgent] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -35,268 +33,250 @@ export default function LivelySalesDashboard() {
     }
   };
 
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  const salesAgents = [
+  const aiAgents = [
     {
       id: 'lead-generator',
       name: 'Lead Generator',
-      description: 'AI-powered lead generation and qualification',
-      route: '/lead-generator',
-      available: false,
-      icon: Target,
-      gradient: 'from-orange-500 via-red-500 to-pink-500',
-      bgGradient: 'from-orange-500/10 to-red-500/10',
-      stats: 'Coming Soon'
+      description: 'Generate and qualify leads automatically',
+      icon: Users,
+      color: 'from-blue-500 to-cyan-600',
+      route: '/lead-generator'
     },
     {
       id: 'campaign-optimizer',
-      name: 'Campaign Optimizer', 
-      description: 'Marketing campaign analysis and optimization',
-      route: '/campaign-optimizer',
-      available: false,
+      name: 'Campaign Optimizer',
+      description: 'Optimize marketing campaigns for better ROI',
       icon: BarChart3,
-      gradient: 'from-blue-500 via-purple-500 to-indigo-500',
-      bgGradient: 'from-blue-500/10 to-purple-500/10',
-      stats: 'Coming Soon'
+      color: 'from-purple-500 to-pink-600',
+      route: '/campaign-optimizer'
     }
   ];
 
   const quickActions = [
-    {
-      title: 'Profile Settings',
-      description: 'Manage your account',
-      icon: Settings,
-      route: '/profile',
-      gradient: 'from-indigo-500 to-purple-500'
-    },
-    {
-      title: 'Support Tickets',
-      description: 'Get help and support',
-      icon: FileText,
-      route: '/support/create-ticket',
-      gradient: 'from-green-500 to-emerald-500'
-    },
-    {
-      title: 'My Tickets',
-      description: 'View ticket history',
-      icon: Calendar,
-      route: '/support/my-tickets',
-      gradient: 'from-orange-500 to-red-500'
-    }
+    { name: 'Create Ticket', icon: Plus, route: '/support/create-ticket' },
+    { name: 'My Tickets', icon: MessageSquare, route: '/support/my-tickets' },
+    { name: 'Profile Settings', icon: User, route: '/profile' }
   ];
 
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Subtle animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div 
-          className="absolute w-96 h-96 bg-orange-500/5 rounded-full blur-3xl"
-          animate={{
-            x: mousePosition.x * 0.01,
-            y: mousePosition.y * 0.01,
-          }}
-          transition={{ type: "spring", stiffness: 50, damping: 20 }}
-          style={{ left: '10%', top: '20%' }}
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
-        <motion.div 
-          className="absolute w-64 h-64 bg-red-500/3 rounded-full blur-2xl"
-          animate={{
-            x: mousePosition.x * -0.005,
-            y: mousePosition.y * -0.005,
-          }}
-          transition={{ type: "spring", stiffness: 30, damping: 15 }}
-          style={{ right: '10%', bottom: '20%' }}
-        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+              <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
+            </div>
+            <span className="text-xl font-bold text-gray-900">Nexus</span>
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <nav className="mt-6 px-3">
+          <div className="space-y-1">
+            <div className="px-3 py-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">AI Agents</p>
+            </div>
+            {aiAgents.map((agent) => (
+              <button
+                key={agent.id}
+                onClick={() => router.push(agent.route)}
+                className="w-full flex items-center px-3 py-3 text-left text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group"
+              >
+                <div className={`w-10 h-10 bg-gradient-to-br ${agent.color} rounded-lg flex items-center justify-center mr-3`}>
+                  <agent.icon className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">{agent.name}</p>
+                  <p className="text-xs text-gray-500">{agent.description}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-8 space-y-1">
+            <div className="px-3 py-2">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Quick Actions</p>
+            </div>
+            {quickActions.map((action) => (
+              <button
+                key={action.name}
+                onClick={() => router.push(action.route)}
+                className="w-full flex items-center px-3 py-2 text-left text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <action.icon className="w-5 h-5 mr-3 text-gray-400" />
+                <span className="text-sm font-medium">{action.name}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
+
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-gray-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
+              <p className="text-xs text-gray-500 truncate">Sales & Marketing</p>
+            </div>
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => router.push('/profile')}
+              className="flex-1 flex items-center justify-center px-3 py-2 text-sm text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex-1 flex items-center justify-center px-3 py-2 text-sm text-white bg-gradient-to-r from-orange-500 to-red-600 rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Header */}
-      <motion.header 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 border-b border-white/10 bg-black/95 backdrop-blur-sm"
-      >
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
+      {/* Main content */}
+      <div className="lg:pl-64">
+        {/* Top bar */}
+        <div className="bg-white shadow-sm border-b border-gray-200">
+          <div className="flex items-center justify-between h-16 px-6">
             <div className="flex items-center space-x-4">
-              {/* SimpleAI Logo */}
-              <motion.div 
-                className="flex items-center space-x-3"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
               >
-                <div className="relative">
-                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shadow-lg border border-white/20">
-                    <Sparkles className="w-5 h-5 bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent" style={{WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundImage: 'linear-gradient(to right, rgb(251 146 60), rgb(239 68 68))'}} />
-                  </div>
-                  <motion.div 
-                    className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
+                <Menu className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">Sales & Marketing Dashboard</h1>
+                <p className="text-sm text-gray-500">Welcome back, {user?.first_name}!</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+              <button className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                <Bell className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Dashboard content */}
+        <div className="p-6">
+          {/* Welcome section */}
+          <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl p-8 text-white mb-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Welcome to Sales Intelligence</h2>
+                <p className="text-orange-100 mb-4">
+                  Boost your sales performance with AI-powered lead generation and campaign optimization
+                </p>
+                <button
+                  onClick={() => router.push('/lead-generator')}
+                  className="bg-white text-orange-600 px-6 py-3 rounded-lg font-medium hover:bg-orange-50 transition-colors"
+                >
+                  Generate Leads
+                </button>
+              </div>
+              <div className="hidden md:block">
+                <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                  <Brain className="w-12 h-12 text-white" />
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Agents Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {aiAgents.map((agent) => (
+              <div
+                key={agent.id}
+                onClick={() => router.push(agent.route)}
+                className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group"
+              >
+                <div className="flex items-start space-x-4">
+                  <div className={`w-12 h-12 bg-gradient-to-br ${agent.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                    <agent.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{agent.name}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{agent.description}</p>
+                    <div className="flex items-center text-orange-600 text-sm font-medium group-hover:text-orange-700">
+                      <span>Launch Agent</span>
+                      <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                    SimpleAI
-                  </h1>
-                  <p className="text-sm text-gray-400">Sales & Marketing</p>
+                  <p className="text-sm text-gray-500 mb-1">Active Leads</p>
+                  <p className="text-2xl font-bold text-gray-900">127</p>
                 </div>
-              </motion.div>
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Users className="w-6 h-6 text-blue-600" />
+                </div>
+              </div>
             </div>
-
-            <div className="flex items-center space-x-3">
-              <motion.div 
-                className="text-sm text-gray-300"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                Welcome back, <span className="text-white font-medium">{user?.first_name || 'User'}</span>
-              </motion.div>
-              <motion.button
-                onClick={handleLogout}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white group"
-                title="Logout"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <LogOut className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-              </motion.button>
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Monthly Revenue</p>
+                  <p className="text-2xl font-bold text-gray-900">$89.2K</p>
+                </div>
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <BarChart3 className="w-6 h-6 text-green-600" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Campaigns Running</p>
+                  <p className="text-2xl font-bold text-gray-900">12</p>
+                </div>
+                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <FileText className="w-6 h-6 text-purple-600" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </motion.header>
-
-      {/* Main Content */}
-      <main className="relative z-10 p-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Welcome Section */}
-          <motion.div 
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <motion.div 
-              className="inline-flex items-center space-x-2 bg-gradient-to-r from-orange-500/20 to-red-500/20 backdrop-blur-sm border border-orange-500/30 rounded-full px-4 py-2 mb-4"
-              animate={{ y: [0, -5, 0] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Rocket className="w-4 h-4 text-orange-400" />
-              <span className="text-sm text-orange-300">Supercharge Your Sales</span>
-            </motion.div>
-            <h2 className="text-4xl font-bold bg-gradient-to-r from-white via-orange-200 to-red-200 bg-clip-text text-transparent mb-2">
-              Sales AI Agents
-            </h2>
-            <p className="text-gray-400 text-lg">Boost your sales performance with intelligent automation</p>
-          </motion.div>
-
-          {/* Sales Agents */}
-          <div className="mb-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {salesAgents.map((agent, index) => (
-                <motion.div
-                  key={agent.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 + index * 0.1 }}
-                  onHoverStart={() => setHoveredAgent(agent.id)}
-                  onHoverEnd={() => setHoveredAgent(null)}
-                  className={`relative group ${agent.available ? 'cursor-pointer' : 'cursor-not-allowed'}`}
-                >
-                  <div className={`absolute inset-0 bg-gradient-to-r ${agent.bgGradient} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                  
-                  <div className={`relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 hover:border-white/20 transition-all duration-300 ${agent.available ? 'group-hover:transform group-hover:scale-[1.02]' : 'opacity-75'}`}>
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-center space-x-4">
-                        <motion.div 
-                          className={`w-16 h-16 bg-gradient-to-r ${agent.gradient} rounded-2xl flex items-center justify-center shadow-lg ${!agent.available ? 'grayscale' : ''}`}
-                          whileHover={agent.available ? { rotate: 360 } : {}}
-                          transition={{ duration: 0.6 }}
-                        >
-                          <agent.icon className="w-8 h-8 text-white" />
-                        </motion.div>
-                        <div>
-                          <h3 className="text-xl font-bold text-white mb-1">{agent.name}</h3>
-                          <p className="text-sm text-gray-400">{agent.stats}</p>
-                        </div>
-                      </div>
-                      {agent.available && (
-                        <motion.div
-                          animate={{ x: hoveredAgent === agent.id ? 5 : 0 }}
-                          transition={{ type: "spring", stiffness: 300 }}
-                        >
-                          <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
-                        </motion.div>
-                      )}
-                    </div>
-                    
-                    <p className="text-gray-300 mb-6 leading-relaxed">{agent.description}</p>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-2 h-2 rounded-full ${agent.available ? 'bg-green-400 animate-pulse' : 'bg-yellow-400'}`} />
-                        <span className={`text-sm font-medium ${agent.available ? 'text-green-400' : 'text-yellow-400'}`}>
-                          {agent.available ? 'Available' : 'Coming Soon'}
-                        </span>
-                      </div>
-                      <motion.div 
-                        className="flex items-center space-x-1 text-xs text-gray-400"
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        <TrendingUp className="w-3 h-3" />
-                        <span>Sales</span>
-                      </motion.div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <div className="flex items-center space-x-2 mb-6">
-              <Zap className="w-5 h-5 text-yellow-400" />
-              <h3 className="text-xl font-bold text-white">Quick Actions</h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {quickActions.map((action, index) => (
-                <motion.button
-                  key={action.title}
-                  onClick={() => router.push(action.route)}
-                  className="relative group bg-black/20 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/20 transition-all duration-300 text-left overflow-hidden"
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 + index * 0.1 }}
-                >
-                  <div className={`absolute inset-0 bg-gradient-to-r ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                  
-                  <div className="relative">
-                    <div className={`w-10 h-10 bg-gradient-to-r ${action.gradient} rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                      <action.icon className="w-5 h-5 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-white mb-2">{action.title}</h4>
-                    <p className="text-sm text-gray-400">{action.description}</p>
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
