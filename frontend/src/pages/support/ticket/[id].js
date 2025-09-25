@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useAuth } from '../../../contexts/AuthContext';
-import Header from '../../../components/shared/Header';
 import { supportAPI } from '../../../utils/api';
 import toast from 'react-hot-toast';
 import { 
@@ -126,7 +125,6 @@ export default function TicketDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-        <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
@@ -140,7 +138,6 @@ export default function TicketDetail() {
   if (!ticket) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-        <Header />
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
@@ -175,7 +172,6 @@ export default function TicketDetail() {
         <meta name="description" content={`Support ticket: ${ticket.subject}`} />
       </Head>
       
-      <Header />
       
       <main className="relative z-10 max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Back Button */}

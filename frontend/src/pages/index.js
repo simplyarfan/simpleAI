@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
-import LivelyHRDashboard from '../components/modern/LivelyHRDashboard';
-import LivelyFinanceDashboard from '../components/modern/LivelyFinanceDashboard';
-import LivelySalesDashboard from '../components/modern/LivelySalesDashboard';
+import LivelyHRDashboard from '../components/user/LivelyHRDashboard';
+import LivelyFinanceDashboard from '../components/user/LivelyFinanceDashboard';
+import LivelySalesDashboard from '../components/user/LivelySalesDashboard';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import WaitingDashboard from '../components/user/WaitingDashboard';
 import LandingPage from './landing';

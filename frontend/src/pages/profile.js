@@ -1,4 +1,4 @@
-import LinearProfile from '../components/modern/LinearProfile';
+import LinearProfile from '../components/common/LinearProfile';
 
 export default function ProfileSettings() {
   return <LinearProfile />;

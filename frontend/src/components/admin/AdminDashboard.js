@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-import Header from '../shared/Header';
+// Header component removed - using inline navigation
 import { 
   Users, 
   MessageSquare, 
@@ -260,7 +260,6 @@ const AdminDashboard = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
       </div>
 
-      <Header />
       
       <main className="relative z-10 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Welcome Section */}

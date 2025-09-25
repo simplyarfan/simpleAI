@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
-import Header from '../../components/shared/Header';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import { analyticsAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
@@ -166,7 +165,6 @@ export default function Analytics() {
         </Head>
         
         <div className="relative z-10">
-          <Header />
         
           <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Back to Dashboard Button */}

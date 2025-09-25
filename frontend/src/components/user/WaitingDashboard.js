@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import Header from '../shared/Header';
 import { 
   Clock, 
   GamepadIcon, 
@@ -419,7 +418,6 @@ const WaitingDashboard = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
       </div>
 
-      <Header />
       
       <main className="relative z-10 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Welcome Section */}

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
-import ImprovedSuperAdminDashboard from '../components/modern/ImprovedSuperAdminDashboard';
+import ImprovedSuperAdminDashboard from '../components/superadmin/ImprovedSuperAdminDashboard';
 
 export default function SuperAdmin() {
   const { user, loading } = useAuth();
