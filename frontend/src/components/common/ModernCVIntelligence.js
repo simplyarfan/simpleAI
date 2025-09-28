@@ -13,6 +13,7 @@ const ModernCVIntelligence = () => {
   const [batches, setBatches] = useState([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [batchName, setBatchName] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState({ cvFiles: [], jdFile: null });
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -40,6 +41,16 @@ const ModernCVIntelligence = () => {
       console.error('🎯 Delete batch error:', e);
       toast.error(e.response?.data?.message || e.message || 'Failed to delete batch');
     }
+  };
+
+  const handleCVFilesChange = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles(prev => ({ ...prev, cvFiles: files }));
+  };
+
+  const handleJDFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFiles(prev => ({ ...prev, jdFile: file }));
   };
 
   useEffect(() => {
@@ -139,16 +150,6 @@ const ModernCVIntelligence = () => {
       console.error('🎯 Error details:', error.response?.data);
       toast.error(`Failed to create batch: ${error.response?.data?.message || error.message}`);
     }
-  };
-
-  const handleCVFilesChange = (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedFiles(prev => ({ ...prev, cvFiles: files }));
-  };
-
-  const handleJDFileChange = (e) => {
-    const file = e.target.files[0];
-    setSelectedFiles(prev => ({ ...prev, jdFile: file }));
   };
 
   const filteredBatches = batches.filter(batch => {
