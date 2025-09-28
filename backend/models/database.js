@@ -30,15 +30,15 @@ class Database {
         ssl: {
           rejectUnauthorized: false // Required for Neon and most cloud PostgreSQL services
         },
-        max: 20,
-        min: 2,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 10000,
-        acquireTimeoutMillis: 60000,
+        max: 5, // Reduced for serverless
+        min: 0, // No minimum connections for serverless
+        idleTimeoutMillis: 10000, // Shorter idle timeout
+        connectionTimeoutMillis: 30000, // Increased timeout
+        acquireTimeoutMillis: 30000, // Increased timeout
         createTimeoutMillis: 30000,
         destroyTimeoutMillis: 5000,
         reapIntervalMillis: 1000,
-        createRetryIntervalMillis: 200,
+        createRetryIntervalMillis: 500,
       });
         
       // Test connection

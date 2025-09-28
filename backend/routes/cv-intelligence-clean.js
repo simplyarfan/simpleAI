@@ -110,12 +110,19 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // POST /api/cv-intelligence/batch/:id/process - Process CVs for existing batch
-router.post('/batch/:id/process', authenticateToken, upload.array('cvFiles', 10), async (req, res) => {
+router.post('/batch/:id/process', authenticateToken, upload.fields([
+  { name: 'cvFiles', maxCount: 10 },
+  { name: 'jdFile', maxCount: 1 }
+]), async (req, res) => {
   try {
     const { id: batchId } = req.params;
     const files = req.files;
 
-    if (!files || files.length === 0) {
+    // Extract CV files from the multer fields structure
+    const cvFiles = files?.cvFiles || [];
+    const jdFile = files?.jdFile?.[0] || null;
+
+    if (!cvFiles || cvFiles.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'No CV files provided'
@@ -129,24 +136,39 @@ router.post('/batch/:id/process', authenticateToken, upload.array('cvFiles', 10)
       });
     }
 
-    await database.connect();
+    let databaseAvailable = true;
+    try {
+      await database.connect();
+    } catch (dbError) {
+      console.error('Database connection failed:', dbError);
+      databaseAvailable = false;
+      // Continue without database for now - just process files
+      console.log('⚠️ Continuing without database - files will be processed but not stored');
+    }
 
-    // Update batch status and file count
-    await database.run(`
-      UPDATE cv_batches 
-      SET status = 'processing', total_resumes = $1, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2 AND user_id = $3
-    `, [files.length, batchId, req.user.id]);
+    // Update batch status and file count (if database available)
+    if (databaseAvailable) {
+      try {
+        await database.run(`
+          UPDATE cv_batches 
+          SET status = 'processing', total_resumes = $1, updated_at = CURRENT_TIMESTAMP
+          WHERE id = $2 AND user_id = $3
+        `, [cvFiles.length, batchId, req.user.id]);
+      } catch (dbError) {
+        console.error('Database update failed:', dbError);
+        databaseAvailable = false;
+      }
+    }
 
     // Process each CV file
     const candidates = [];
     const parsedRequirements = { skills: [], experience: [], education: [] };
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    for (let i = 0; i < cvFiles.length; i++) {
+      const file = cvFiles[i];
       
       try {
-        console.log(`🔄 Processing CV ${i + 1}/${files.length}: ${file.originalname}`);
+        console.log(`🔄 Processing CV ${i + 1}/${cvFiles.length}: ${file.originalname}`);
         
         // Process with HR-01 service
         const result = await CVIntelligenceHR01.processResume(
@@ -156,22 +178,29 @@ router.post('/batch/:id/process', authenticateToken, upload.array('cvFiles', 10)
         );
 
         if (result.success) {
-          // Store candidate (simplified schema)
           const candidateId = CVIntelligenceHR01.generateId();
-          await database.run(`
-            INSERT INTO candidates (
-              id, batch_id, name, email, phone, location, profile_json, overall_score
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-          `, [
-            candidateId,
-            batchId,
-            result.structuredData.personal?.name || 'Name not found',
-            result.structuredData.personal?.email || 'Email not found',
-            result.structuredData.personal?.phone || 'Phone not found',
-            result.structuredData.personal?.location || 'Location not specified',
-            JSON.stringify(result.structuredData),
-            Math.round(result.scores?.overallScore || 0)
-          ]);
+          
+          // Store candidate (simplified schema) - only if database available
+          if (databaseAvailable) {
+            try {
+              await database.run(`
+                INSERT INTO candidates (
+                  id, batch_id, name, email, phone, location, profile_json, overall_score
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+              `, [
+                candidateId,
+                batchId,
+                result.structuredData.personal?.name || 'Name not found',
+                result.structuredData.personal?.email || 'Email not found',
+                result.structuredData.personal?.phone || 'Phone not found',
+                result.structuredData.personal?.location || 'Location not specified',
+                JSON.stringify(result.structuredData),
+                Math.round(result.scores?.overallScore || 0)
+              ]);
+            } catch (dbError) {
+              console.error('Failed to store candidate:', dbError);
+            }
+          }
 
           candidates.push({
             id: candidateId,
@@ -189,22 +218,29 @@ router.post('/batch/:id/process', authenticateToken, upload.array('cvFiles', 10)
       }
     }
 
-    // Update batch status to completed
-    await database.run(`
-      UPDATE cv_batches 
-      SET status = 'completed', processed_resumes = $1, updated_at = CURRENT_TIMESTAMP 
-      WHERE id = $2
-    `, [candidates.length, batchId]);
+    // Update batch status to completed (if database available)
+    if (databaseAvailable) {
+      try {
+        await database.run(`
+          UPDATE cv_batches 
+          SET status = 'completed', processed_resumes = $1, updated_at = CURRENT_TIMESTAMP 
+          WHERE id = $2
+        `, [candidates.length, batchId]);
+      } catch (dbError) {
+        console.error('Failed to update batch status:', dbError);
+      }
+    }
 
     res.json({
       success: true,
       data: {
         batchId: batchId,
         processed: candidates.length,
-        total: files.length,
-        candidates: candidates
+        total: cvFiles.length,
+        candidates: candidates,
+        databaseStatus: databaseAvailable ? 'connected' : 'offline'
       },
-      message: `Batch processed successfully. ${candidates.length}/${files.length} CVs processed.`
+      message: `Batch processed successfully. ${candidates.length}/${cvFiles.length} CVs processed.${databaseAvailable ? '' : ' (Database offline - results not saved)'}`
     });
 
   } catch (error) {
