@@ -16,9 +16,9 @@ export default function Features() {
         <Navbar />
 
         {/* Hero Section */}
-        <section className="pt-32 pb-20">
+        <section className="pt-32 pb-8">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <div>
+            <div className="mb-8">
               <div className="inline-block bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
                 Powerful AI Features
               </div>
@@ -29,7 +29,7 @@ export default function Features() {
                   Get Things Done
                 </span>
               </h1>
-              <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 mb-0 max-w-3xl mx-auto">
                 Transform your business operations with specialized AI agents designed for HR, Finance, and Sales departments.
               </p>
             </div>
@@ -37,7 +37,7 @@ export default function Features() {
         </section>
 
         {/* Features Grid */}
-        <section className="py-20">
+        <section className="py-12">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
               {/* HR Features */}
@@ -143,9 +143,9 @@ export default function Features() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20">
+        <section className="py-16">
           <div className="max-w-4xl mx-auto px-6 text-center">
-            <div>
+            <div className="space-y-8">
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
                 Ready to Transform Your Business?
               </h2>

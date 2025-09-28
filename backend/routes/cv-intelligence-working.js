@@ -59,6 +59,41 @@ function extractNameFromText(text) {
   return nameMatch ? nameMatch[1] : null;
 }
 
+// Extract years of experience as integer
+function extractExperienceYears(experienceText) {
+  if (!experienceText || typeof experienceText !== 'string') return 0;
+  
+  // Look for patterns like "5 years", "10+ years", "3-5 years"
+  const yearMatch = experienceText.match(/(\d+)[\+\-\s]*(?:years?|yrs?)/i);
+  if (yearMatch) {
+    return parseInt(yearMatch[1], 10);
+  }
+  
+  // Look for just numbers
+  const numberMatch = experienceText.match(/(\d+)/);
+  if (numberMatch) {
+    const num = parseInt(numberMatch[1], 10);
+    return num > 50 ? 0 : num; // Sanity check - if > 50, probably not years
+  }
+  
+  return 0;
+}
+
+// Extract education level as integer (0-5 scale)
+function extractEducationLevel(educationText) {
+  if (!educationText || typeof educationText !== 'string') return 0;
+  
+  const text = educationText.toLowerCase();
+  
+  if (text.includes('phd') || text.includes('doctorate')) return 5;
+  if (text.includes('master') || text.includes('msc') || text.includes('mba')) return 4;
+  if (text.includes('bachelor') || text.includes('bsc') || text.includes('degree')) return 3;
+  if (text.includes('diploma') || text.includes('associate')) return 2;
+  if (text.includes('certificate') || text.includes('high school')) return 1;
+  
+  return 0;
+}
+
 function extractEmailFromText(text) {
   const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   return emailMatch ? emailMatch[0] : null;
@@ -434,8 +469,8 @@ router.post('/batch/:batchId/process',
             rankedCandidate.rank * 10, // Convert rank to score-like number (rank 1 = 90, rank 2 = 80, etc)
             aiAnalysis.matched_required_skills?.length || 0,
             aiAnalysis.missing_required_skills?.length || 0,
-            aiAnalysis.experience_years || 'Not specified',
-            aiAnalysis.education_level || 'Not specified',
+            extractExperienceYears(aiAnalysis.experience_years || ''),
+            extractEducationLevel(aiAnalysis.education_level || ''),
             rankedCandidate.recommendation || 'Review Required',
             rankedCandidate.recommendation || 'Review Required',
             JSON.stringify(aiAnalysis.key_strengths || []), 

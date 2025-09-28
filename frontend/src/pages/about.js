@@ -16,10 +16,10 @@ export default function About() {
         <Navbar />
 
         {/* Hero Section */}
-        <section className="pt-32 pb-20">
+        <section className="pt-32 pb-8">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <div className="mb-16">
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-8">
+            <div className="mb-8">
+              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
                 Building the Future of
                 <br />
                 <span className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
@@ -35,7 +35,7 @@ export default function About() {
 
 
         {/* Mission Section */}
-        <section className="py-20">
+        <section className="py-12">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div className="space-y-6">
@@ -59,10 +59,10 @@ export default function About() {
         </section>
 
         {/* Values Section */}
-        <section className="py-20 bg-white/50 backdrop-blur-sm">
+        <section className="py-16 bg-white/50 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Values</h2>
+            <div className="text-center mb-12">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Values</h2>
               <p className="text-lg text-gray-600">The principles that guide everything we do</p>
             </div>
 
@@ -111,10 +111,10 @@ export default function About() {
         </section>
 
         {/* Journey Section */}
-        <section className="py-20">
+        <section className="py-16">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="text-center mb-20">
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Journey</h2>
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Journey</h2>
               <p className="text-lg text-gray-600">Key milestones in our mission to democratize AI</p>
             </div>
 

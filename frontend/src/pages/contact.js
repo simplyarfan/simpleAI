@@ -39,14 +39,13 @@ export default function Contact() {
         <Navbar />
 
         {/* Hero Section */}
-        <section className="pt-32 pb-10">
+        <section className="pt-32 pb-8">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <div
-              >
+            <div className="mb-8">
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
                 Get in Touch
               </h1>
-              <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 mb-0 max-w-3xl mx-auto">
                 Have questions about our AI agents? Want to discuss enterprise solutions? We're here to help you transform your business.
               </p>
             </div>
@@ -54,19 +53,15 @@ export default function Contact() {
         </section>
 
         {/* Contact Section */}
-        <section className="py-10">
+        <section className="py-8">
           <div className="max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
               {/* Contact Form */}
-              <div
-                className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40"
-              >
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40">
                 <h2 className="text-3xl font-bold text-gray-900 mb-6">Send us a message</h2>
                 
                 {isSubmitted ? (
-                  <div
-                    className="text-center py-12"
-              >
+                  <div className="text-center py-12">
                     <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">Message Sent!</h3>
                     <p className="text-gray-600">We'll get back to you within 24 hours.</p>
@@ -165,9 +160,7 @@ export default function Contact() {
               </div>
 
               {/* Contact Info */}
-              <div
-                className="space-y-8"
-              >
+              <div className="space-y-8">
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 mb-6">Let's start a conversation</h2>
                   <p className="text-lg text-gray-600 mb-8">
@@ -183,8 +176,8 @@ export default function Contact() {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">Email Us</h3>
                       <p className="text-gray-600">Get in touch via email</p>
-                      <a href="mailto:hello@nexus.ai" className="text-orange-600 hover:text-orange-700 font-medium">
-                        hello@nexus.ai
+                      <a href="mailto:syedarfan101@gmail.com" className="text-orange-600 hover:text-orange-700 font-medium">
+                        syedarfan101@gmail.com
                       </a>
                     </div>
                   </div>
@@ -195,25 +188,15 @@ export default function Contact() {
                     </div>
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-1">Call Us</h3>
-                      <p className="text-gray-600">Mon-Fri from 8am to 5pm</p>
-                      <a href="tel:+1-555-123-4567" className="text-orange-600 hover:text-orange-700 font-medium">
-                        +1 (555) 123-4567
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">Visit Us</h3>
-                      <p className="text-gray-600">Come say hello at our office</p>
-                      <address className="text-gray-600 not-italic">
-                        123 AI Street<br />
-                        San Francisco, CA 94105<br />
-                        United States
-                      </address>
+                      <p className="text-gray-600">Available for support</p>
+                      <div className="space-y-1">
+                        <a href="tel:+971544257976" className="block text-orange-600 hover:text-orange-700 font-medium">
+                          +971 54 425 7976
+                        </a>
+                        <a href="tel:+966570171269" className="block text-orange-600 hover:text-orange-700 font-medium">
+                          +966 57 017 1269
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -225,8 +208,7 @@ export default function Contact() {
                   </p>
                   <Link href="/auth/register">
                     <button 
-                      className="px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:shadow-lg transition-all duration-300"
-                >
+                      className="px-6 py-3 bg-white text-orange-600 font-semibold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300">
                       Schedule a Demo
                     </button>
                   </Link>
@@ -239,44 +221,34 @@ export default function Contact() {
         {/* FAQ Section */}
         <section className="py-20 bg-white/50 backdrop-blur-sm">
           <div className="max-w-4xl mx-auto px-6">
-            <div
-              className="text-center mb-16"
-              >
+            <div className="text-center mb-12">
               <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
               <p className="text-lg text-gray-600">Quick answers to common questions</p>
             </div>
 
             <div className="space-y-6">
-              <div
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-              >
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">How quickly can I get started?</h3>
                 <p className="text-gray-600">
                   You can get started immediately with our free tier. Simply sign up and you'll have access to our AI agents within minutes.
                 </p>
               </div>
 
-              <div
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-              >
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Do you offer enterprise support?</h3>
                 <p className="text-gray-600">
                   Yes, we provide dedicated enterprise support with SLA guarantees, priority assistance, and custom integration help.
                 </p>
               </div>
 
-              <div
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-              >
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">What pricing plans do you offer?</h3>
                 <p className="text-gray-600">
                   We offer flexible pricing from free tier to enterprise plans. Contact our sales team for custom enterprise pricing.
                 </p>
               </div>
 
-              <div
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40"
-              >
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/40">
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Is there a free trial available?</h3>
                 <p className="text-gray-600">
                   Yes, we offer a 14-day free trial with full access to our platform features. No credit card required.

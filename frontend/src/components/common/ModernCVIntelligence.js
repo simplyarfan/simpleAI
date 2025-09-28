@@ -208,6 +208,10 @@ const ModernCVIntelligence = () => {
     } catch (error) {
       console.error('🎯 Error creating batch:', error);
       console.error('🎯 Error details:', error.response?.data);
+      
+      // Hide progress modal on error
+      setProcessingProgress({ show: false, current: 0, total: 0, message: '' });
+      
       toast.error(`Failed to create batch: ${error.response?.data?.message || error.message}`);
     }
   };
