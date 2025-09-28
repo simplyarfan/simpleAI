@@ -28,20 +28,20 @@ try {
   uuidv4 = () => 'batch_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
-// Try to load the professional CV analysis service
+// Load CV analysis service - prioritize AI ranking service for batch processing
 let CVAnalysisService = null;
 try {
-  const ProfessionalCVAnalysisService = require('../services/cvAnalysisService-professional');
-  CVAnalysisService = new ProfessionalCVAnalysisService();
-  console.log('✅ Professional CV Analysis Service loaded successfully');
+  const AIRankingCVAnalysisService = require('../services/cvAnalysisService-ai-ranking');
+  CVAnalysisService = new AIRankingCVAnalysisService();
+  console.log('✅ AI Ranking CV Analysis Service loaded successfully');
 } catch (error) {
-  console.error('❌ Failed to load Professional CV Analysis Service:', error.message);
-  console.log('📋 Falling back to AI ranking service...');
+  console.error('❌ Failed to load AI Ranking CV Analysis Service:', error.message);
+  console.log('📋 Falling back to professional service...');
   
   try {
-    const AIRankingCVAnalysisService = require('../services/cvAnalysisService-ai-ranking');
-    CVAnalysisService = new AIRankingCVAnalysisService();
-    console.log('✅ AI Ranking CV Analysis Service loaded as fallback');
+    const ProfessionalCVAnalysisService = require('../services/cvAnalysisService-professional');
+    CVAnalysisService = new ProfessionalCVAnalysisService();
+    console.log('✅ Professional CV Analysis Service loaded as fallback');
   } catch (fallbackError) {
     console.error('❌ Failed to load fallback service:', fallbackError.message);
     console.log('⚠️ CV Intelligence will run with basic functionality only');
@@ -464,6 +464,11 @@ router.post('/batch/:batchId/process',
       
       // AI BATCH ANALYSIS AND RANKING
       console.log(`🤖 Starting AI batch analysis and ranking for ${cvFilesData.length} candidates...`);
+      
+      if (!CVAnalysisService || typeof CVAnalysisService.analyzeCVBatch !== 'function') {
+        throw new Error('CV Analysis Service not available or analyzeCVBatch method missing');
+      }
+      
       const aiRankingResult = await CVAnalysisService.analyzeCVBatch(cvFilesData, jdText);
       
       console.log('🏆 AI Ranking Results:', {
