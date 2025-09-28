@@ -9,6 +9,14 @@ let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes, in
 
 // Load each route individually with error handling
 try {
+  authRoutes = require('./routes/auth');
+  console.log('✅ Auth routes loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading auth routes:', error.message);
+  console.error('❌ Stack trace:', error.stack);
+}
+
+try {
   cvRoutes = require('./routes/cv-intelligence-proper');
   console.log('✅ CV Intelligence Proper routes loaded successfully');
 } catch (error) {

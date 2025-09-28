@@ -4,12 +4,33 @@
  */
 
 const express = require('express');
-const multer = require('multer');
-const pdf = require('pdf-parse');
-const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
 const auth = require('../middleware/auth');
 const authenticateToken = auth.authenticateToken;
+
+// Optional dependencies - load with fallbacks
+let multer, pdf, uuidv4;
+try {
+  multer = require('multer');
+} catch (e) {
+  console.warn('⚠️ multer not available, file uploads disabled');
+  multer = null;
+}
+
+try {
+  pdf = require('pdf-parse');
+} catch (e) {
+  console.warn('⚠️ pdf-parse not available, PDF processing disabled');
+  pdf = null;
+}
+
+try {
+  const uuid = require('uuid');
+  uuidv4 = uuid.v4;
+} catch (e) {
+  console.warn('⚠️ uuid not available, using fallback ID generation');
+  uuidv4 = () => 'temp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
 
 // Load the proper CV Intelligence service
 let CVIntelligenceService = null;
@@ -23,21 +44,34 @@ try {
 
 const router = express.Router();
 
-// Configure multer for file uploads
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf' || 
-        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF and DOCX files are allowed'), false);
+// Configure multer for file uploads (if available)
+let upload = null;
+if (multer) {
+  upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype === 'application/pdf' || 
+          file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        cb(null, true);
+      } else {
+        cb(new Error('Only PDF and DOCX files are allowed'), false);
+      }
     }
-  }
-});
+  });
+} else {
+  // Fallback middleware that rejects file uploads
+  upload = {
+    array: () => (req, res, next) => {
+      res.status(500).json({
+        success: false,
+        message: 'File upload not available - multer dependency missing'
+      });
+    }
+  };
+}
 
 // GET /api/cv-intelligence/batches - Get all CV batches
 router.get('/batches', authenticateToken, async (req, res) => {
