@@ -217,46 +217,113 @@ class Database {
         )
       `);
 
-      // CV Intelligence Batches table
+      // CV Intelligence Proper Schema - Following HR-01 blueprint
+      
+      // Raw resumes storage table
       await this.run(`
-        CREATE TABLE IF NOT EXISTS cv_batches (
-          id VARCHAR(255) PRIMARY KEY,
-          name VARCHAR(255) NOT NULL,
+        CREATE TABLE IF NOT EXISTS resumes_raw (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           user_id INTEGER NOT NULL,
-          status VARCHAR(50) DEFAULT 'processing',
-          cv_count INTEGER DEFAULT 0,
-          candidate_count INTEGER DEFAULT 0,
-          processing_time INTEGER,
-          jd_analysis JSONB,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+          filename VARCHAR(255) NOT NULL,
+          file_url TEXT NOT NULL,
+          file_size INTEGER,
+          file_type VARCHAR(50),
+          upload_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          raw_text TEXT,
+          processing_status VARCHAR(50) DEFAULT 'pending',
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
       `);
 
-      // CV Intelligence Candidates table - Enhanced schema for better compatibility
+      // Structured resume entities with character offsets
       await this.run(`
-        CREATE TABLE IF NOT EXISTS cv_candidates (
-          id VARCHAR(255) PRIMARY KEY,
-          batch_id VARCHAR(255) NOT NULL,
+        CREATE TABLE IF NOT EXISTS resume_entities (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          resume_id UUID NOT NULL,
+          entity_type VARCHAR(50) NOT NULL,
+          entity_value TEXT NOT NULL,
+          confidence_score FLOAT DEFAULT 0.0,
+          start_offset INTEGER,
+          end_offset INTEGER,
+          spacy_label VARCHAR(50),
+          context_window TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (resume_id) REFERENCES resumes_raw(id) ON DELETE CASCADE
+        )
+      `);
+
+      // Job descriptions and requirements
+      await this.run(`
+        CREATE TABLE IF NOT EXISTS jobs (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id INTEGER NOT NULL,
+          title VARCHAR(255) NOT NULL,
+          description TEXT NOT NULL,
+          requirements_json JSONB NOT NULL,
+          embedding TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      `);
+
+      // CV analysis batches
+      await this.run(`
+        CREATE TABLE IF NOT EXISTS cv_batches (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          user_id INTEGER NOT NULL,
+          job_id UUID NOT NULL,
+          name VARCHAR(255) NOT NULL,
+          status VARCHAR(50) DEFAULT 'processing',
+          total_resumes INTEGER DEFAULT 0,
+          processed_resumes INTEGER DEFAULT 0,
+          processing_started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          processing_completed_at TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+          FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+        )
+      `);
+
+      // Final candidate profiles with strict JSON schema
+      await this.run(`
+        CREATE TABLE IF NOT EXISTS candidates (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          batch_id UUID NOT NULL,
+          resume_id UUID NOT NULL,
           name VARCHAR(255),
           email VARCHAR(255),
           phone VARCHAR(50),
-          location VARCHAR(255) DEFAULT 'Location not specified',
-          score INTEGER DEFAULT 0,
-          skills_match INTEGER DEFAULT 0,
-          skills_missing INTEGER DEFAULT 0,
-          experience_match INTEGER DEFAULT 0,
-          education_match INTEGER DEFAULT 0,
-          fit_level VARCHAR(20) DEFAULT 'Medium',
-          recommendation VARCHAR(50) DEFAULT 'Consider',
-          strengths TEXT,
-          weaknesses TEXT,
-          summary TEXT,
-          cv_text TEXT,
-          analysis_data JSONB,
+          location VARCHAR(255),
+          linkedin_url TEXT,
+          profile_json JSONB NOT NULL,
+          must_have_score FLOAT DEFAULT 0.0,
+          semantic_score FLOAT DEFAULT 0.0,
+          recency_score FLOAT DEFAULT 0.0,
+          impact_score FLOAT DEFAULT 0.0,
+          overall_score FLOAT DEFAULT 0.0,
+          evidence_offsets JSONB,
+          verification_data JSONB,
+          processing_time_ms INTEGER,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (batch_id) REFERENCES cv_batches (id) ON DELETE CASCADE
+          FOREIGN KEY (batch_id) REFERENCES cv_batches(id) ON DELETE CASCADE,
+          FOREIGN KEY (resume_id) REFERENCES resumes_raw(id) ON DELETE CASCADE
+        )
+      `);
+
+      // Metrics and events for tracking
+      await this.run(`
+        CREATE TABLE IF NOT EXISTS metrics_events (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          batch_id UUID NOT NULL,
+          resume_id UUID NOT NULL,
+          event_type VARCHAR(50) NOT NULL,
+          event_data JSONB NOT NULL,
+          field_validity_rate FLOAT,
+          evidence_coverage FLOAT,
+          disagreement_rate FLOAT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (batch_id) REFERENCES cv_batches(id) ON DELETE CASCADE,
+          FOREIGN KEY (resume_id) REFERENCES resumes_raw(id) ON DELETE CASCADE
         )
       `);
 

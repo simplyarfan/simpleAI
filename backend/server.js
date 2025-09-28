@@ -4,17 +4,22 @@ require('dotenv').config();
 
 // Import database
 const database = require('./models/database');
-
 // Load routes with error handling
 let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes, initRoutes, interviewRoutes;
 
 // Load each route individually with error handling
 try {
-  authRoutes = require('./routes/auth');
-  console.log('✅ Auth routes loaded successfully');
+  cvRoutes = require('./routes/cv-intelligence-proper');
+  console.log('✅ CV Intelligence Proper routes loaded successfully');
 } catch (error) {
-  console.error('❌ Error loading auth routes:', error.message);
-  console.error('❌ Stack trace:', error.stack);
+  console.error('❌ Error loading CV Intelligence Proper routes:', error.message);
+  console.log('🔄 Falling back to working routes...');
+  try {
+    cvRoutes = require('./routes/cv-intelligence-working');
+    console.log('✅ CV Intelligence working routes loaded as fallback');
+  } catch (fallbackError) {
+    console.error('❌ Error loading fallback CV Intelligence routes:', fallbackError.message);
+  }
 }
 
 try {
