@@ -44,6 +44,16 @@ try {
 
 const router = express.Router();
 
+// Test route to verify CV Intelligence is working
+router.get('/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'CV Intelligence routes are working!',
+    timestamp: new Date().toISOString(),
+    service: CVIntelligenceHR01 ? 'HR-01 Service Available' : 'HR-01 Service Not Available'
+  });
+});
+
 // GET /api/cv-intelligence/batches - Get all batches
 router.get('/batches', authenticateToken, async (req, res) => {
   try {

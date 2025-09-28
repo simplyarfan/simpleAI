@@ -21,6 +21,7 @@ try {
   console.log('✅ CV Intelligence routes loaded successfully (HR-01 Blueprint)');
 } catch (error) {
   console.error('❌ Error loading CV Intelligence routes:', error.message);
+  console.error('❌ Full error details:', error);
 }
 
 try {
@@ -365,8 +366,10 @@ if (supportRoutes) {
 if (cvRoutes) {
   app.use('/api/cv-intelligence', cvRoutes);
   console.log('✅ CV Intelligence routes mounted at /api/cv-intelligence');
+  console.log('✅ CV Routes object type:', typeof cvRoutes);
+  console.log('✅ CV Routes available:', Object.getOwnPropertyNames(cvRoutes));
 } else {
-  console.error('❌ CV Intelligence routes failed to load');
+  console.error('❌ CV Intelligence routes failed to load - cvRoutes is:', cvRoutes);
 }
 if (notificationRoutes) {
   app.use('/api/notifications', shortCacheMiddleware, cacheInvalidationMiddleware(['api:notifications*']), notificationRoutes);
