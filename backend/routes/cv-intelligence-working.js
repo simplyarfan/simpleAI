@@ -544,10 +544,10 @@ router.get('/batch/:batchId', authenticateToken, async (req, res) => {
 
     // OPENAI INTELLIGENT RANKING
     let rankedCandidates = processedCandidates;
-    if (cvAnalysisService && batch.job_description && processedCandidates.length > 1) {
+    if (CVAnalysisService && batch.job_description && processedCandidates.length > 1) {
       try {
         console.log('🧠 Applying OpenAI intelligent ranking...');
-        rankedCandidates = await cvAnalysisService.rankCandidatesWithAI(processedCandidates, batch.job_description);
+        rankedCandidates = await CVAnalysisService.rankCandidatesWithAI(processedCandidates, batch.job_description);
         console.log('✅ OpenAI ranking applied successfully');
       } catch (error) {
         console.error('❌ OpenAI ranking failed, using score-based ranking:', error.message);

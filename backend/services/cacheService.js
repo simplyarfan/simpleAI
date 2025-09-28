@@ -219,6 +219,38 @@ class CacheService {
     }
   }
 
+  // Generic get method for compatibility
+  async get(key) {
+    try {
+      if (!this.redis || !this.isConnected) {
+        await this.connect();
+        if (!this.redis) return null;
+      }
+
+      const cached = await this.redis.get(key);
+      return cached ? JSON.parse(cached) : null;
+    } catch (error) {
+      console.error('❌ Cache get failed:', error.message);
+      return null;
+    }
+  }
+
+  // Generic set method for compatibility
+  async set(key, value, ttl = 3600) {
+    try {
+      if (!this.redis || !this.isConnected) {
+        await this.connect();
+        if (!this.redis) return false;
+      }
+
+      await this.redis.setex(key, ttl, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.error('❌ Cache set failed:', error.message);
+      return false;
+    }
+  }
+
   // Helper function to hash parameters for consistent cache keys
   hashParams(params) {
     if (!params) return 'no-params';

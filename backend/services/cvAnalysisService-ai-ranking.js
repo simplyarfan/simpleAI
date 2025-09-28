@@ -333,6 +333,40 @@ Rank based on: 1) Required skills match, 2) Experience relevance, 3) Overall fit
       jd_analysis: jdAnalysis
     };
   }
+
+  /**
+   * Legacy method for compatibility with existing batch details endpoint
+   */
+  async rankCandidatesWithAI(candidates, jobDescription) {
+    console.log('🔄 Legacy ranking method called - converting to new format...');
+    
+    try {
+      // Convert candidates to new format
+      const candidatesData = candidates.map(candidate => ({
+        fileName: candidate.name || 'Unknown',
+        cvText: candidate.cv_text || '',
+        fileId: candidate.id
+      }));
+
+      // Use new AI ranking system
+      const result = await this.analyzeAndRankCandidates(candidatesData, { 
+        required_skills: ['General Skills'],
+        job_title: 'Position'
+      });
+
+      // Convert back to legacy format
+      return result.candidates.map((rankedCandidate, index) => ({
+        ...candidates[index],
+        ai_rank: rankedCandidate.rank,
+        ai_reasoning: rankedCandidate.ranking_reason,
+        ai_recommendation: rankedCandidate.recommendation
+      })).sort((a, b) => a.ai_rank - b.ai_rank);
+    } catch (error) {
+      console.error('❌ Legacy ranking failed:', error.message);
+      // Return original candidates sorted by score
+      return candidates.sort((a, b) => (b.score || 0) - (a.score || 0));
+    }
+  }
 }
 
 module.exports = AIRankingCVAnalysisService;

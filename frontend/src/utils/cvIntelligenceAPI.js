@@ -199,6 +199,20 @@ export const cvIntelligenceAPI = {
     }
   },
 
+  // Delete a batch
+  deleteBatch: async (batchId) => {
+    console.log('🗑️ [CV-API] Deleting batch:', batchId);
+    
+    try {
+      const response = await api.delete(`/batch/${batchId}`);
+      console.log('✅ [CV-API] Batch deleted successfully:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ [CV-API] Delete batch error:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
   // Utility function to validate files
   validateFiles: (jdFile, cvFiles) => {
     const errors = [];

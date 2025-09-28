@@ -90,11 +90,11 @@ export default function LandingPage() {
                 Get specialized AI agents for HR, Finance, and Sales that work 24/7 and never ask for a raise.
               </p>
 
-              <p className="text-lg text-gray-500 mb-12 max-w-2xl mx-auto italic">
+              <p className="text-lg text-gray-500 mb-16 max-w-2xl mx-auto italic">
                 "Wait, you fired the whole consulting team?" - Your CFO, probably
               </p>
 
-              <div className="flex justify-center mb-16">
+              <div className="flex justify-center mb-20">
                 <Link href="/auth/login">
                   <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300">
                     Try today
