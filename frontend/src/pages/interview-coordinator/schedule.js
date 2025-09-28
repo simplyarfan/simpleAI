@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import axios from 'axios';
@@ -8,7 +8,10 @@ import {
   Users, 
   ArrowLeft,
   Save,
-  AlertCircle
+  AlertCircle,
+  Mail,
+  Eye,
+  Send
 } from 'lucide-react';
 
 export default function ScheduleInterview() {
@@ -17,6 +20,8 @@ export default function ScheduleInterview() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
+  const [candidateData, setCandidateData] = useState(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -29,8 +34,31 @@ export default function ScheduleInterview() {
     meetingLink: '',
     type: 'technical',
     panelMembers: [{ name: '', email: '', role: '' }],
-    notes: ''
+    notes: '',
+    calendlyLink: 'https://calendly.com/your-link',
+    googleFormLink: 'https://forms.google.com/your-form'
   });
+
+  // Handle pre-filled candidate data from CV Intelligence
+  useEffect(() => {
+    const { candidate } = router.query;
+    if (candidate) {
+      try {
+        const data = JSON.parse(decodeURIComponent(candidate));
+        setCandidateData(data);
+        setFormData(prev => ({
+          ...prev,
+          candidateId: data.candidateId,
+          candidateName: data.candidateName,
+          candidateEmail: data.candidateEmail,
+          title: `${data.jobTitle} - Interview with ${data.candidateName}`,
+          notes: `Candidate Score: ${data.score}%\nShortlisted from CV Intelligence batch.`
+        }));
+      } catch (error) {
+        console.error('Error parsing candidate data:', error);
+      }
+    }
+  }, [router.query]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -66,15 +94,50 @@ export default function ScheduleInterview() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const generateEmailContent = () => {
+    return {
+      subject: `🎉 Interview Invitation - ${formData.title}`,
+      body: `Dear ${formData.candidateName},
+
+We are pleased to inform you that you have been shortlisted for an interview! 🎉
+
+Based on your impressive CV and qualifications, we would like to invite you to proceed to the next stage of our selection process.
+
+📋 **Next Steps:**
+1. Please fill out this pre-interview form with your details: ${formData.googleFormLink}
+2. Select your preferred interview time using our scheduling link: ${formData.calendlyLink}
+
+📝 **Interview Details:**
+• Position: ${formData.title}
+• Type: ${formData.type} interview
+• Duration: ${formData.duration} minutes
+• Location: ${formData.location}
+
+We look forward to speaking with you soon!
+
+Best regards,
+The Hiring Team`
+    };
+  };
+
+  const handlePreviewEmail = () => {
+    setShowEmailPreview(true);
+  };
+
+  const handleSendInvitation = async () => {
     setLoading(true);
     setError(null);
 
     try {
+      const emailContent = generateEmailContent();
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/schedule`,
-        formData,
+        {
+          ...formData,
+          emailSubject: emailContent.subject,
+          emailBody: emailContent.body,
+          sendEmail: true
+        },
         { headers: getAuthHeaders() }
       );
 
@@ -92,6 +155,11 @@ export default function ScheduleInterview() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    handlePreviewEmail();
   };
 
   if (success) {
@@ -322,6 +390,70 @@ export default function ScheduleInterview() {
           </div>
         </form>
       </div>
+
+      {/* Email Preview Modal */}
+      {showEmailPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Email Preview</h3>
+                <button
+                  onClick={() => setShowEmailPreview(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <AlertCircle className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-96">
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Mail className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm text-gray-600">To: {formData.candidateEmail}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-700">Subject:</span>
+                  <span className="text-sm text-gray-900">{generateEmailContent().subject}</span>
+                </div>
+              </div>
+              
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
+                  {generateEmailContent().body}
+                </pre>
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              <button
+                onClick={() => setShowEmailPreview(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Edit Details
+              </button>
+              <button
+                onClick={handleSendInvitation}
+                disabled={loading}
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Invitation
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

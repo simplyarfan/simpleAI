@@ -35,11 +35,7 @@ try {
   console.error('❌ Error loading support routes:', error.message);
 }
 
-try {
-  cvRoutes = require('./routes/cv-intelligence-working');
-} catch (error) {
-  console.error('❌ Error loading CV Intelligence routes:', error.message);
-}
+// CV Intelligence routes already loaded above
 
 try {
   notificationRoutes = require('./routes/notifications');

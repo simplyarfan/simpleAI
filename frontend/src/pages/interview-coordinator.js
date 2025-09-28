@@ -226,7 +226,7 @@ export default function InterviewCoordinator() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <h3 className="text-lg font-medium text-gray-900 truncate">
-                          {interview.title || 'Interview'}
+                          {interview.job_title || interview.title || 'Interview'}
                         </h3>
                         <div className="mt-1 flex items-center space-x-4 text-sm text-gray-500">
                           <span className="flex items-center">
@@ -235,18 +235,53 @@ export default function InterviewCoordinator() {
                           </span>
                           <span className="flex items-center">
                             <Clock className="w-4 h-4 mr-1" />
-                            {interview.scheduled_time ? new Date(interview.scheduled_time).toLocaleString() : 'Not scheduled'}
+                            {interview.scheduled_time ? new Date(interview.scheduled_time).toLocaleString() : 'Pending candidate response'}
                           </span>
-                          <span className="flex items-center">
-                            Duration: {interview.duration || 60} min
-                          </span>
+                          {interview.meeting_link && (
+                            <span className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              Meeting scheduled
+                            </span>
+                          )}
                         </div>
+                        {interview.candidate_email && (
+                          <div className="mt-1 text-sm text-gray-500">
+                            📧 {interview.candidate_email}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(interview.status)}`}>
-                        {interview.status || 'scheduled'}
-                      </span>
+                      <div className="text-right">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(interview.status)}`}>
+                          {interview.status || 'invitation_sent'}
+                        </span>
+                        <div className="mt-1 text-xs text-gray-500">
+                          {interview.created_at ? `Sent ${new Date(interview.created_at).toLocaleDateString()}` : ''}
+                        </div>
+                      </div>
+                      <div className="flex flex-col space-y-1">
+                        {interview.calendly_link && (
+                          <a
+                            href={interview.calendly_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:text-blue-800"
+                          >
+                            📅 Calendly
+                          </a>
+                        )}
+                        {interview.google_form_link && (
+                          <a
+                            href={interview.google_form_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-green-600 hover:text-green-800"
+                          >
+                            📋 Form
+                          </a>
+                        )}
+                      </div>
                       <button className="p-1 text-gray-400 hover:text-gray-600">
                         <MoreVertical className="w-4 h-4" />
                       </button>

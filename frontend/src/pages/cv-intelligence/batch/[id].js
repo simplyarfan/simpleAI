@@ -28,30 +28,21 @@ const BatchDetail = () => {
     }
   };
 
-  const handleScheduleInterview = async (candidate) => {
-    try {
-      setSchedulingInterview(candidate.id);
-      
-      const response = await cvAPI.scheduleInterview(candidate.id, {
-        jobTitle: batch?.name || 'Position Interview',
-        interviewType: 'technical',
-        calendlyLink: 'https://calendly.com/your-link', // Replace with your actual Calendly link
-        googleFormLink: 'https://forms.google.com/your-form' // Replace with your actual Google Form
-      });
-
-      if (response.success) {
-        toast.success('Interview invitation sent successfully!');
-        toast.success(`Calendly link: ${response.data.calendlyLink}`);
-        toast.success(`Pre-interview form: ${response.data.googleFormLink}`);
-      } else {
-        toast.error(response.message || 'Failed to schedule interview');
-      }
-    } catch (error) {
-      console.error('Schedule interview error:', error);
-      toast.error('Failed to schedule interview. Please try again.');
-    } finally {
-      setSchedulingInterview(null);
-    }
+  const handleScheduleInterview = (candidate) => {
+    // Redirect to interview coordinator with pre-filled candidate data
+    const candidateData = {
+      candidateId: candidate.id,
+      candidateName: candidate.personal?.name || candidate.name || 'Unknown',
+      candidateEmail: candidate.personal?.email || candidate.email || '',
+      candidatePhone: candidate.personal?.phone || candidate.phone || '',
+      jobTitle: batch?.name || 'Position Interview',
+      batchId: batch?.id,
+      score: candidate.score || candidate.overall_score || 0
+    };
+    
+    // Encode the data to pass via URL
+    const encodedData = encodeURIComponent(JSON.stringify(candidateData));
+    router.push(`/interview-coordinator/schedule?candidate=${encodedData}`);
   };
 
   useEffect(() => {

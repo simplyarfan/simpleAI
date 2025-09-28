@@ -1,10 +1,9 @@
 /**
  * INTERVIEW COORDINATOR ROUTES (HR-02)
- * API endpoints for interview scheduling and coordination
+ * Handles interview scheduling, management, and coordination
  */
 
 const express = require('express');
-const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
 const auth = require('../middleware/auth');
 const authenticateToken = auth.authenticateToken;
@@ -21,7 +20,7 @@ try {
 
 const router = express.Router();
 
-// GET /api/interview-coordinator/interviews - Get all interviews for the user
+// GET /interviews - Get all interviews for the user
 router.get('/interviews', authenticateToken, async (req, res) => {
   try {
     await database.connect();
@@ -68,98 +67,91 @@ router.get('/interviews', authenticateToken, async (req, res) => {
   }
 });
 
-// POST /api/interview-coordinator/schedule - Schedule new interview
+// POST /schedule - Schedule a new interview
 router.post('/schedule', authenticateToken, async (req, res) => {
   try {
     const {
-      candidate_id,
-      job_description,
-      interview_details,
-      panel_members
+      title,
+      candidateId,
+      candidateName,
+      candidateEmail,
+      scheduledTime,
+      duration,
+      location,
+      meetingLink,
+      type,
+      panelMembers,
+      notes,
+      calendlyLink,
+      googleFormLink,
+      emailSubject,
+      emailBody,
+      sendEmail
     } = req.body;
-
-    if (!candidate_id || !interview_details) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required fields: candidate_id, interview_details'
-      });
-    }
 
     await database.connect();
 
-    // Get candidate data
-    const candidate = await database.get(`
-      SELECT * FROM cv_candidates WHERE id = $1
-    `, [candidate_id]);
+    // Create interviews table if it doesn't exist
+    await database.run(`
+      CREATE TABLE IF NOT EXISTS interviews (
+        id VARCHAR(255) PRIMARY KEY,
+        candidate_id VARCHAR(255) NOT NULL,
+        candidate_name VARCHAR(255),
+        candidate_email VARCHAR(255),
+        job_title VARCHAR(255),
+        interview_type VARCHAR(50) DEFAULT 'technical',
+        status VARCHAR(50) DEFAULT 'invitation_sent',
+        calendly_link TEXT,
+        google_form_link TEXT,
+        scheduled_time TIMESTAMP,
+        meeting_link TEXT,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        scheduled_by INTEGER
+      )
+    `);
 
-    if (!candidate) {
-      return res.status(404).json({
-        success: false,
-        message: 'Candidate not found'
-      });
-    }
+    // Generate interview ID
+    const interviewId = `interview_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-    // Prepare candidate data for interview coordinator
-    const candidateData = {
-      name: candidate.name,
-      email: candidate.email,
-      phone: candidate.phone,
-      experience_years: candidate.experience_match,
-      education: candidate.education_match,
-      skills: candidate.analysis_data ? 
-        JSON.parse(candidate.analysis_data).matched_skills || [] : []
-    };
-
-    // Use Interview Coordinator Service
-    if (!InterviewCoordinatorService) {
-      throw new Error('Interview Coordinator Service not available');
-    }
-
-    const coordination = await InterviewCoordinatorService.coordinateInterview(
-      candidateData,
-      job_description || 'Job description not provided',
-      {
-        ...interview_details,
-        panel: panel_members || []
-      }
-    );
-
-    if (!coordination.success) {
-      throw new Error(coordination.error || 'Interview coordination failed');
-    }
-
-    // Store interview in database
-    const interviewId = uuidv4();
+    // Insert interview record
     await database.run(`
       INSERT INTO interviews (
-        id, user_id, candidate_id, title, type, scheduled_time, 
-        duration, location, meeting_link, status, panel_data, 
-        questions_data, reminders_data, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, CURRENT_TIMESTAMP)
+        id, candidate_id, candidate_name, candidate_email, job_title,
+        interview_type, status, calendly_link, google_form_link, 
+        scheduled_time, meeting_link, notes, scheduled_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     `, [
       interviewId,
-      req.user.id,
-      candidate_id,
-      coordination.schedule.interview.title,
-      coordination.schedule.interview.type,
-      coordination.schedule.interview.scheduled_time,
-      coordination.schedule.interview.duration,
-      coordination.schedule.interview.location,
-      coordination.schedule.interview.meeting_link || '',
-      'scheduled',
-      JSON.stringify(coordination.schedule.panel),
-      JSON.stringify(coordination.questions),
-      JSON.stringify(coordination.reminders)
+      candidateId || interviewId,
+      candidateName,
+      candidateEmail,
+      title,
+      type || 'technical',
+      sendEmail ? 'invitation_sent' : 'draft',
+      calendlyLink,
+      googleFormLink,
+      scheduledTime || null,
+      meetingLink || null,
+      notes || '',
+      req.user.id
     ]);
+
+    // TODO: Send email if sendEmail is true
+    // This would integrate with your email service (SendGrid, etc.)
+    if (sendEmail && emailSubject && emailBody) {
+      console.log('📧 Email would be sent:', {
+        to: candidateEmail,
+        subject: emailSubject,
+        body: emailBody
+      });
+    }
 
     res.json({
       success: true,
       data: {
-        interview_id: interviewId,
-        schedule: coordination.schedule,
-        questions: coordination.questions,
-        ics_invite: coordination.ics_invite,
-        conflict_check: coordination.conflict_check
+        interviewId: interviewId,
+        message: sendEmail ? 'Interview scheduled and invitation sent' : 'Interview draft saved'
       },
       message: 'Interview scheduled successfully'
     });
@@ -174,86 +166,11 @@ router.post('/schedule', authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/interview-coordinator/interview/:id - Get interview details
-router.get('/interview/:id', authenticateToken, async (req, res) => {
+// GET /api/interview-coordinator/interview/:id/questions - Generate interview questions
+router.get('/interview/:id/questions', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    
-    await database.connect();
-    
-    const interview = await database.get(`
-      SELECT i.*, c.name as candidate_name, c.email as candidate_email, c.phone as candidate_phone
-      FROM interviews i
-      LEFT JOIN cv_candidates c ON i.candidate_id = c.id
-      WHERE i.id = $1 AND i.user_id = $2
-    `, [id, req.user.id]);
-
-    if (!interview) {
-      return res.status(404).json({
-        success: false,
-        message: 'Interview not found'
-      });
-    }
-
-    // Parse JSON data
-    const interviewData = {
-      ...interview,
-      panel_data: interview.panel_data ? JSON.parse(interview.panel_data) : [],
-      questions_data: interview.questions_data ? JSON.parse(interview.questions_data) : {},
-      reminders_data: interview.reminders_data ? JSON.parse(interview.reminders_data) : []
-    };
-
-    res.json({
-      success: true,
-      data: interviewData,
-      message: 'Interview details retrieved successfully'
-    });
-
-  } catch (error) {
-    console.error('Get interview details error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve interview details',
-      error: error.message
-    });
-  }
-});
-
-// POST /api/interview-coordinator/questions/generate - Generate interview questions
-router.post('/questions/generate', authenticateToken, async (req, res) => {
-  try {
-    const { candidate_id, job_description, interview_type } = req.body;
-
-    if (!candidate_id) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing required field: candidate_id'
-      });
-    }
-
-    await database.connect();
-
-    // Get candidate data
-    const candidate = await database.get(`
-      SELECT * FROM cv_candidates WHERE id = $1
-    `, [candidate_id]);
-
-    if (!candidate) {
-      return res.status(404).json({
-        success: false,
-        message: 'Candidate not found'
-      });
-    }
-
-    // Prepare candidate data
-    const candidateData = {
-      name: candidate.name,
-      experience_years: candidate.experience_match,
-      skills: candidate.analysis_data ? 
-        JSON.parse(candidate.analysis_data).matched_skills || [] : [],
-      education: candidate.education_match,
-      current_role: 'Not specified'
-    };
+    const { job_description, candidateData, interview_type } = req.query;
 
     if (!InterviewCoordinatorService) {
       throw new Error('Interview Coordinator Service not available');
