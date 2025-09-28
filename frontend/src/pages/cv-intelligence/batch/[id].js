@@ -233,7 +233,7 @@ const BatchDetail = () => {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">Analyzed Candidates</h2>
-            <p className="text-sm text-gray-600">Ranked by AI analysis score</p>
+            <p className="text-sm text-gray-600">Ranked from best to worst match</p>
           </div>
           
           {candidates.length === 0 ? (
@@ -277,9 +277,16 @@ const BatchDetail = () => {
                     </div>
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-gray-900">
-                          {candidate.overall_score || candidate.score || 0}
-                          <span className="text-sm text-gray-500 font-normal">/10</span>
+                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-2 ${
+                          index === 0 ? 'bg-green-100 text-green-800' :
+                          index === 1 ? 'bg-blue-100 text-blue-800' :
+                          index === 2 ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {index === 0 ? '🏆 Best Match' :
+                           index === 1 ? '🥈 Strong Candidate' :
+                           index === 2 ? '🥉 Good Candidate' :
+                           '📋 Candidate'}
                         </div>
                         <div className="text-sm text-gray-600">
                           {candidate.recommendation || 'Under Review'}
@@ -364,12 +371,12 @@ const BatchDetail = () => {
               <div className="flex items-center space-x-4">
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center">
                   <span className="text-2xl font-bold text-white">
-                    {selectedCandidate.overall_score || selectedCandidate.score || 0}
+                    #{candidates.findIndex(c => c.id === selectedCandidate.id) + 1}
                   </span>
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                    {selectedCandidate.personal?.name || selectedCandidate.name || 'Unnamed Candidate'}
+                    {selectedCandidate.name || 'Name not found'}
                   </h2>
                   <p className="text-gray-600">Candidate Analysis Report</p>
                 </div>
@@ -382,7 +389,7 @@ const BatchDetail = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Contact Information */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -392,15 +399,15 @@ const BatchDetail = () => {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
                     <Icons.Mail className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-700">{selectedCandidate.personal?.email || selectedCandidate.email || 'Not provided'}</span>
+                    <span className="text-gray-700">{selectedCandidate.email || 'Email not found'}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Icons.Phone className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-700">{selectedCandidate.personal?.phone || selectedCandidate.phone || 'Not provided'}</span>
+                    <span className="text-gray-700">{selectedCandidate.phone || 'Phone not found'}</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Icons.MapPin className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-700">{selectedCandidate.personal?.location || selectedCandidate.location || 'Not provided'}</span>
+                    <span className="text-gray-700">{selectedCandidate.location || 'Location not specified'}</span>
                   </div>
                 </div>
               </div>
@@ -411,18 +418,33 @@ const BatchDetail = () => {
                   <Icons.Star className="w-5 h-5 mr-2 text-yellow-600" />
                   Skills
                 </h3>
-                <div className="flex flex-wrap gap-2">
-                  {selectedCandidate.skills?.matched && selectedCandidate.skills.matched.length > 0 ? (
-                    selectedCandidate.skills.matched.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium"
-                      >
-                        {skill}
-                      </span>
-                    ))
+                <div className="space-y-3">
+                  {selectedCandidate.skillsMatched && selectedCandidate.skillsMatched.length > 0 ? (
+                    <div>
+                      <p className="text-sm font-medium text-green-700 mb-2">✅ Matched Skills:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCandidate.skillsMatched.map((skill, index) => (
+                          <span key={index} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   ) : (
-                    <span className="text-gray-500 text-sm">No skills extracted</span>
+                    <p className="text-gray-500 text-sm">No skills extracted</p>
+                  )}
+                  
+                  {selectedCandidate.skillsMissing && selectedCandidate.skillsMissing.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-sm font-medium text-red-700 mb-2">❌ Missing Skills:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCandidate.skillsMissing.map((skill, index) => (
+                          <span key={index} className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -433,9 +455,25 @@ const BatchDetail = () => {
                   <Icons.Briefcase className="w-5 h-5 mr-2 text-green-600" />
                   Experience
                 </h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  {selectedCandidate.experience || selectedCandidate.work_experience || 'Experience details not available'}
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Experience Level: <span className="font-medium">{selectedCandidate.experience_match || 0} years</span></p>
+                  {selectedCandidate.strengths && selectedCandidate.strengths.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium text-green-700 mb-1">Key Strengths:</p>
+                      <ul className="text-sm text-gray-700 space-y-1">
+                        {(typeof selectedCandidate.strengths === 'string' ? 
+                          JSON.parse(selectedCandidate.strengths) : 
+                          selectedCandidate.strengths
+                        ).map((strength, index) => (
+                          <li key={index} className="flex items-start space-x-2">
+                            <span className="text-green-500 mt-1">•</span>
+                            <span>{strength}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Education */}
@@ -444,21 +482,57 @@ const BatchDetail = () => {
                   <Icons.GraduationCap className="w-5 h-5 mr-2 text-indigo-600" />
                   Education
                 </h3>
-                <p className="text-gray-700 text-sm leading-relaxed">
-                  {selectedCandidate.education || 'Education details not available'}
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">Education Level: <span className="font-medium">
+                    {selectedCandidate.education_match === 5 ? 'PhD/Doctorate' :
+                     selectedCandidate.education_match === 4 ? 'Master\'s Degree' :
+                     selectedCandidate.education_match === 3 ? 'Bachelor\'s Degree' :
+                     selectedCandidate.education_match === 2 ? 'Diploma/Associate' :
+                     selectedCandidate.education_match === 1 ? 'Certificate/High School' :
+                     'Not specified'}
+                  </span></p>
+                  {selectedCandidate.weaknesses && selectedCandidate.weaknesses.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-sm font-medium text-orange-700 mb-1">Areas for Improvement:</p>
+                      <ul className="text-sm text-gray-700 space-y-1">
+                        {(typeof selectedCandidate.weaknesses === 'string' ? 
+                          JSON.parse(selectedCandidate.weaknesses) : 
+                          selectedCandidate.weaknesses
+                        ).map((weakness, index) => (
+                          <li key={index} className="flex items-start space-x-2">
+                            <span className="text-orange-500 mt-1">•</span>
+                            <span>{weakness}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Analysis Summary */}
-            <div className="mt-8 bg-gray-50 border border-gray-200 rounded-xl p-6">
+            {/* AI Analysis Summary */}
+            <div className="mt-6 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Icons.Brain className="w-5 h-5 mr-2 text-purple-600" />
                 AI Analysis Summary
               </h3>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                {selectedCandidate.analysis_summary || selectedCandidate.recommendation || 'Analysis summary not available'}
-              </p>
+              <div className="space-y-3">
+                <p className="text-gray-700 leading-relaxed">
+                  {selectedCandidate.summary || selectedCandidate.recommendation || 'AI analysis completed successfully'}
+                </p>
+                <div className="flex items-center justify-between pt-3 border-t border-purple-200">
+                  <span className="text-sm font-medium text-gray-600">Overall Recommendation:</span>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    selectedCandidate.recommendation === 'Strong Hire' ? 'bg-green-100 text-green-800' :
+                    selectedCandidate.recommendation === 'Hire' ? 'bg-blue-100 text-blue-800' :
+                    selectedCandidate.recommendation === 'Maybe' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {selectedCandidate.recommendation || 'Under Review'}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
