@@ -362,8 +362,16 @@ router.post('/batch/:batchId/process',
   ]),
   async (req, res) => {
     const startTime = Date.now();
+    const { batchId } = req.params;
+    
     try {
-      const { batchId } = req.params;
+      // Update batch status to processing
+      await database.run(`
+        UPDATE cv_batches 
+        SET status = 'processing', updated_at = CURRENT_TIMESTAMP 
+        WHERE id = $1
+      `, [batchId]);
+
       const jdFile = req.files?.jdFile?.[0];
       const cvFiles = req.files?.cvFiles || [];
 
@@ -482,16 +490,8 @@ router.post('/batch/:batchId/process',
         const candidateId = uuidv4();
         console.log(`💾 Storing ranked candidate #${rankedCandidate.rank}: ${rankedCandidate.basicInfo.name}`);
         
-        const aiAnalysis = rankedCandidate.aiAnalysis;
-        const basicInfo = rankedCandidate.basicInfo;
-
-          // Extract data from new professional analysis structure
-          const analysis = rankedCandidate.ai_analysis || {};
-          const personalInfo = analysis.personal_info || {};
-          const skills = analysis.skills || {};
-          const experience = analysis.experience || {};
-          const education = analysis.education || {};
-          const analysisData = analysis.analysis || {};
+        const aiAnalysis = rankedCandidate.aiAnalysis || {};
+        const basicInfo = rankedCandidate.basicInfo || {};
 
           await database.run(`
             INSERT INTO cv_candidates (
@@ -503,35 +503,26 @@ router.post('/batch/:batchId/process',
           `, [
             candidateId, 
             batchId, 
-            personalInfo.name || 'Name not found',
-            personalInfo.email || 'Email not found', 
-            personalInfo.phone || 'Phone not found',
-            personalInfo.location || 'Location not specified', 
-            100 - (rankedCandidate.ai_rank * 10), // Convert rank to score (rank 1 = 90, rank 2 = 80, etc)
-            skills.matched_required?.length || 0,
-            skills.missing_required?.length || 0,
-            extractExperienceYears(experience.total_years || '0'),
-            extractEducationLevel(education.highest_degree || ''),
-            analysisData.recommendation || 'Review Required',
-            analysisData.recommendation || 'Review Required',
-            JSON.stringify(analysisData.strengths || []), 
-            JSON.stringify([]), // No weaknesses in new structure
-            analysisData.professional_summary || rankedCandidate.ranking_reason || 'AI analysis completed',
+            basicInfo.name || 'Name not found',
+            basicInfo.email || 'Email not found', 
+            basicInfo.phone || 'Phone not found',
+            basicInfo.location || 'Location not specified', 
+            Math.max(0, 100 - ((rankedCandidate.rank || 1) * 10)), // Convert rank to score safely
+            parseInt(aiAnalysis.skills_matched || 0),
+            parseInt(aiAnalysis.skills_missing || 0),
+            parseInt(aiAnalysis.experience_years || 0),
+            parseInt(aiAnalysis.education_level || 0),
+            aiAnalysis.fit_assessment || 'Review Required',
+            aiAnalysis.fit_assessment || 'Review Required',
+            JSON.stringify(aiAnalysis.strengths || []), 
+            JSON.stringify(aiAnalysis.areas_for_improvement || []),
+            aiAnalysis.summary || rankedCandidate.ranking_reason || 'AI analysis completed',
             rankedCandidate.cvText || '',
             JSON.stringify({
-              ai_analysis: analysis,
-              rank: rankedCandidate.ai_rank,
+              rank: rankedCandidate.rank,
               ranking_reason: rankedCandidate.ranking_reason,
-              personal_info: personalInfo,
-              skills: skills,
-              experience: experience,
-              education: education,
-              university: education.university,
-              degree: education.highest_degree,
-              all_skills: skills.all_skills,
-              matched_skills: skills.matched_required,
-              missing_skills: skills.missing_required,
-              additional_skills: skills.additional_valuable
+              ai_analysis: aiAnalysis,
+              basic_info: basicInfo
             })
           ]);
           
@@ -564,6 +555,18 @@ router.post('/batch/:batchId/process',
       });
     } catch (error) {
       console.error('Process files error:', error);
+      
+      // Update batch status to failed
+      try {
+        await database.run(`
+          UPDATE cv_batches 
+          SET status = 'failed', updated_at = CURRENT_TIMESTAMP 
+          WHERE id = $1
+        `, [batchId]);
+      } catch (updateError) {
+        console.error('Failed to update batch status:', updateError);
+      }
+      
       res.status(500).json({
         success: false,
         message: 'Failed to process files',
