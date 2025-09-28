@@ -1,11 +1,32 @@
 const express = require('express');
-const multer = require('multer');
-const pdf = require('pdf-parse');
-const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
 // Authentication middleware
 const auth = require('../middleware/auth');
 const authenticateToken = auth.authenticateToken;
+
+// Optional dependencies with fallbacks
+let multer, pdf, uuidv4;
+try {
+  multer = require('multer');
+} catch (e) {
+  console.warn('⚠️ multer not available');
+  multer = null;
+}
+
+try {
+  pdf = require('pdf-parse');
+} catch (e) {
+  console.warn('⚠️ pdf-parse not available');
+  pdf = null;
+}
+
+try {
+  const uuid = require('uuid');
+  uuidv4 = uuid.v4;
+} catch (e) {
+  console.warn('⚠️ uuid not available, using fallback');
+  uuidv4 = () => 'batch_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
 
 // Try to load the professional CV analysis service
 let CVAnalysisService = null;
@@ -91,30 +112,44 @@ function extractEmailFromText(text) {
   const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   return emailMatch ? emailMatch[0] : null;
 }
-
 function extractPhoneFromText(text) {
   const phoneMatch = text.match(/\+\d{1,3}[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}/);
   return phoneMatch ? phoneMatch[0] : null;
 }
 
-// Configure multer for file uploads
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB per file
-    files: 11 // 1 JD + max 10 CVs
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf' || 
-        file.mimetype === 'text/plain' || 
-        file.mimetype === 'application/msword' ||
-        file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF, TXT, DOC, and DOCX files are allowed'), false);
+// Configure multer for file uploads (if available)
+let upload = null;
+if (multer) {
+  upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB per file
+      files: 11 // 1 JD + max 10 CVs
+    },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype === 'application/pdf' || 
+          file.mimetype === 'text/plain' || 
+          file.mimetype === 'application/msword' ||
+          file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        cb(null, true);
+      } else {
+        cb(new Error('Only PDF, TXT, DOC, and DOCX files are allowed'));
+      }
     }
-  }
-});
+  });
+} else {
+  // Fallback for file upload routes
+  upload = {
+    array: () => (req, res, next) => {
+      res.status(500).json({
+        success: false,
+        message: 'File upload not available - multer dependency missing'
+      });
+    }
+  };
+}
+
+const router = express.Router();
 
 // Test endpoint (no auth)
 router.get('/test', (req, res) => {
