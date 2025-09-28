@@ -41,7 +41,7 @@ export default function LivelyHRDashboard() {
       name: 'CV Intelligence',
       description: 'Analyze resumes and rank candidates automatically',
       icon: Brain,
-      color: 'from-blue-500 to-indigo-600',
+      color: 'from-orange-500 to-red-600', // UPDATED TO ORANGE THEME
       route: '/cv-intelligence'
     },
     {
@@ -49,7 +49,7 @@ export default function LivelyHRDashboard() {
       name: 'Interview Coordinator',
       description: 'Schedule and manage interview processes',
       icon: Calendar,
-      color: 'from-green-500 to-emerald-600',
+      color: 'from-amber-500 to-orange-600', // UPDATED TO ORANGE THEME
       route: '/interview-coordinator'
     }
   ];

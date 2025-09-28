@@ -100,6 +100,7 @@ const ModernCVIntelligence = () => {
       setBatches([]);
       toast.error(`Failed to load CV batches: ${error.response?.data?.message || error.message}`);
     } finally {
+      setLoading(false);
     }
   };
 
