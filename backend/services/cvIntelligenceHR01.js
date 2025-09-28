@@ -177,7 +177,7 @@ Return only the JSON object, no other text:`;
       return JSON.parse(jsonText);
     } catch (error) {
       console.error('LLM extraction failed:', error.message);
-      return this.getFallbackStructure(entities);
+      return this.getFallbackStructure(entities, text);
     }
   }
 
@@ -370,24 +370,129 @@ Return only the JSON object, no other text:`;
     return text.substring(start, end);
   }
 
-  getFallbackStructure(entities) {
+  getFallbackStructure(entities, rawText = '') {
     const emailEntity = entities.find(e => e.type === 'EMAIL');
     const phoneEntity = entities.find(e => e.type === 'PHONE');
     const linkedinEntity = entities.find(e => e.type === 'LINKEDIN');
+    
+    // Extract name from entities or text
+    let name = 'Name not found';
+    const nameEntity = entities.find(e => e.type === 'PERSON');
+    if (nameEntity) {
+      name = this.normalizeName(nameEntity.value);
+    } else {
+      // Try to extract name from email
+      const email = emailEntity?.value;
+      if (email) {
+        const emailName = email.split('@')[0].replace(/[._]/g, ' ');
+        name = this.normalizeName(emailName);
+      }
+    }
+
+    // Extract basic skills from text using common patterns
+    const skills = this.extractBasicSkills(rawText);
+    
+    // Extract basic experience info
+    const experience = this.extractBasicExperience(rawText);
+    
+    // Extract basic education info  
+    const education = this.extractBasicEducation(rawText);
 
     return {
       personal: {
-        name: 'Name not found',
+        name: name,
         email: emailEntity?.value || 'Email not found',
         phone: phoneEntity?.value || 'Phone not found',
         location: 'Location not specified',
         linkedin: linkedinEntity?.value || 'LinkedIn not found'
       },
-      experience: [],
-      education: [],
-      skills: [],
+      experience: experience,
+      education: education,
+      skills: skills,
       certifications: []
     };
+  }
+
+  normalizeName(name) {
+    if (!name || name === 'Name not found') return name;
+    
+    return name
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+
+  extractBasicSkills(text) {
+    if (!text) return [];
+    
+    const commonSkills = [
+      'JavaScript', 'Python', 'Java', 'React', 'Node.js', 'HTML', 'CSS', 'SQL',
+      'MongoDB', 'PostgreSQL', 'Git', 'Docker', 'AWS', 'Azure', 'TypeScript',
+      'Angular', 'Vue.js', 'Express', 'Django', 'Flask', 'Spring', 'Laravel',
+      'PHP', 'C++', 'C#', '.NET', 'Ruby', 'Go', 'Rust', 'Swift', 'Kotlin',
+      'Machine Learning', 'Data Science', 'AI', 'DevOps', 'Kubernetes',
+      'Jenkins', 'CI/CD', 'Agile', 'Scrum', 'Project Management'
+    ];
+    
+    const foundSkills = [];
+    const textLower = text.toLowerCase();
+    
+    commonSkills.forEach(skill => {
+      if (textLower.includes(skill.toLowerCase())) {
+        foundSkills.push(skill);
+      }
+    });
+    
+    return foundSkills.slice(0, 10); // Limit to 10 skills
+  }
+
+  extractBasicExperience(text) {
+    if (!text) return [];
+    
+    // Simple pattern matching for experience
+    const lines = text.split('\n');
+    const experience = [];
+    
+    lines.forEach(line => {
+      // Look for company/role patterns
+      if (line.match(/\b(developer|engineer|manager|analyst|designer|consultant)\b/i)) {
+        experience.push({
+          company: 'Company not specified',
+          role: line.trim().substring(0, 50),
+          startDate: 'Date not specified',
+          endDate: 'Date not specified',
+          achievements: []
+        });
+      }
+    });
+    
+    return experience.slice(0, 3); // Limit to 3 experiences
+  }
+
+  extractBasicEducation(text) {
+    if (!text) return [];
+    
+    const education = [];
+    const textLower = text.toLowerCase();
+    
+    // Look for degree patterns
+    const degrees = ['bachelor', 'master', 'phd', 'diploma', 'certificate'];
+    const fields = ['computer science', 'engineering', 'business', 'mathematics', 'physics'];
+    
+    degrees.forEach(degree => {
+      if (textLower.includes(degree)) {
+        const field = fields.find(f => textLower.includes(f)) || 'Field not specified';
+        education.push({
+          institution: 'Institution not specified',
+          degree: degree.charAt(0).toUpperCase() + degree.slice(1),
+          field: field.charAt(0).toUpperCase() + field.slice(1),
+          year: 'Year not specified'
+        });
+      }
+    });
+    
+    return education.slice(0, 2); // Limit to 2 education entries
   }
 
   async calculateSemanticSimilarity(structuredData, jobRequirements) {

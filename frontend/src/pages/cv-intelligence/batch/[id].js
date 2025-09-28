@@ -307,7 +307,7 @@ const BatchDetail = () => {
                            'Candidate'}
                         </div>
                         <div className="text-sm text-gray-600">
-                          Score: {candidate.score || candidate.overall_score || 0}%
+                          Rank #{candidate.rank || index + 1}
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -690,12 +690,12 @@ const BatchDetail = () => {
                     return (
                       <div>
                         <p className="text-gray-700 leading-relaxed">
-                          {selectedCandidate.summary || 'Professional assessment completed'}
+                          {selectedCandidate.rankingReason || 'Professional assessment completed'}
                         </p>
                         <div className="flex items-center justify-between pt-3 border-t border-blue-200">
-                          <span className="text-sm font-medium text-gray-600">Recommendation:</span>
-                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                            {selectedCandidate.recommendation || 'Under Review'}
+                          <span className="text-sm font-medium text-gray-600">Ranking:</span>
+                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                            Rank #{selectedCandidate.rank || 'N/A'}
                           </span>
                         </div>
                       </div>

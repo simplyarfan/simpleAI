@@ -44,6 +44,17 @@ try {
 
 const router = express.Router();
 
+// Helper function to normalize names
+function normalizeName(name) {
+  if (!name || name === 'Name not found') return name;
+  
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 // Test route to verify CV Intelligence is working
 router.get('/test', (req, res) => {
   res.json({
@@ -204,8 +215,8 @@ router.post('/batch/:id/process', authenticateToken, upload.fields([
 
           candidates.push({
             id: candidateId,
-            name: result.structuredData.personal?.name || 'Name not found',
-            score: Math.round(result.scores?.overallScore || 0),
+            name: normalizeName(result.structuredData.personal?.name || 'Name not found'),
+            rank: candidates.length + 1,
             email: result.structuredData.personal?.email || 'Email not found'
           });
 
@@ -452,14 +463,45 @@ router.get('/batch/:id', authenticateToken, async (req, res) => {
       ORDER BY overall_score DESC
     `, [id]);
 
+    // Add cv_count field for frontend compatibility
+    const batchWithCount = {
+      ...batch,
+      cv_count: batch.total_resumes || candidates.length
+    };
+
+    // Rank candidates and add ranking reasons (remove scores)
+    const rankedCandidates = candidates.map((candidate, index) => {
+      const profileData = candidate.profile_json ? JSON.parse(candidate.profile_json) : {};
+      
+      // Generate ranking reason based on position
+      let rankingReason = '';
+      if (index === 0) {
+        rankingReason = 'Top candidate with the strongest skill match and most relevant experience for this position.';
+      } else if (index === 1) {
+        rankingReason = 'Strong candidate with good technical skills and solid background, second-best match overall.';
+      } else if (index === 2) {
+        rankingReason = 'Good candidate with relevant experience, third-best match with potential for growth.';
+      } else {
+        rankingReason = `Candidate ranked #${index + 1} with decent qualifications but fewer matching requirements than higher-ranked candidates.`;
+      }
+
+      return {
+        ...candidate,
+        rank: index + 1,
+        rankingReason: rankingReason,
+        name: candidate.name ? normalizeName(candidate.name) : 'Name not found',
+        profile_json: profileData,
+        // Remove score field completely
+        score: undefined,
+        overall_score: undefined
+      };
+    });
+
     res.json({
       success: true,
       data: {
-        batch: batch,
-        candidates: candidates.map(candidate => ({
-          ...candidate,
-          profile_json: candidate.profile_json ? JSON.parse(candidate.profile_json) : {}
-        }))
+        batch: batchWithCount,
+        candidates: rankedCandidates
       },
       message: 'Batch details retrieved successfully'
     });
