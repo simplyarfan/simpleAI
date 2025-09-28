@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   ChevronRight,
-  ChevronUp
+  ChevronUp,
+  Shield
 } from 'lucide-react';
 
 export default function LivelyFinanceDashboard() {
@@ -41,15 +42,15 @@ export default function LivelyFinanceDashboard() {
       name: 'Invoice Processor',
       description: 'Automatically process and validate invoices',
       icon: FileText,
-      color: 'from-green-500 to-emerald-600',
+      color: 'from-orange-500 to-red-600', // UPDATED TO ORANGE THEME
       route: '/invoice-processor'
     },
     {
       id: 'expense-auditor',
       name: 'Expense Auditor',
       description: 'Audit expenses and detect anomalies',
-      icon: BarChart3,
-      color: 'from-purple-500 to-indigo-600',
+      icon: Shield,
+      color: 'from-red-500 to-orange-600', // UPDATED TO ORANGE THEME
       route: '/expense-auditor'
     }
   ];

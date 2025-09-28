@@ -17,7 +17,8 @@ import {
   Menu,
   X,
   ChevronRight,
-  ChevronUp
+  ChevronUp,
+  Target
 } from 'lucide-react';
 
 export default function LivelySalesDashboard() {
@@ -40,8 +41,8 @@ export default function LivelySalesDashboard() {
       id: 'lead-generator',
       name: 'Lead Generator',
       description: 'Generate and qualify leads automatically',
-      icon: Users,
-      color: 'from-blue-500 to-cyan-600',
+      icon: Target,
+      color: 'from-orange-600 to-red-600', // UPDATED TO ORANGE THEME
       route: '/lead-generator'
     },
     {
@@ -49,7 +50,7 @@ export default function LivelySalesDashboard() {
       name: 'Campaign Optimizer',
       description: 'Optimize marketing campaigns for better ROI',
       icon: BarChart3,
-      color: 'from-purple-500 to-pink-600',
+      color: 'from-amber-500 to-orange-600', // UPDATED TO ORANGE THEME
       route: '/campaign-optimizer'
     }
   ];

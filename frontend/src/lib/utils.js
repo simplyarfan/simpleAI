@@ -155,18 +155,18 @@ export function isValidEmail(email) {
 }
 
 /**
- * Generate gradient based on text
+ * Generate gradient based on text - Orange Theme
  */
 export function generateGradient(text) {
   const gradients = [
-    'from-blue-600 to-purple-600',
-    'from-purple-600 to-pink-600',
-    'from-pink-600 to-red-600',
-    'from-red-600 to-orange-600',
-    'from-orange-600 to-yellow-600',
-    'from-yellow-600 to-green-600',
-    'from-green-600 to-blue-600',
-    'from-indigo-600 to-purple-600',
+    'from-orange-500 to-red-600',
+    'from-red-500 to-orange-600', 
+    'from-orange-600 to-amber-500',
+    'from-amber-500 to-orange-600',
+    'from-red-600 to-orange-500',
+    'from-orange-400 to-red-500',
+    'from-amber-600 to-red-600',
+    'from-orange-600 to-red-600',
   ];
   
   const hash = text.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);

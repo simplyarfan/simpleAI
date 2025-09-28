@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Variables for theming */
+/* CSS Variables for Orange/White theming - maintaining existing structure */
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
@@ -11,19 +11,24 @@
   --card-foreground: 222.2 84% 4.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
+  
+  /* Updated to Orange Primary Theme */
+  --primary: 24.6 95% 53.1%; /* Orange-500 */
   --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
+  
+  /* Updated to Red Secondary Theme */
+  --secondary: 0 84.2% 60.2%; /* Red-500 */
+  --secondary-foreground: 210 40% 98%;
+  
   --muted: 210 40% 96%;
   --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96%;
+  --accent: 45 93.4% 47.5%; /* Amber-500 */
   --accent-foreground: 222.2 84% 4.9%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
+  --ring: 24.6 95% 53.1%; /* Orange-500 */
   --radius: 0.5rem;
 }
 
@@ -34,19 +39,24 @@
   --card-foreground: 210 40% 98%;
   --popover: 222.2 84% 4.9%;
   --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
+  
+  /* Orange Primary Theme - Dark */
+  --primary: 20.5 90.2% 48.2%; /* Orange-600 */
   --primary-foreground: 222.2 84% 4.9%;
-  --secondary: 217.2 32.6% 17.5%;
+  
+  /* Red Secondary Theme - Dark */
+  --secondary: 0 72.2% 50.6%; /* Red-600 */
   --secondary-foreground: 210 40% 98%;
+  
   --muted: 217.2 32.6% 17.5%;
   --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
+  --accent: 43 96.4% 56.3%; /* Amber-600 */
   --accent-foreground: 210 40% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 94.1%;
+  --ring: 20.5 90.2% 48.2%; /* Orange-600 */
 }
 
 @layer base {
@@ -64,37 +74,37 @@
     scroll-behavior: smooth;
   }
 
-  /* Custom scrollbar */
+  /* Custom scrollbar - Orange theme */
   ::-webkit-scrollbar {
     width: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-gray-100 dark:bg-gray-800;
+    @apply bg-orange-50 dark:bg-gray-800;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+    @apply bg-orange-300 dark:bg-orange-600 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400 dark:bg-gray-500;
+    @apply bg-orange-400 dark:bg-orange-500;
   }
 }
 
 @layer components {
-  /* Glass morphism effect */
+  /* Glass morphism effect - Updated for orange theme */
   .glass {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
+    @apply bg-white/10 backdrop-blur-md border border-orange-200/20;
   }
 
   .glass-dark {
-    @apply bg-black/10 backdrop-blur-md border border-white/10;
+    @apply bg-black/10 backdrop-blur-md border border-orange-100/10;
   }
 
-  /* Animated gradient background */
+  /* Animated gradient background - Orange theme */
   .animated-gradient {
-    background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background: linear-gradient(-45deg, #f97316, #ea580c, #ef4444, #dc2626);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
   }
@@ -104,29 +114,46 @@
     @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
   }
 
-  /* Button variants */
+  /* Button variants - Updated to orange theme */
   .btn-primary {
-    @apply bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-medium px-6 py-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
+    @apply bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-medium px-6 py-3 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
   }
 
   .btn-secondary {
-    @apply bg-white/10 backdrop-blur-sm border border-white/20 text-gray-800 dark:text-white font-medium px-6 py-3 rounded-xl transition-all duration-200 hover:bg-white/20;
+    @apply bg-white/10 backdrop-blur-sm border border-orange-200/30 text-gray-800 dark:text-white font-medium px-6 py-3 rounded-xl transition-all duration-200 hover:bg-orange-50/50;
   }
 
-  /* Loading spinner */
+  /* Loading spinner - Orange theme */
   .spinner {
-    @apply animate-spin rounded-full border-2 border-gray-300 border-t-primary-600;
+    @apply animate-spin rounded-full border-2 border-orange-200 border-t-orange-600;
+  }
+
+  /* New orange-themed utility classes */
+  .nexus-gradient {
+    @apply bg-gradient-to-r from-orange-500 via-red-500 to-amber-500;
+  }
+
+  .nexus-gradient-subtle {
+    @apply bg-gradient-to-br from-orange-50 via-red-50 to-amber-50;
+  }
+
+  .nexus-text-gradient {
+    @apply bg-gradient-to-r from-orange-600 via-red-500 to-amber-600 bg-clip-text text-transparent;
   }
 }
 
 @layer utilities {
-  /* Text gradients */
+  /* Text gradients - Updated to orange theme */
   .text-gradient {
-    @apply bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent;
   }
 
   .text-gradient-purple {
-    @apply bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-orange-500 via-red-500 to-amber-500 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-warm {
+    @apply bg-gradient-to-r from-orange-500 via-red-500 to-amber-500 bg-clip-text text-transparent;
   }
 
   /* Animation utilities */
@@ -140,6 +167,10 @@
 
   .animate-scale-in {
     animation: scaleIn 0.3s ease-out;
+  }
+
+  .animate-pulse-orange {
+    animation: pulseOrange 2s ease-in-out infinite;
   }
 }
 
@@ -176,12 +207,21 @@
   }
 }
 
-/* Selection styling */
-::selection {
-  @apply bg-primary-600/20 text-primary-900;
+@keyframes pulseOrange {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
-/* Focus styles */
+/* Selection styling - Orange theme */
+::selection {
+  @apply bg-orange-500/20 text-orange-900;
+}
+
+/* Focus styles - Orange theme */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900;
+  @apply focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900;
 }

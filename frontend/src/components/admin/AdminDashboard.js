@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
-// Header component removed - using inline navigation
 import { 
   Users, 
   MessageSquare, 
@@ -24,7 +23,7 @@ const AdminDashboard = () => {
   const router = useRouter();
   const [selectedDepartment, setSelectedDepartment] = useState('all');
 
-  // All agents from all departments
+  // All agents from all departments with ORANGE THEME GRADIENTS
   const allAgents = {
     hr: [
       {
@@ -35,7 +34,7 @@ const AdminDashboard = () => {
         status: 'active',
         metrics: { processed: 1247, timeSaved: '312h', accuracy: '94.5%' },
         features: ['Parse PDFs/Word', 'Skill Matching', 'Auto-Ranking', '+1 more'],
-        gradient: 'from-blue-600 to-purple-600',
+        gradient: 'from-orange-500 to-red-500', // ORANGE THEME
         department: 'Human Resources'
       },
       {
@@ -46,7 +45,7 @@ const AdminDashboard = () => {
         status: 'active',
         metrics: { scheduled: 89, conflictsAvoided: 23, satisfaction: '4.8/5' },
         features: ['Calendar Sync', 'Auto-Reminders', 'Panel Coordination', '+1 more'],
-        gradient: 'from-indigo-600 to-blue-600',
+        gradient: 'from-orange-600 to-amber-500', // ORANGE THEME
         department: 'Human Resources'
       },
       {
@@ -57,7 +56,7 @@ const AdminDashboard = () => {
         status: 'active',
         metrics: { onboarded: 34, completion: '98.2%', avgTime: '2 days' },
         features: ['Custom Plans', 'Task Tracking', 'Document Generation', '+1 more'],
-        gradient: 'from-purple-600 to-pink-600',
+        gradient: 'from-red-500 to-orange-500', // ORANGE THEME
         department: 'Human Resources'
       },
       {
@@ -68,7 +67,7 @@ const AdminDashboard = () => {
         status: 'beta',
         metrics: { reports: 156, insights: 42, predictions: '91.3%' },
         features: ['Turnover Prediction', 'Performance Analytics', 'DEI Metrics', '+1 more'],
-        gradient: 'from-pink-600 to-rose-600',
+        gradient: 'from-amber-500 to-orange-600', // ORANGE THEME
         department: 'Human Resources'
       }
     ],
@@ -81,7 +80,7 @@ const AdminDashboard = () => {
         status: 'coming_soon',
         metrics: { pending: 0, processed: 0, accuracy: 'N/A' },
         features: ['OCR Scanning', 'GL Coding', 'Approval Workflow', '+1 more'],
-        gradient: 'from-emerald-600 to-green-600',
+        gradient: 'from-orange-500 to-red-600', // ORANGE THEME
         department: 'Finance'
       },
       {
@@ -92,7 +91,7 @@ const AdminDashboard = () => {
         status: 'coming_soon',
         metrics: { audited: 0, flagged: 0, savings: '$0' },
         features: ['Policy Checking', 'Receipt Validation', 'Anomaly Detection', '+1 more'],
-        gradient: 'from-teal-600 to-cyan-600',
+        gradient: 'from-red-500 to-orange-600', // ORANGE THEME
         department: 'Finance'
       },
       {
@@ -103,7 +102,7 @@ const AdminDashboard = () => {
         status: 'coming_soon',
         metrics: { reports: 0, insights: 0, forecasts: 'N/A' },
         features: ['Custom Reports', 'Variance Analysis', 'Forecasting', '+1 more'],
-        gradient: 'from-blue-600 to-indigo-600',
+        gradient: 'from-amber-500 to-red-500', // ORANGE THEME
         department: 'Finance'
       }
     ],
@@ -116,7 +115,7 @@ const AdminDashboard = () => {
         status: 'coming_soon',
         metrics: { qualified: 0, scored: 0, conversion: '0%' },
         features: ['Lead Scoring', 'Data Enrichment', 'Intent Signals', '+1 more'],
-        gradient: 'from-orange-600 to-red-600',
+        gradient: 'from-orange-600 to-red-600', // ORANGE THEME
         department: 'Sales & Marketing'
       },
       {
@@ -127,7 +126,7 @@ const AdminDashboard = () => {
         status: 'coming_soon',
         metrics: { proposals: 0, winRate: '0%', avgValue: '$0' },
         features: ['Template Library', 'Pricing Engine', 'E-Signatures', '+1 more'],
-        gradient: 'from-red-600 to-pink-600',
+        gradient: 'from-red-600 to-orange-500', // ORANGE THEME
         department: 'Sales & Marketing'
       },
       {
@@ -138,7 +137,7 @@ const AdminDashboard = () => {
         status: 'coming_soon',
         metrics: { campaigns: 0, roi: '0%', reach: '0' },
         features: ['ROI Analysis', 'Attribution', 'A/B Testing', '+1 more'],
-        gradient: 'from-pink-600 to-rose-600',
+        gradient: 'from-amber-600 to-red-600', // ORANGE THEME
         department: 'Sales & Marketing'
       }
     ]
@@ -162,16 +161,19 @@ const AdminDashboard = () => {
     const IconComponent = agent.icon;
     
     return (
-      <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+      <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-xl border border-orange-200/50 p-6 transition-all duration-300 hover:scale-105 hover:shadow-2xl relative overflow-hidden">
+        {/* Background gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-red-50/30 pointer-events-none" />
+        
         {/* Department badge */}
-        <div className="absolute top-4 right-4">
-          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
+        <div className="absolute top-4 right-4 z-10">
+          <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-md text-xs font-medium">
             {agent.department}
           </span>
         </div>
 
         {/* Status badge */}
-        <div className="absolute top-4 left-4">
+        <div className="absolute top-4 left-4 z-10">
           {agent.status === 'active' && (
             <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded-md text-xs font-medium">
               <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
@@ -192,23 +194,23 @@ const AdminDashboard = () => {
         </div>
         
         {/* Header */}
-        <div className="mb-5 mt-6">
-          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.gradient} flex items-center justify-center mb-4`}>
+        <div className="mb-5 mt-6 relative z-10">
+          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${agent.gradient} flex items-center justify-center mb-4 shadow-lg`}>
             <IconComponent className="w-6 h-6 text-white" />
           </div>
-          <h3 className="text-lg font-semibold mb-1 text-white">
+          <h3 className="text-lg font-semibold mb-1 text-gray-900">
             {agent.name}
           </h3>
-          <p className="text-sm text-gray-300 leading-relaxed">
+          <p className="text-sm text-gray-700 leading-relaxed">
             {agent.description}
           </p>
         </div>
         
         {/* Metrics */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="grid grid-cols-3 gap-3 mb-5 relative z-10">
           {Object.entries(agent.metrics).map(([key, value], idx) => (
             <div key={idx} className="text-center">
-              <div className={`text-lg font-bold ${agent.status === 'active' ? 'text-white' : 'text-gray-400'}`}>
+              <div className={`text-lg font-bold ${agent.status === 'active' ? 'text-gray-900' : 'text-gray-500'}`}>
                 {value}
               </div>
               <div className="text-xs text-gray-500 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</div>
@@ -217,10 +219,10 @@ const AdminDashboard = () => {
         </div>
         
         {/* Features */}
-        <div className="flex flex-wrap gap-1.5 mb-5">
+        <div className="flex flex-wrap gap-1.5 mb-5 relative z-10">
           {agent.features.map((feature, idx) => (
             <span key={idx} className={`text-xs px-2.5 py-1.5 rounded-lg font-medium ${
-              agent.status === 'active' ? 'bg-gray-800/60 text-gray-300' : 'bg-gray-800/30 text-gray-500'
+              agent.status === 'active' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'
             }`}>
               {feature}
             </span>
@@ -229,10 +231,10 @@ const AdminDashboard = () => {
         
         {/* Action button */}
         <button 
-          className={`w-full py-2.5 rounded-lg font-medium transition-all duration-200 text-sm ${
+          className={`w-full py-2.5 rounded-lg font-medium transition-all duration-200 text-sm relative z-10 ${
             agent.status === 'active' 
-              ? `bg-gradient-to-r ${agent.gradient} text-white hover:shadow-md`
-              : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+              ? `bg-gradient-to-r ${agent.gradient} text-white hover:shadow-lg hover:scale-[1.02]`
+              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
           }`}
           onClick={() => {
             if (agent.status === 'active') {
@@ -252,40 +254,40 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Background decorative elements */}
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 relative overflow-hidden">
+      {/* Background decorative elements - ORANGE THEME */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-32 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
-        <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
+        <div className="absolute -top-40 -right-32 w-80 h-80 bg-orange-400 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
+        <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-red-400 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-400 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
       </div>
 
       
       <main className="relative z-10 max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Welcome Section */}
         <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 mb-8">
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-orange-200/50 p-8 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mr-4">
                   <Shield className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-                  <p className="text-gray-300">Welcome back, {user?.first_name}! Manage all departments and support.</p>
+                  <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+                  <p className="text-gray-600">Welcome back, {user?.first_name}! Manage all departments and support.</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
                 <button 
                   onClick={() => router.push('/admin/users')}
-                  className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all"
+                  className="flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all"
                 >
                   <Users className="w-4 h-4 mr-2" />
                   Manage Users
                 </button>
                 <button 
                   onClick={() => router.push('/admin/tickets')}
-                  className="flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all"
+                  className="flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all"
                 >
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Support Tickets
@@ -298,7 +300,7 @@ const AdminDashboard = () => {
         {/* Department Filter */}
         <div className="px-4 py-6 sm:px-0">
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-4">All Department Agents</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">All Department Agents</h2>
             <div className="flex flex-wrap gap-4">
               {departments.map((dept) => (
                 <button
@@ -306,8 +308,8 @@ const AdminDashboard = () => {
                   onClick={() => setSelectedDepartment(dept.id)}
                   className={`px-4 py-2 rounded-xl font-medium transition-all ${
                     selectedDepartment === dept.id
-                      ? 'bg-white/20 text-white border border-white/30'
-                      : 'bg-white/10 text-gray-300 hover:bg-white/15 border border-white/20'
+                      ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg'
+                      : 'bg-white/80 text-gray-700 hover:bg-white border border-orange-200/50'
                   }`}
                 >
                   {dept.name} ({dept.count})

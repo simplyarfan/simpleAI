@@ -53,6 +53,17 @@ const ModernCVIntelligence = () => {
     setSelectedFiles(prev => ({ ...prev, jdFile: file }));
   };
 
+  const removeCVFile = (indexToRemove) => {
+    setSelectedFiles(prev => ({
+      ...prev,
+      cvFiles: prev.cvFiles.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
+  const removeJDFile = () => {
+    setSelectedFiles(prev => ({ ...prev, jdFile: null }));
+  };
+
   useEffect(() => {
     fetchBatches();
   }, []);
@@ -89,14 +100,24 @@ const ModernCVIntelligence = () => {
       setBatches([]);
       toast.error(`Failed to load CV batches: ${error.response?.data?.message || error.message}`);
     } finally {
-      setLoading(false);
     }
   };
 
   const handleFileUpload = async (e) => {
     e.preventDefault();
+    
     if (!batchName.trim()) {
       toast.error('Please enter a batch name');
+      return;
+    }
+
+    if (selectedFiles.cvFiles.length === 0) {
+      toast.error('Please upload at least one CV file');
+      return;
+    }
+
+    if (!selectedFiles.jdFile) {
+      toast.error('Please upload a job description file');
       return;
     }
 
@@ -128,12 +149,13 @@ const ModernCVIntelligence = () => {
       const isSuccess = response.success || (response.data && response.data.success);
       const batchId = response.data?.data?.batchId || response.data?.batchId || response.batchId;
       
-      if (isSuccess && batchId) {
+      if (isSuccess) {
         console.log('🎯 Batch created successfully with ID:', batchId);
         toast.success('Batch created successfully!');
         setShowUploadModal(false);
         setBatchName('');
         setSelectedFiles({ cvFiles: [], jdFile: null });
+        await fetchBatches();
         
         // Force refresh the batches list with a small delay to ensure backend processing
         console.log('🎯 Refreshing batches list...');
@@ -398,11 +420,11 @@ const ModernCVIntelligence = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  CV Files (PDF only) - Optional
+                  CV Files (PDF only) - Required *
                 </label>
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-400 transition-colors">
                   <Icons.Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600 mb-2">Drop CV files here or click to browse</p>
+                  <p className="text-sm text-gray-600 mb-2">Upload candidate CVs for AI analysis</p>
                   <input
                     type="file"
                     multiple
@@ -410,45 +432,72 @@ const ModernCVIntelligence = () => {
                     onChange={handleCVFilesChange}
                     className="hidden"
                     id="cv-files"
+                    required
                   />
                   <label
                     htmlFor="cv-files"
                     className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
                   >
-                    Choose Files
+                    Choose CV Files
                   </label>
                   {selectedFiles.cvFiles.length > 0 && (
-                    <p className="text-sm text-green-600 mt-2">
-                      {selectedFiles.cvFiles.length} file(s) selected
-                    </p>
+                    <div className="mt-4">
+                      <p className="text-sm text-green-600 mb-2">
+                        {selectedFiles.cvFiles.length} CV file(s) selected
+                      </p>
+                      <div className="space-y-2">
+                        {selectedFiles.cvFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
+                            <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                            <button
+                              type="button"
+                              onClick={() => removeCVFile(index)}
+                              className="text-red-500 hover:text-red-700 p-1"
+                            >
+                              <Icons.X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Job Description (PDF/TXT) - Optional
+                  Job Description (PDF/TXT) - Required *
                 </label>
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-orange-400 transition-colors">
                   <Icons.FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600 mb-2">Upload job description for better matching</p>
+                  <p className="text-sm text-gray-600 mb-2">Upload job description to rank CVs against requirements</p>
                   <input
                     type="file"
                     accept=".pdf,.txt"
                     onChange={handleJDFileChange}
                     className="hidden"
                     id="jd-file"
+                    required
                   />
                   <label
                     htmlFor="jd-file"
                     className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
                   >
-                    Choose File
+                    Choose Job Description
                   </label>
                   {selectedFiles.jdFile && (
-                    <p className="text-sm text-green-600 mt-2">
-                      {selectedFiles.jdFile.name} selected
-                    </p>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between bg-gray-50 p-2 rounded-lg">
+                        <span className="text-sm text-gray-700 truncate">{selectedFiles.jdFile.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeJDFile()}
+                          className="text-red-500 hover:text-red-700 p-1"
+                        >
+                          <Icons.X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

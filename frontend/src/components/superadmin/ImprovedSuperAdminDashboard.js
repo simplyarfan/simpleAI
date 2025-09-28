@@ -49,7 +49,7 @@ export default function ImprovedSuperAdminDashboard() {
       name: 'User Management',
       description: 'Manage users, roles, and permissions',
       icon: Users,
-      color: 'from-blue-500 to-indigo-600',
+      color: 'from-orange-500 to-red-600', // UPDATED TO ORANGE THEME
       route: '/admin/users'
     },
     {
@@ -57,7 +57,7 @@ export default function ImprovedSuperAdminDashboard() {
       name: 'Support Management',
       description: 'Handle support tickets and requests',
       icon: LifeBuoy,
-      color: 'from-green-500 to-emerald-600',
+      color: 'from-red-500 to-orange-600', // UPDATED TO ORANGE THEME
       route: '/admin/tickets'
     },
     {
@@ -65,7 +65,7 @@ export default function ImprovedSuperAdminDashboard() {
       name: 'Analytics Dashboard',
       description: 'View system analytics and insights',
       icon: BarChart3,
-      color: 'from-purple-500 to-indigo-600',
+      color: 'from-amber-500 to-orange-600', // UPDATED TO ORANGE THEME
       route: '/admin/analytics'
     },
     {
@@ -73,7 +73,7 @@ export default function ImprovedSuperAdminDashboard() {
       name: 'System Health',
       description: 'Monitor system performance and status',
       icon: Server,
-      color: 'from-red-500 to-pink-600',
+      color: 'from-orange-600 to-red-600', // UPDATED TO ORANGE THEME
       route: '/admin/system'
     }
   ];
@@ -256,25 +256,25 @@ export default function ImprovedSuperAdminDashboard() {
             {/* Admin Tools Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               {adminTools.map((tool) => (
-                <div
-                  key={tool.id}
-                  onClick={() => router.push(tool.route)}
-                  className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group"
-                >
-                  <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 bg-gradient-to-br ${tool.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                      <tool.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{tool.name}</h3>
-                      <p className="text-gray-600 text-sm mb-4">{tool.description}</p>
-                      <div className="flex items-center text-orange-600 text-sm font-medium group-hover:text-orange-700">
-                        <span>Access Tool</span>
-                        <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div
+              key={tool.id}
+              onClick={() => router.push(tool.route)}
+              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group"
+              >
+              <div className="flex items-start space-x-4">
+              <div className={`w-12 h-12 bg-gradient-to-br ${tool.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+              <tool.icon className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{tool.name}</h3>
+              <p className="text-gray-600 text-sm mb-4">{tool.description}</p>
+              <div className="flex items-center text-orange-600 text-sm font-medium group-hover:text-orange-700">
+              <span>Access Tool</span>
+              <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+              </div>
+              </div>
+              </div>
+              </div>
               ))}
             </div>
           </div>
