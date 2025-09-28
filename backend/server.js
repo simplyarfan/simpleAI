@@ -1,13 +1,12 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 require('dotenv').config();
 
 // Import database
 const database = require('./models/database');
 
-// Import routes (with individual error handling)
-let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes, initRoutes;
+// Load routes with error handling
+let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes, initRoutes, interviewRoutes;
 
 // Load each route individually with error handling
 try {
@@ -46,6 +45,13 @@ try {
   initRoutes = require('./routes/init');
 } catch (error) {
   console.error('❌ Error loading init routes:', error.message);
+}
+
+try {
+  interviewRoutes = require('./routes/interview-coordinator');
+  console.log('✅ Interview Coordinator routes loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading interview coordinator routes:', error.message);
 }
 
 // Simple request logger middleware (only errors and important routes)
@@ -364,6 +370,12 @@ if (notificationRoutes) {
 }
 if (initRoutes) {
   app.use('/api/init', initRoutes);
+}
+if (interviewRoutes) {
+  app.use('/api/interview-coordinator', cacheInvalidationMiddleware(['api:interview*']), interviewRoutes);
+  console.log('✅ Interview Coordinator routes mounted at /api/interview-coordinator');
+} else {
+  console.error('❌ Interview Coordinator routes failed to load');
 }
 
 // Debug routes removed - not needed in production
