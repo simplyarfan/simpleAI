@@ -121,10 +121,11 @@ class Database {
   }
 
   async initializeTables() {
-    if (this.tablesInitialized) {
-      console.log('✅ Tables already initialized, skipping...');
-      return;
-    }
+    // Temporarily disable the flag to allow re-initialization with correct order
+    // if (this.tablesInitialized) {
+    //   console.log('✅ Tables already initialized, skipping...');
+    //   return;
+    // }
 
     try {
       console.log('🔧 Initializing PostgreSQL tables...');
@@ -232,9 +233,23 @@ class Database {
         console.log('⚠️ Old tables cleanup:', error.message);
       }
 
-      // HR-01 BLUEPRINT SCHEMA - Clean implementation
+      // HR-01 BLUEPRINT SCHEMA - CORRECT ORDER (no foreign keys first)
       
-      // Raw resumes storage
+      // 1. Jobs table (no foreign key dependencies except users)
+      await this.run(`
+        CREATE TABLE IF NOT EXISTS jobs (
+          id VARCHAR(255) PRIMARY KEY,
+          user_id INTEGER NOT NULL,
+          title VARCHAR(255) NOT NULL,
+          description TEXT NOT NULL,
+          requirements_json TEXT NOT NULL,
+          embedding TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+      `);
+
+      // 2. Raw resumes storage (no foreign key dependencies except users)
       await this.run(`
         CREATE TABLE IF NOT EXISTS resumes_raw (
           id VARCHAR(255) PRIMARY KEY,
@@ -250,38 +265,7 @@ class Database {
         )
       `);
 
-      // Resume entities with character offsets (spaCy + regex output)
-      await this.run(`
-        CREATE TABLE IF NOT EXISTS resume_entities (
-          id VARCHAR(255) PRIMARY KEY,
-          resume_id VARCHAR(255) NOT NULL,
-          entity_type VARCHAR(50) NOT NULL,
-          entity_value TEXT NOT NULL,
-          confidence_score FLOAT DEFAULT 0.0,
-          start_offset INTEGER,
-          end_offset INTEGER,
-          spacy_label VARCHAR(50),
-          context_window TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (resume_id) REFERENCES resumes_raw(id) ON DELETE CASCADE
-        )
-      `);
-
-      // Jobs with requirements and embeddings
-      await this.run(`
-        CREATE TABLE IF NOT EXISTS jobs (
-          id VARCHAR(255) PRIMARY KEY,
-          user_id INTEGER NOT NULL,
-          title VARCHAR(255) NOT NULL,
-          description TEXT NOT NULL,
-          requirements_json TEXT NOT NULL,
-          embedding TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-      `);
-
-      // CV batches
+      // 3. CV batches (depends on jobs table)
       await this.run(`
         CREATE TABLE IF NOT EXISTS cv_batches (
           id VARCHAR(255) PRIMARY KEY,
@@ -300,7 +284,24 @@ class Database {
         )
       `);
 
-      // Candidates with Pydantic JSON schema and scores
+      // 4. Resume entities (depends on resumes_raw)
+      await this.run(`
+        CREATE TABLE IF NOT EXISTS resume_entities (
+          id VARCHAR(255) PRIMARY KEY,
+          resume_id VARCHAR(255) NOT NULL,
+          entity_type VARCHAR(50) NOT NULL,
+          entity_value TEXT NOT NULL,
+          confidence_score FLOAT DEFAULT 0.0,
+          start_offset INTEGER,
+          end_offset INTEGER,
+          spacy_label VARCHAR(50),
+          context_window TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (resume_id) REFERENCES resumes_raw(id) ON DELETE CASCADE
+        )
+      `);
+
+      // 5. Candidates (depends on cv_batches and resumes_raw)
       await this.run(`
         CREATE TABLE IF NOT EXISTS candidates (
           id VARCHAR(255) PRIMARY KEY,
@@ -326,7 +327,7 @@ class Database {
         )
       `);
 
-      // Metrics events for KPI tracking
+      // 6. Metrics events (depends on cv_batches and resumes_raw)
       await this.run(`
         CREATE TABLE IF NOT EXISTS metrics_events (
           id VARCHAR(255) PRIMARY KEY,
