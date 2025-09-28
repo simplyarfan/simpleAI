@@ -5,7 +5,7 @@ class Database {
   constructor() {
     this.pool = null;
     this.isConnected = false;
-    this.tablesInitialized = false;
+    this.tablesInitialized = false; // Reset to allow proper table creation
   }
 
   async connect() {
@@ -121,7 +121,7 @@ class Database {
   }
 
   async initializeTables() {
-    // Temporarily disable the flag to allow re-initialization with correct order
+    // Temporarily force re-initialization to create missing tables
     // if (this.tablesInitialized) {
     //   console.log('✅ Tables already initialized, skipping...');
     //   return;
