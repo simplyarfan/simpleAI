@@ -283,10 +283,10 @@ const BatchDetail = () => {
                           index === 2 ? 'bg-yellow-100 text-yellow-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {index === 0 ? '🏆 Best Match' :
-                           index === 1 ? '🥈 Strong Candidate' :
-                           index === 2 ? '🥉 Good Candidate' :
-                           '📋 Candidate'}
+                          {index === 0 ? 'Best Match' :
+                           index === 1 ? 'Strong Candidate' :
+                           index === 2 ? 'Good Candidate' :
+                           'Candidate'}
                         </div>
                         <div className="text-sm text-gray-600">
                           {candidate.recommendation || 'Under Review'}
@@ -391,9 +391,9 @@ const BatchDetail = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Contact Information */}
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Icons.Mail className="w-5 h-5 mr-2 text-blue-600" />
+                  <Icons.User className="w-5 h-5 mr-2 text-blue-600" />
                   Contact Information
                 </h3>
                 <div className="space-y-3">
@@ -412,126 +412,259 @@ const BatchDetail = () => {
                 </div>
               </div>
 
-              {/* Skills */}
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+              {/* Skills Analysis */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Icons.Star className="w-5 h-5 mr-2 text-yellow-600" />
-                  Skills
+                  <Icons.Code className="w-5 h-5 mr-2 text-purple-600" />
+                  Skills Analysis
                 </h3>
-                <div className="space-y-3">
-                  {selectedCandidate.skillsMatched && selectedCandidate.skillsMatched.length > 0 ? (
-                    <div>
-                      <p className="text-sm font-medium text-green-700 mb-2">✅ Matched Skills:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedCandidate.skillsMatched.map((skill, index) => (
-                          <span key={index} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 text-sm">No skills extracted</p>
-                  )}
-                  
-                  {selectedCandidate.skillsMissing && selectedCandidate.skillsMissing.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-sm font-medium text-red-700 mb-2">❌ Missing Skills:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedCandidate.skillsMissing.map((skill, index) => (
-                          <span key={index} className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                <div className="space-y-4">
+                  {/* Extract skills from analysis_data */}
+                  {(() => {
+                    try {
+                      const analysisData = typeof selectedCandidate.analysis_data === 'string' 
+                        ? JSON.parse(selectedCandidate.analysis_data) 
+                        : selectedCandidate.analysis_data || {};
+                      
+                      const skills = analysisData.skills || {};
+                      const matchedSkills = skills.matched_skills || skills.matched_required || [];
+                      const missingSkills = skills.missing_skills || skills.missing_required || [];
+                      const allSkills = skills.all_skills || [];
+
+                      return (
+                        <>
+                          {matchedSkills.length > 0 && (
+                            <div>
+                              <p className="text-sm font-medium text-green-700 mb-2">Required Skills Match:</p>
+                              <div className="flex flex-wrap gap-2">
+                                {matchedSkills.map((skill, index) => (
+                                  <span key={index} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {missingSkills.length > 0 && (
+                            <div>
+                              <p className="text-sm font-medium text-red-700 mb-2">Missing Required Skills:</p>
+                              <div className="flex flex-wrap gap-2">
+                                {missingSkills.map((skill, index) => (
+                                  <span key={index} className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {allSkills.length > 0 && (
+                            <div>
+                              <p className="text-sm font-medium text-blue-700 mb-2">All Technical Skills:</p>
+                              <div className="flex flex-wrap gap-2">
+                                {allSkills.slice(0, 10).map((skill, index) => (
+                                  <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                    {skill}
+                                  </span>
+                                ))}
+                                {allSkills.length > 10 && (
+                                  <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
+                                    +{allSkills.length - 10} more
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {matchedSkills.length === 0 && missingSkills.length === 0 && allSkills.length === 0 && (
+                            <p className="text-gray-500 text-sm">Skills analysis not available</p>
+                          )}
+                        </>
+                      );
+                    } catch (e) {
+                      return <p className="text-gray-500 text-sm">Skills data parsing error</p>;
+                    }
+                  })()}
                 </div>
               </div>
 
-              {/* Experience */}
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+              {/* Professional Experience */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <Icons.Briefcase className="w-5 h-5 mr-2 text-green-600" />
-                  Experience
+                  Professional Experience
                 </h3>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Experience Level: <span className="font-medium">{selectedCandidate.experience_match || 0} years</span></p>
-                  {selectedCandidate.strengths && selectedCandidate.strengths.length > 0 && (
-                    <div>
-                      <p className="text-sm font-medium text-green-700 mb-1">Key Strengths:</p>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        {(typeof selectedCandidate.strengths === 'string' ? 
-                          JSON.parse(selectedCandidate.strengths) : 
-                          selectedCandidate.strengths
-                        ).map((strength, index) => (
-                          <li key={index} className="flex items-start space-x-2">
-                            <span className="text-green-500 mt-1">•</span>
-                            <span>{strength}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Experience Level:</span>
+                    <span className="font-medium text-gray-900">{selectedCandidate.experience_match || 0} years</span>
+                  </div>
+                  
+                  {/* Extract experience from analysis_data */}
+                  {(() => {
+                    try {
+                      const analysisData = typeof selectedCandidate.analysis_data === 'string' 
+                        ? JSON.parse(selectedCandidate.analysis_data) 
+                        : selectedCandidate.analysis_data || {};
+                      
+                      const experience = analysisData.experience || {};
+                      const currentRole = experience.current_role;
+                      const currentCompany = experience.current_company;
+                      const summary = experience.summary;
+
+                      return (
+                        <div className="space-y-2">
+                          {currentRole && (
+                            <div>
+                              <span className="text-sm text-gray-600">Current Role:</span>
+                              <p className="font-medium text-gray-900">{currentRole}</p>
+                            </div>
+                          )}
+                          {currentCompany && (
+                            <div>
+                              <span className="text-sm text-gray-600">Current Company:</span>
+                              <p className="font-medium text-gray-900">{currentCompany}</p>
+                            </div>
+                          )}
+                          {summary && (
+                            <div>
+                              <span className="text-sm text-gray-600">Summary:</span>
+                              <p className="text-sm text-gray-700 leading-relaxed">{summary}</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } catch (e) {
+                      return <p className="text-gray-500 text-sm">Experience details not available</p>;
+                    }
+                  })()}
                 </div>
               </div>
 
-              {/* Education */}
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+              {/* Education & Qualifications */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <Icons.GraduationCap className="w-5 h-5 mr-2 text-indigo-600" />
-                  Education
+                  Education & Qualifications
                 </h3>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">Education Level: <span className="font-medium">
-                    {selectedCandidate.education_match === 5 ? 'PhD/Doctorate' :
-                     selectedCandidate.education_match === 4 ? 'Master\'s Degree' :
-                     selectedCandidate.education_match === 3 ? 'Bachelor\'s Degree' :
-                     selectedCandidate.education_match === 2 ? 'Diploma/Associate' :
-                     selectedCandidate.education_match === 1 ? 'Certificate/High School' :
-                     'Not specified'}
-                  </span></p>
-                  {selectedCandidate.weaknesses && selectedCandidate.weaknesses.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-sm font-medium text-orange-700 mb-1">Areas for Improvement:</p>
-                      <ul className="text-sm text-gray-700 space-y-1">
-                        {(typeof selectedCandidate.weaknesses === 'string' ? 
-                          JSON.parse(selectedCandidate.weaknesses) : 
-                          selectedCandidate.weaknesses
-                        ).map((weakness, index) => (
-                          <li key={index} className="flex items-start space-x-2">
-                            <span className="text-orange-500 mt-1">•</span>
-                            <span>{weakness}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                <div className="space-y-3">
+                  {/* Extract education from analysis_data */}
+                  {(() => {
+                    try {
+                      const analysisData = typeof selectedCandidate.analysis_data === 'string' 
+                        ? JSON.parse(selectedCandidate.analysis_data) 
+                        : selectedCandidate.analysis_data || {};
+                      
+                      const education = analysisData.education || {};
+                      const university = education.university || analysisData.university;
+                      const degree = education.degree || education.highest_degree || analysisData.degree;
+                      const graduationYear = education.graduation_year;
+
+                      return (
+                        <div className="space-y-2">
+                          {degree && (
+                            <div>
+                              <span className="text-sm text-gray-600">Degree:</span>
+                              <p className="font-medium text-gray-900">{degree}</p>
+                            </div>
+                          )}
+                          {university && university !== 'Not specified' && (
+                            <div>
+                              <span className="text-sm text-gray-600">University:</span>
+                              <p className="font-medium text-gray-900">{university}</p>
+                            </div>
+                          )}
+                          {graduationYear && (
+                            <div>
+                              <span className="text-sm text-gray-600">Graduation Year:</span>
+                              <p className="font-medium text-gray-900">{graduationYear}</p>
+                            </div>
+                          )}
+                          {!degree && !university && (
+                            <p className="text-gray-500 text-sm">Education details not available</p>
+                          )}
+                        </div>
+                      );
+                    } catch (e) {
+                      return <p className="text-gray-500 text-sm">Education data parsing error</p>;
+                    }
+                  })()}
                 </div>
               </div>
             </div>
 
-            {/* AI Analysis Summary */}
-            <div className="mt-6 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6">
+            {/* Professional Assessment */}
+            <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Icons.Brain className="w-5 h-5 mr-2 text-purple-600" />
-                AI Analysis Summary
+                <Icons.FileText className="w-5 h-5 mr-2 text-blue-600" />
+                Professional Assessment
               </h3>
-              <div className="space-y-3">
-                <p className="text-gray-700 leading-relaxed">
-                  {selectedCandidate.summary || selectedCandidate.recommendation || 'AI analysis completed successfully'}
-                </p>
-                <div className="flex items-center justify-between pt-3 border-t border-purple-200">
-                  <span className="text-sm font-medium text-gray-600">Overall Recommendation:</span>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    selectedCandidate.recommendation === 'Strong Hire' ? 'bg-green-100 text-green-800' :
-                    selectedCandidate.recommendation === 'Hire' ? 'bg-blue-100 text-blue-800' :
-                    selectedCandidate.recommendation === 'Maybe' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {selectedCandidate.recommendation || 'Under Review'}
-                  </span>
-                </div>
+              <div className="space-y-4">
+                {/* Extract professional summary from analysis_data */}
+                {(() => {
+                  try {
+                    const analysisData = typeof selectedCandidate.analysis_data === 'string' 
+                      ? JSON.parse(selectedCandidate.analysis_data) 
+                      : selectedCandidate.analysis_data || {};
+                    
+                    const analysis = analysisData.analysis || analysisData.ai_analysis?.analysis || {};
+                    const professionalSummary = analysis.professional_summary || selectedCandidate.summary;
+                    const strengths = analysis.strengths || [];
+
+                    return (
+                      <div className="space-y-3">
+                        {professionalSummary && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900 mb-2">Summary:</h4>
+                            <p className="text-gray-700 leading-relaxed">{professionalSummary}</p>
+                          </div>
+                        )}
+                        
+                        {strengths.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-900 mb-2">Key Strengths:</h4>
+                            <ul className="space-y-1">
+                              {strengths.map((strength, index) => (
+                                <li key={index} className="flex items-start space-x-2">
+                                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                                  <span className="text-gray-700 text-sm">{strength}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center justify-between pt-3 border-t border-blue-200">
+                          <span className="text-sm font-medium text-gray-600">Recommendation:</span>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            selectedCandidate.recommendation === 'Strong Hire' ? 'bg-green-100 text-green-800' :
+                            selectedCandidate.recommendation === 'Hire' ? 'bg-blue-100 text-blue-800' :
+                            selectedCandidate.recommendation === 'Consider' ? 'bg-yellow-100 text-yellow-800' :
+                            selectedCandidate.recommendation === 'Pass' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {selectedCandidate.recommendation || 'Under Review'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  } catch (e) {
+                    return (
+                      <div>
+                        <p className="text-gray-700 leading-relaxed">
+                          {selectedCandidate.summary || 'Professional assessment completed'}
+                        </p>
+                        <div className="flex items-center justify-between pt-3 border-t border-blue-200">
+                          <span className="text-sm font-medium text-gray-600">Recommendation:</span>
+                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                            {selectedCandidate.recommendation || 'Under Review'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+                })()}
               </div>
             </div>
           </div>

@@ -120,13 +120,12 @@ Focus on technical skills, programming languages, frameworks, tools, and qualifi
 
   /**
    * Analyze individual candidate with detailed skill matching
-   */
   async analyzeSingleCandidate(candidate, jdAnalysis, candidateNumber) {
     console.log(`🔍 Analyzing candidate ${candidateNumber}: ${candidate.fileName}`);
     
     const basicInfo = this.extractBasicInfo(candidate.cvText);
     
-    const prompt = `You are an expert HR analyst. Analyze this candidate's CV against the job requirements and provide detailed skill matching.
+    const prompt = `You are an expert HR analyst. Analyze this candidate's CV against the job requirements and provide detailed professional analysis.
 
 JOB REQUIREMENTS:
 - Required Skills: ${jdAnalysis.required_skills?.join(', ') || 'Not specified'}
@@ -134,11 +133,27 @@ JOB REQUIREMENTS:
 - Experience Required: ${jdAnalysis.experience_required || 'Not specified'}
 - Education Required: ${jdAnalysis.education_required || 'Not specified'}
 
-CANDIDATE CV (First 1500 chars):
-${candidate.cvText.slice(0, 1500)}
+CANDIDATE CV TEXT:
+${candidate.cvText.slice(0, 3000)}
 
-Provide a JSON response with:
+Please provide a JSON response with:
 {
+  "name": "Properly formatted candidate name (Title Case)",
+  "email": "extracted email",
+  "phone": "extracted phone",
+  "location": "extracted location/city",
+  "skills_found": ["skill1", "skill2", "skill3"],
+  "matched_required_skills": ["skills that match JD requirements"],
+  "missing_required_skills": ["required skills not found in CV"],
+  "additional_skills": ["valuable skills not in JD"],
+  "experience_years": "number only",
+  "experience_summary": "Brief professional experience summary",
+  "education_level": "degree level",
+  "university_name": "name of university/institution",
+  "degree_name": "specific degree/qualification",
+  "key_achievements": ["achievement1", "achievement2"],
+  "professional_summary": "Overall assessment of candidate fit",
+  "recommendation": "Strong Hire|Hire|Consider|Pass"
   "matched_required_skills": ["skill1", "skill2"],
   "missing_required_skills": ["skill1", "skill2"],
   "matched_preferred_skills": ["skill1", "skill2"],

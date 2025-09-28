@@ -3,34 +3,27 @@ const multer = require('multer');
 const pdf = require('pdf-parse');
 const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
-const router = express.Router();
-
 // Authentication middleware
 const auth = require('../middleware/auth');
 const authenticateToken = auth.authenticateToken;
 
-// Try to load AI Ranking CV Analysis Service with fallbacks
-let CVAnalysisService;
+// Try to load the professional CV analysis service
+let CVAnalysisService = null;
 try {
-  const AIRankingCVAnalysisServiceClass = require('../services/cvAnalysisService-ai-ranking');
-  CVAnalysisService = new AIRankingCVAnalysisServiceClass();
-  console.log('✅ AI Ranking CV Analysis Service loaded successfully');
+  const ProfessionalCVAnalysisService = require('../services/cvAnalysisService-professional');
+  CVAnalysisService = new ProfessionalCVAnalysisService();
+  console.log('✅ Professional CV Analysis Service loaded successfully');
 } catch (error) {
-  console.error('❌ Failed to load AI Ranking CV Analysis Service:', error.message);
+  console.error('❌ Failed to load Professional CV Analysis Service:', error.message);
+  console.log('📋 Falling back to AI ranking service...');
+  
   try {
-    const CVAnalysisServiceClass = require('../services/cvAnalysisService');
-    CVAnalysisService = new CVAnalysisServiceClass();
-    console.log('✅ Standard CV Analysis Service loaded as fallback');
+    const AIRankingCVAnalysisService = require('../services/cvAnalysisService-ai-ranking');
+    CVAnalysisService = new AIRankingCVAnalysisService();
+    console.log('✅ AI Ranking CV Analysis Service loaded as fallback');
   } catch (fallbackError) {
-    console.error('❌ Failed to load standard CV Analysis Service:', fallbackError.message);
-    try {
-      const MinimalCVAnalysisServiceClass = require('../services/cvAnalysisService-minimal');
-      CVAnalysisService = new MinimalCVAnalysisServiceClass();
-      console.log('✅ Minimal CV Analysis Service loaded as final fallback');
-    } catch (finalError) {
-      console.error('❌ All CV Analysis Services failed to load:', finalError.message);
-      CVAnalysisService = null;
-    }
+    console.error('❌ Failed to load fallback service:', fallbackError.message);
+    console.log('⚠️ CV Intelligence will run with basic functionality only');
   }
 }
 
@@ -452,6 +445,14 @@ router.post('/batch/:batchId/process',
         const aiAnalysis = rankedCandidate.aiAnalysis;
         const basicInfo = rankedCandidate.basicInfo;
 
+          // Extract data from new professional analysis structure
+          const analysis = rankedCandidate.ai_analysis || {};
+          const personalInfo = analysis.personal_info || {};
+          const skills = analysis.skills || {};
+          const experience = analysis.experience || {};
+          const education = analysis.education || {};
+          const analysisData = analysis.analysis || {};
+
           await database.run(`
             INSERT INTO cv_candidates (
               id, batch_id, name, email, phone, location, score, 
@@ -462,28 +463,35 @@ router.post('/batch/:batchId/process',
           `, [
             candidateId, 
             batchId, 
-            basicInfo.name || 'Name not found',
-            basicInfo.email || 'Email not found', 
-            basicInfo.phone || 'Phone not found',
-            'Location not specified', 
-            rankedCandidate.rank * 10, // Convert rank to score-like number (rank 1 = 90, rank 2 = 80, etc)
-            aiAnalysis.matched_required_skills?.length || 0,
-            aiAnalysis.missing_required_skills?.length || 0,
-            extractExperienceYears(aiAnalysis.experience_years || ''),
-            extractEducationLevel(aiAnalysis.education_level || ''),
-            rankedCandidate.recommendation || 'Review Required',
-            rankedCandidate.recommendation || 'Review Required',
-            JSON.stringify(aiAnalysis.key_strengths || []), 
-            JSON.stringify(aiAnalysis.potential_concerns || []),
-            rankedCandidate.ranking_reason || 'AI analysis completed',
+            personalInfo.name || 'Name not found',
+            personalInfo.email || 'Email not found', 
+            personalInfo.phone || 'Phone not found',
+            personalInfo.location || 'Location not specified', 
+            100 - (rankedCandidate.ai_rank * 10), // Convert rank to score (rank 1 = 90, rank 2 = 80, etc)
+            skills.matched_required?.length || 0,
+            skills.missing_required?.length || 0,
+            extractExperienceYears(experience.total_years || '0'),
+            extractEducationLevel(education.highest_degree || ''),
+            analysisData.recommendation || 'Review Required',
+            analysisData.recommendation || 'Review Required',
+            JSON.stringify(analysisData.strengths || []), 
+            JSON.stringify([]), // No weaknesses in new structure
+            analysisData.professional_summary || rankedCandidate.ranking_reason || 'AI analysis completed',
             rankedCandidate.cvText || '',
             JSON.stringify({
-              ai_analysis: aiAnalysis,
-              rank: rankedCandidate.rank,
+              ai_analysis: analysis,
+              rank: rankedCandidate.ai_rank,
               ranking_reason: rankedCandidate.ranking_reason,
-              matched_skills: aiAnalysis.matched_required_skills,
-              missing_skills: aiAnalysis.missing_required_skills,
-              additional_skills: aiAnalysis.additional_skills
+              personal_info: personalInfo,
+              skills: skills,
+              experience: experience,
+              education: education,
+              university: education.university,
+              degree: education.highest_degree,
+              all_skills: skills.all_skills,
+              matched_skills: skills.matched_required,
+              missing_skills: skills.missing_required,
+              additional_skills: skills.additional_valuable
             })
           ]);
           
