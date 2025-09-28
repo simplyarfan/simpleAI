@@ -4,32 +4,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../../contexts/AuthContext';
 import { cvAPI } from '../../../utils/api';
 import toast from 'react-hot-toast';
-import {
-  ArrowLeft,
-  Users,
-  Star,
-  Award,
-  Target,
-  Mail,
-  Phone,
-  MapPin,
-  Calendar,
-  Briefcase,
-  GraduationCap,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
-  TrendingUp,
-  Brain,
-  Eye,
-  Download,
-  Sparkles,
-  X,
-  LogOut,
-  Trash2,
-  MoreVertical,
-  FileText
-} from 'lucide-react';
+import * as Icons from 'lucide-react';
 
 const BatchDetail = () => {
   const { user, logout } = useAuth();
@@ -141,7 +116,7 @@ const BatchDetail = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Brain className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <Icons.Brain className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">Batch Not Found</h2>
           <p className="text-gray-600 mb-6">The requested batch could not be found.</p>
           <button
@@ -171,11 +146,11 @@ const BatchDetail = () => {
                 onClick={() => router.push('/cv-intelligence')}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+                <Icons.ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-                  <Brain className="w-5 h-5 text-white" />
+                  <Icons.Brain className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h1 className="text-xl font-semibold text-gray-900">{batch.name}</h1>
@@ -189,7 +164,7 @@ const BatchDetail = () => {
                   onClick={() => setShowDropdown(!showDropdown)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <MoreVertical className="w-5 h-5 text-gray-600" />
+                  <Icons.MoreVertical className="w-5 h-5 text-gray-600" />
                 </button>
                 {showDropdown && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-10">
@@ -200,7 +175,7 @@ const BatchDetail = () => {
                       }}
                       className="w-full flex items-center px-4 py-2 text-left text-red-600 hover:bg-red-50 transition-colors"
                     >
-                      <Trash2 className="w-4 h-4 mr-3" />
+                      <Icons.Trash2 className="w-4 h-4 mr-3" />
                       Delete Batch
                     </button>
                   </div>
@@ -218,7 +193,7 @@ const BatchDetail = () => {
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
+                <Icons.Users className="w-5 h-5 text-blue-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total CVs</p>
@@ -229,7 +204,7 @@ const BatchDetail = () => {
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-600" />
+                <Icons.CheckCircle className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Analyzed</p>
@@ -240,7 +215,7 @@ const BatchDetail = () => {
           <div className="bg-white rounded-xl border border-gray-200 p-6">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-orange-600" />
+                <Icons.TrendingUp className="w-5 h-5 text-orange-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-600">Status</p>
@@ -259,7 +234,7 @@ const BatchDetail = () => {
           
           {candidates.length === 0 ? (
             <div className="text-center py-12">
-              <Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <Icons.Brain className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No candidates analyzed yet</h3>
               <p className="text-gray-600">CV analysis is in progress. Please check back in a few minutes.</p>
             </div>
@@ -283,13 +258,13 @@ const BatchDetail = () => {
                         <div className="flex items-center space-x-4 mt-1">
                           {candidate.personal?.email && (
                             <div className="flex items-center space-x-1 text-sm text-gray-600">
-                              <Mail className="w-4 h-4" />
+                              <Icons.Mail className="w-4 h-4" />
                               <span>{candidate.personal.email}</span>
                             </div>
                           )}
                           {candidate.personal?.phone && (
                             <div className="flex items-center space-x-1 text-sm text-gray-600">
-                              <Phone className="w-4 h-4" />
+                              <Icons.Phone className="w-4 h-4" />
                               <span>{candidate.personal.phone}</span>
                             </div>
                           )}
@@ -399,7 +374,7 @@ const BatchDetail = () => {
                 onClick={() => setShowCandidateModal(false)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-600" />
+                <Icons.X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
 
@@ -407,20 +382,20 @@ const BatchDetail = () => {
               {/* Contact Information */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Mail className="w-5 h-5 mr-2 text-blue-600" />
+                  <Icons.Mail className="w-5 h-5 mr-2 text-blue-600" />
                   Contact Information
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
-                    <Mail className="w-4 h-4 text-gray-500" />
+                    <Icons.Mail className="w-4 h-4 text-gray-500" />
                     <span className="text-gray-700">{selectedCandidate.personal?.email || selectedCandidate.email || 'Not provided'}</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Phone className="w-4 h-4 text-gray-500" />
+                    <Icons.Phone className="w-4 h-4 text-gray-500" />
                     <span className="text-gray-700">{selectedCandidate.personal?.phone || selectedCandidate.phone || 'Not provided'}</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <MapPin className="w-4 h-4 text-gray-500" />
+                    <Icons.MapPin className="w-4 h-4 text-gray-500" />
                     <span className="text-gray-700">{selectedCandidate.personal?.location || selectedCandidate.location || 'Not provided'}</span>
                   </div>
                 </div>
@@ -429,7 +404,7 @@ const BatchDetail = () => {
               {/* Skills */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Star className="w-5 h-5 mr-2 text-yellow-600" />
+                  <Icons.Star className="w-5 h-5 mr-2 text-yellow-600" />
                   Skills
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -451,7 +426,7 @@ const BatchDetail = () => {
               {/* Experience */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Briefcase className="w-5 h-5 mr-2 text-green-600" />
+                  <Icons.Briefcase className="w-5 h-5 mr-2 text-green-600" />
                   Experience
                 </h3>
                 <p className="text-gray-700 text-sm leading-relaxed">
@@ -462,7 +437,7 @@ const BatchDetail = () => {
               {/* Education */}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <GraduationCap className="w-5 h-5 mr-2 text-indigo-600" />
+                  <Icons.GraduationCap className="w-5 h-5 mr-2 text-indigo-600" />
                   Education
                 </h3>
                 <p className="text-gray-700 text-sm leading-relaxed">
@@ -474,7 +449,7 @@ const BatchDetail = () => {
             {/* Analysis Summary */}
             <div className="mt-8 bg-gray-50 border border-gray-200 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Brain className="w-5 h-5 mr-2 text-purple-600" />
+                <Icons.Brain className="w-5 h-5 mr-2 text-purple-600" />
                 AI Analysis Summary
               </h3>
               <p className="text-gray-700 text-sm leading-relaxed">
