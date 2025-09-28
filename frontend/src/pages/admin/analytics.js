@@ -98,7 +98,7 @@ export default function Analytics() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
           <p className="mt-4 text-white text-sm">Loading...</p>
@@ -109,7 +109,7 @@ export default function Analytics() {
 
   if (!user || user.email !== 'syedarfan@securemaxtech.com') {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 flex items-center justify-center">
         <div className="text-center">
           <BarChart3 className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Access Denied</h2>
@@ -127,23 +127,23 @@ export default function Analytics() {
 
   const StatCard = ({ title, value, icon: Icon, color, trend }) => (
     <motion.div 
-      className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300"
+      className="bg-white/90 backdrop-blur-xl border border-orange-200/50 rounded-2xl p-6 hover:bg-white/95 shadow-lg hover:shadow-xl transition-all duration-300"
       whileHover={{ scale: 1.02, y: -2 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-gray-400 text-sm font-medium">{title}</p>
-          <p className="text-2xl font-bold text-white mt-1">{value}</p>
+          <p className="text-gray-600 text-sm font-medium">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
           {trend && (
-            <p className="text-green-400 text-sm mt-1 flex items-center">
+            <p className="text-green-600 text-sm mt-1 flex items-center">
               <TrendingUp className="w-3 h-3 mr-1" />
               {trend}
             </p>
           )}
         </div>
-        <div className={`p-3 bg-white/10 border border-white/20 rounded-xl`}>
+        <div className={`p-3 bg-orange-100 border border-orange-200 rounded-xl`}>
           <Icon className={`w-6 h-6 ${color}`} />
         </div>
       </div>
@@ -152,7 +152,7 @@ export default function Analytics() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 relative overflow-hidden">
 
         <Head>
           <title>Analytics - SimpleAI</title>
@@ -166,7 +166,7 @@ export default function Analytics() {
             <div className="mb-6">
               <motion.button
                 onClick={() => router.push('/superadmin')}
-                className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
+                className="flex items-center text-gray-700 hover:text-gray-900 bg-white/80 backdrop-blur-sm border border-orange-200 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/90 shadow-sm"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -181,25 +181,25 @@ export default function Analytics() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+              <div className="bg-white/90 backdrop-blur-xl border border-orange-200/50 rounded-2xl p-8 shadow-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-white/10 border border-white/20 rounded-lg">
-                      <BarChart3 className="w-6 h-6 text-purple-400" />
+                    <div className="p-2 bg-orange-100 border border-orange-200 rounded-lg">
+                      <BarChart3 className="w-6 h-6 text-orange-600" />
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Analytics Dashboard</h1>
-                      <p className="text-gray-400">Platform insights and performance metrics</p>
+                      <h1 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h1>
+                      <p className="text-gray-600">Platform insights and performance metrics</p>
                     </div>
                   </div>
                   <motion.button
                     onClick={fetchAnalytics}
-                    className="inline-flex items-center px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-sm font-medium text-white hover:bg-white/20 transition-colors"
+                    className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 border border-orange-300 rounded-lg text-sm font-medium text-white hover:from-orange-600 hover:to-red-700 shadow-sm transition-colors"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     disabled={isLoading}
                   >
-                    <RefreshCw className={`w-4 h-4 mr-2 text-purple-400 ${isLoading ? 'animate-spin' : ''}`} />
+                    <RefreshCw className={`w-4 h-4 mr-2 text-white ${isLoading ? 'animate-spin' : ''}`} />
                     Refresh
                   </motion.button>
                 </div>
@@ -208,8 +208,8 @@ export default function Analytics() {
 
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
-                <span className="ml-3 text-gray-400">Loading analytics...</span>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                <span className="ml-3 text-gray-700">Loading analytics...</span>
               </div>
             ) : (
               <>
@@ -219,42 +219,42 @@ export default function Analytics() {
                     title="Total Users"
                     value={analyticsData.totalUsers}
                     icon={Users}
-                    color="text-blue-400"
+                    color="text-orange-600"
                     trend="+12% this month"
                   />
                   <StatCard
                     title="Active Users"
                     value={analyticsData.activeUsers}
                     icon={Activity}
-                    color="text-green-400"
+                    color="text-green-600"
                     trend="+8% this week"
                   />
                   <StatCard
                     title="Support Tickets"
                     value={analyticsData.totalTickets}
                     icon={Calendar}
-                    color="text-yellow-400"
+                    color="text-amber-600"
                     trend="78% resolved"
                   />
                   <StatCard
                     title="CV Batches"
                     value={analyticsData.cvBatches}
                     icon={BarChart3}
-                    color="text-purple-400"
+                    color="text-red-600"
                     trend="+15% this month"
                   />
                 </div>
 
                 {/* Department Analytics */}
                 <motion.div 
-                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 mb-8"
+                  className="bg-white/90 backdrop-blur-xl border border-orange-200/50 rounded-2xl p-8 mb-8 shadow-lg"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-white">Department Analytics</h2>
-                    <button className="text-purple-400 hover:text-purple-300 transition-colors">
+                    <h2 className="text-xl font-bold text-gray-900">Department Analytics</h2>
+                    <button className="text-orange-600 hover:text-orange-700 transition-colors">
                       <Download className="w-5 h-5" />
                     </button>
                   </div>
@@ -263,42 +263,42 @@ export default function Analytics() {
                     <table className="min-w-full">
                       <thead>
                         <tr className="border-b border-white/10">
-                          <th className="text-left py-3 px-4 text-gray-300 font-medium">Department</th>
-                          <th className="text-left py-3 px-4 text-gray-300 font-medium">Total Users</th>
-                          <th className="text-left py-3 px-4 text-gray-300 font-medium">Active Users</th>
-                          <th className="text-left py-3 px-4 text-gray-300 font-medium">Activity Rate</th>
+                          <th className="text-left py-3 px-4 text-gray-700 font-medium">Department</th>
+                          <th className="text-left py-3 px-4 text-gray-700 font-medium">Total Users</th>
+                          <th className="text-left py-3 px-4 text-gray-700 font-medium">Active Users</th>
+                          <th className="text-left py-3 px-4 text-gray-700 font-medium">Activity Rate</th>
                         </tr>
                       </thead>
                       <tbody>
                         {userAnalytics.map((dept, index) => (
                           <motion.tr 
                             key={dept.department}
-                            className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                            className="border-b border-gray-200 hover:bg-orange-50 transition-colors"
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 + index * 0.1 }}
                           >
                             <td className="py-4 px-4">
                               <div className="flex items-center">
-                                <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-blue-400 rounded-lg flex items-center justify-center mr-3">
+                                <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
                                   <span className="text-xs font-bold text-white">
                                     {dept.department.split(' ').map(word => word[0]).join('')}
                                   </span>
                                 </div>
-                                <span className="text-white font-medium">{dept.department}</span>
+                                <span className="text-gray-900 font-medium">{dept.department}</span>
                               </div>
                             </td>
-                            <td className="py-4 px-4 text-gray-300">{dept.users}</td>
-                            <td className="py-4 px-4 text-gray-300">{dept.active}</td>
+                            <td className="py-4 px-4 text-gray-700">{dept.users}</td>
+                            <td className="py-4 px-4 text-gray-700">{dept.active}</td>
                             <td className="py-4 px-4">
                               <div className="flex items-center">
-                                <div className="w-full bg-white/10 rounded-full h-2 mr-3">
+                                <div className="w-full bg-gray-200 rounded-full h-2 mr-3">
                                   <div 
-                                    className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-500"
+                                    className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-500"
                                     style={{ width: `${(dept.active / dept.users) * 100}%` }}
                                   ></div>
                                 </div>
-                                <span className="text-sm text-gray-300 min-w-[3rem]">
+                                <span className="text-sm text-gray-700 min-w-[3rem]">
                                   {Math.round((dept.active / dept.users) * 100)}%
                                 </span>
                               </div>
@@ -312,36 +312,36 @@ export default function Analytics() {
 
                 {/* System Health */}
                 <motion.div 
-                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8"
+                  className="bg-white/90 backdrop-blur-xl border border-orange-200/50 rounded-2xl p-8 shadow-lg"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                 >
-                  <h2 className="text-xl font-bold text-white mb-6">System Health</h2>
+                  <h2 className="text-xl font-bold text-gray-900 mb-6">System Health</h2>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Activity className="w-8 h-8 text-green-400" />
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Activity className="w-8 h-8 text-green-600" />
                       </div>
-                      <h3 className="text-white font-medium mb-1">Server Status</h3>
-                      <p className="text-green-400 text-sm">Online</p>
+                      <h3 className="text-gray-900 font-medium mb-1">Server Status</h3>
+                      <p className="text-green-600 text-sm">Online</p>
                     </div>
                     
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <BarChart3 className="w-8 h-8 text-blue-400" />
+                      <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <BarChart3 className="w-8 h-8 text-orange-600" />
                       </div>
-                      <h3 className="text-white font-medium mb-1">Performance</h3>
-                      <p className="text-blue-400 text-sm">Excellent</p>
+                      <h3 className="text-gray-900 font-medium mb-1">Performance</h3>
+                      <p className="text-orange-600 text-sm">Excellent</p>
                     </div>
                     
                     <div className="text-center">
-                      <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Sparkles className="w-8 h-8 text-purple-400" />
+                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Sparkles className="w-8 h-8 text-red-600" />
                       </div>
-                      <h3 className="text-white font-medium mb-1">AI Services</h3>
-                      <p className="text-purple-400 text-sm">Active</p>
+                      <h3 className="text-gray-900 font-medium mb-1">AI Services</h3>
+                      <p className="text-red-600 text-sm">Active</p>
                     </div>
                   </div>
                 </motion.div>

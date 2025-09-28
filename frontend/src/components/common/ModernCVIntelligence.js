@@ -127,47 +127,54 @@ const ModernCVIntelligence = () => {
       console.log('🎯 CV files count:', selectedFiles.cvFiles.length);
       console.log('🎯 JD file:', selectedFiles.jdFile ? 'present' : 'none');
 
-      const formData = new FormData();
-      formData.append('name', batchName);
+      // Step 1: Create the batch first
+      console.log('🎯 Step 1: Creating batch...');
+      const batchResponse = await cvAPI.createBatch(batchName);
+      console.log('🎯 Create batch response:', batchResponse);
       
-      // Add CV files if any
-      selectedFiles.cvFiles.forEach((file, index) => {
-        formData.append(`cvFiles`, file);
-        console.log(`🎯 Added CV file ${index + 1}:`, file.name);
-      });
+      const isSuccess = batchResponse.success || (batchResponse.data && batchResponse.data.success);
+      const batchId = batchResponse.data?.data?.batchId || batchResponse.data?.batchId || batchResponse.batchId;
       
-      // Add JD file if any
-      if (selectedFiles.jdFile) {
-        formData.append('jdFile', selectedFiles.jdFile);
-        console.log('🎯 Added JD file:', selectedFiles.jdFile.name);
+      if (!isSuccess || !batchId) {
+        throw new Error(batchResponse.message || batchResponse.data?.message || 'Failed to create batch');
       }
 
-      console.log('🎯 Sending request to create batch...');
-      const response = await cvAPI.createBatch(formData);
-      console.log('🎯 Create batch response:', response);
-      
-      // Handle nested response structure - check both response.success and response.data.success
-      const isSuccess = response.success || (response.data && response.data.success);
-      const batchId = response.data?.data?.batchId || response.data?.batchId || response.batchId;
-      
-      if (isSuccess) {
-        console.log('🎯 Batch created successfully with ID:', batchId);
-        toast.success('Batch created successfully!');
-        setShowUploadModal(false);
-        setBatchName('');
-        setSelectedFiles({ cvFiles: [], jdFile: null });
-        await fetchBatches();
+      console.log('✅ Batch created successfully with ID:', batchId);
+
+      // Step 2: Process the files if any are provided
+      if (selectedFiles.cvFiles.length > 0 && selectedFiles.jdFile) {
+        console.log('🎯 Step 2: Processing files...');
+        toast.success('Batch created! Processing files...');
         
-        // Force refresh the batches list with a small delay to ensure backend processing
-        console.log('🎯 Refreshing batches list...');
-        setTimeout(async () => {
-          await fetchBatches();
-          console.log('🎯 Batches refreshed after batch creation');
-        }, 1000);
+        const processResponse = await cvAPI.processFiles(
+          batchId,
+          selectedFiles.jdFile,
+          selectedFiles.cvFiles,
+          (progress) => {
+            console.log('📈 Upload progress:', progress + '%');
+            // You could add a progress bar here if needed
+          }
+        );
+        
+        console.log('✅ Files processed successfully:', processResponse);
+        toast.success('Files processed successfully! AI analysis in progress...');
       } else {
-        console.error('🎯 Batch creation failed:', response);
-        toast.error(response.message || response.data?.message || 'Failed to create batch');
+        console.log('⚠️ No files to process - batch created without files');
+        toast.success('Batch created successfully!');
       }
+
+      // Clean up and refresh
+      setShowUploadModal(false);
+      setBatchName('');
+      setSelectedFiles({ cvFiles: [], jdFile: null });
+      await fetchBatches();
+      
+      // Force refresh the batches list with a small delay to ensure backend processing
+      console.log('🎯 Refreshing batches list...');
+      setTimeout(async () => {
+        await fetchBatches();
+        console.log('🎯 Batches refreshed after batch creation');
+      }, 2000);
     } catch (error) {
       console.error('🎯 Error creating batch:', error);
       console.error('🎯 Error details:', error.response?.data);
@@ -393,7 +400,8 @@ const ModernCVIntelligence = () => {
       {/* Upload Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-8 w-full max-w-2xl shadow-2xl">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-8 overflow-y-auto flex-1">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-gray-900">Create New Batch</h3>
               <button
@@ -519,6 +527,7 @@ const ModernCVIntelligence = () => {
                 </button>
               </div>
             </form>
+            </div>
           </div>
         </div>
       )}

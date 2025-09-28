@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
 import ErrorBoundary from '../../components/shared/ErrorBoundary';
-import { systemAPI } from '../../utils/api';
+import { systemAPI, analyticsAPI, authAPI, supportAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { 
@@ -145,7 +145,7 @@ export default function SystemHealth() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
           <p className="mt-4 text-white text-sm">Loading...</p>
@@ -156,7 +156,7 @@ export default function SystemHealth() {
 
   if (!user || user.email !== 'syedarfan@securemaxtech.com') {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 flex items-center justify-center">
         <div className="text-center">
           <Server className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Access Denied</h2>
@@ -174,32 +174,32 @@ export default function SystemHealth() {
 
   const MetricCard = ({ title, icon: Icon, status, details, color }) => (
     <motion.div 
-      className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300"
+      className="bg-white/90 backdrop-blur-xl border border-orange-200/50 rounded-2xl p-6 hover:bg-white/95 shadow-lg hover:shadow-xl transition-all duration-300"
       whileHover={{ scale: 1.02, y: -2 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-white/10 border border-white/20 rounded-lg">
+          <div className="p-2 bg-orange-100 border border-orange-200 rounded-lg">
             <Icon className={`w-5 h-5 ${color}`} />
           </div>
-          <h3 className="text-white font-medium">{title}</h3>
+          <h3 className="text-gray-900 font-medium">{title}</h3>
         </div>
         {getStatusIcon(status)}
       </div>
       
       <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <span className="text-gray-400 text-sm">Status</span>
+          <span className="text-gray-600 text-sm">Status</span>
           <span className={`text-sm font-medium ${getStatusColor(status)}`}>
             {status}
           </span>
         </div>
         {Object.entries(details).map(([key, value]) => (
           <div key={key} className="flex justify-between items-center">
-            <span className="text-gray-400 text-sm capitalize">{key}</span>
-            <span className="text-white text-sm">{value}</span>
+            <span className="text-gray-600 text-sm capitalize">{key}</span>
+            <span className="text-gray-900 text-sm">{value}</span>
           </div>
         ))}
       </div>
@@ -208,7 +208,7 @@ export default function SystemHealth() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 relative overflow-hidden">
 
         <Head>
           <title>System Health - SimpleAI</title>
@@ -222,7 +222,7 @@ export default function SystemHealth() {
             <div className="mb-6">
               <motion.button
                 onClick={() => router.push('/superadmin')}
-                className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
+                className="flex items-center text-gray-700 hover:text-gray-900 bg-white/80 backdrop-blur-sm border border-orange-200 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/90 shadow-sm"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -237,30 +237,30 @@ export default function SystemHealth() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+              <div className="bg-white/90 backdrop-blur-xl border border-orange-200/50 rounded-2xl p-8 shadow-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-white/10 border border-white/20 rounded-lg">
-                      <Server className="w-6 h-6 text-green-400" />
+                    <div className="p-2 bg-green-100 border border-green-200 rounded-lg">
+                      <Server className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">System Health</h1>
-                      <p className="text-gray-400">Monitor system performance and health metrics</p>
+                      <h1 className="text-2xl font-bold text-gray-900">System Health</h1>
+                      <p className="text-gray-600">Monitor system performance and health metrics</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
-                      <p className="text-sm text-gray-400">Last Updated</p>
-                      <p className="text-sm text-white">{lastUpdated.toLocaleTimeString()}</p>
+                      <p className="text-sm text-gray-600">Last Updated</p>
+                      <p className="text-sm text-gray-900">{lastUpdated.toLocaleTimeString()}</p>
                     </div>
                     <motion.button
                       onClick={fetchSystemMetrics}
-                      className="inline-flex items-center px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-sm font-medium text-white hover:bg-white/20 transition-colors"
+                      className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 border border-green-300 rounded-lg text-sm font-medium text-white hover:from-green-600 hover:to-emerald-700 shadow-sm transition-colors"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       disabled={isLoading}
                     >
-                      <RefreshCw className={`w-4 h-4 mr-2 text-green-400 ${isLoading ? 'animate-spin' : ''}`} />
+                      <RefreshCw className={`w-4 h-4 mr-2 text-white ${isLoading ? 'animate-spin' : ''}`} />
                       Refresh
                     </motion.button>
                   </div>
@@ -270,8 +270,8 @@ export default function SystemHealth() {
 
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400"></div>
-                <span className="ml-3 text-gray-400">Loading system metrics...</span>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                <span className="ml-3 text-gray-700">Loading system metrics...</span>
               </div>
             ) : (
               <>
@@ -305,8 +305,8 @@ export default function SystemHealth() {
                       <div className="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
                         <Zap className="w-8 h-8 text-purple-400" />
                       </div>
-                      <h3 className="text-white font-medium mb-1">AI Services Active</h3>
-                      <p className="text-purple-400 text-sm">All AI models operational</p>
+                      <h3 className="text-gray-900 font-medium mb-1">AI Services Active</h3>
+                      <p className="text-red-600 text-sm">All AI models operational</p>
                     </div>
                   </div>
                 </motion.div>
@@ -321,7 +321,7 @@ export default function SystemHealth() {
                       uptime: systemMetrics.server.uptime,
                       'response time': systemMetrics.server.responseTime
                     }}
-                    color="text-green-400"
+                    color="text-green-600"
                   />
                   
                   <MetricCard
@@ -332,7 +332,7 @@ export default function SystemHealth() {
                       connections: systemMetrics.database.connections,
                       queries: systemMetrics.database.queries
                     }}
-                    color="text-blue-400"
+                    color="text-blue-600"
                   />
                   
                   <MetricCard
@@ -344,7 +344,7 @@ export default function SystemHealth() {
                       'success rate': systemMetrics.api.successRate,
                       'avg response': systemMetrics.api.avgResponseTime
                     }}
-                    color="text-purple-400"
+                    color="text-orange-600"
                   />
                   
                   <MetricCard
@@ -356,7 +356,7 @@ export default function SystemHealth() {
                       'active users': systemMetrics.users.activeUsers,
                       'new today': systemMetrics.users.newToday
                     }}
-                    color="text-cyan-400"
+                    color="text-cyan-600"
                   />
                   
                   <MetricCard
@@ -368,7 +368,7 @@ export default function SystemHealth() {
                       'open tickets': systemMetrics.tickets.openTickets,
                       'resolved today': systemMetrics.tickets.resolvedToday
                     }}
-                    color="text-yellow-400"
+                    color="text-amber-600"
                   />
                   
                   <MetricCard
@@ -380,7 +380,7 @@ export default function SystemHealth() {
                       'total files': systemMetrics.storage.totalFiles,
                       'storage used': systemMetrics.storage.storageUsed
                     }}
-                    color="text-orange-400"
+                    color="text-red-600"
                   />
                 </div>
               </>

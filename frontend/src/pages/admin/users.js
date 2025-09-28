@@ -278,7 +278,7 @@ export default function UsersManagement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
           <p className="mt-4 text-white text-sm">Loading...</p>
@@ -289,7 +289,7 @@ export default function UsersManagement() {
 
   if (!user || user.email !== 'syedarfan@securemaxtech.com') {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 flex items-center justify-center">
         <div className="text-center">
           <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Access Denied</h2>
@@ -307,7 +307,7 @@ export default function UsersManagement() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50 relative overflow-hidden">
 
         <Head>
           <title>User Management - SimpleAI</title>
@@ -366,7 +366,7 @@ export default function UsersManagement() {
                   <select
                     value={filterRole}
                     onChange={(e) => setFilterRole(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-white border border-gray-300 text-gray-900 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   >
                     <option value="all">All Roles</option>
                     <option value="superadmin">Superadmin</option>
@@ -379,61 +379,61 @@ export default function UsersManagement() {
 
             {/* Users Table */}
             <motion.div 
-              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden"
+              className="bg-white/90 backdrop-blur-xl border border-orange-200/50 rounded-2xl overflow-hidden shadow-lg"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
-                  <span className="ml-3 text-gray-400">Loading users...</span>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                  <span className="ml-3 text-gray-700">Loading users...</span>
                 </div>
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-medium text-white mb-2">No users found</h3>
-                  <p className="text-gray-400">Try adjusting your search or filters</p>
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">No users found</h3>
+                  <p className="text-gray-600">Try adjusting your search or filters</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-white/10">
-                    <thead className="bg-white/5">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                           User
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                           Role
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                           Department
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/10">
+                    <tbody className="bg-white divide-y divide-gray-200">
                       {filteredUsers.map((user) => (
-                        <tr key={user.id} className="hover:bg-white/5 transition-colors">
+                        <tr key={user.id} className="hover:bg-orange-50 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center">
+                                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-orange-400 to-red-400 flex items-center justify-center">
                                   <span className="text-sm font-medium text-white">
                                     {user.first_name?.[0]}{user.last_name?.[0]}
                                   </span>
                                 </div>
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-white">
+                                <div className="text-sm font-medium text-gray-900">
                                   {user.first_name} {user.last_name}
                                 </div>
-                                <div className="text-sm text-gray-400">{user.email}</div>
+                                <div className="text-sm text-gray-600">{user.email}</div>
                               </div>
                             </div>
                           </td>
@@ -446,7 +446,7 @@ export default function UsersManagement() {
                               {user.role}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                             {user.department || 'Not assigned'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -459,7 +459,7 @@ export default function UsersManagement() {
                             <div className="flex items-center space-x-2">
                               <button
                                 onClick={() => openEditModal(user)}
-                                className="text-blue-400 hover:text-blue-300 p-1 rounded"
+                                className="text-orange-600 hover:text-orange-700 p-1 rounded"
                                 title="Edit user"
                               >
                                 <Edit className="w-4 h-4" />
@@ -467,7 +467,7 @@ export default function UsersManagement() {
                               {user.email !== 'syedarfan@securemaxtech.com' && (
                                 <button
                                   onClick={() => openDeleteModal(user)}
-                                  className="text-red-400 hover:text-red-300 p-1 rounded"
+                                  className="text-red-600 hover:text-red-700 p-1 rounded"
                                   title="Delete user"
                                 >
                                   <Trash2 className="w-4 h-4" />
