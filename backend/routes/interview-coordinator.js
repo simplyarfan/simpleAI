@@ -21,22 +21,43 @@ try {
 
 const router = express.Router();
 
-// GET /api/interview-coordinator/interviews - Get all interviews
+// GET /api/interview-coordinator/interviews - Get all interviews for the user
 router.get('/interviews', authenticateToken, async (req, res) => {
   try {
     await database.connect();
     
+    // Create interviews table if it doesn't exist
+    await database.run(`
+      CREATE TABLE IF NOT EXISTS interviews (
+        id VARCHAR(255) PRIMARY KEY,
+        candidate_id VARCHAR(255) NOT NULL,
+        candidate_name VARCHAR(255),
+        candidate_email VARCHAR(255),
+        job_title VARCHAR(255),
+        interview_type VARCHAR(50) DEFAULT 'technical',
+        status VARCHAR(50) DEFAULT 'invitation_sent',
+        calendly_link TEXT,
+        google_form_link TEXT,
+        scheduled_time TIMESTAMP,
+        meeting_link TEXT,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        scheduled_by INTEGER
+      )
+    `);
+    
     const interviews = await database.all(`
       SELECT * FROM interviews 
-      WHERE user_id = $1 
-      ORDER BY scheduled_time DESC
+      WHERE scheduled_by = $1 
+      ORDER BY created_at DESC
     `, [req.user.id]);
 
     res.json({
       success: true,
-      data: interviews,
+      data: interviews || [],
       message: 'Interviews retrieved successfully'
     });
+
   } catch (error) {
     console.error('Get interviews error:', error);
     res.status(500).json({

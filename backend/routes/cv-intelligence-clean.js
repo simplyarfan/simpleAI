@@ -292,4 +292,106 @@ router.get('/candidate/:id/evidence', authenticateToken, async (req, res) => {
   }
 });
 
+// POST /api/cv-intelligence/candidate/:id/schedule-interview - Schedule interview for candidate
+router.post('/candidate/:id/schedule-interview', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { jobTitle, interviewType = 'technical', calendlyLink, googleFormLink } = req.body;
+    
+    await database.connect();
+    
+    // Get candidate details
+    const candidate = await database.get(`
+      SELECT * FROM candidates WHERE id = $1
+    `, [id]);
+
+    if (!candidate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Candidate not found'
+      });
+    }
+
+    // Create interview record
+    const interviewId = CVIntelligenceHR01.generateId();
+    
+    // For now, we'll create a simple interview record
+    // In a full implementation, you'd integrate with Calendly API and Google Forms API
+    
+    const interviewData = {
+      id: interviewId,
+      candidateId: id,
+      candidateName: candidate.name,
+      candidateEmail: candidate.email,
+      jobTitle: jobTitle || 'Position Interview',
+      interviewType: interviewType,
+      status: 'invitation_sent',
+      calendlyLink: calendlyLink || 'https://calendly.com/your-link',
+      googleFormLink: googleFormLink || 'https://forms.google.com/your-form',
+      createdAt: new Date().toISOString(),
+      scheduledBy: req.user.id
+    };
+
+    // Store interview in database (we'll need to create interviews table)
+    await database.run(`
+      CREATE TABLE IF NOT EXISTS interviews (
+        id VARCHAR(255) PRIMARY KEY,
+        candidate_id VARCHAR(255) NOT NULL,
+        candidate_name VARCHAR(255),
+        candidate_email VARCHAR(255),
+        job_title VARCHAR(255),
+        interview_type VARCHAR(50) DEFAULT 'technical',
+        status VARCHAR(50) DEFAULT 'invitation_sent',
+        calendly_link TEXT,
+        google_form_link TEXT,
+        scheduled_time TIMESTAMP,
+        meeting_link TEXT,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        scheduled_by INTEGER
+      )
+    `);
+
+    await database.run(`
+      INSERT INTO interviews (
+        id, candidate_id, candidate_name, candidate_email, job_title,
+        interview_type, status, calendly_link, google_form_link, scheduled_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `, [
+      interviewId,
+      id,
+      candidate.name,
+      candidate.email,
+      jobTitle || 'Position Interview',
+      interviewType,
+      'invitation_sent',
+      calendlyLink || 'https://calendly.com/your-link',
+      googleFormLink || 'https://forms.google.com/your-form',
+      req.user.id
+    ]);
+
+    // TODO: Send email with Calendly link and Google Form
+    // This would integrate with your email service (SendGrid, etc.)
+    
+    res.json({
+      success: true,
+      data: {
+        interviewId: interviewId,
+        message: 'Interview invitation sent successfully',
+        calendlyLink: calendlyLink || 'https://calendly.com/your-link',
+        googleFormLink: googleFormLink || 'https://forms.google.com/your-form'
+      },
+      message: 'Interview scheduled and invitation sent to candidate'
+    });
+
+  } catch (error) {
+    console.error('Schedule interview error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to schedule interview',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

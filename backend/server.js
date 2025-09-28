@@ -367,7 +367,8 @@ if (supportRoutes) {
   app.use('/api/support', shortCacheMiddleware, cacheInvalidationMiddleware(['api:support*']), supportRoutes);
 }
 if (cvRoutes) {
-  app.use('/api/cv-intelligence', cacheInvalidationMiddleware(['cv_analysis:*', 'api:cv-intelligence*']), cvRoutes);
+  app.use('/api/cv-intelligence', cvRoutes);
+  console.log('✅ CV Intelligence routes mounted at /api/cv-intelligence');
 } else {
   console.error('❌ CV Intelligence routes failed to load');
 }
@@ -378,7 +379,7 @@ if (initRoutes) {
   app.use('/api/init', initRoutes);
 }
 if (interviewRoutes) {
-  app.use('/api/interview-coordinator', cacheInvalidationMiddleware(['api:interview*']), interviewRoutes);
+  app.use('/api/interview-coordinator', interviewRoutes);
   console.log('✅ Interview Coordinator routes mounted at /api/interview-coordinator');
 } else {
   console.error('❌ Interview Coordinator routes failed to load');

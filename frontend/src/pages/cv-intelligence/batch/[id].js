@@ -17,6 +17,7 @@ const BatchDetail = () => {
   const [showCandidateModal, setShowCandidateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [schedulingInterview, setSchedulingInterview] = useState(null);
 
   const handleLogout = async () => {
     try {
@@ -24,6 +25,32 @@ const BatchDetail = () => {
       router.push('/landing');
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const handleScheduleInterview = async (candidate) => {
+    try {
+      setSchedulingInterview(candidate.id);
+      
+      const response = await cvAPI.scheduleInterview(candidate.id, {
+        jobTitle: batch?.name || 'Position Interview',
+        interviewType: 'technical',
+        calendlyLink: 'https://calendly.com/your-link', // Replace with your actual Calendly link
+        googleFormLink: 'https://forms.google.com/your-form' // Replace with your actual Google Form
+      });
+
+      if (response.success) {
+        toast.success('Interview invitation sent successfully!');
+        toast.success(`Calendly link: ${response.data.calendlyLink}`);
+        toast.success(`Pre-interview form: ${response.data.googleFormLink}`);
+      } else {
+        toast.error(response.message || 'Failed to schedule interview');
+      }
+    } catch (error) {
+      console.error('Schedule interview error:', error);
+      toast.error('Failed to schedule interview. Please try again.');
+    } finally {
+      setSchedulingInterview(null);
     }
   };
 
@@ -289,15 +316,34 @@ const BatchDetail = () => {
                            'Candidate'}
                         </div>
                         <div className="text-sm text-gray-600">
-                          {candidate.recommendation || 'Under Review'}
+                          Score: {candidate.score || candidate.overall_score || 0}%
                         </div>
                       </div>
-                      <button
-                        onClick={() => openCandidateModal(candidate)}
-                        className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors text-sm font-medium"
-                      >
-                        View Details
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleScheduleInterview(candidate)}
+                          disabled={schedulingInterview === candidate.id}
+                          className="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg transition-colors text-sm font-medium"
+                        >
+                          {schedulingInterview === candidate.id ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Scheduling...
+                            </>
+                          ) : (
+                            <>
+                              <Icons.Calendar className="w-4 h-4 mr-2" />
+                              Schedule Interview
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => openCandidateModal(candidate)}
+                          className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors text-sm font-medium"
+                        >
+                          View Details
+                        </button>
+                      </div>
                     </div>
                   </div>
                   

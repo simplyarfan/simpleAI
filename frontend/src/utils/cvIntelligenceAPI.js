@@ -213,6 +213,20 @@ export const cvIntelligenceAPI = {
     }
   },
 
+  // Schedule interview for a candidate
+  scheduleInterview: async (candidateId, interviewData) => {
+    console.log('📅 [CV-API] Scheduling interview for candidate:', candidateId);
+    
+    try {
+      const response = await api.post(`/candidate/${candidateId}/schedule-interview`, interviewData);
+      console.log('✅ [CV-API] Interview scheduled successfully:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ [CV-API] Schedule interview error:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
   // Utility function to validate files
   validateFiles: (jdFile, cvFiles) => {
     const errors = [];
