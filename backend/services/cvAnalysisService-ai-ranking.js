@@ -130,6 +130,7 @@ Focus on technical skills, programming languages, frameworks, tools, and qualifi
 
   /**
    * Analyze individual candidate with detailed skill matching
+   */
   async analyzeSingleCandidate(candidate, jdAnalysis, candidateNumber) {
     console.log(`🔍 Analyzing candidate ${candidateNumber}: ${candidate.fileName}`);
     
