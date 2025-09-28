@@ -27,7 +27,8 @@ import {
   X,
   LogOut,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  FileText
 } from 'lucide-react';
 
 const BatchDetail = () => {
