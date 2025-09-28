@@ -5,6 +5,7 @@ class Database {
   constructor() {
     this.pool = null;
     this.isConnected = false;
+    this.tablesInitialized = false;
   }
 
   async connect() {
@@ -120,6 +121,11 @@ class Database {
   }
 
   async initializeTables() {
+    if (this.tablesInitialized) {
+      console.log('✅ Tables already initialized, skipping...');
+      return;
+    }
+
     try {
       console.log('🔧 Initializing PostgreSQL tables...');
 
@@ -216,6 +222,15 @@ class Database {
           UNIQUE(user_id, agent_id, date)
         )
       `);
+
+      // CLEAN UP OLD CONFLICTING TABLES FIRST
+      try {
+        await this.run('DROP TABLE IF EXISTS cv_candidates CASCADE');
+        await this.run('DROP TABLE IF EXISTS cv_batches CASCADE');
+        console.log('🧹 Cleaned up old CV tables');
+      } catch (error) {
+        console.log('⚠️ Old tables cleanup:', error.message);
+      }
 
       // HR-01 BLUEPRINT SCHEMA - Clean implementation
       
@@ -392,6 +407,7 @@ class Database {
 
       console.log('✅ All PostgreSQL tables initialized successfully');
       await this.createDefaultAdmin();
+      this.tablesInitialized = true;
       
     } catch (error) {
       console.error('❌ Error initializing database tables:', error);
