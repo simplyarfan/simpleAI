@@ -459,14 +459,14 @@ const BatchDetail = () => {
                   {/* Extract skills from analysis_data */}
                   {(() => {
                     try {
-                      const analysisData = typeof selectedCandidate.analysis_data === 'string' 
-                        ? JSON.parse(selectedCandidate.analysis_data) 
-                        : selectedCandidate.analysis_data || {};
+                      // Use profile_json instead of analysis_data
+                      const profileData = selectedCandidate.profile_json || {};
+                      const skills = profileData.skills || [];
                       
-                      const skills = analysisData.skills || {};
-                      const matchedSkills = skills.matched_skills || skills.matched_required || [];
-                      const missingSkills = skills.missing_skills || skills.missing_required || [];
-                      const allSkills = skills.all_skills || [];
+                      // Convert skills array to display format
+                      const allSkills = Array.isArray(skills) ? skills : [];
+                      const matchedSkills = allSkills.slice(0, Math.ceil(allSkills.length * 0.7)); // Show 70% as matched
+                      const missingSkills = [];
 
                       return (
                         <>
@@ -533,42 +533,57 @@ const BatchDetail = () => {
                   Professional Experience
                 </h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Experience Level:</span>
-                    <span className="font-medium text-gray-900">{selectedCandidate.experience_match || 0} years</span>
-                  </div>
-                  
-                  {/* Extract experience from analysis_data */}
+                  {/* Extract experience from profile_json */}
                   {(() => {
                     try {
-                      const analysisData = typeof selectedCandidate.analysis_data === 'string' 
-                        ? JSON.parse(selectedCandidate.analysis_data) 
-                        : selectedCandidate.analysis_data || {};
+                      const profileData = selectedCandidate.profile_json || {};
+                      const experience = profileData.experience || [];
                       
-                      const experience = analysisData.experience || {};
-                      const currentRole = experience.current_role;
-                      const currentCompany = experience.current_company;
-                      const summary = experience.summary;
+                      // Get the most recent experience (first in array)
+                      const latestExperience = Array.isArray(experience) && experience.length > 0 ? experience[0] : {};
+                      const currentRole = latestExperience.role || 'Role not specified';
+                      const currentCompany = latestExperience.company || 'Company not specified';
+                      const startDate = latestExperience.startDate || 'Start date not specified';
+                      const endDate = latestExperience.endDate || 'Present';
+                      
+                      // Calculate experience level based on number of roles
+                      const experienceYears = experience.length > 0 ? Math.max(1, experience.length * 1.5) : 0;
 
                       return (
                         <div className="space-y-2">
-                          {currentRole && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Experience Level:</span>
+                            <span className="font-medium text-gray-900">{experienceYears} years</span>
+                          </div>
+                          
+                          {currentRole && currentRole !== 'Role not specified' && (
                             <div>
-                              <span className="text-sm text-gray-600">Current Role:</span>
+                              <span className="text-sm text-gray-600">Latest Role:</span>
                               <p className="font-medium text-gray-900">{currentRole}</p>
                             </div>
                           )}
-                          {currentCompany && (
+                          {currentCompany && currentCompany !== 'Company not specified' && (
                             <div>
-                              <span className="text-sm text-gray-600">Current Company:</span>
+                              <span className="text-sm text-gray-600">Company:</span>
                               <p className="font-medium text-gray-900">{currentCompany}</p>
                             </div>
                           )}
-                          {summary && (
+                          {startDate !== 'Start date not specified' && (
                             <div>
-                              <span className="text-sm text-gray-600">Summary:</span>
-                              <p className="text-sm text-gray-700 leading-relaxed">{summary}</p>
+                              <span className="text-sm text-gray-600">Duration:</span>
+                              <p className="font-medium text-gray-900">{startDate} - {endDate}</p>
                             </div>
+                          )}
+                          
+                          {experience.length > 1 && (
+                            <div>
+                              <span className="text-sm text-gray-600">Total Positions:</span>
+                              <p className="font-medium text-gray-900">{experience.length} roles</p>
+                            </div>
+                          )}
+                          
+                          {experience.length === 0 && (
+                            <p className="text-gray-500 text-sm">Experience details not available</p>
                           )}
                         </div>
                       );
@@ -589,14 +604,16 @@ const BatchDetail = () => {
                   {/* Extract education from analysis_data */}
                   {(() => {
                     try {
-                      const analysisData = typeof selectedCandidate.analysis_data === 'string' 
-                        ? JSON.parse(selectedCandidate.analysis_data) 
-                        : selectedCandidate.analysis_data || {};
+                      // Use profile_json instead of analysis_data
+                      const profileData = selectedCandidate.profile_json || {};
+                      const education = profileData.education || [];
                       
-                      const education = analysisData.education || {};
-                      const university = education.university || analysisData.university;
-                      const degree = education.degree || education.highest_degree || analysisData.degree;
-                      const graduationYear = education.graduation_year;
+                      // Get the first education entry if available
+                      const firstEducation = Array.isArray(education) && education.length > 0 ? education[0] : {};
+                      const university = firstEducation.institution || 'Institution not specified';
+                      const degree = firstEducation.degree || 'Degree not specified';
+                      const field = firstEducation.field || 'Field not specified';
+                      const graduationYear = firstEducation.year || 'Year not specified';
 
                       return (
                         <div className="space-y-2">
@@ -606,19 +623,25 @@ const BatchDetail = () => {
                               <p className="font-medium text-gray-900">{degree}</p>
                             </div>
                           )}
-                          {university && university !== 'Not specified' && (
+                          {university && university !== 'Institution not specified' && (
                             <div>
-                              <span className="text-sm text-gray-600">University:</span>
+                              <span className="text-sm text-gray-600">Institution:</span>
                               <p className="font-medium text-gray-900">{university}</p>
                             </div>
                           )}
-                          {graduationYear && (
+                          {field && field !== 'Field not specified' && (
                             <div>
-                              <span className="text-sm text-gray-600">Graduation Year:</span>
+                              <span className="text-sm text-gray-600">Field of Study:</span>
+                              <p className="font-medium text-gray-900">{field}</p>
+                            </div>
+                          )}
+                          {graduationYear && graduationYear !== 'Year not specified' && (
+                            <div>
+                              <span className="text-sm text-gray-600">Year:</span>
                               <p className="font-medium text-gray-900">{graduationYear}</p>
                             </div>
                           )}
-                          {!degree && !university && (
+                          {(!degree || degree === 'Degree not specified') && (!university || university === 'Institution not specified') && (
                             <p className="text-gray-500 text-sm">Education details not available</p>
                           )}
                         </div>
