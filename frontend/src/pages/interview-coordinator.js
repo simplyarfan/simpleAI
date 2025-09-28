@@ -36,19 +36,29 @@ export default function InterviewCoordinator() {
   const fetchInterviews = async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/interviews`,
         { headers: getAuthHeaders() }
       );
       
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         setInterviews(response.data.data || []);
       } else {
-        setError(response.data.message || 'Failed to fetch interviews');
+        setError(response.data?.message || 'Failed to fetch interviews');
       }
     } catch (error) {
       console.error('Error fetching interviews:', error);
-      setError('Failed to load interviews. Please try again.');
+      if (error.response?.status === 404) {
+        setError('Interview service not found. Please contact support.');
+      } else if (error.response?.status === 500) {
+        setError('Server error occurred. Please try again later.');
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        setError('Network connection failed. Please check your internet connection.');
+      } else {
+        setError(`Failed to load interviews: ${error.response?.data?.message || error.message}`);
+      }
     } finally {
       setLoading(false);
     }

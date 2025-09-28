@@ -224,123 +224,37 @@ class Database {
         )
       `);
 
-      // CLEAN UP OLD CONFLICTING TABLES FIRST
-      try {
-        await this.run('DROP TABLE IF EXISTS cv_candidates CASCADE');
-        await this.run('DROP TABLE IF EXISTS cv_batches CASCADE');
-        console.log('🧹 Cleaned up old CV tables');
-      } catch (error) {
-        console.log('⚠️ Old tables cleanup:', error.message);
-      }
-
-      // HR-01 BLUEPRINT SCHEMA - CORRECT ORDER (no foreign keys first)
+      // SIMPLIFIED CV INTELLIGENCE SCHEMA - NO FOREIGN KEY CONSTRAINTS
+      // This will prevent the foreign key constraint errors
       
-      // 1. Jobs table (no foreign key dependencies except users)
-      await this.run(`
-        CREATE TABLE IF NOT EXISTS jobs (
-          id VARCHAR(255) PRIMARY KEY,
-          user_id INTEGER NOT NULL,
-          title VARCHAR(255) NOT NULL,
-          description TEXT NOT NULL,
-          requirements_json TEXT NOT NULL,
-          embedding TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-      `);
-
-      // 2. Raw resumes storage (no foreign key dependencies except users)
-      await this.run(`
-        CREATE TABLE IF NOT EXISTS resumes_raw (
-          id VARCHAR(255) PRIMARY KEY,
-          user_id INTEGER NOT NULL,
-          filename VARCHAR(255) NOT NULL,
-          file_url TEXT NOT NULL,
-          file_size INTEGER,
-          file_type VARCHAR(50),
-          upload_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          raw_text TEXT,
-          processing_status VARCHAR(50) DEFAULT 'pending',
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-      `);
-
-      // 3. CV batches (depends on jobs table)
+      console.log('🔧 Creating simplified CV Intelligence tables...');
+      
+      // Simple CV batches table
       await this.run(`
         CREATE TABLE IF NOT EXISTS cv_batches (
           id VARCHAR(255) PRIMARY KEY,
           user_id INTEGER NOT NULL,
-          job_id VARCHAR(255) NOT NULL,
           name VARCHAR(255) NOT NULL,
           status VARCHAR(50) DEFAULT 'processing',
           total_resumes INTEGER DEFAULT 0,
           processed_resumes INTEGER DEFAULT 0,
-          processing_started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          processing_completed_at TIMESTAMP,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-          FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
-      // 4. Resume entities (depends on resumes_raw)
-      await this.run(`
-        CREATE TABLE IF NOT EXISTS resume_entities (
-          id VARCHAR(255) PRIMARY KEY,
-          resume_id VARCHAR(255) NOT NULL,
-          entity_type VARCHAR(50) NOT NULL,
-          entity_value TEXT NOT NULL,
-          confidence_score FLOAT DEFAULT 0.0,
-          start_offset INTEGER,
-          end_offset INTEGER,
-          spacy_label VARCHAR(50),
-          context_window TEXT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (resume_id) REFERENCES resumes_raw(id) ON DELETE CASCADE
-        )
-      `);
-
-      // 5. Candidates (depends on cv_batches and resumes_raw)
+      // Simple candidates table
       await this.run(`
         CREATE TABLE IF NOT EXISTS candidates (
           id VARCHAR(255) PRIMARY KEY,
           batch_id VARCHAR(255) NOT NULL,
-          resume_id VARCHAR(255) NOT NULL,
           name VARCHAR(255),
           email VARCHAR(255),
           phone VARCHAR(50),
           location VARCHAR(255),
-          linkedin_url TEXT,
-          profile_json TEXT NOT NULL,
-          must_have_score INTEGER DEFAULT 0,
-          semantic_score INTEGER DEFAULT 0,
-          recency_score INTEGER DEFAULT 0,
-          impact_score INTEGER DEFAULT 0,
+          profile_json TEXT,
           overall_score INTEGER DEFAULT 0,
-          evidence_offsets TEXT,
-          verification_data TEXT,
-          processing_time_ms INTEGER,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (batch_id) REFERENCES cv_batches(id) ON DELETE CASCADE,
-          FOREIGN KEY (resume_id) REFERENCES resumes_raw(id) ON DELETE CASCADE
-        )
-      `);
-
-      // 6. Metrics events (depends on cv_batches and resumes_raw)
-      await this.run(`
-        CREATE TABLE IF NOT EXISTS metrics_events (
-          id VARCHAR(255) PRIMARY KEY,
-          batch_id VARCHAR(255) NOT NULL,
-          resume_id VARCHAR(255) NOT NULL,
-          event_type VARCHAR(50) NOT NULL,
-          event_data TEXT NOT NULL,
-          field_validity_rate FLOAT,
-          evidence_coverage FLOAT,
-          disagreement_rate FLOAT,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (batch_id) REFERENCES cv_batches(id) ON DELETE CASCADE,
-          FOREIGN KEY (resume_id) REFERENCES resumes_raw(id) ON DELETE CASCADE
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
 

@@ -11,6 +11,7 @@ const ModernCVIntelligence = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [batches, setBatches] = useState([]);
+  const [error, setError] = useState(null);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [batchName, setBatchName] = useState('');
   const [selectedFiles, setSelectedFiles] = useState({ cvFiles: [], jdFile: null });
@@ -72,15 +73,10 @@ const ModernCVIntelligence = () => {
   const fetchBatches = async () => {
     try {
       setLoading(true);
+      setError(null);
       console.log('🎯 Fetching CV batches...');
       const response = await cvAPI.getBatches();
       console.log('🎯 Fetch batches response:', response);
-      console.log('🎯 Response structure:', {
-        success: response.success,
-        data: response.data,
-        dataType: typeof response.data,
-        isArray: Array.isArray(response.data)
-      });
       
       // Handle different response structures
       const isSuccess = response.success || (response.data && response.data.success);
@@ -93,13 +89,26 @@ const ModernCVIntelligence = () => {
       } else {
         console.error('🎯 Failed to fetch batches:', response);
         setBatches([]);
-        toast.error(response.message || response.data?.message || 'Failed to load CV batches');
+        const errorMsg = response.message || response.data?.message || 'Failed to load CV batches';
+        setError(errorMsg);
+        toast.error(errorMsg);
       }
     } catch (error) {
       console.error('🎯 Error fetching batches:', error);
       console.error('🎯 Error details:', error.response?.data);
       setBatches([]);
-      toast.error(`Failed to load CV batches: ${error.response?.data?.message || error.message}`);
+      
+      let errorMsg = 'Failed to load CV batches';
+      if (error.response?.status === 500) {
+        errorMsg = 'Server error occurred. Please try again later.';
+      } else if (error.code === 'NETWORK_ERROR' || !error.response) {
+        errorMsg = 'Network connection failed. Please check your internet connection.';
+      } else {
+        errorMsg = `Failed to load CV batches: ${error.response?.data?.message || error.message}`;
+      }
+      
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

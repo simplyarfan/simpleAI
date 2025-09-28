@@ -49,24 +49,32 @@ router.get('/batches', authenticateToken, async (req, res) => {
   try {
     await database.connect();
     
+    // Simplified query without complex joins
     const batches = await database.all(`
       SELECT 
         b.*,
-        j.title as job_title,
-        j.description as job_description,
-        COUNT(c.id) as candidate_count
+        (SELECT COUNT(*) FROM candidates c WHERE c.batch_id = b.id) as candidate_count
       FROM cv_batches b
-      LEFT JOIN jobs j ON b.job_id = j.id
-      LEFT JOIN candidates c ON b.id = c.batch_id
       WHERE b.user_id = $1
-      GROUP BY b.id, j.title, j.description
       ORDER BY b.created_at DESC
     `, [req.user.id]);
+
+    // Get candidates for each batch
+    for (let batch of batches) {
+      const candidates = await database.all(`
+        SELECT id, name, email, phone, overall_score
+        FROM candidates 
+        WHERE batch_id = $1 
+        ORDER BY overall_score DESC
+      `, [batch.id]);
+      
+      batch.candidates = candidates;
+    }
 
     res.json({
       success: true,
       data: batches || [],
-      message: 'Batches retrieved successfully'
+      message: 'CV batches retrieved successfully'
     });
 
   } catch (error) {
@@ -104,32 +112,11 @@ router.post('/create-batch', authenticateToken, upload.array('cvFiles', 10), asy
   try {
     await database.connect();
 
-    // Parse job requirements
-    let parsedRequirements;
-    try {
-      parsedRequirements = typeof jobRequirements === 'string' ? 
-        JSON.parse(jobRequirements) : jobRequirements || {};
-    } catch (e) {
-      parsedRequirements = { mustHave: [], preferred: [], experienceYears: 0 };
-    }
-
-    // Create job entry
+    // Create batch (simplified - no job table dependency)
     await database.run(`
-      INSERT INTO jobs (id, user_id, title, description, requirements_json, created_at)
+      INSERT INTO cv_batches (id, user_id, name, status, total_resumes, created_at)
       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
-    `, [
-      jobId,
-      req.user.id,
-      batchName,
-      jobDescription,
-      JSON.stringify(parsedRequirements)
-    ]);
-
-    // Create batch
-    await database.run(`
-      INSERT INTO cv_batches (id, user_id, job_id, name, status, total_resumes, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)
-    `, [batchId, req.user.id, jobId, batchName, 'processing', files.length]);
+    `, [batchId, req.user.id, batchName, 'processing', files.length]);
 
     // Process each CV file
     const candidates = [];
@@ -146,85 +133,27 @@ router.post('/create-batch', authenticateToken, upload.array('cvFiles', 10), asy
         );
 
         if (result.success) {
-          // Store raw resume
-          await database.run(`
-            INSERT INTO resumes_raw (id, user_id, filename, file_url, file_size, file_type, raw_text, processing_status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-          `, [
-            result.resumeId,
-            req.user.id,
-            file.originalname,
-            `temp://uploaded/${result.resumeId}`,
-            file.size,
-            file.mimetype,
-            JSON.stringify(result.structuredData),
-            'completed'
-          ]);
-
-          // Store entities with offsets
-          for (const entity of result.entities) {
-            await database.run(`
-              INSERT INTO resume_entities (resume_id, entity_type, entity_value, confidence_score, start_offset, end_offset, context_window)
-              VALUES ($1, $2, $3, $4, $5, $6, $7)
-            `, [
-              result.resumeId,
-              entity.type,
-              entity.value,
-              entity.confidence,
-              entity.startOffset,
-              entity.endOffset,
-              entity.contextWindow
-            ]);
-          }
-
-          // Store candidate
+          // Store candidate (simplified schema)
           const candidateId = CVIntelligenceHR01.generateId();
           await database.run(`
             INSERT INTO candidates (
-              id, batch_id, resume_id, name, email, phone, location,
-              profile_json, must_have_score, semantic_score, recency_score,
-              impact_score, overall_score, evidence_offsets, verification_data,
-              processing_time_ms
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+              id, batch_id, name, email, phone, location, profile_json, overall_score
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
           `, [
             candidateId,
             batchId,
-            result.resumeId,
             result.structuredData.personal?.name || 'Name not found',
             result.structuredData.personal?.email || 'Email not found',
             result.structuredData.personal?.phone || 'Phone not found',
             result.structuredData.personal?.location || 'Location not specified',
             JSON.stringify(result.structuredData),
-            Math.round(result.scores.mustHaveScore || 0),
-            Math.round(result.scores.semanticScore || 0),
-            Math.round(result.scores.recencyScore || 0),
-            Math.round(result.scores.impactScore || 0),
-            Math.round(result.scores.overallScore || 0),
-            JSON.stringify(result.evidenceMap),
-            JSON.stringify(result.verification),
-            result.processingTime
-          ]);
-
-          // Store metrics
-          await database.run(`
-            INSERT INTO metrics_events (
-              batch_id, resume_id, event_type, event_data,
-              field_validity_rate, evidence_coverage, disagreement_rate
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-          `, [
-            batchId,
-            result.resumeId,
-            'processing_complete',
-            JSON.stringify(result.metadata),
-            result.metadata.fieldValidityRate,
-            result.metadata.evidenceCoverage,
-            result.metadata.disagreementRate
+            Math.round(result.scores?.overallScore || 0)
           ]);
 
           candidates.push({
             id: candidateId,
             name: result.structuredData.personal?.name || 'Name not found',
-            score: Math.round(result.scores.overallScore || 0),
+            score: Math.round(result.scores?.overallScore || 0),
             email: result.structuredData.personal?.email || 'Email not found'
           });
 
@@ -285,14 +214,8 @@ router.get('/batch/:id', authenticateToken, async (req, res) => {
     await database.connect();
     
     const batch = await database.get(`
-      SELECT 
-        b.*,
-        j.title as job_title,
-        j.description as job_description,
-        j.requirements_json
-      FROM cv_batches b
-      LEFT JOIN jobs j ON b.job_id = j.id
-      WHERE b.id = $1 AND b.user_id = $2
+      SELECT * FROM cv_batches 
+      WHERE id = $1 AND user_id = $2
     `, [id, req.user.id]);
 
     if (!batch) {
@@ -303,27 +226,18 @@ router.get('/batch/:id', authenticateToken, async (req, res) => {
     }
 
     const candidates = await database.all(`
-      SELECT 
-        c.*,
-        r.filename
-      FROM candidates c
-      LEFT JOIN resumes_raw r ON c.resume_id = r.id
-      WHERE c.batch_id = $1
-      ORDER BY c.overall_score DESC
+      SELECT * FROM candidates
+      WHERE batch_id = $1
+      ORDER BY overall_score DESC
     `, [id]);
 
     res.json({
       success: true,
       data: {
-        batch: {
-          ...batch,
-          requirements_json: batch.requirements_json ? JSON.parse(batch.requirements_json) : {}
-        },
+        batch: batch,
         candidates: candidates.map(candidate => ({
           ...candidate,
-          profile_json: candidate.profile_json ? JSON.parse(candidate.profile_json) : {},
-          evidence_offsets: candidate.evidence_offsets ? JSON.parse(candidate.evidence_offsets) : {},
-          verification_data: candidate.verification_data ? JSON.parse(candidate.verification_data) : {}
+          profile_json: candidate.profile_json ? JSON.parse(candidate.profile_json) : {}
         }))
       },
       message: 'Batch details retrieved successfully'
@@ -339,7 +253,7 @@ router.get('/batch/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// GET /api/cv-intelligence/candidate/:id/evidence - Get evidence for highlighting
+// GET /api/cv-intelligence/candidate/:id/evidence - Get candidate details (simplified)
 router.get('/candidate/:id/evidence', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -347,10 +261,7 @@ router.get('/candidate/:id/evidence', authenticateToken, async (req, res) => {
     await database.connect();
     
     const candidate = await database.get(`
-      SELECT c.*, r.raw_text, r.filename
-      FROM candidates c
-      LEFT JOIN resumes_raw r ON c.resume_id = r.id
-      WHERE c.id = $1
+      SELECT * FROM candidates WHERE id = $1
     `, [id]);
 
     if (!candidate) {
@@ -360,32 +271,22 @@ router.get('/candidate/:id/evidence', authenticateToken, async (req, res) => {
       });
     }
 
-    const entities = await database.all(`
-      SELECT *
-      FROM resume_entities
-      WHERE resume_id = $1
-      ORDER BY start_offset
-    `, [candidate.resume_id]);
-
     res.json({
       success: true,
       data: {
         candidate: {
           ...candidate,
-          profile_json: candidate.profile_json ? JSON.parse(candidate.profile_json) : {},
-          evidence_offsets: candidate.evidence_offsets ? JSON.parse(candidate.evidence_offsets) : {}
-        },
-        entities: entities,
-        rawText: candidate.raw_text
+          profile_json: candidate.profile_json ? JSON.parse(candidate.profile_json) : {}
+        }
       },
-      message: 'Evidence retrieved successfully'
+      message: 'Candidate details retrieved successfully'
     });
 
   } catch (error) {
-    console.error('Get evidence error:', error);
+    console.error('Get candidate details error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve evidence',
+      message: 'Failed to retrieve candidate details',
       error: error.message
     });
   }
