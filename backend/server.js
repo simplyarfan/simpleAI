@@ -17,17 +17,10 @@ try {
 }
 
 try {
-  cvRoutes = require('./routes/cv-intelligence-proper');
-  console.log('✅ CV Intelligence Proper routes loaded successfully');
+  cvRoutes = require('./routes/cv-intelligence-working');
+  console.log('✅ CV Intelligence routes loaded successfully');
 } catch (error) {
-  console.error('❌ Error loading CV Intelligence Proper routes:', error.message);
-  console.log('🔄 Falling back to working routes...');
-  try {
-    cvRoutes = require('./routes/cv-intelligence-working');
-    console.log('✅ CV Intelligence working routes loaded as fallback');
-  } catch (fallbackError) {
-    console.error('❌ Error loading fallback CV Intelligence routes:', fallbackError.message);
-  }
+  console.error('❌ Error loading CV Intelligence routes:', error.message);
 }
 
 try {
