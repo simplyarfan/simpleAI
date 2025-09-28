@@ -54,6 +54,181 @@ router.get('/test', (req, res) => {
   });
 });
 
+// POST /api/cv-intelligence/ - Create batch (frontend compatibility)
+router.post('/', authenticateToken, async (req, res) => {
+  try {
+    const { name } = req.body;
+    
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Batch name is required and must be a non-empty string'
+      });
+    }
+
+    await database.connect();
+
+    // Create batch record
+    const batchId = CVIntelligenceHR01 ? CVIntelligenceHR01.generateId() : `batch_${Date.now()}`;
+    
+    await database.run(`
+      CREATE TABLE IF NOT EXISTS cv_batches (
+        id VARCHAR(255) PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        status VARCHAR(50) DEFAULT 'created',
+        total_resumes INTEGER DEFAULT 0,
+        processed_resumes INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await database.run(`
+      INSERT INTO cv_batches (id, user_id, name, status, created_at)
+      VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+    `, [batchId, req.user.id, name.trim(), 'created']);
+
+    res.json({
+      success: true,
+      data: {
+        batchId: batchId,
+        name: name.trim(),
+        status: 'created'
+      },
+      message: 'Batch created successfully'
+    });
+
+  } catch (error) {
+    console.error('Create batch error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create batch',
+      error: error.message
+    });
+  }
+});
+
+// POST /api/cv-intelligence/batch/:id/process - Process CVs for existing batch
+router.post('/batch/:id/process', authenticateToken, upload.array('cvFiles', 10), async (req, res) => {
+  try {
+    const { id: batchId } = req.params;
+    const files = req.files;
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No CV files provided'
+      });
+    }
+
+    if (!CVIntelligenceHR01) {
+      return res.status(500).json({
+        success: false,
+        message: 'CV Intelligence service not available'
+      });
+    }
+
+    await database.connect();
+
+    // Update batch status and file count
+    await database.run(`
+      UPDATE cv_batches 
+      SET status = 'processing', total_resumes = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2 AND user_id = $3
+    `, [files.length, batchId, req.user.id]);
+
+    // Process each CV file
+    const candidates = [];
+    const parsedRequirements = { skills: [], experience: [], education: [] };
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      
+      try {
+        console.log(`🔄 Processing CV ${i + 1}/${files.length}: ${file.originalname}`);
+        
+        // Process with HR-01 service
+        const result = await CVIntelligenceHR01.processResume(
+          file.buffer, 
+          file.originalname, 
+          parsedRequirements
+        );
+
+        if (result.success) {
+          // Store candidate (simplified schema)
+          const candidateId = CVIntelligenceHR01.generateId();
+          await database.run(`
+            INSERT INTO candidates (
+              id, batch_id, name, email, phone, location, profile_json, overall_score
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          `, [
+            candidateId,
+            batchId,
+            result.structuredData.personal?.name || 'Name not found',
+            result.structuredData.personal?.email || 'Email not found',
+            result.structuredData.personal?.phone || 'Phone not found',
+            result.structuredData.personal?.location || 'Location not specified',
+            JSON.stringify(result.structuredData),
+            Math.round(result.scores?.overallScore || 0)
+          ]);
+
+          candidates.push({
+            id: candidateId,
+            name: result.structuredData.personal?.name || 'Name not found',
+            score: Math.round(result.scores?.overallScore || 0),
+            email: result.structuredData.personal?.email || 'Email not found'
+          });
+
+          console.log(`✅ CV ${i + 1} processed successfully`);
+        } else {
+          console.error(`❌ CV ${i + 1} processing failed:`, result.error);
+        }
+      } catch (error) {
+        console.error(`❌ Error processing CV ${i + 1}:`, error.message);
+      }
+    }
+
+    // Update batch status to completed
+    await database.run(`
+      UPDATE cv_batches 
+      SET status = 'completed', processed_resumes = $1, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = $2
+    `, [candidates.length, batchId]);
+
+    res.json({
+      success: true,
+      data: {
+        batchId: batchId,
+        processed: candidates.length,
+        total: files.length,
+        candidates: candidates
+      },
+      message: `Batch processed successfully. ${candidates.length}/${files.length} CVs processed.`
+    });
+
+  } catch (error) {
+    console.error('Process batch error:', error);
+    
+    // Update batch status to failed
+    try {
+      await database.run(`
+        UPDATE cv_batches 
+        SET status = 'failed', updated_at = CURRENT_TIMESTAMP 
+        WHERE id = $1
+      `, [req.params.id]);
+    } catch (updateError) {
+      console.error('Failed to update batch status:', updateError);
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process batch',
+      error: error.message
+    });
+  }
+});
+
 // GET /api/cv-intelligence/batches - Get all batches
 router.get('/batches', authenticateToken, async (req, res) => {
   try {
