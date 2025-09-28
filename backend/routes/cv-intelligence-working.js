@@ -240,6 +240,9 @@ router.get('/batches', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     console.log('🎯 Creating CV batch for user:', req.user.id);
+    console.log('🎯 Request body:', req.body);
+    console.log('🎯 Request body type:', typeof req.body);
+    console.log('🎯 Request headers:', req.headers);
     
     await database.connect();
     

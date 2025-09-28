@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
 import * as Icons from 'lucide-react';
-import { cvAPI } from '../../utils/api';
+import { cvIntelligenceAPI as cvAPI } from '../../utils/cvIntelligenceAPI';
 import toast from 'react-hot-toast';
 
 const ModernCVIntelligence = () => {
