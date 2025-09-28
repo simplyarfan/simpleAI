@@ -18,16 +18,9 @@ try {
 
 try {
   cvRoutes = require('./routes/cv-intelligence-clean');
-  console.log('✅ CV Intelligence CLEAN routes loaded successfully (HR-01 Blueprint)');
+  console.log('✅ CV Intelligence routes loaded successfully (HR-01 Blueprint)');
 } catch (error) {
-  console.error('❌ Error loading CV Intelligence CLEAN routes:', error.message);
-  console.log('🔄 Falling back to working routes...');
-  try {
-    cvRoutes = require('./routes/cv-intelligence-working');
-    console.log('✅ CV Intelligence working routes loaded as fallback');
-  } catch (fallbackError) {
-    console.error('❌ Error loading fallback routes:', fallbackError.message);
-  }
+  console.error('❌ Error loading CV Intelligence routes:', error.message);
 }
 
 try {
