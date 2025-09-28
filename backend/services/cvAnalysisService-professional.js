@@ -4,14 +4,24 @@
  */
 
 const axios = require('axios');
-const cacheService = require('./cacheService');
 
 class ProfessionalCVAnalysisService {
   constructor() {
     this.apiKey = process.env.OPENAI_API_KEY;
     this.apiUrl = 'https://api.openai.com/v1/chat/completions';
     this.model = 'gpt-3.5-turbo';
-    this.cache = cacheService;
+    
+    // Try to load cache service, but don't fail if it's not available
+    try {
+      const cacheService = require('./cacheService');
+      this.cache = cacheService;
+    } catch (error) {
+      console.log('Cache service not available, using in-memory fallback');
+      this.cache = {
+        get: async () => null,
+        set: async () => true
+      };
+    }
   }
 
   /**
