@@ -40,14 +40,18 @@ const BatchDetail = () => {
       const response = await cvAPI.getBatchDetails(id);
       console.log('🎯 Batch details response:', response);
       
-      // Handle different response structures
+      // Handle different response structures - check console for actual structure
+      console.log('🔍 Full response structure:', JSON.stringify(response, null, 2));
+      
       const isSuccess = response.success || (response.data && response.data.success);
-      const batchData = response.data?.batch || response.batch || response.data;
-      const candidatesData = response.data?.candidates || response.candidates || [];
+      const batchData = response.data?.data?.batch || response.data?.batch || response.batch || response.data;
+      const candidatesData = response.data?.data?.candidates || response.data?.candidates || response.candidates || [];
       
       if (isSuccess && batchData) {
         console.log('🎯 Setting batch data:', batchData);
         console.log('🎯 Setting candidates data:', candidatesData);
+        console.log('🎯 Candidates array length:', candidatesData?.length);
+        console.log('🎯 First candidate sample:', candidatesData?.[0]);
         setBatch(batchData);
         setCandidates(Array.isArray(candidatesData) ? candidatesData : []);
       } else {
@@ -241,7 +245,7 @@ const BatchDetail = () => {
           ) : (
             <div className="divide-y divide-gray-200">
               {candidates
-                .sort((a, b) => (b.overall_score || 0) - (a.overall_score || 0))
+                .sort((a, b) => (b.score || b.overall_score || 0) - (a.score || a.overall_score || 0))
                 .map((candidate, index) => (
                 <div key={candidate.id || index} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center justify-between">
