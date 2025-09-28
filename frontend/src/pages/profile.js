@@ -142,15 +142,15 @@ export default function ProfileSettings() {
         <meta name="description" content="Manage your profile settings and preferences" />
       </Head>
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-amber-50">
         {/* Top Navigation */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="bg-white/90 backdrop-blur-xl shadow-lg border border-orange-200/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-4">
                 <button
                   onClick={() => router.back()}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-white/80 transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -160,7 +160,7 @@ export default function ProfileSettings() {
                   </div>
                   <div>
                     <h1 className="text-xl font-semibold text-gray-900">Profile Settings</h1>
-                    <p className="text-sm text-gray-500">Manage your account information</p>
+                    <p className="text-sm text-gray-600">Manage your account information</p>
                   </div>
                 </div>
               </div>
@@ -169,11 +169,11 @@ export default function ProfileSettings() {
                   <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-gray-600" />
                   </div>
-                  <span className="text-sm font-medium text-gray-900">{user?.name}</span>
+                  <span className="text-sm font-medium text-gray-900">{user?.first_name} {user?.last_name}</span>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-white/80 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -186,7 +186,7 @@ export default function ProfileSettings() {
         <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="space-y-8">
             {/* Profile Information */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg border border-orange-200/50 overflow-hidden">
               <div className="bg-gradient-to-r from-orange-500 to-red-600 px-8 py-6">
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
@@ -304,7 +304,7 @@ export default function ProfileSettings() {
             </div>
 
             {/* Change Password */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg border border-orange-200/50 overflow-hidden">
               <div className="bg-gradient-to-r from-purple-500 to-indigo-600 px-8 py-6">
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">

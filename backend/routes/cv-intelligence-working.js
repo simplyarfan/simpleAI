@@ -3,31 +3,50 @@ const multer = require('multer');
 const pdf = require('pdf-parse');
 const { v4: uuidv4 } = require('uuid');
 const database = require('../models/database');
-const auth = require('../middleware/auth');
 const router = express.Router();
 
 // Authentication middleware
+const auth = require('../middleware/auth');
 const authenticateToken = auth.authenticateToken;
 
-// CV Analysis Service - Simplified initialization
-let cvAnalysisService = null;
+// Try to load AI Ranking CV Analysis Service with fallbacks
+let CVAnalysisService;
 try {
-  const CVAnalysisServiceOpenAI = require('../services/cvAnalysisService-openai');
-  cvAnalysisService = new CVAnalysisServiceOpenAI();
+  const AIRankingCVAnalysisServiceClass = require('../services/cvAnalysisService-ai-ranking');
+  CVAnalysisService = new AIRankingCVAnalysisServiceClass();
+  console.log('✅ AI Ranking CV Analysis Service loaded successfully');
 } catch (error) {
-  console.error('❌ CV Analysis Service failed to initialize:', error.message);
-  cvAnalysisService = null;
+  console.error('❌ Failed to load AI Ranking CV Analysis Service:', error.message);
+  try {
+    const CVAnalysisServiceClass = require('../services/cvAnalysisService');
+    CVAnalysisService = new CVAnalysisServiceClass();
+    console.log('✅ Standard CV Analysis Service loaded as fallback');
+  } catch (fallbackError) {
+    console.error('❌ Failed to load standard CV Analysis Service:', fallbackError.message);
+    try {
+      const MinimalCVAnalysisServiceClass = require('../services/cvAnalysisService-minimal');
+      CVAnalysisService = new MinimalCVAnalysisServiceClass();
+      console.log('✅ Minimal CV Analysis Service loaded as final fallback');
+    } catch (finalError) {
+      console.error('❌ All CV Analysis Services failed to load:', finalError.message);
+      CVAnalysisService = null;
+    }
+  }
 }
 
 // CV Analysis Function - Simplified
 async function analyzeCV(jobDescription, cvText, fileName) {
-  if (!cvAnalysisService) {
-    throw new Error('CV Analysis Service not available. Please ensure OPENAI_API_KEY is configured.');
-  }
-  
   try {
-    const analysisResult = await cvAnalysisService.analyzeCV(jobDescription, cvText, fileName);
-    return analysisResult;
+    if (!CVAnalysisService) {
+      throw new Error('CV Analysis Service not available. Please ensure OPENAI_API_KEY is configured.');
+    }
+    
+    // Use the new AI ranking service
+    return await CVAnalysisService.analyzeCVBatch([{
+      fileName,
+      text: cvText,
+      fileId: Math.random().toString(36).substring(7)
+    }], jobDescription);
   } catch (error) {
     console.error('❌ AI analysis failed:', error.message);
     throw new Error(`CV analysis failed: ${error.message}`);
@@ -323,77 +342,80 @@ router.post('/batch/:batchId/process',
         }
       }
 
-      const candidates = [];
+      // Extract text from all CV files first
+      const cvFilesData = [];
       
-      // Process each CV file with PURE AI
       for (let i = 0; i < cvFiles.length; i++) {
         const cvFile = cvFiles[i];
         console.log(`📄 Processing CV ${i + 1}/${cvFiles.length}: ${cvFile.originalname}`);
         
         try {
-          // Extract text from CV with robust error handling
           let cvText = '';
-          console.log(`📄 Extracting text from ${cvFile.originalname}...`);
           
-          try {
-            if (cvFile.mimetype === 'application/pdf') {
-              console.log('📄 Processing PDF CV...');
-              const pdfData = await pdf(cvFile.buffer);
-              cvText = pdfData.text;
-            } else {
-              console.log('📄 Processing text CV...');
-              cvText = cvFile.buffer.toString('utf8');
-            }
-            
-            console.log(`📄 CV text extracted, length: ${cvText.length}`);
-            
-            // Check if we got meaningful text
-            if (!cvText || cvText.trim().length < 50) {
-              throw new Error('Insufficient text extracted from PDF');
-            }
-            
-          } catch (pdfError) {
-            console.error(`❌ PDF parsing failed for ${cvFile.originalname}:`, pdfError.message);
-            
-            // Create fallback text with filename info
-            const cleanName = cvFile.originalname.replace(/\.(pdf|doc|docx)$/i, '').replace(/[_-]/g, ' ');
-            cvText = `CV for ${cleanName}. 
-            
-            Note: PDF parsing failed due to format issues. This CV contains:
-            - Candidate name: ${cleanName}
-            - File type: ${cvFile.mimetype}
-            - File size: ${(cvFile.size / 1024).toFixed(1)}KB
-            
-            For better analysis, please provide this CV in text format or a different PDF format.
-            The AI will still attempt to analyze based on the filename and available information.`;
-            
-            console.log(`⚠️ Using fallback text for ${cvFile.originalname}`);
+          if (cvFile.mimetype === 'application/pdf') {
+            console.log('📄 Processing PDF CV...');
+            const pdfData = await pdf(cvFile.buffer);
+            cvText = pdfData.text;
+          } else {
+            console.log('📄 Processing text CV...');
+            cvText = cvFile.buffer.toString('utf8');
           }
           
-          // PURE AI Analysis - NO FALLBACKS
-          console.log(`🧠 Starting PURE AI analysis for ${cvFile.originalname}...`);
-          const analysisResult = await analyzeCV(jdText, cvText, cvFile.originalname);
+          console.log(`📄 CV text extracted, length: ${cvText.length}`);
           
-          console.log(`🧠 PURE AI analysis completed for ${cvFile.originalname}:`, {
-            name: analysisResult.name,
-            score: analysisResult.score,
-            hasAnalysisData: !!analysisResult.analysisData
+          // Check if we got meaningful text
+          if (!cvText || cvText.trim().length < 50) {
+            throw new Error('Insufficient text extracted from PDF');
+          }
+          
+          cvFilesData.push({
+            fileName: cvFile.originalname,
+            text: cvText,
+            fileId: uuidv4()
           });
           
-          // Store candidate in database
-          const candidateId = uuidv4();
-          console.log(`💾 Storing candidate ${analysisResult.name} in database...`);
+        } catch (pdfError) {
+          console.error(`❌ PDF parsing failed for ${cvFile.originalname}:`, pdfError.message);
           
-          const analysisData = analysisResult.analysisData || {};
-          const skillsMatchedCount = analysisResult.skillsMatched?.length || 0;
-          const skillsMissingCount = analysisResult.skillsMissing?.length || 0;
-          // REALISTIC FIT LEVEL THRESHOLDS - More generous
-          const fitLevel = analysisResult.score >= 75 ? 'High' : analysisResult.score >= 55 ? 'Medium' : 'Low';
-          const recommendation = analysisResult.score >= 75 ? 'Highly Recommended' : 
-                               analysisResult.score >= 55 ? 'Recommended' : 'Consider';
-
-          // Fix location display - use actual location from analysis data
-          const candidateLocation = analysisData.personal?.location || 'Location not specified';
+          // Create fallback text with filename info
+          const cleanName = cvFile.originalname.replace(/\.(pdf|doc|docx)$/i, '').replace(/[_-]/g, ' ');
+          const fallbackText = `CV for ${cleanName}. 
+          
+          Note: PDF parsing failed due to format issues. This CV contains:
+          - Candidate name: ${cleanName}
+          - File type: ${cvFile.mimetype}
+          - File size: ${(cvFile.size / 1024).toFixed(1)}KB
+          
+          For better analysis, please provide this CV in text format or a different PDF format.
+          The AI will still attempt to analyze based on the filename and available information.`;
+          
+          cvFilesData.push({
+            fileName: cvFile.originalname,
+            text: fallbackText,
+            fileId: uuidv4()
+          });
+          
+          console.log(`⚠️ Using fallback text for ${cvFile.originalname}`);
+        }
+      }
+      
+      // AI BATCH ANALYSIS AND RANKING
+      console.log(`🤖 Starting AI batch analysis and ranking for ${cvFilesData.length} candidates...`);
+      const aiRankingResult = await CVAnalysisService.analyzeCVBatch(cvFilesData, jdText);
+      
+      console.log('🏆 AI Ranking Results:', {
+        candidatesCount: aiRankingResult.candidates?.length || 0,
+        overallAssessment: aiRankingResult.overall_assessment
+      });
+      
+      // Store ranked candidates in database
+      const candidates = [];
+      for (const rankedCandidate of aiRankingResult.candidates) {
+        const candidateId = uuidv4();
+        console.log(`💾 Storing ranked candidate #${rankedCandidate.rank}: ${rankedCandidate.basicInfo.name}`);
+        
+        const aiAnalysis = rankedCandidate.aiAnalysis;
+        const basicInfo = rankedCandidate.basicInfo;
 
           await database.run(`
             INSERT INTO cv_candidates (
@@ -403,27 +425,42 @@ router.post('/batch/:batchId/process',
               cv_text, analysis_data, created_at
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, CURRENT_TIMESTAMP)
           `, [
-            candidateId, batchId, analysisResult.name, analysisResult.email, analysisResult.phone,
-            candidateLocation, analysisResult.score, skillsMatchedCount, skillsMissingCount,
-            analysisResult.experienceMatch, analysisResult.educationMatch,
-            fitLevel, recommendation,
-            JSON.stringify(analysisResult.strengths), 
-            JSON.stringify(analysisResult.weaknesses),
-            analysisResult.summary, cvText,
-            JSON.stringify(analysisData)
+            candidateId, 
+            batchId, 
+            basicInfo.name || 'Name not found',
+            basicInfo.email || 'Email not found', 
+            basicInfo.phone || 'Phone not found',
+            'Location not specified', 
+            rankedCandidate.rank * 10, // Convert rank to score-like number (rank 1 = 90, rank 2 = 80, etc)
+            aiAnalysis.matched_required_skills?.length || 0,
+            aiAnalysis.missing_required_skills?.length || 0,
+            aiAnalysis.experience_years || 'Not specified',
+            aiAnalysis.education_level || 'Not specified',
+            rankedCandidate.recommendation || 'Review Required',
+            rankedCandidate.recommendation || 'Review Required',
+            JSON.stringify(aiAnalysis.key_strengths || []), 
+            JSON.stringify(aiAnalysis.potential_concerns || []),
+            rankedCandidate.ranking_reason || 'AI analysis completed',
+            rankedCandidate.cvText || '',
+            JSON.stringify({
+              ai_analysis: aiAnalysis,
+              rank: rankedCandidate.rank,
+              ranking_reason: rankedCandidate.ranking_reason,
+              matched_skills: aiAnalysis.matched_required_skills,
+              missing_skills: aiAnalysis.missing_required_skills,
+              additional_skills: aiAnalysis.additional_skills
+            })
           ]);
           
-          candidates.push(analysisResult);
-          console.log(`✅ Successfully processed ${cvFile.originalname}: Score ${analysisResult.score}%`);
+          candidates.push({
+            id: candidateId,
+            name: basicInfo.name || 'Name not found',
+            rank: rankedCandidate.rank,
+            recommendation: rankedCandidate.recommendation,
+            ai_analysis: aiAnalysis
+          });
           
-        } catch (error) {
-          console.error(`❌ Failed to process ${cvFile.originalname}:`, error);
-          console.error(`❌ Error stack:`, error.stack);
-          
-          // NO FALLBACK - PURE AI ONLY
-          console.log('❌ Skipping failed CV - no regex fallback allowed');
-          continue;
-        }
+          console.log(`✅ Stored ranked candidate #${rankedCandidate.rank}: ${basicInfo.name}`);
       }
       
       // Update batch with results

@@ -98,27 +98,13 @@ const WaitingDashboard = () => {
 
         <nav className="mt-6 px-4">
           <div className="space-y-2">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Waiting for Assignment</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Status</p>
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
               <div className="flex items-center">
                 <Clock className="w-5 h-5 text-yellow-600 mr-2" />
                 <p className="text-sm text-yellow-800">Your account is being reviewed</p>
               </div>
             </div>
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Quick Actions</p>
-            {quickActions.map((action) => (
-              <button
-                key={action.name}
-                onClick={() => router.push(action.route)}
-                className="w-full flex items-center px-3 py-2 text-left text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <action.icon className="w-5 h-5 mr-3 text-gray-400" />
-                <span className="text-sm font-medium">{action.name}</span>
-              </button>
-            ))}
           </div>
         </nav>
 

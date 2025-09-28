@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../../contexts/AuthContext';
-import { cvAPI } from '../../../utils/api';
+import { cvIntelligenceAPI as cvAPI } from '../../../utils/cvIntelligenceAPI';
 import toast from 'react-hot-toast';
 import * as Icons from 'lucide-react';
 

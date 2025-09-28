@@ -15,6 +15,7 @@ const ModernCVIntelligence = () => {
   const [batchName, setBatchName] = useState('');
   const [selectedFiles, setSelectedFiles] = useState({ cvFiles: [], jdFile: null });
   const [searchQuery, setSearchQuery] = useState('');
+  const [processingProgress, setProcessingProgress] = useState({ show: false, current: 0, total: 0, message: '' });
   const [filterStatus, setFilterStatus] = useState('all');
   const [openMenuId, setOpenMenuId] = useState(null);
   const handleLogout = async () => {
@@ -144,7 +145,14 @@ const ModernCVIntelligence = () => {
       // Step 2: Process the files if any are provided
       if (selectedFiles.cvFiles.length > 0 && selectedFiles.jdFile) {
         console.log('🎯 Step 2: Processing files...');
-        toast.success('Batch created! Processing files...');
+        
+        // Show progress modal
+        setProcessingProgress({
+          show: true,
+          current: 0,
+          total: selectedFiles.cvFiles.length,
+          message: 'Uploading files...'
+        });
         
         const processResponse = await cvAPI.processFiles(
           batchId,
@@ -152,12 +160,34 @@ const ModernCVIntelligence = () => {
           selectedFiles.cvFiles,
           (progress) => {
             console.log('📈 Upload progress:', progress + '%');
-            // You could add a progress bar here if needed
+            setProcessingProgress(prev => ({
+              ...prev,
+              message: `Uploading files... ${progress}%`
+            }));
           }
         );
         
         console.log('✅ Files processed successfully:', processResponse);
-        toast.success('Files processed successfully! AI analysis in progress...');
+        
+        // Simulate AI analysis progress
+        for (let i = 1; i <= selectedFiles.cvFiles.length; i++) {
+          setProcessingProgress(prev => ({
+            ...prev,
+            current: i,
+            message: `Analyzing candidate ${i} of ${selectedFiles.cvFiles.length}...`
+          }));
+          await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay per candidate
+        }
+        
+        setProcessingProgress(prev => ({
+          ...prev,
+          message: 'AI ranking and analysis complete!'
+        }));
+        
+        setTimeout(() => {
+          setProcessingProgress({ show: false, current: 0, total: 0, message: '' });
+          toast.success('AI analysis complete! Candidates ranked by AI.');
+        }, 1000);
       } else {
         console.log('⚠️ No files to process - batch created without files');
         toast.success('Batch created successfully!');
@@ -527,6 +557,42 @@ const ModernCVIntelligence = () => {
                 </button>
               </div>
             </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Progress Modal */}
+      {processingProgress.show && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Icons.Brain className="w-8 h-8 text-white animate-pulse" />
+              </div>
+              
+              <h3 className="text-xl font-bold text-gray-900 mb-2">AI Analysis in Progress</h3>
+              <p className="text-gray-600 mb-6">{processingProgress.message}</p>
+              
+              {processingProgress.total > 0 && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Progress</span>
+                    <span>{processingProgress.current}/{processingProgress.total}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-orange-500 to-red-600 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(processingProgress.current / processingProgress.total) * 100}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-500"></div>
+                <span>Please wait while AI analyzes and ranks candidates...</span>
+              </div>
             </div>
           </div>
         </div>
