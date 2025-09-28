@@ -200,6 +200,7 @@ export const cvAPI = {
   createBatch: (data) => api.post('/cv-intelligence', data),
   getBatches: (params) => api.get('/cv-intelligence/batches', { params }),
   getBatchDetails: (batchId) => api.get(`/cv-intelligence/batch/${batchId}`),
+  deleteBatch: (batchId) => api.delete(`/cv-intelligence/batch/${batchId}`),
   getCandidates: (batchId) => api.get(`/cv-intelligence/batch/${batchId}/candidates`),
   processBatch: (batchId, jdFile, cvFiles, onProgress = null) => {
     const formData = new FormData();

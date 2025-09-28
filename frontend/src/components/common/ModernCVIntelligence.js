@@ -3,22 +3,17 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
 import Head from 'next/head';
 import { 
-  ArrowLeft,
-  Brain,
-  Upload,
-  FileText,
-  Users,
-  TrendingUp,
-  Calendar,
-  Plus,
-  Search,
-  Filter,
-  MoreVertical,
-  Eye,
-  Download,
-  Trash2,
+  Brain, 
+  Plus, 
+  Search, 
+  Filter, 
+  FileText, 
+  Eye, 
+  Upload, 
+  X, 
   LogOut,
-  X
+  MoreVertical,
+  Trash2
 } from 'lucide-react';
 import { cvAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
@@ -30,19 +25,32 @@ const ModernCVIntelligence = () => {
   const [batches, setBatches] = useState([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [batchName, setBatchName] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState({
-    cvFiles: [],
-    jdFile: null
-  });
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-
+  const [openMenuId, setOpenMenuId] = useState(null);
   const handleLogout = async () => {
     try {
       await logout();
       router.push('/landing');
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const handleDeleteBatch = async (batchId) => {
+    try {
+      console.log('🎯 Deleting batch from grid:', batchId);
+      const res = await cvAPI.deleteBatch(batchId);
+      if (res.success || res.data?.success) {
+        toast.success('Batch deleted');
+        setOpenMenuId(null);
+        await fetchBatches();
+      } else {
+        toast.error(res.message || res.data?.message || 'Failed to delete batch');
+      }
+    } catch (e) {
+      console.error('🎯 Delete batch error:', e);
+      toast.error(e.response?.data?.message || e.message || 'Failed to delete batch');
     }
   };
 
@@ -307,9 +315,29 @@ const ModernCVIntelligence = () => {
                     </div>
                   </div>
                   <div className="relative">
-                    <button className="p-1 hover:bg-gray-100 rounded transition-colors">
+                    <button 
+                      className="p-1 hover:bg-gray-100 rounded transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === batch.id ? null : batch.id);
+                      }}
+                    >
                       <MoreVertical className="w-4 h-4 text-gray-400" />
                     </button>
+                    {openMenuId === batch.id && (
+                      <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteBatch(batch.id);
+                          }}
+                          className="w-full flex items-center px-3 py-2 text-left text-red-600 hover:bg-red-50 text-sm"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Batch
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -560,4 +560,46 @@ router.get('/batch/:batchId/candidates', authenticateToken, async (req, res) => 
 });
 
 console.log('✅ PURE AI CV Intelligence Routes - Module ready for export');
+// DELETE /api/cv-intelligence/batch/:batchId - Delete a batch and its candidates
+router.delete('/batch/:batchId', authenticateToken, async (req, res) => {
+  try {
+    const { batchId } = req.params;
+
+    await database.connect();
+
+    // Verify ownership
+    const batch = await database.get(`
+      SELECT * FROM cv_batches WHERE id = $1 AND user_id = $2
+    `, [batchId, req.user.id]);
+
+    if (!batch) {
+      return res.status(404).json({
+        success: false,
+        message: 'Batch not found or not authorized'
+      });
+    }
+
+    // Delete child records first (candidates), then batch
+    await database.run(`
+      DELETE FROM cv_candidates WHERE batch_id = $1
+    `, [batchId]);
+
+    await database.run(`
+      DELETE FROM cv_batches WHERE id = $1
+    `, [batchId]);
+
+    return res.json({
+      success: true,
+      message: 'Batch deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete batch error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete batch',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
