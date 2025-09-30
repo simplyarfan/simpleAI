@@ -204,15 +204,17 @@ The Hiring Team`
           emailSubject: emailContent.subject,
           emailBody: emailContent.body,
           sendEmail: true,
-          calendarEventCreated: calendarEventCreated
+          icsFileGenerated: icsFile !== null
         },
         { headers: getAuthHeaders() }
       );
 
       if (response.data.success) {
         setSuccess(true);
-        if (calendarEventCreated) {
-          toast.success('Interview scheduled and added to calendar!');
+        if (icsFile) {
+          toast.success('Interview scheduled with calendar file!');
+        } else {
+          toast.success('Interview scheduled successfully!');
         }
         setTimeout(() => {
           router.push('/interview-coordinator');

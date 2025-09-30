@@ -7,10 +7,23 @@ class EmailService {
   constructor() {
     this.outlookAuth = null;
     this.connectedEmail = {};
+    this.currentUserId = null;
     
-    // Only access localStorage on client side
+    // Email connections should be per-user, not global
+    // We'll store them with user ID as key
     if (typeof window !== 'undefined') {
-      this.connectedEmail = JSON.parse(localStorage.getItem('connectedEmail') || '{}');
+      // Get current user from cookies
+      const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
+      if (userCookie) {
+        try {
+          const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
+          this.currentUserId = userData.id;
+          const storageKey = `connectedEmail_${this.currentUserId}`;
+          this.connectedEmail = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        } catch (e) {
+          console.error('Failed to parse user data:', e);
+        }
+      }
     }
   }
 
@@ -233,11 +246,21 @@ class EmailService {
     }
   }
 
-  // Get Connected Email
+  // Get Connected Email (per-user)
   getConnectedEmail() {
     // Refresh from localStorage if on client side
     if (typeof window !== 'undefined') {
-      this.connectedEmail = JSON.parse(localStorage.getItem('connectedEmail') || '{}');
+      const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
+      if (userCookie) {
+        try {
+          const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
+          const userId = userData.id;
+          const storageKey = `connectedEmail_${userId}`;
+          this.connectedEmail = JSON.parse(localStorage.getItem(storageKey) || '{}');
+        } catch (e) {
+          console.error('Failed to get user email connection:', e);
+        }
+      }
     }
     return this.connectedEmail;
   }
@@ -247,10 +270,20 @@ class EmailService {
     return this.connectedEmail.outlook?.connected || false;
   }
 
-  // Save to localStorage
+  // Save to localStorage (per-user)
   saveConnectedEmail() {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('connectedEmail', JSON.stringify(this.connectedEmail));
+      const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
+      if (userCookie) {
+        try {
+          const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
+          const userId = userData.id;
+          const storageKey = `connectedEmail_${userId}`;
+          localStorage.setItem(storageKey, JSON.stringify(this.connectedEmail));
+        } catch (e) {
+          console.error('Failed to save user email connection:', e);
+        }
+      }
     }
   }
 
