@@ -35,6 +35,7 @@ export default function InterviewCoordinator() {
     }
     fetchInterviews();
   }, [user]);
+
   const fetchInterviews = async () => {
     try {
       setLoading(true);

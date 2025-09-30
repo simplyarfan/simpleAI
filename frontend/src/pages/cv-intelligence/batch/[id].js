@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import axios from 'axios';
 import * as Icons from 'lucide-react';
 import { toast } from 'react-hot-toast';

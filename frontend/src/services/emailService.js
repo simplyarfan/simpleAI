@@ -254,10 +254,15 @@ class EmailService {
 
       const script = document.createElement('script');
       script.src = 'https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js';
-      script.integrity = 'sha384-o4ufwq3oKqc7IoCcR08YtZXmgOljHe7jGQAga85EP3X2me5SiVfjm8+wVLA7kz3n';
       script.crossOrigin = 'anonymous';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Microsoft MSAL'));
+      script.onload = () => {
+        console.log('✅ MSAL loaded successfully');
+        resolve();
+      };
+      script.onerror = (error) => {
+        console.error('❌ Failed to load MSAL:', error);
+        reject(new Error('Failed to load Microsoft MSAL'));
+      };
       document.head.appendChild(script);
     });
   }
