@@ -23,6 +23,7 @@ const router = express.Router();
 // GET /interviews - Get all interviews for the user
 router.get('/interviews', authenticateToken, async (req, res) => {
   try {
+    console.log('📋 Getting interviews for user:', req.user.id);
     await database.connect();
     
     // Create interviews table if it doesn't exist
@@ -51,6 +52,8 @@ router.get('/interviews', authenticateToken, async (req, res) => {
       ORDER BY created_at DESC
     `, [req.user.id]);
 
+    console.log('📋 Found interviews:', interviews?.length || 0);
+
     res.json({
       success: true,
       data: interviews || [],
@@ -70,6 +73,9 @@ router.get('/interviews', authenticateToken, async (req, res) => {
 // POST /schedule - Schedule a new interview
 router.post('/schedule', authenticateToken, async (req, res) => {
   try {
+    console.log('📅 Scheduling interview for user:', req.user.id);
+    console.log('📅 Request body:', JSON.stringify(req.body, null, 2));
+    
     const {
       title,
       candidateId,
