@@ -7,7 +7,12 @@ class CalendarService {
   constructor() {
     this.googleAuth = null;
     this.outlookAuth = null;
-    this.connectedCalendars = JSON.parse(localStorage.getItem('connectedCalendars') || '{}');
+    this.connectedCalendars = {};
+    
+    // Only access localStorage on client side
+    if (typeof window !== 'undefined') {
+      this.connectedCalendars = JSON.parse(localStorage.getItem('connectedCalendars') || '{}');
+    }
   }
 
   // Google Calendar Integration
@@ -183,6 +188,10 @@ class CalendarService {
 
   // Get Connected Calendars
   getConnectedCalendars() {
+    // Refresh from localStorage if on client side
+    if (typeof window !== 'undefined') {
+      this.connectedCalendars = JSON.parse(localStorage.getItem('connectedCalendars') || '{}');
+    }
     return this.connectedCalendars;
   }
 
@@ -193,7 +202,9 @@ class CalendarService {
 
   // Save to localStorage
   saveConnectedCalendars() {
-    localStorage.setItem('connectedCalendars', JSON.stringify(this.connectedCalendars));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('connectedCalendars', JSON.stringify(this.connectedCalendars));
+    }
   }
 
   // Load Google API
