@@ -26,7 +26,19 @@ class EmailService {
         const storageKey = `connectedEmail_${this.currentUserId}`;
         const stored = localStorage.getItem(storageKey);
         if (stored) {
-          this.connectedEmail = JSON.parse(stored);
+          const storedData = JSON.parse(stored);
+          
+          // Check if the stored data has expired
+          if (storedData.expiresAt && new Date() > new Date(storedData.expiresAt)) {
+            console.log('🔄 Email connection expired, removing...');
+            localStorage.removeItem(storageKey);
+            this.connectedEmail = {};
+            return;
+          }
+          
+          // Remove expiration metadata before using
+          const { savedAt, expiresAt, ...emailData } = storedData;
+          this.connectedEmail = emailData;
           console.log('✅ Loaded email connection for user:', this.currentUserId);
         }
       }
@@ -274,18 +286,16 @@ class EmailService {
 
   // Save to localStorage (per-user)
   saveConnectedEmail() {
-    if (typeof window !== 'undefined') {
-      const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
-      if (userCookie) {
-        try {
-          const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
-          const userId = userData.id;
-          const storageKey = `connectedEmail_${userId}`;
-          localStorage.setItem(storageKey, JSON.stringify(this.connectedEmail));
-        } catch (e) {
-          console.error('Failed to save user email connection:', e);
-        }
-      }
+    if (typeof window !== 'undefined' && this.currentUserId) {
+      const storageKey = `connectedEmail_${this.currentUserId}`;
+      const dataToStore = {
+        ...this.connectedEmail,
+        savedAt: new Date().toISOString(),
+        // Set expiration to 30 days from now
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      };
+      localStorage.setItem(storageKey, JSON.stringify(dataToStore));
+      console.log('✅ Email connection saved with 30-day expiration');
     }
   }
 
