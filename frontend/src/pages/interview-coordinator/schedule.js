@@ -27,6 +27,11 @@ export default function ScheduleInterview() {
   const [candidateData, setCandidateData] = useState(null);
   const [showCalendarConnection, setShowCalendarConnection] = useState(false);
   const [connectedCalendars, setConnectedCalendars] = useState({});
+  const [emailContent, setEmailContent] = useState({
+    subject: '',
+    body: ''
+  });
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -37,6 +42,7 @@ export default function ScheduleInterview() {
     duration: 60,
     location: 'Video Call',
     meetingLink: '',
+    meetingPlatform: '',
     type: 'technical',
     panelMembers: [{ name: '', email: '', role: '' }],
     notes: '',
@@ -99,7 +105,33 @@ export default function ScheduleInterview() {
     }
   };
 
+
+  const handlePreviewEmail = () => {
+    // Generate initial email content
+    const generatedContent = generateEmailContent();
+    setEmailContent({
+      subject: generatedContent.subject,
+      body: generatedContent.body
+    });
+    setIsEditingEmail(false);
+    setShowEmailPreview(true);
+  };
+
   const generateEmailContent = () => {
+    const meetingPlatformText = {
+      zoom: 'Zoom',
+      teams: 'Microsoft Teams',
+      meet: 'Google Meet',
+      custom: 'Video Call'
+    };
+
+    const platformName = meetingPlatformText[formData.meetingPlatform] || 'Video Call';
+    const meetingInfo = formData.meetingPlatform && formData.meetingPlatform !== 'custom' 
+      ? `Meeting link will be provided closer to the interview date via ${platformName}.`
+      : formData.meetingLink 
+        ? `Meeting Link: ${formData.meetingLink}`
+        : 'Meeting details will be provided separately.';
+
     return {
       subject: `🎉 Interview Invitation - ${formData.title}`,
       body: `Dear ${formData.candidateName},
@@ -108,25 +140,31 @@ We are pleased to inform you that you have been shortlisted for an interview! �
 
 Based on your impressive CV and qualifications, we would like to invite you to proceed to the next stage of our selection process.
 
-📋 **Next Steps:**
-1. Please fill out this pre-interview form with your details: ${formData.googleFormLink}
-2. Select your preferred interview time using our scheduling link: ${formData.calendlyLink}
-
-📝 **Interview Details:**
+📅 **Interview Details:**
 • Position: ${formData.title}
-• Type: ${formData.type} interview
+• Date & Time: ${formData.scheduledTime ? new Date(formData.scheduledTime).toLocaleString() : 'TBD'}
 • Duration: ${formData.duration} minutes
+• Type: ${formData.type}
 • Location: ${formData.location}
 
-We look forward to speaking with you soon!
+💻 **Meeting Information:**
+${meetingInfo}
+
+📋 **Next Steps:**
+1. Please confirm your availability by replying to this email
+2. Prepare for a ${formData.type} interview
+3. Have your resume and any relevant documents ready
+
+${formData.notes ? `📝 **Additional Notes:**
+${formData.notes}
+
+` : ''}We look forward to speaking with you and learning more about your experience and qualifications.
+
+If you have any questions or need to reschedule, please don't hesitate to reach out.
 
 Best regards,
 The Hiring Team`
     };
-  };
-
-  const handlePreviewEmail = () => {
-    setShowEmailPreview(true);
   };
 
   const handleSendInvitation = async () => {
@@ -173,7 +211,6 @@ The Hiring Team`
       }
 
       // Then, schedule the interview in the backend
-      const emailContent = generateEmailContent();
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/schedule`,
         {
@@ -405,16 +442,88 @@ The Hiring Team`
             </div>
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Meeting Link (optional)
+                Meeting Platform
               </label>
-              <input
-                type="url"
-                name="meetingLink"
-                value={formData.meetingLink}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="https://zoom.us/j/..."
-              />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, meetingPlatform: 'zoom', meetingLink: 'https://zoom.us/j/'})}
+                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center space-y-2 ${
+                    formData.meetingPlatform === 'zoom' 
+                      ? 'border-blue-500 bg-blue-50 text-blue-700' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">Z</span>
+                  </div>
+                  <span className="text-sm font-medium">Zoom</span>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, meetingPlatform: 'teams', meetingLink: 'https://teams.microsoft.com/'})}
+                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center space-y-2 ${
+                    formData.meetingPlatform === 'teams' 
+                      ? 'border-purple-500 bg-purple-50 text-purple-700' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">T</span>
+                  </div>
+                  <span className="text-sm font-medium">Teams</span>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, meetingPlatform: 'meet', meetingLink: 'https://meet.google.com/'})}
+                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center space-y-2 ${
+                    formData.meetingPlatform === 'meet' 
+                      ? 'border-green-500 bg-green-50 text-green-700' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="w-8 h-8 bg-green-500 rounded flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">M</span>
+                  </div>
+                  <span className="text-sm font-medium">Meet</span>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setFormData({...formData, meetingPlatform: 'custom', meetingLink: ''})}
+                  className={`p-3 border-2 rounded-lg transition-colors flex flex-col items-center space-y-2 ${
+                    formData.meetingPlatform === 'custom' 
+                      ? 'border-gray-500 bg-gray-50 text-gray-700' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="w-8 h-8 bg-gray-500 rounded flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">+</span>
+                  </div>
+                  <span className="text-sm font-medium">Custom</span>
+                </button>
+              </div>
+              
+              {formData.meetingPlatform === 'custom' && (
+                <div className="mt-3">
+                  <input
+                    type="url"
+                    name="meetingLink"
+                    value={formData.meetingLink}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter custom meeting link..."
+                  />
+                </div>
+              )}
+              
+              {formData.meetingPlatform && formData.meetingPlatform !== 'custom' && (
+                <div className="mt-2 text-sm text-gray-600">
+                  Meeting link will be auto-generated when scheduled
+                </div>
+              )}
             </div>
           </div>
 
@@ -483,27 +592,53 @@ The Hiring Team`
                   <Mail className="w-4 h-4 text-gray-500" />
                   <span className="text-sm text-gray-600">To: {formData.candidateEmail}</span>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 mb-2">
                   <span className="text-sm font-medium text-gray-700">Subject:</span>
-                  <span className="text-sm text-gray-900">{generateEmailContent().subject}</span>
+                  {isEditingEmail ? (
+                    <input
+                      type="text"
+                      value={emailContent.subject}
+                      onChange={(e) => setEmailContent({...emailContent, subject: e.target.value})}
+                      className="flex-1 text-sm border border-gray-300 rounded px-2 py-1"
+                    />
+                  ) : (
+                    <span className="text-sm text-gray-900">{emailContent.subject}</span>
+                  )}
                 </div>
               </div>
               
               <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
-                  {generateEmailContent().body}
-                </pre>
+                {isEditingEmail ? (
+                  <textarea
+                    value={emailContent.body}
+                    onChange={(e) => setEmailContent({...emailContent, body: e.target.value})}
+                    className="w-full h-64 text-sm border-none resize-none focus:outline-none font-sans"
+                    placeholder="Email content..."
+                  />
+                ) : (
+                  <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
+                    {emailContent.body}
+                  </pre>
+                )}
               </div>
             </div>
             
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-between">
               <button
                 onClick={() => setShowEmailPreview(false)}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Edit Details
               </button>
-              <button
+              
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setIsEditingEmail(!isEditingEmail)}
+                  className="px-4 py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  {isEditingEmail ? 'Preview' : 'Edit Content'}
+                </button>
+                <button
                 onClick={handleSendInvitation}
                 disabled={loading}
                 className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -520,6 +655,7 @@ The Hiring Team`
                   </>
                 )}
               </button>
+              </div>
             </div>
           </div>
         </div>

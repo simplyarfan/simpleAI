@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import calendarService from '../services/calendarService';
 import { 
   Calendar, 
   Clock, 
@@ -13,7 +14,8 @@ import {
   CheckCircle,
   AlertCircle,
   XCircle,
-  ArrowLeft
+  ArrowLeft,
+  Settings
 } from 'lucide-react';
 
 export default function InterviewCoordinator() {
@@ -24,6 +26,7 @@ export default function InterviewCoordinator() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [showCalendarWarning, setShowCalendarWarning] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -98,7 +101,16 @@ export default function InterviewCoordinator() {
   });
 
   const handleScheduleInterview = () => {
+    // Check if any calendar is connected
+    if (!calendarService.hasConnectedCalendar()) {
+      setShowCalendarWarning(true);
+      return;
+    }
     router.push('/interview-coordinator/schedule');
+  };
+
+  const handleGoToSettings = () => {
+    router.push('/profile?tab=calendar');
   };
 
   const handleViewInterview = (interviewId) => {
@@ -293,6 +305,63 @@ export default function InterviewCoordinator() {
           </div>
         )}
       </div>
+
+      {/* Calendar Connection Warning Modal */}
+      {showCalendarWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Connect Your Calendar</h3>
+                  <p className="text-sm text-gray-500">Required for scheduling interviews</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <div className="mb-6">
+                <div className="flex items-center space-x-3 mb-4">
+                  <AlertCircle className="w-5 h-5 text-orange-500" />
+                  <p className="text-gray-700 font-medium">Calendar connection required</p>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  To schedule interviews and automatically create calendar events, you need to connect your Google Calendar or Outlook Calendar first.
+                </p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 className="font-medium text-blue-900 mb-2">What you'll get:</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Automatic calendar event creation</li>
+                  <li>• Interview invitations sent from your email</li>
+                  <li>• Meeting links (Google Meet/Teams) integration</li>
+                  <li>• Seamless candidate scheduling</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-between">
+              <button
+                onClick={() => setShowCalendarWarning(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGoToSettings}
+                className="px-6 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Go to Settings</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import Head from 'next/head';
+import CalendarConnection from '../components/CalendarConnection';
+import calendarService from '../services/calendarService';
 import { 
   ArrowLeft,
   User,
@@ -14,7 +16,8 @@ import {
   LogOut,
   Eye,
   EyeOff,
-  CheckCircle
+  CheckCircle,
+  Calendar
 } from 'lucide-react';
 import { authAPI } from '../utils/api';
 import toast from 'react-hot-toast';
@@ -26,6 +29,9 @@ export default function ProfileSettings() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [activeTab, setActiveTab] = useState('profile');
+  const [showCalendarConnection, setShowCalendarConnection] = useState(false);
+  const [connectedCalendars, setConnectedCalendars] = useState({});
   
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -52,6 +58,27 @@ export default function ProfileSettings() {
       });
     }
   }, [user]);
+
+  // Handle URL tab parameter and load calendar data
+  useEffect(() => {
+    const { tab } = router.query;
+    if (tab === 'calendar') {
+      setActiveTab('calendar');
+    }
+    setConnectedCalendars(calendarService.getConnectedCalendars());
+  }, [router.query]);
+
+  const handleCalendarConnected = (provider, userInfo) => {
+    setConnectedCalendars(calendarService.getConnectedCalendars());
+    toast.success(`${provider === 'google' ? 'Google' : 'Outlook'} Calendar connected successfully!`);
+    setShowCalendarConnection(false);
+  };
+
+  const handleDisconnectCalendar = (provider) => {
+    calendarService.disconnectCalendar(provider);
+    setConnectedCalendars(calendarService.getConnectedCalendars());
+    toast.success(`${provider === 'google' ? 'Google' : 'Outlook'} Calendar disconnected`);
+  };
 
   const handleLogout = async () => {
     try {
@@ -184,9 +211,51 @@ export default function ProfileSettings() {
 
         {/* Main Content */}
         <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          {/* Tabs */}
+          <div className="mb-8">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8">
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'profile'
+                      ? 'border-orange-500 text-orange-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <User className="w-4 h-4 inline mr-2" />
+                  Profile
+                </button>
+                <button
+                  onClick={() => setActiveTab('calendar')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'calendar'
+                      ? 'border-orange-500 text-orange-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Calendar className="w-4 h-4 inline mr-2" />
+                  Calendar Integration
+                </button>
+                <button
+                  onClick={() => setActiveTab('security')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === 'security'
+                      ? 'border-orange-500 text-orange-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Lock className="w-4 h-4 inline mr-2" />
+                  Security
+                </button>
+              </nav>
+            </div>
+          </div>
+
           <div className="space-y-8">
-            {/* Profile Information */}
-            <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg border border-orange-200/50 overflow-hidden">
+            {/* Profile Information Tab */}
+            {activeTab === 'profile' && (
+              <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg border border-orange-200/50 overflow-hidden">
               <div className="bg-gradient-to-r from-orange-500 to-red-600 px-8 py-6">
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
@@ -302,8 +371,10 @@ export default function ProfileSettings() {
                 </div>
               </form>
             </div>
+            )}
 
-            {/* Change Password */}
+            {/* Security Tab - Change Password */}
+            {activeTab === 'security' && (
             <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg border border-orange-200/50 overflow-hidden">
               <div className="bg-gradient-to-r from-purple-500 to-indigo-600 px-8 py-6">
                 <div className="flex items-center space-x-3">
@@ -405,9 +476,243 @@ export default function ProfileSettings() {
                   </button>
                 </div>
               </form>
-            </div>
+              </div>
+            )}
+
+            {/* Calendar Integration Tab */}
+            {activeTab === 'calendar' && (
+              <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg border border-orange-200/50 overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                      <Calendar className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">Calendar Integration</h2>
+                      <p className="text-blue-100">Connect your calendar for interview scheduling</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-8">
+                  <div className="space-y-6">
+                    {/* Google Calendar */}
+                    <div className="border border-gray-200 rounded-lg p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zM12 17.25l-4.5-4.5 1.06-1.06L12 15.19l3.44-3.5L16.5 12.75 12 17.25z"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Google Calendar</h3>
+                            {connectedCalendars.google?.connected ? (
+                              <p className="text-sm text-green-600">Connected as {connectedCalendars.google.email}</p>
+                            ) : (
+                              <p className="text-sm text-gray-500">Connect to automatically create Google Meet events</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {connectedCalendars.google?.connected ? (
+                          <button
+                            onClick={() => handleDisconnectCalendar('google')}
+                            className="px-4 py-2 text-sm text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 rounded-lg transition-colors"
+                          >
+                            Disconnect
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setShowCalendarConnection(true)}
+                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+                          >
+                            Connect Google
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Outlook Calendar */}
+                    <div className="border border-gray-200 rounded-lg p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M7 9h10v6H7V9zm5-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                            </svg>
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Outlook Calendar</h3>
+                            {connectedCalendars.outlook?.connected ? (
+                              <p className="text-sm text-green-600">Connected as {connectedCalendars.outlook.email}</p>
+                            ) : (
+                              <p className="text-sm text-gray-500">Connect to automatically create Teams events</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {connectedCalendars.outlook?.connected ? (
+                          <button
+                            onClick={() => handleDisconnectCalendar('outlook')}
+                            className="px-4 py-2 text-sm text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 rounded-lg transition-colors"
+                          >
+                            Disconnect
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setShowCalendarConnection(true)}
+                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+                          >
+                            Connect Outlook
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Benefits */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                      <h4 className="font-semibold text-blue-900 mb-3">Benefits of Calendar Integration:</h4>
+                      <ul className="text-sm text-blue-800 space-y-2">
+                        <li className="flex items-center">
+                          <CheckCircle className="w-4 h-4 mr-2 text-blue-600" />
+                          Automatic calendar event creation for interviews
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="w-4 h-4 mr-2 text-blue-600" />
+                          Send invitations from your connected email account
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="w-4 h-4 mr-2 text-blue-600" />
+                          Auto-generate meeting links (Google Meet/Teams)
+                        </li>
+                        <li className="flex items-center">
+                          <CheckCircle className="w-4 h-4 mr-2 text-blue-600" />
+                          Seamless candidate scheduling experience
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Security Tab */}
+            {activeTab === 'security' && (
+              <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg border border-orange-200/50 overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-500 to-indigo-600 px-8 py-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                      <Lock className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">Security Settings</h2>
+                      <p className="text-purple-100">Update your password and security preferences</p>
+                    </div>
+                  </div>
+                </div>
+
+                <form onSubmit={handlePasswordUpdate} className="p-8 space-y-6">
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Current Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showCurrentPassword ? 'text' : 'password'}
+                          value={passwordData.currentPassword}
+                          onChange={(e) => handleInputChange('password', 'currentPassword', e.target.value)}
+                          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                          placeholder="Enter your current password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        New Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showNewPassword ? 'text' : 'password'}
+                          value={passwordData.newPassword}
+                          onChange={(e) => handleInputChange('password', 'newPassword', e.target.value)}
+                          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                          placeholder="Enter your new password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPassword(!showNewPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Confirm New Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          value={passwordData.confirmPassword}
+                          onChange={(e) => handleInputChange('password', 'confirmPassword', e.target.value)}
+                          className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                          placeholder="Confirm your new password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-6 border-t border-gray-200">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex items-center px-8 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:from-purple-600 hover:to-indigo-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Updating...
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4 mr-2" />
+                          Change Password
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Calendar Connection Modal */}
+        {showCalendarConnection && (
+          <CalendarConnection
+            onCalendarConnected={handleCalendarConnected}
+            onClose={() => setShowCalendarConnection(false)}
+          />
+        )}
       </div>
     </>
   );
