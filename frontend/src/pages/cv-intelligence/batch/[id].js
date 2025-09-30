@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import axios from 'axios';
 import * as Icons from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import emailService from '../../../services/emailService';
 import { useAuth } from '../../../contexts/AuthContext';
 import cvAPI from '../../../utils/cvIntelligenceAPI';

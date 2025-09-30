@@ -105,7 +105,7 @@ export default function InterviewCoordinator() {
     }
   };
 
-  const filteredInterviews = interviews.filter(interview => {
+  const filteredInterviews = (interviews || []).filter(interview => {
     const matchesSearch = interview.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          interview.candidate_name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || interview.status === statusFilter;
