@@ -28,14 +28,6 @@ export default function InterviewCoordinator() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCalendarWarning, setShowCalendarWarning] = useState(false);
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-    fetchInterviews();
-  }, [user]);
-
   const fetchInterviews = async () => {
     try {
       setLoading(true);
@@ -78,6 +70,14 @@ export default function InterviewCoordinator() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    fetchInterviews();
+  }, [user]);
 
   const getStatusIcon = (status) => {
     switch (status) {
