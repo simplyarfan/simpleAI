@@ -176,25 +176,34 @@ The Hiring Team`
       let icsFile = null;
       
       if (formData.scheduledTime) {
-        const startTime = new Date(formData.scheduledTime).toISOString();
-        const endTime = new Date(new Date(formData.scheduledTime).getTime() + (formData.duration * 60000)).toISOString();
+        // Parse and validate the date
+        const scheduledDate = new Date(formData.scheduledTime);
         
+        if (isNaN(scheduledDate.getTime())) {
+          throw new Error('Invalid date format. Please select a valid date and time.');
+        }
+        
+        const startTime = scheduledDate.toISOString();
+        const endTime = new Date(scheduledDate.getTime() + (formData.duration * 60000)).toISOString();
+        
+        const connectedEmail = emailService.getConnectedEmail();
         const eventDetails = {
-          title: formData.title,
+          title: formData.title || 'Interview',
           description: `Interview with ${formData.candidateName}\n\nType: ${formData.type}\nLocation: ${formData.location}\n\nMeeting Link: ${formData.meetingLink || 'TBD'}`,
           startDate: startTime,
           endDate: endTime,
           location: formData.location || 'Video Call',
           candidateEmail: formData.candidateEmail,
-          organizerEmail: emailService.getConnectedEmail().outlook?.email || 'noreply@example.com'
+          organizerEmail: connectedEmail.outlook?.email || 'noreply@example.com'
         };
 
         // Generate .ics calendar file
         try {
           icsFile = emailService.generateICSFile(eventDetails);
-          toast.success('.ics calendar file generated');
+          console.log('✅ ICS file generated successfully');
         } catch (calError) {
-          console.error('Failed to generate .ics file:', calError);
+          console.error('❌ Failed to generate .ics file:', calError);
+          toast.error('Failed to generate calendar file: ' + calError.message);
         }
       }
 
