@@ -657,4 +657,58 @@ router.post('/candidate/:id/schedule-interview', authenticateToken, async (req, 
   }
 });
 
+// DELETE /api/cv-intelligence/batch/:id - Delete batch and all associated candidates
+router.delete('/batch/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    await database.connect();
+    
+    // First, verify the batch belongs to the user
+    const batch = await database.get(`
+      SELECT * FROM cv_batches 
+      WHERE id = $1 AND user_id = $2
+    `, [id, req.user.id]);
+
+    if (!batch) {
+      return res.status(404).json({
+        success: false,
+        message: 'Batch not found or you do not have permission to delete it'
+      });
+    }
+
+    // Delete all candidates associated with this batch
+    const candidatesDeleted = await database.run(`
+      DELETE FROM candidates 
+      WHERE batch_id = $1
+    `, [id]);
+
+    // Delete the batch itself
+    const batchDeleted = await database.run(`
+      DELETE FROM cv_batches 
+      WHERE id = $1 AND user_id = $2
+    `, [id, req.user.id]);
+
+    console.log(`🗑️ Batch deleted: ${batch.name} (${candidatesDeleted.changes || 0} candidates removed)`);
+
+    res.json({
+      success: true,
+      message: 'Batch and all associated candidates deleted successfully',
+      data: {
+        batchId: id,
+        batchName: batch.name,
+        candidatesDeleted: candidatesDeleted.changes || 0
+      }
+    });
+
+  } catch (error) {
+    console.error('Delete batch error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete batch',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

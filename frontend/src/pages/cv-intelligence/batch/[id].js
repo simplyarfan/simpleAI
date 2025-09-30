@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import Head from 'next/head';
 import { useRouter } from 'next/router';
+import axios from 'axios';
+import * as Icons from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import CalendarConnection from '../../../components/CalendarConnection';
+import calendarService from '../../../services/calendarService';
 import { useAuth } from '../../../contexts/AuthContext';
 import cvAPI from '../../../utils/cvIntelligenceAPI';
-import toast from 'react-hot-toast';
-import * as Icons from 'lucide-react';
 
 const BatchDetail = () => {
   const { user, logout } = useAuth();
@@ -18,6 +20,8 @@ const BatchDetail = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [schedulingInterview, setSchedulingInterview] = useState(null);
+  const [showCalendarConnection, setShowCalendarConnection] = useState(false);
+  const [connectedCalendars, setConnectedCalendars] = useState({});
 
   const handleLogout = async () => {
     try {
@@ -29,21 +33,40 @@ const BatchDetail = () => {
   };
 
   const handleScheduleInterview = (candidate) => {
+    // Check if any calendar is connected
+    const calendars = calendarService.getConnectedCalendars();
+    if (!calendarService.hasConnectedCalendar()) {
+      // Show calendar connection modal
+      setShowCalendarConnection(true);
+      return;
+    }
+
     // Redirect to interview coordinator with pre-filled candidate data
     const candidateData = {
       candidateId: candidate.id,
-      candidateName: candidate.personal?.name || candidate.name || 'Unknown',
-      candidateEmail: candidate.personal?.email || candidate.email || '',
-      candidatePhone: candidate.personal?.phone || candidate.phone || '',
-      jobTitle: batch?.name || 'Position Interview',
-      batchId: batch?.id,
-      score: candidate.score || candidate.overall_score || 0
+      candidateName: candidate.name,
+      candidateEmail: candidate.email,
+      jobTitle: batch?.name || 'Position',
+      batchId: id,
+      connectedCalendars: calendars
     };
+
+    // Store candidate data in sessionStorage for the interview coordinator
+    sessionStorage.setItem('candidateData', JSON.stringify(candidateData));
     
-    // Encode the data to pass via URL
-    const encodedData = encodeURIComponent(JSON.stringify(candidateData));
-    router.push(`/interview-coordinator/schedule?candidate=${encodedData}`);
+    // Navigate to interview coordinator
+    router.push('/interview-coordinator');
   };
+
+  const handleCalendarConnected = (provider, userInfo) => {
+    setConnectedCalendars(calendarService.getConnectedCalendars());
+    toast.success(`${provider === 'google' ? 'Google' : 'Outlook'} Calendar connected successfully!`);
+  };
+
+  // Load connected calendars on component mount
+  useEffect(() => {
+    setConnectedCalendars(calendarService.getConnectedCalendars());
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -306,9 +329,6 @@ const BatchDetail = () => {
                            index === 2 ? 'Good Candidate' :
                            'Candidate'}
                         </div>
-                        <div className="text-sm text-gray-600">
-                          Rank #{candidate.rank || index + 1}
-                        </div>
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
@@ -461,12 +481,20 @@ const BatchDetail = () => {
                     try {
                       // Use profile_json instead of analysis_data
                       const profileData = selectedCandidate.profile_json || {};
-                      const skills = profileData.skills || [];
+                      const candidateSkills = profileData.skills || [];
+                      
+                      // Define critical skills for the job (these would come from JD in real implementation)
+                      const criticalSkills = ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'AWS'];
+                      const requiredSkills = ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'AWS', 'Git', 'HTML', 'CSS', 'MongoDB', 'Express'];
                       
                       // Convert skills array to display format
-                      const allSkills = Array.isArray(skills) ? skills : [];
-                      const matchedSkills = allSkills.slice(0, Math.ceil(allSkills.length * 0.7)); // Show 70% as matched
-                      const missingSkills = [];
+                      const allSkills = Array.isArray(candidateSkills) ? candidateSkills : [];
+                      const matchedSkills = allSkills.filter(skill => 
+                        requiredSkills.some(req => req.toLowerCase() === skill.toLowerCase())
+                      );
+                      const missingSkills = requiredSkills.filter(skill => 
+                        !allSkills.some(candidate => candidate.toLowerCase() === skill.toLowerCase())
+                      );
 
                       return (
                         <>
@@ -474,11 +502,17 @@ const BatchDetail = () => {
                             <div>
                               <p className="text-sm font-medium text-green-700 mb-2">Required Skills Match:</p>
                               <div className="flex flex-wrap gap-2">
-                                {matchedSkills.map((skill, index) => (
-                                  <span key={index} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                                    {skill}
-                                  </span>
-                                ))}
+                                {matchedSkills.map((skill, index) => {
+                                  const isCritical = criticalSkills.some(critical => critical.toLowerCase() === skill.toLowerCase());
+                                  return (
+                                    <span key={index} className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${
+                                      isCritical ? 'bg-green-200 text-green-900 border border-green-300' : 'bg-green-100 text-green-800'
+                                    }`}>
+                                      {isCritical && <span className="mr-1 text-green-600">⚡</span>}
+                                      {skill}
+                                    </span>
+                                  );
+                                })}
                               </div>
                             </div>
                           )}
@@ -487,11 +521,17 @@ const BatchDetail = () => {
                             <div>
                               <p className="text-sm font-medium text-red-700 mb-2">Missing Required Skills:</p>
                               <div className="flex flex-wrap gap-2">
-                                {missingSkills.map((skill, index) => (
-                                  <span key={index} className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
-                                    {skill}
-                                  </span>
-                                ))}
+                                {missingSkills.map((skill, index) => {
+                                  const isCritical = criticalSkills.some(critical => critical.toLowerCase() === skill.toLowerCase());
+                                  return (
+                                    <span key={index} className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${
+                                      isCritical ? 'bg-red-200 text-red-900 border border-red-400' : 'bg-red-100 text-red-800'
+                                    }`}>
+                                      {isCritical && <span className="mr-1 text-red-600">!</span>}
+                                      {skill}
+                                    </span>
+                                  );
+                                })}
                               </div>
                             </div>
                           )}
@@ -550,40 +590,42 @@ const BatchDetail = () => {
                       const experienceYears = experience.length > 0 ? Math.max(1, experience.length * 1.5) : 0;
 
                       return (
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Experience Level:</span>
-                            <span className="font-medium text-gray-900">{experienceYears} years</span>
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                            <span className="text-sm font-medium text-gray-600">Total Experience:</span>
+                            <span className="font-semibold text-gray-900">{experienceYears} years • {experience.length} positions</span>
                           </div>
                           
-                          {currentRole && currentRole !== 'Role not specified' && (
-                            <div>
-                              <span className="text-sm text-gray-600">Latest Role:</span>
-                              <p className="font-medium text-gray-900">{currentRole}</p>
-                            </div>
-                          )}
-                          {currentCompany && currentCompany !== 'Company not specified' && (
-                            <div>
-                              <span className="text-sm text-gray-600">Company:</span>
-                              <p className="font-medium text-gray-900">{currentCompany}</p>
-                            </div>
-                          )}
-                          {startDate !== 'Start date not specified' && (
-                            <div>
-                              <span className="text-sm text-gray-600">Duration:</span>
-                              <p className="font-medium text-gray-900">{startDate} - {endDate}</p>
-                            </div>
-                          )}
-                          
-                          {experience.length > 1 && (
-                            <div>
-                              <span className="text-sm text-gray-600">Total Positions:</span>
-                              <p className="font-medium text-gray-900">{experience.length} roles</p>
-                            </div>
-                          )}
+                          {/* Experience Cards */}
+                          <div className="space-y-3">
+                            {experience.map((exp, index) => {
+                              const achievements = exp.achievements || [];
+                              const summary = achievements.length > 0 
+                                ? achievements.slice(0, 2).join('. ') + (achievements.length > 2 ? '...' : '.')
+                                : 'Key contributions and responsibilities in this role.';
+                              
+                              return (
+                                <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div className="flex-1">
+                                      <h4 className="font-semibold text-gray-900 text-sm">{exp.role || 'Role not specified'}</h4>
+                                      <p className="text-sm text-blue-600 font-medium">{exp.company || 'Company not specified'}</p>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-xs text-gray-500">{exp.startDate || 'Start'} - {exp.endDate || 'Present'}</p>
+                                      {index === 0 && (
+                                        <span className="inline-block mt-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Current</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">{summary}</p>
+                                </div>
+                              );
+                            })}
+                          </div>
                           
                           {experience.length === 0 && (
-                            <p className="text-gray-500 text-sm">Experience details not available</p>
+                            <p className="text-gray-500 text-sm text-center py-4">Experience details not available</p>
                           )}
                         </div>
                       );
@@ -712,14 +754,52 @@ const BatchDetail = () => {
                   } catch (e) {
                     return (
                       <div>
-                        <p className="text-gray-700 leading-relaxed">
-                          {selectedCandidate.rankingReason || 'Professional assessment completed'}
-                        </p>
-                        <div className="flex items-center justify-between pt-3 border-t border-blue-200">
-                          <span className="text-sm font-medium text-gray-600">Ranking:</span>
-                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                            Rank #{selectedCandidate.rank || 'N/A'}
-                          </span>
+                        <div className="space-y-4">
+                          <p className="text-gray-700 leading-relaxed">
+                            {selectedCandidate.rankingReason || 'Professional assessment completed'}
+                          </p>
+                          
+                          {/* Good Fit / Bad Fit Analysis */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                              <h5 className="text-sm font-semibold text-green-800 mb-2 flex items-center">
+                                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                Good Fit
+                              </h5>
+                              <p className="text-xs text-green-700">
+                                {(() => {
+                                  const rank = selectedCandidate.rank || 1;
+                                  if (rank === 1) return "Strong technical background with relevant experience and skill alignment.";
+                                  if (rank === 2) return "Solid experience with good technical skills and growth potential.";
+                                  if (rank === 3) return "Decent qualifications with some relevant experience in the field.";
+                                  return "Has basic qualifications and some transferable skills.";
+                                })()}
+                              </p>
+                            </div>
+                            
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                              <h5 className="text-sm font-semibold text-red-800 mb-2 flex items-center">
+                                <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                Areas of Concern
+                              </h5>
+                              <p className="text-xs text-red-700">
+                                {(() => {
+                                  const rank = selectedCandidate.rank || 1;
+                                  if (rank === 1) return "May require slight adjustment period to align with specific company processes.";
+                                  if (rank === 2) return "Some skill gaps may need development through training or mentorship.";
+                                  if (rank === 3) return "Limited experience in certain key areas may require additional support.";
+                                  return "Significant skill gaps and experience limitations may impact immediate productivity.";
+                                })()}
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between pt-3 border-t border-blue-200">
+                            <span className="text-sm font-medium text-gray-600">Overall Ranking:</span>
+                            <span className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                              #{selectedCandidate.rank || 'N/A'} of {candidates.length}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     );
@@ -729,6 +809,14 @@ const BatchDetail = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Calendar Connection Modal */}
+      {showCalendarConnection && (
+        <CalendarConnection
+          onCalendarConnected={handleCalendarConnected}
+          onClose={() => setShowCalendarConnection(false)}
+        />
       )}
     </div>
   );
