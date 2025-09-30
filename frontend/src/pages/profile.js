@@ -57,13 +57,25 @@ export default function ProfileSettings() {
     }
   }, [user]);
 
-  // Handle URL tab parameter and load email data
+  // Load connected email on component mount and handle OAuth redirects
+  useEffect(() => {
+    const loadEmailAndHandleRedirect = async () => {
+      // Handle OAuth redirect if coming back from Microsoft
+      await emailService.handleRedirectResponse();
+      
+      // Load current email connection
+      setConnectedEmail(emailService.getConnectedEmail());
+    };
+    
+    loadEmailAndHandleRedirect();
+  }, []);
+
+  // Handle URL tab parameter
   useEffect(() => {
     const { tab } = router.query;
     if (tab === 'email') {
       setActiveTab('email');
     }
-    setConnectedEmail(emailService.getConnectedEmail());
   }, [router.query]);
 
   const handleEmailConnected = (provider, userInfo) => {
