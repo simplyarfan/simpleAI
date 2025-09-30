@@ -649,42 +649,62 @@ const BatchDetail = () => {
                       const profileData = selectedCandidate.profile_json || {};
                       const education = profileData.education || [];
                       
-                      // Get the first education entry if available
-                      const firstEducation = Array.isArray(education) && education.length > 0 ? education[0] : {};
-                      const university = firstEducation.institution || 'Institution not specified';
-                      const degree = firstEducation.degree || 'Degree not specified';
-                      const field = firstEducation.field || 'Field not specified';
-                      const graduationYear = firstEducation.year || 'Year not specified';
+                      // Show ALL education entries as cards
+                      if (!Array.isArray(education) || education.length === 0) {
+                        return <p className="text-gray-500 text-sm">Education details not available</p>;
+                      }
 
                       return (
-                        <div className="space-y-2">
-                          {degree && (
-                            <div>
-                              <span className="text-sm text-gray-600">Degree:</span>
-                              <p className="font-medium text-gray-900">{degree}</p>
-                            </div>
-                          )}
-                          {university && university !== 'Institution not specified' && (
-                            <div>
-                              <span className="text-sm text-gray-600">Institution:</span>
-                              <p className="font-medium text-gray-900">{university}</p>
-                            </div>
-                          )}
-                          {field && field !== 'Field not specified' && (
-                            <div>
-                              <span className="text-sm text-gray-600">Field of Study:</span>
-                              <p className="font-medium text-gray-900">{field}</p>
-                            </div>
-                          )}
-                          {graduationYear && graduationYear !== 'Year not specified' && (
-                            <div>
-                              <span className="text-sm text-gray-600">Year:</span>
-                              <p className="font-medium text-gray-900">{graduationYear}</p>
-                            </div>
-                          )}
-                          {(!degree || degree === 'Degree not specified') && (!university || university === 'Institution not specified') && (
-                            <p className="text-gray-500 text-sm">Education details not available</p>
-                          )}
+                        <div className="grid gap-4">
+                          {education.map((edu, index) => {
+                            const university = edu.institution || 'Institution not specified';
+                            const degree = edu.degree || 'Degree not specified';
+                            const field = edu.field || 'Field not specified';
+                            const graduationYear = edu.year || 'Year not specified';
+                            
+                            return (
+                              <div key={index} className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                                <div className="space-y-3">
+                                  {degree && degree !== 'Degree not specified' && (
+                                    <div className="flex items-center space-x-2">
+                                      <Icons.Award className="w-4 h-4 text-indigo-600" />
+                                      <div>
+                                        <span className="text-xs text-gray-500 uppercase tracking-wide">Degree</span>
+                                        <p className="font-semibold text-gray-900">{degree}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {university && university !== 'Institution not specified' && (
+                                    <div className="flex items-center space-x-2">
+                                      <Icons.Building className="w-4 h-4 text-indigo-600" />
+                                      <div>
+                                        <span className="text-xs text-gray-500 uppercase tracking-wide">Institution</span>
+                                        <p className="font-medium text-gray-900">{university}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {field && field !== 'Field not specified' && (
+                                    <div className="flex items-center space-x-2">
+                                      <Icons.BookOpen className="w-4 h-4 text-indigo-600" />
+                                      <div>
+                                        <span className="text-xs text-gray-500 uppercase tracking-wide">Field of Study</span>
+                                        <p className="font-medium text-gray-900">{field}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {graduationYear && graduationYear !== 'Year not specified' && (
+                                    <div className="flex items-center space-x-2">
+                                      <Icons.Calendar className="w-4 h-4 text-indigo-600" />
+                                      <div>
+                                        <span className="text-xs text-gray-500 uppercase tracking-wide">Year</span>
+                                        <p className="font-medium text-gray-900">{graduationYear}</p>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       );
                     } catch (e) {
@@ -738,14 +758,8 @@ const BatchDetail = () => {
                         
                         <div className="flex items-center justify-between pt-3 border-t border-blue-200">
                           <span className="text-sm font-medium text-gray-600">Recommendation:</span>
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                            selectedCandidate.recommendation === 'Strong Hire' ? 'bg-green-100 text-green-800' :
-                            selectedCandidate.recommendation === 'Hire' ? 'bg-blue-100 text-blue-800' :
-                            selectedCandidate.recommendation === 'Consider' ? 'bg-yellow-100 text-yellow-800' :
-                            selectedCandidate.recommendation === 'Pass' ? 'bg-red-100 text-red-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {selectedCandidate.recommendation || 'Under Review'}
+                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
+                            Under Review
                           </span>
                         </div>
                       </div>
