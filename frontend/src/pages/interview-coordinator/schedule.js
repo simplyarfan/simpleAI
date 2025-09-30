@@ -252,7 +252,11 @@ The Hiring Team`
       return;
     }
     
-    // Show email preview
+    // Auto-generate email content
+    const generatedEmail = generateEmailContent();
+    setEmailContent(generatedEmail);
+    
+    // Show email preview (editable)
     setShowEmailPreview(true);
   };
 
@@ -574,9 +578,14 @@ The Hiring Team`
       {showEmailPreview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Email Preview</h3>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Review & Edit Email</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {isEditingEmail ? '✏️ Editing mode - Make your changes' : '👀 Preview mode - Click "Edit Content" to make changes'}
+                  </p>
+                </div>
                 <button
                   onClick={() => setShowEmailPreview(false)}
                   className="text-gray-400 hover:text-gray-600"
@@ -634,14 +643,15 @@ The Hiring Team`
               <div className="flex space-x-3">
                 <button
                   onClick={() => setIsEditingEmail(!isEditingEmail)}
-                  className="px-4 py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
+                  className="inline-flex items-center px-4 py-2 border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
                 >
+                  <Eye className="w-4 h-4 mr-2" />
                   {isEditingEmail ? 'Preview' : 'Edit Content'}
                 </button>
                 <button
                 onClick={handleSendInvitation}
                 disabled={loading}
-                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="inline-flex items-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
               >
                 {loading ? (
                   <>
