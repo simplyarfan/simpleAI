@@ -35,15 +35,22 @@ export default function InterviewCoordinator() {
     }
     fetchInterviews();
   }, [user]);
-
   const fetchInterviews = async () => {
     try {
       setLoading(true);
       setError(null);
       
+      // Check if we have auth headers
+      const headers = getAuthHeaders();
+      if (!headers || !headers.Authorization) {
+        setError('Authentication required. Please log in again.');
+        router.push('/auth/login');
+        return;
+      }
+      
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/interviews`,
-        { headers: getAuthHeaders() }
+        { headers }
       );
       
       if (response.data && response.data.success) {
@@ -53,8 +60,12 @@ export default function InterviewCoordinator() {
       }
     } catch (error) {
       console.error('Error fetching interviews:', error);
-      if (error.response?.status === 404) {
-        setError('Interview service not found. Please contact support.');
+      
+      if (error.response?.status === 401) {
+        setError('Session expired. Please log in again.');
+        router.push('/auth/login');
+      } else if (error.response?.status === 404) {
+        setError('Interview service not available. Please try again later.');
       } else if (error.response?.status === 500) {
         setError('Server error occurred. Please try again later.');
       } else if (error.code === 'NETWORK_ERROR' || !error.response) {
