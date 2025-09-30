@@ -524,7 +524,14 @@ export default function ProfileSettings() {
                           </button>
                         ) : (
                           <button
-                            onClick={() => setShowCalendarConnection(true)}
+                            onClick={async () => {
+                              const result = await calendarService.connectGoogleCalendar();
+                              if (result.success) {
+                                handleCalendarConnected('google', result.user);
+                              } else {
+                                toast.error(result.error || 'Failed to connect Google Calendar');
+                              }
+                            }}
                             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
                           >
                             Connect Google
@@ -561,7 +568,14 @@ export default function ProfileSettings() {
                           </button>
                         ) : (
                           <button
-                            onClick={() => setShowCalendarConnection(true)}
+                            onClick={async () => {
+                              const result = await calendarService.connectOutlookCalendar();
+                              if (result.success) {
+                                handleCalendarConnected('outlook', result.user);
+                              } else {
+                                toast.error(result.error || 'Failed to connect Outlook Calendar');
+                              }
+                            }}
                             className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
                           >
                             Connect Outlook
@@ -612,7 +626,7 @@ export default function ProfileSettings() {
                   </div>
                 </div>
 
-                <form onSubmit={handlePasswordUpdate} className="p-8 space-y-6">
+                <form onSubmit={handlePasswordChange} className="p-8 space-y-6">
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -706,13 +720,6 @@ export default function ProfileSettings() {
           </div>
         </div>
 
-        {/* Calendar Connection Modal */}
-        {showCalendarConnection && (
-          <CalendarConnection
-            onCalendarConnected={handleCalendarConnected}
-            onClose={() => setShowCalendarConnection(false)}
-          />
-        )}
       </div>
     </>
   );

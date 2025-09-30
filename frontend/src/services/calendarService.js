@@ -18,6 +18,14 @@ class CalendarService {
   // Google Calendar Integration
   async connectGoogleCalendar() {
     try {
+      // Check if client ID is configured
+      if (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID === 'your-google-client-id') {
+        return {
+          success: false,
+          error: 'Google Calendar OAuth is not configured yet. Please contact your administrator to set up NEXT_PUBLIC_GOOGLE_CLIENT_ID.'
+        };
+      }
+
       // Load Google API
       if (!window.gapi) {
         await this.loadGoogleAPI();
@@ -28,7 +36,7 @@ class CalendarService {
       });
 
       const authInstance = window.gapi.auth2.init({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'your-google-client-id',
+        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
         scope: 'https://www.googleapis.com/auth/calendar'
       });
 
@@ -55,6 +63,14 @@ class CalendarService {
   // Microsoft Outlook Integration
   async connectOutlookCalendar() {
     try {
+      // Check if client ID is configured
+      if (!process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID || process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID === 'your-outlook-client-id') {
+        return {
+          success: false,
+          error: 'Outlook Calendar OAuth is not configured yet. Please contact your administrator to set up NEXT_PUBLIC_OUTLOOK_CLIENT_ID.'
+        };
+      }
+
       // Load Microsoft Graph API
       if (!window.Msal) {
         await this.loadMicrosoftAPI();
@@ -62,7 +78,7 @@ class CalendarService {
 
       const msalConfig = {
         auth: {
-          clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID || 'your-outlook-client-id',
+          clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID,
           authority: 'https://login.microsoftonline.com/common',
           redirectUri: window.location.origin
         }
