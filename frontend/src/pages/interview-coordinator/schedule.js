@@ -182,9 +182,11 @@ The Hiring Team`
         const eventDetails = {
           title: formData.title,
           description: `Interview with ${formData.candidateName}\n\nType: ${formData.type}\nLocation: ${formData.location}\n\nMeeting Link: ${formData.meetingLink || 'TBD'}`,
-          startTime: startTime,
-          endTime: endTime,
-          attendees: [formData.candidateEmail]
+          startDate: startTime,
+          endDate: endTime,
+          location: formData.location || 'Video Call',
+          candidateEmail: formData.candidateEmail,
+          organizerEmail: emailService.getConnectedEmail().outlook?.email || 'noreply@example.com'
         };
 
         // Generate .ics calendar file
