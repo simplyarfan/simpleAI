@@ -12,18 +12,27 @@ class EmailService {
     // Email connections should be per-user, not global
     // We'll store them with user ID as key
     if (typeof window !== 'undefined') {
+      this.loadUserEmailConnection();
+    }
+  }
+
+  loadUserEmailConnection() {
+    try {
       // Get current user from cookies
       const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
       if (userCookie) {
-        try {
-          const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
-          this.currentUserId = userData.id;
-          const storageKey = `connectedEmail_${this.currentUserId}`;
-          this.connectedEmail = JSON.parse(localStorage.getItem(storageKey) || '{}');
-        } catch (e) {
-          console.error('Failed to parse user data:', e);
+        const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
+        this.currentUserId = userData.id;
+        const storageKey = `connectedEmail_${this.currentUserId}`;
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          this.connectedEmail = JSON.parse(stored);
+          console.log('✅ Loaded email connection for user:', this.currentUserId);
         }
       }
+    } catch (e) {
+      console.error('Failed to load user email connection:', e);
+      this.connectedEmail = {};
     }
   }
 
@@ -51,11 +60,19 @@ class EmailService {
         auth: {
           clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID,
           authority: 'https://login.microsoftonline.com/organizations',
-          redirectUri: window.location.origin
+          redirectUri: window.location.origin,
+          postLogoutRedirectUri: window.location.origin
         },
         cache: {
           cacheLocation: 'localStorage',
-          storeAuthStateInCookie: false
+          storeAuthStateInCookie: true // Better for popup scenarios
+        },
+        system: {
+          allowNativeBroker: false, // Disable native broker for web
+          windowHashTimeout: 60000,
+          iframeHashTimeout: 6000,
+          loadFrameTimeout: 0,
+          navigateFrameWait: 0
         }
       };
 
@@ -64,9 +81,11 @@ class EmailService {
       
       const loginRequest = {
         scopes: ['https://graph.microsoft.com/Mail.Send', 'https://graph.microsoft.com/User.Read'],
-        prompt: 'select_account'
+        prompt: 'select_account',
+        forceRefresh: false
       };
 
+      console.log('🔐 Starting Outlook OAuth...');
       const response = await msalInstance.loginPopup(loginRequest);
       
       this.outlookAuth = response;
@@ -248,19 +267,9 @@ class EmailService {
 
   // Get Connected Email (per-user)
   getConnectedEmail() {
-    // Refresh from localStorage if on client side
+    // Always refresh from localStorage to ensure we have latest data
     if (typeof window !== 'undefined') {
-      const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
-      if (userCookie) {
-        try {
-          const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
-          const userId = userData.id;
-          const storageKey = `connectedEmail_${userId}`;
-          this.connectedEmail = JSON.parse(localStorage.getItem(storageKey) || '{}');
-        } catch (e) {
-          console.error('Failed to get user email connection:', e);
-        }
-      }
+      this.loadUserEmailConnection();
     }
     return this.connectedEmail;
   }
