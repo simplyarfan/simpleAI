@@ -17,13 +17,13 @@ const generateTokens = (userId, email, role) => {
   const accessToken = jwt.sign(
     { userId, email, role, type: 'access' },
     process.env.JWT_SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: '24h' } // Changed from 15m to 24h for better UX
   );
   
   const refreshToken = jwt.sign(
     { userId, type: 'refresh' },
     refreshSecret,
-    { expiresIn: '7d' }
+    { expiresIn: '30d' } // Changed from 7d to 30d
   );
   
   return { accessToken, refreshToken };

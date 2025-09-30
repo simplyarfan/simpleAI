@@ -25,7 +25,7 @@ export default function ScheduleInterview() {
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [candidateData, setCandidateData] = useState(null);
   const [showCalendarConnection, setShowCalendarConnection] = useState(false);
-  const [connectedCalendars, setConnectedCalendars] = useState({});
+  const [connectedEmail, setConnectedEmail] = useState({});
   const [emailContent, setEmailContent] = useState({
     subject: '',
     body: ''
@@ -171,9 +171,9 @@ The Hiring Team`
     setError(null);
 
     try {
-      // First, create calendar event
-      const calendars = calendarService.getConnectedCalendars();
-      let calendarEventCreated = false;
+      // First, generate .ics calendar file
+      const email = emailService.getConnectedEmail();
+      let icsFile = null;
       
       if (formData.scheduledTime) {
         const startTime = new Date(formData.scheduledTime).toISOString();
@@ -187,25 +187,12 @@ The Hiring Team`
           attendees: [formData.candidateEmail]
         };
 
-        // Try to create event in connected calendars
-        if (calendars.google?.connected) {
-          try {
-            await calendarService.createGoogleEvent(eventDetails);
-            calendarEventCreated = true;
-            toast.success('Calendar event created in Google Calendar');
-          } catch (calError) {
-            console.error('Failed to create Google Calendar event:', calError);
-          }
-        }
-        
-        if (calendars.outlook?.connected && !calendarEventCreated) {
-          try {
-            await calendarService.createOutlookEvent(eventDetails);
-            calendarEventCreated = true;
-            toast.success('Calendar event created in Outlook Calendar');
-          } catch (calError) {
-            console.error('Failed to create Outlook Calendar event:', calError);
-          }
+        // Generate .ics calendar file
+        try {
+          icsFile = emailService.generateICSFile(eventDetails);
+          toast.success('.ics calendar file generated');
+        } catch (calError) {
+          console.error('Failed to generate .ics file:', calError);
         }
       }
 
@@ -244,28 +231,29 @@ The Hiring Team`
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Check if any calendar is connected
-    const calendars = calendarService.getConnectedCalendars();
-    if (!calendarService.hasConnectedCalendar()) {
-      // Show calendar connection modal
+    // Check if email is connected
+    const email = emailService.getConnectedEmail();
+    if (!emailService.hasConnectedEmail()) {
+      // Show email connection modal
       setShowCalendarConnection(true);
       return;
     }
     
-    handlePreviewEmail();
+    // Show email preview
+    setShowEmailPreview(true);
   };
 
-  const handleCalendarConnected = (provider, userInfo) => {
-    setConnectedCalendars(calendarService.getConnectedCalendars());
-    toast.success(`${provider === 'google' ? 'Google' : 'Outlook'} Calendar connected successfully!`);
+  const handleEmailConnected = (provider, userInfo) => {
+    setConnectedEmail(emailService.getConnectedEmail());
+    toast.success(`${provider === 'outlook' ? 'Outlook' : 'Email'} connected successfully!`);
     setShowCalendarConnection(false);
-    // After connecting calendar, proceed to email preview
-    handlePreviewEmail();
+    // After connecting email, proceed to email preview
+    setShowEmailPreview(true);
   };
 
-  // Load connected calendars on component mount
+  // Load connected email on component mount
   useEffect(() => {
-    setConnectedCalendars(calendarService.getConnectedCalendars());
+    setConnectedEmail(emailService.getConnectedEmail());
   }, []);
 
   if (success) {
