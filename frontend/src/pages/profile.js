@@ -57,17 +57,9 @@ export default function ProfileSettings() {
     }
   }, [user]);
 
-  // Load connected email on component mount and handle OAuth redirects
+  // Load connected email on component mount
   useEffect(() => {
-    const loadEmailAndHandleRedirect = async () => {
-      // Handle OAuth redirect if coming back from Microsoft
-      await emailService.handleRedirectResponse();
-      
-      // Load current email connection
-      setConnectedEmail(emailService.getConnectedEmail());
-    };
-    
-    loadEmailAndHandleRedirect();
+    setConnectedEmail(emailService.getConnectedEmail());
   }, []);
 
   // Handle URL tab parameter

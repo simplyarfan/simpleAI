@@ -36,59 +36,6 @@ class EmailService {
     }
   }
 
-  // Handle OAuth redirect response
-  async handleRedirectResponse() {
-    try {
-      if (!process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID) return;
-      
-      await this.loadMSAL();
-      
-      const msalConfig = {
-        auth: {
-          clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID,
-          authority: 'https://login.microsoftonline.com/organizations',
-          redirectUri: window.location.origin,
-          postLogoutRedirectUri: window.location.origin
-        },
-        cache: {
-          cacheLocation: 'localStorage',
-          storeAuthStateInCookie: true
-        }
-      };
-
-      const msalInstance = new window.msal.PublicClientApplication(msalConfig);
-      await msalInstance.initialize();
-      
-      const response = await msalInstance.handleRedirectPromise();
-      
-      if (response) {
-        console.log('✅ OAuth redirect successful:', response);
-        
-        this.outlookAuth = response;
-        this.connectedEmail.outlook = {
-          connected: true,
-          email: response.account.username,
-          name: response.account.name,
-          accessToken: response.accessToken,
-          connectedAt: new Date().toISOString()
-        };
-        
-        this.saveConnectedEmail();
-        
-        // Return to original page if stored
-        const returnUrl = sessionStorage.getItem('oauth_return_url');
-        if (returnUrl && returnUrl !== window.location.pathname) {
-          sessionStorage.removeItem('oauth_return_url');
-          window.location.href = returnUrl;
-        }
-        
-        return { success: true, data: this.connectedEmail.outlook };
-      }
-    } catch (error) {
-      console.error('OAuth redirect error:', error);
-    }
-    return null;
-  }
 
   // Outlook Integration for Sending Emails
   async connectOutlook() {
@@ -114,19 +61,11 @@ class EmailService {
         auth: {
           clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID,
           authority: 'https://login.microsoftonline.com/organizations',
-          redirectUri: window.location.origin,
-          postLogoutRedirectUri: window.location.origin
+          redirectUri: window.location.origin
         },
         cache: {
           cacheLocation: 'localStorage',
-          storeAuthStateInCookie: true // Better for popup scenarios
-        },
-        system: {
-          allowNativeBroker: false, // Disable native broker for web
-          windowHashTimeout: 60000,
-          iframeHashTimeout: 6000,
-          loadFrameTimeout: 0,
-          navigateFrameWait: 0
+          storeAuthStateInCookie: false
         }
       };
 
@@ -140,25 +79,7 @@ class EmailService {
       };
 
       console.log('🔐 Starting Outlook OAuth...');
-      
-      // Try popup first, fallback to redirect if it fails
-      let response;
-      try {
-        response = await msalInstance.loginPopup(loginRequest);
-      } catch (popupError) {
-        console.warn('⚠️ Popup failed, trying redirect:', popupError.message);
-        
-        // If popup fails, use redirect
-        if (popupError.message.includes('user_cancelled') || popupError.message.includes('popup')) {
-          // Store current page to return to after OAuth
-          sessionStorage.setItem('oauth_return_url', window.location.pathname);
-          
-          // Use redirect instead
-          await msalInstance.loginRedirect(loginRequest);
-          return { success: false, error: 'Redirecting to Microsoft login...' };
-        }
-        throw popupError;
-      }
+      const response = await msalInstance.loginPopup(loginRequest);
       
       this.outlookAuth = response;
       this.connectedEmail.outlook = {
