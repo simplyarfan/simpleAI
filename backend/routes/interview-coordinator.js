@@ -48,7 +48,7 @@ router.get('/interviews', authenticateToken, async (req, res) => {
     
     const interviews = await database.all(`
       SELECT * FROM interviews 
-      WHERE scheduled_by = ? 
+      WHERE scheduled_by = $1 
       ORDER BY created_at DESC
     `, [req.user.id]);
 
@@ -126,7 +126,7 @@ router.post('/schedule', authenticateToken, async (req, res) => {
         id, candidate_id, candidate_name, candidate_email, job_title,
         interview_type, status, calendly_link, google_form_link, 
         scheduled_time, meeting_link, notes, scheduled_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     `, [
       interviewId,
       candidateId || interviewId,
@@ -221,7 +221,7 @@ router.put('/interview/:id/status', authenticateToken, async (req, res) => {
 
     // Verify ownership
     const interview = await database.get(`
-      SELECT * FROM interviews WHERE id = ? AND scheduled_by = ?
+      SELECT * FROM interviews WHERE id = $1 AND scheduled_by = $2
     `, [id, req.user.id]);
 
     if (!interview) {
@@ -234,8 +234,8 @@ router.put('/interview/:id/status', authenticateToken, async (req, res) => {
     // Update interview status
     await database.run(`
       UPDATE interviews 
-      SET status = ?, notes = ?
-      WHERE id = ?
+      SET status = $1, notes = $2
+      WHERE id = $3
     `, [status, notes || '', id]);
 
     res.json({
@@ -262,7 +262,7 @@ router.get('/calendar/:id/ics', authenticateToken, async (req, res) => {
     
     const interview = await database.get(`
       SELECT * FROM interviews
-      WHERE id = ? AND scheduled_by = ?
+      WHERE id = $1 AND scheduled_by = $2
     `, [id, req.user.id]);
 
     if (!interview) {
