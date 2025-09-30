@@ -335,21 +335,22 @@ export default function InterviewCoordinator() {
 
             <div className="p-6">
               <div className="mb-6">
+                <div className="flex items-center space-x-3 mb-4">
                   <AlertCircle className="w-5 h-5 text-orange-500" />
-                  <p className="text-gray-700 font-medium">Calendar connection required</p>
+                  <p className="text-gray-700 font-medium">Email connection required</p>
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  To schedule interviews and automatically create calendar events, you need to connect your Google Calendar or Outlook Calendar first.
+                  To send interview invitations and calendar files, you need to connect your Outlook email first.
                 </p>
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <h4 className="font-medium text-blue-900 mb-2">What you'll get:</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Automatic calendar event creation</li>
-                  <li>• Interview invitations sent from your email</li>
-                  <li>• Meeting links (Google Meet/Teams) integration</li>
-                  <li>• Seamless candidate scheduling</li>
+                  <li>• Send professional interview emails</li>
+                  <li>• Automatic .ics calendar file attachments</li>
+                  <li>• Works with all calendar apps</li>
+                  <li>• Professional company email branding</li>
                 </ul>
               </div>
             </div>

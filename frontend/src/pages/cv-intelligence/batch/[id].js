@@ -3,8 +3,7 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import * as Icons from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import CalendarConnection from '../../../components/CalendarConnection';
-import calendarService from '../../../services/calendarService';
+import emailService from '../../../services/emailService';
 import { useAuth } from '../../../contexts/AuthContext';
 import cvAPI from '../../../utils/cvIntelligenceAPI';
 
@@ -21,7 +20,7 @@ const BatchDetail = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [schedulingInterview, setSchedulingInterview] = useState(null);
   const [showCalendarConnection, setShowCalendarConnection] = useState(false);
-  const [connectedCalendars, setConnectedCalendars] = useState({});
+  const [connectedEmail, setConnectedEmail] = useState({});
 
   const handleLogout = async () => {
     try {
@@ -33,39 +32,38 @@ const BatchDetail = () => {
   };
 
   const handleScheduleInterview = (candidate) => {
-    // Check if any calendar is connected
-    const calendars = calendarService.getConnectedCalendars();
-    if (!calendarService.hasConnectedCalendar()) {
-      // Show calendar connection modal
+    // Check if email is connected
+    const email = emailService.getConnectedEmail();
+    if (!emailService.hasConnectedEmail()) {
+      // Show email connection modal
       setShowCalendarConnection(true);
       return;
     }
-
-    // Redirect to interview coordinator with pre-filled candidate data
-    const candidateData = {
-      candidateId: candidate.id,
-      candidateName: candidate.name,
-      candidateEmail: candidate.email,
-      jobTitle: batch?.name || 'Position',
-      batchId: id,
-      connectedCalendars: calendars
-    };
-
-    // Store candidate data in sessionStorage for the interview coordinator
-    sessionStorage.setItem('candidateData', JSON.stringify(candidateData));
     
-    // Navigate to interview coordinator
-    router.push('/interview-coordinator');
+    // Store selected candidate for interview scheduling
+    setSelectedCandidate(candidate);
+    
+    // Navigate to interview coordinator with candidate data
+    router.push({
+      pathname: '/interview-coordinator/schedule',
+      query: {
+        candidateId: candidate.id,
+        candidateName: candidate.name,
+        candidateEmail: candidate.email,
+        jobTitle: batch?.job_title || 'Position',
+        batchId: id
+      }
+    });
   };
 
-  const handleCalendarConnected = (provider, userInfo) => {
-    setConnectedCalendars(calendarService.getConnectedCalendars());
-    toast.success(`${provider === 'google' ? 'Google' : 'Outlook'} Calendar connected successfully!`);
+  const handleEmailConnected = (provider, userInfo) => {
+    setConnectedEmail(emailService.getConnectedEmail());
+    toast.success(`${provider === 'outlook' ? 'Outlook' : 'Email'} connected successfully!`);
   };
 
-  // Load connected calendars on component mount
+  // Load connected email on component mount
   useEffect(() => {
-    setConnectedCalendars(calendarService.getConnectedCalendars());
+    setConnectedEmail(emailService.getConnectedEmail());
   }, []);
 
   useEffect(() => {

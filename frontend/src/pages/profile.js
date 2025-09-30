@@ -68,13 +68,13 @@ export default function ProfileSettings() {
 
   const handleEmailConnected = (provider, userInfo) => {
     setConnectedEmail(emailService.getConnectedEmail());
-    toast.success(`${provider === 'gmail' ? 'Gmail' : 'Email'} connected successfully!`);
+    toast.success(`${provider === 'outlook' ? 'Outlook' : 'Email'} connected successfully!`);
   };
 
   const handleDisconnectEmail = (provider) => {
     emailService.disconnectEmail(provider);
     setConnectedEmail(emailService.getConnectedEmail());
-    toast.success(`${provider === 'gmail' ? 'Gmail' : 'Email'} disconnected`);
+    toast.success(`${provider === 'outlook' ? 'Outlook' : 'Email'} disconnected`);
   };
 
   const handleLogout = async () => {
@@ -388,26 +388,26 @@ export default function ProfileSettings() {
 
                 <div className="p-8">
                   <div className="space-y-6">
-                    {/* Gmail */}
+                    {/* Outlook */}
                     <div className="border border-gray-200 rounded-lg p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
+                          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
                             <Mail className="w-6 h-6 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">Gmail</h3>
-                            {connectedEmail.gmail?.connected ? (
-                              <p className="text-sm text-green-600">Connected as {connectedEmail.gmail.email}</p>
+                            <h3 className="text-lg font-semibold text-gray-900">Outlook</h3>
+                            {connectedEmail.outlook?.connected ? (
+                              <p className="text-sm text-green-600">Connected as {connectedEmail.outlook.email}</p>
                             ) : (
-                              <p className="text-sm text-gray-500">Connect to send interview emails from your Gmail</p>
+                              <p className="text-sm text-gray-500">Connect to send interview emails from your company Outlook</p>
                             )}
                           </div>
                         </div>
                         
-                        {connectedEmail.gmail?.connected ? (
+                        {connectedEmail.outlook?.connected ? (
                           <button
-                            onClick={() => handleDisconnectEmail('gmail')}
+                            onClick={() => handleDisconnectEmail('outlook')}
                             className="px-4 py-2 text-sm text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 rounded-lg transition-colors"
                           >
                             Disconnect
@@ -415,16 +415,16 @@ export default function ProfileSettings() {
                         ) : (
                           <button
                             onClick={async () => {
-                              const result = await emailService.connectGmail();
+                              const result = await emailService.connectOutlook();
                               if (result.success) {
-                                handleEmailConnected('gmail', result.user);
+                                handleEmailConnected('outlook', result.user);
                               } else {
-                                toast.error(result.error || 'Failed to connect Gmail');
+                                toast.error(result.error || 'Failed to connect Outlook');
                               }
                             }}
-                            className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
+                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
                           >
-                            Connect Gmail
+                            Connect Outlook
                           </button>
                         )}
                       </div>
@@ -437,7 +437,7 @@ export default function ProfileSettings() {
                       <ul className="text-sm text-red-800 space-y-2">
                         <li className="flex items-center">
                           <CheckCircle className="w-4 h-4 mr-2 text-red-600" />
-                          Send interview emails from your Gmail account
+                          Send interview emails from your company Outlook account
                         </li>
                         <li className="flex items-center">
                           <CheckCircle className="w-4 h-4 mr-2 text-red-600" />

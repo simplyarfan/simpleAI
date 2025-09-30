@@ -1,11 +1,11 @@
 /**
  * Email Integration Service
- * Handles Gmail OAuth for sending emails and generates .ics calendar files
+ * Handles Outlook OAuth for sending emails and generates .ics calendar files
  */
 
 class EmailService {
   constructor() {
-    this.gmailAuth = null;
+    this.outlookAuth = null;
     this.connectedEmail = {};
     
     // Only access localStorage on client side
@@ -14,81 +14,101 @@ class EmailService {
     }
   }
 
-  // Gmail Integration for Sending Emails
-  async connectGmail() {
+  // Outlook Integration for Sending Emails
+  async connectOutlook() {
     try {
       // Check if client ID is configured
-      if (!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID === 'your-google-client-id') {
+      if (!process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID || process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID === 'your-outlook-client-id') {
         return {
           success: false,
-          error: 'Gmail OAuth is not configured yet. Please contact your administrator to set up NEXT_PUBLIC_GOOGLE_CLIENT_ID.'
+          error: 'Outlook OAuth is not configured yet. Please contact your administrator to set up NEXT_PUBLIC_OUTLOOK_CLIENT_ID.'
         };
       }
 
-      // Load Google API
-      if (!window.gapi) {
-        await this.loadGoogleAPI();
+      // Load Microsoft Graph SDK
+      if (!window.msal) {
+        await this.loadMSAL();
       }
 
-      await new Promise((resolve) => {
-        window.gapi.load('auth2', resolve);
-      });
+      const msalConfig = {
+        auth: {
+          clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID,
+          authority: 'https://login.microsoftonline.com/common',
+          redirectUri: window.location.origin
+        }
+      };
 
-      const authInstance = window.gapi.auth2.init({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-        scope: 'https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/userinfo.email'
-      });
-
-      const user = await authInstance.signIn();
-      const authResponse = user.getAuthResponse();
+      const msalInstance = new window.msal.PublicClientApplication(msalConfig);
       
-      this.gmailAuth = authResponse;
-      this.connectedEmail.gmail = {
+      const loginRequest = {
+        scopes: ['https://graph.microsoft.com/Mail.Send', 'https://graph.microsoft.com/User.Read']
+      };
+
+      const response = await msalInstance.loginPopup(loginRequest);
+      
+      this.outlookAuth = response;
+      this.connectedEmail.outlook = {
         connected: true,
-        email: user.getBasicProfile().getEmail(),
-        name: user.getBasicProfile().getName(),
-        accessToken: authResponse.access_token,
+        email: response.account.username,
+        name: response.account.name,
+        accessToken: response.accessToken,
         connectedAt: new Date().toISOString()
       };
       
       this.saveConnectedEmail();
-      return { success: true, provider: 'gmail', user: this.connectedEmail.gmail };
+      return { success: true, provider: 'outlook', user: this.connectedEmail.outlook };
     } catch (error) {
       console.error('Gmail connection failed:', error);
       return { success: false, error: error.message };
     }
   }
 
-  // Send Email via Gmail API
+  // Send Email via Microsoft Graph API
   async sendEmail(to, subject, body, attachments = []) {
     try {
-      if (!this.connectedEmail.gmail?.connected) {
-        throw new Error('Gmail not connected. Please connect your Gmail account first.');
+      if (!this.connectedEmail.outlook?.connected) {
+        throw new Error('Outlook not connected. Please connect your Outlook account first.');
       }
 
-      // Load Gmail API
-      await new Promise((resolve) => {
-        window.gapi.load('client', resolve);
-      });
-
-      await window.gapi.client.init({
-        apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
-        clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/gmail/v1/rest'],
-        scope: 'https://www.googleapis.com/auth/gmail.send'
-      });
-
-      // Create email message
-      const email = this.createEmailMessage(to, subject, body, attachments);
-      
-      const response = await window.gapi.client.gmail.users.messages.send({
-        userId: 'me',
-        resource: {
-          raw: email
+      // Create email message for Microsoft Graph
+      const emailMessage = {
+        message: {
+          subject: subject,
+          body: {
+            contentType: 'HTML',
+            content: body
+          },
+          toRecipients: [
+            {
+              emailAddress: {
+                address: to
+              }
+            }
+          ],
+          attachments: attachments.map(attachment => ({
+            '@odata.type': '#microsoft.graph.fileAttachment',
+            name: attachment.filename,
+            contentType: attachment.mimeType,
+            contentBytes: attachment.data
+          }))
         }
+      };
+
+      // Send email via Microsoft Graph
+      const response = await fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.connectedEmail.outlook.accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(emailMessage)
       });
 
-      return { success: true, messageId: response.result.id };
+      if (!response.ok) {
+        throw new Error(`Failed to send email: ${response.statusText}`);
+      }
+
+      return { success: true, messageId: 'sent' };
     } catch (error) {
       console.error('Failed to send email:', error);
       return { success: false, error: error.message };
@@ -214,7 +234,7 @@ class EmailService {
 
   // Check if email is connected
   hasConnectedEmail() {
-    return this.connectedEmail.gmail?.connected || false;
+    return this.connectedEmail.outlook?.connected || false;
   }
 
   // Save to localStorage
@@ -224,18 +244,18 @@ class EmailService {
     }
   }
 
-  // Load Google API
-  async loadGoogleAPI() {
+  // Load Microsoft MSAL
+  async loadMSAL() {
     return new Promise((resolve, reject) => {
-      if (window.gapi) {
+      if (window.msal) {
         resolve();
         return;
       }
 
       const script = document.createElement('script');
-      script.src = 'https://apis.google.com/js/api.js';
+      script.src = 'https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js';
       script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Google API'));
+      script.onerror = () => reject(new Error('Failed to load Microsoft MSAL'));
       document.head.appendChild(script);
     });
   }
