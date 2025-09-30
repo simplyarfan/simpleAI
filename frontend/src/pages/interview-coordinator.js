@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import axios from 'axios';
@@ -28,7 +28,7 @@ export default function InterviewCoordinator() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [showCalendarWarning, setShowCalendarWarning] = useState(false);
 
-  const fetchInterviews = async () => {
+  const fetchInterviews = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -69,7 +69,7 @@ export default function InterviewCoordinator() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getAuthHeaders, router]);
 
   useEffect(() => {
     if (!user) {
@@ -77,7 +77,7 @@ export default function InterviewCoordinator() {
       return;
     }
     fetchInterviews();
-  }, [user]);
+  }, [user, fetchInterviews]);
 
   const getStatusIcon = (status) => {
     switch (status) {

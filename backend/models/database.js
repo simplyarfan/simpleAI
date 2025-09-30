@@ -28,18 +28,18 @@ class Database {
       this.pool = new Pool({
         connectionString,
         ssl: {
-          rejectUnauthorized: false // Required for Neon and most cloud PostgreSQL services
+          rejectUnauthorized: false
         },
-        max: 3, // Reduced for Vercel serverless
-        min: 0, // No minimum connections for serverless
-        idleTimeoutMillis: 5000, // Shorter for serverless
-        connectionTimeoutMillis: 60000, // Increased timeout for Neon
-        acquireTimeoutMillis: 60000, // Increased timeout
-        createTimeoutMillis: 60000,
-        destroyTimeoutMillis: 5000,
-        reapIntervalMillis: 1000,
-        createRetryIntervalMillis: 200,
-        allowExitOnIdle: true // Important for serverless
+        max: 1, // Single connection for serverless
+        min: 0,
+        idleTimeoutMillis: 1000, // Very short for serverless
+        connectionTimeoutMillis: 10000, // Shorter timeout
+        acquireTimeoutMillis: 10000,
+        createTimeoutMillis: 10000,
+        destroyTimeoutMillis: 1000,
+        allowExitOnIdle: true,
+        statement_timeout: 5000, // 5 second query timeout
+        query_timeout: 5000
       });
         
       // Test connection
