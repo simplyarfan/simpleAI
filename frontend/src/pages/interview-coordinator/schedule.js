@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import CalendarConnection from '../../components/CalendarConnection';
-import calendarService from '../../services/calendarService';
+import emailService from '../../services/emailService';
 import { toast } from 'react-hot-toast';
 import { 
   Calendar, 

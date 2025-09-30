@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import Head from 'next/head';
-import CalendarConnection from '../components/CalendarConnection';
-import calendarService from '../services/calendarService';
+import emailService from '../services/emailService';
 import { 
   ArrowLeft,
   User,
@@ -30,8 +29,7 @@ export default function ProfileSettings() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
-  const [showCalendarConnection, setShowCalendarConnection] = useState(false);
-  const [connectedCalendars, setConnectedCalendars] = useState({});
+  const [connectedEmail, setConnectedEmail] = useState({});
   
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -59,25 +57,24 @@ export default function ProfileSettings() {
     }
   }, [user]);
 
-  // Handle URL tab parameter and load calendar data
+  // Handle URL tab parameter and load email data
   useEffect(() => {
     const { tab } = router.query;
-    if (tab === 'calendar') {
-      setActiveTab('calendar');
+    if (tab === 'email') {
+      setActiveTab('email');
     }
-    setConnectedCalendars(calendarService.getConnectedCalendars());
+    setConnectedEmail(emailService.getConnectedEmail());
   }, [router.query]);
 
-  const handleCalendarConnected = (provider, userInfo) => {
-    setConnectedCalendars(calendarService.getConnectedCalendars());
-    toast.success(`${provider === 'google' ? 'Google' : 'Outlook'} Calendar connected successfully!`);
-    setShowCalendarConnection(false);
+  const handleEmailConnected = (provider, userInfo) => {
+    setConnectedEmail(emailService.getConnectedEmail());
+    toast.success(`${provider === 'gmail' ? 'Gmail' : 'Email'} connected successfully!`);
   };
 
-  const handleDisconnectCalendar = (provider) => {
-    calendarService.disconnectCalendar(provider);
-    setConnectedCalendars(calendarService.getConnectedCalendars());
-    toast.success(`${provider === 'google' ? 'Google' : 'Outlook'} Calendar disconnected`);
+  const handleDisconnectEmail = (provider) => {
+    emailService.disconnectEmail(provider);
+    setConnectedEmail(emailService.getConnectedEmail());
+    toast.success(`${provider === 'gmail' ? 'Gmail' : 'Email'} disconnected`);
   };
 
   const handleLogout = async () => {
@@ -227,15 +224,15 @@ export default function ProfileSettings() {
                   Profile
                 </button>
                 <button
-                  onClick={() => setActiveTab('calendar')}
+                  onClick={() => setActiveTab('email')}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'calendar'
+                    activeTab === 'email'
                       ? 'border-orange-500 text-orange-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <Calendar className="w-4 h-4 inline mr-2" />
-                  Calendar Integration
+                  <Mail className="w-4 h-4 inline mr-2" />
+                  Email Integration
                 </button>
                 <button
                   onClick={() => setActiveTab('security')}
@@ -374,45 +371,43 @@ export default function ProfileSettings() {
             )}
 
 
-            {/* Calendar Integration Tab */}
-            {activeTab === 'calendar' && (
+            {/* Email Integration Tab */}
+            {activeTab === 'email' && (
               <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-lg border border-orange-200/50 overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
-                      <Calendar className="w-6 h-6 text-white" />
+                      <Mail className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-white">Calendar Integration</h2>
-                      <p className="text-blue-100">Connect your calendar for interview scheduling</p>
+                      <h2 className="text-2xl font-bold text-white">Email Integration</h2>
+                      <p className="text-blue-100">Connect your email for sending interview invitations</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-8">
                   <div className="space-y-6">
-                    {/* Google Calendar */}
+                    {/* Gmail */}
                     <div className="border border-gray-200 rounded-lg p-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M19.5 3h-15A1.5 1.5 0 003 4.5v15A1.5 1.5 0 004.5 21h15a1.5 1.5 0 001.5-1.5v-15A1.5 1.5 0 0019.5 3zM12 17.25l-4.5-4.5 1.06-1.06L12 15.19l3.44-3.5L16.5 12.75 12 17.25z"/>
-                            </svg>
+                          <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
+                            <Mail className="w-6 h-6 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-gray-900">Google Calendar</h3>
-                            {connectedCalendars.google?.connected ? (
-                              <p className="text-sm text-green-600">Connected as {connectedCalendars.google.email}</p>
+                            <h3 className="text-lg font-semibold text-gray-900">Gmail</h3>
+                            {connectedEmail.gmail?.connected ? (
+                              <p className="text-sm text-green-600">Connected as {connectedEmail.gmail.email}</p>
                             ) : (
-                              <p className="text-sm text-gray-500">Connect to automatically create Google Meet events</p>
+                              <p className="text-sm text-gray-500">Connect to send interview emails from your Gmail</p>
                             )}
                           </div>
                         </div>
                         
-                        {connectedCalendars.google?.connected ? (
+                        {connectedEmail.gmail?.connected ? (
                           <button
-                            onClick={() => handleDisconnectCalendar('google')}
+                            onClick={() => handleDisconnectEmail('gmail')}
                             className="px-4 py-2 text-sm text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 rounded-lg transition-colors"
                           >
                             Disconnect
@@ -420,84 +415,41 @@ export default function ProfileSettings() {
                         ) : (
                           <button
                             onClick={async () => {
-                              const result = await calendarService.connectGoogleCalendar();
+                              const result = await emailService.connectGmail();
                               if (result.success) {
-                                handleCalendarConnected('google', result.user);
+                                handleEmailConnected('gmail', result.user);
                               } else {
-                                toast.error(result.error || 'Failed to connect Google Calendar');
+                                toast.error(result.error || 'Failed to connect Gmail');
                               }
                             }}
-                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+                            className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm font-medium"
                           >
-                            Connect Google
+                            Connect Gmail
                           </button>
                         )}
                       </div>
                     </div>
 
-                    {/* Outlook Calendar */}
-                    <div className="border border-gray-200 rounded-lg p-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M7 9h10v6H7V9zm5-7C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                            </svg>
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-900">Outlook Calendar</h3>
-                            {connectedCalendars.outlook?.connected ? (
-                              <p className="text-sm text-green-600">Connected as {connectedCalendars.outlook.email}</p>
-                            ) : (
-                              <p className="text-sm text-gray-500">Connect to automatically create Teams events</p>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {connectedCalendars.outlook?.connected ? (
-                          <button
-                            onClick={() => handleDisconnectCalendar('outlook')}
-                            className="px-4 py-2 text-sm text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 rounded-lg transition-colors"
-                          >
-                            Disconnect
-                          </button>
-                        ) : (
-                          <button
-                            onClick={async () => {
-                              const result = await calendarService.connectOutlookCalendar();
-                              if (result.success) {
-                                handleCalendarConnected('outlook', result.user);
-                              } else {
-                                toast.error(result.error || 'Failed to connect Outlook Calendar');
-                              }
-                            }}
-                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
-                          >
-                            Connect Outlook
-                          </button>
-                        )}
-                      </div>
-                    </div>
 
                     {/* Benefits */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                      <h4 className="font-semibold text-blue-900 mb-3">Benefits of Calendar Integration:</h4>
-                      <ul className="text-sm text-blue-800 space-y-2">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                      <h4 className="font-semibold text-red-900 mb-3">Benefits of Email Integration:</h4>
+                      <ul className="text-sm text-red-800 space-y-2">
                         <li className="flex items-center">
-                          <CheckCircle className="w-4 h-4 mr-2 text-blue-600" />
-                          Automatic calendar event creation for interviews
+                          <CheckCircle className="w-4 h-4 mr-2 text-red-600" />
+                          Send interview emails from your Gmail account
                         </li>
                         <li className="flex items-center">
-                          <CheckCircle className="w-4 h-4 mr-2 text-blue-600" />
-                          Send invitations from your connected email account
+                          <CheckCircle className="w-4 h-4 mr-2 text-red-600" />
+                          Professional email templates with your signature
                         </li>
                         <li className="flex items-center">
-                          <CheckCircle className="w-4 h-4 mr-2 text-blue-600" />
-                          Auto-generate meeting links (Google Meet/Teams)
+                          <CheckCircle className="w-4 h-4 mr-2 text-red-600" />
+                          Automatic .ics calendar file attachments
                         </li>
                         <li className="flex items-center">
-                          <CheckCircle className="w-4 h-4 mr-2 text-blue-600" />
-                          Seamless candidate scheduling experience
+                          <CheckCircle className="w-4 h-4 mr-2 text-red-600" />
+                          Works with all calendar apps (Google, Outlook, Apple)
                         </li>
                       </ul>
                     </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import calendarService from '../services/calendarService';
+import emailService from '../services/emailService';
 import { 
   Calendar, 
   Clock, 
@@ -112,8 +112,8 @@ export default function InterviewCoordinator() {
   });
 
   const handleScheduleInterview = () => {
-    // Check if any calendar is connected
-    if (!calendarService.hasConnectedCalendar()) {
+    // Check if email is connected
+    if (!emailService.hasConnectedEmail()) {
       setShowCalendarWarning(true);
       return;
     }
@@ -121,7 +121,7 @@ export default function InterviewCoordinator() {
   };
 
   const handleGoToSettings = () => {
-    router.push('/profile?tab=calendar');
+    router.push('/profile?tab=email');
   };
 
   const handleViewInterview = (interviewId) => {
@@ -327,15 +327,14 @@ export default function InterviewCoordinator() {
                   <Calendar className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Connect Your Calendar</h3>
-                  <p className="text-sm text-gray-500">Required for scheduling interviews</p>
+                  <h3 className="text-lg font-semibold text-gray-900">Connect Your Email</h3>
+                  <p className="text-sm text-gray-500">Required for sending interview invitations</p>
                 </div>
               </div>
             </div>
 
             <div className="p-6">
               <div className="mb-6">
-                <div className="flex items-center space-x-3 mb-4">
                   <AlertCircle className="w-5 h-5 text-orange-500" />
                   <p className="text-gray-700 font-medium">Calendar connection required</p>
                 </div>
