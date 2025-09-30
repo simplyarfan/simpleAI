@@ -18,7 +18,8 @@ Outlook OAuth allows the Interview Coordinator to:
 
 ### App Registration Details:
 - **Name:** `Interview Coordinator`
-- **Supported account types:** `Accounts in this organizational directory only (Single tenant)`
+- **Supported account types:** `Accounts in any organizational directory (Any Azure AD directory - Multitenant)`
+  - ⚠️ **Important**: Choose "Multitenant" NOT "Single tenant" to avoid authentication errors
 - **Redirect URI:** 
   - Platform: `Single-page application (SPA)`
   - URI: `https://thesimpleai.netlify.app`

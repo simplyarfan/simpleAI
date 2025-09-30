@@ -24,4 +24,4 @@
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://alcdn.msauth.net https://login.microsoftonline.com; connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://*.vercel.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src https://login.microsoftonline.com;"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://alcdn.msauth.net https://login.microsoftonline.com; connect-src 'self' https://login.microsoftonline.com https://graph.microsoft.com https://*.vercel.app; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; frame-src https://login.microsoftonline.com;"

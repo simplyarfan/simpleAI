@@ -30,18 +30,28 @@ class EmailService {
         await this.loadMSAL();
       }
 
+      // Use tenant-specific endpoint for single-tenant apps
+      // If you get "multi-tenant" error, you need to either:
+      // 1. Change app to multi-tenant in Azure Portal, OR
+      // 2. Use your tenant ID: 'https://login.microsoftonline.com/{your-tenant-id}'
       const msalConfig = {
         auth: {
           clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID,
-          authority: 'https://login.microsoftonline.com/common',
+          authority: 'https://login.microsoftonline.com/organizations',
           redirectUri: window.location.origin
+        },
+        cache: {
+          cacheLocation: 'localStorage',
+          storeAuthStateInCookie: false
         }
       };
 
       const msalInstance = new window.msal.PublicClientApplication(msalConfig);
+      await msalInstance.initialize();
       
       const loginRequest = {
-        scopes: ['https://graph.microsoft.com/Mail.Send', 'https://graph.microsoft.com/User.Read']
+        scopes: ['https://graph.microsoft.com/Mail.Send', 'https://graph.microsoft.com/User.Read'],
+        prompt: 'select_account'
       };
 
       const response = await msalInstance.loginPopup(loginRequest);
