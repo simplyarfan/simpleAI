@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import CalendarConnection from '../../components/CalendarConnection';
+import calendarService from '../../services/calendarService';
+import { toast } from 'react-hot-toast';
 import { 
   Calendar, 
   Clock, 
@@ -22,6 +25,8 @@ export default function ScheduleInterview() {
   const [success, setSuccess] = useState(false);
   const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [candidateData, setCandidateData] = useState(null);
+  const [showCalendarConnection, setShowCalendarConnection] = useState(false);
+  const [connectedCalendars, setConnectedCalendars] = useState({});
 
   const [formData, setFormData] = useState({
     title: '',
@@ -129,6 +134,45 @@ The Hiring Team`
     setError(null);
 
     try {
+      // First, create calendar event
+      const calendars = calendarService.getConnectedCalendars();
+      let calendarEventCreated = false;
+      
+      if (formData.scheduledTime) {
+        const startTime = new Date(formData.scheduledTime).toISOString();
+        const endTime = new Date(new Date(formData.scheduledTime).getTime() + (formData.duration * 60000)).toISOString();
+        
+        const eventDetails = {
+          title: formData.title,
+          description: `Interview with ${formData.candidateName}\n\nType: ${formData.type}\nLocation: ${formData.location}\n\nMeeting Link: ${formData.meetingLink || 'TBD'}`,
+          startTime: startTime,
+          endTime: endTime,
+          attendees: [formData.candidateEmail]
+        };
+
+        // Try to create event in connected calendars
+        if (calendars.google?.connected) {
+          try {
+            await calendarService.createGoogleEvent(eventDetails);
+            calendarEventCreated = true;
+            toast.success('Calendar event created in Google Calendar');
+          } catch (calError) {
+            console.error('Failed to create Google Calendar event:', calError);
+          }
+        }
+        
+        if (calendars.outlook?.connected && !calendarEventCreated) {
+          try {
+            await calendarService.createOutlookEvent(eventDetails);
+            calendarEventCreated = true;
+            toast.success('Calendar event created in Outlook Calendar');
+          } catch (calError) {
+            console.error('Failed to create Outlook Calendar event:', calError);
+          }
+        }
+      }
+
+      // Then, schedule the interview in the backend
       const emailContent = generateEmailContent();
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/schedule`,
@@ -136,13 +180,17 @@ The Hiring Team`
           ...formData,
           emailSubject: emailContent.subject,
           emailBody: emailContent.body,
-          sendEmail: true
+          sendEmail: true,
+          calendarEventCreated: calendarEventCreated
         },
         { headers: getAuthHeaders() }
       );
 
       if (response.data.success) {
         setSuccess(true);
+        if (calendarEventCreated) {
+          toast.success('Interview scheduled and added to calendar!');
+        }
         setTimeout(() => {
           router.push('/interview-coordinator');
         }, 2000);
@@ -159,8 +207,30 @@ The Hiring Team`
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Check if any calendar is connected
+    const calendars = calendarService.getConnectedCalendars();
+    if (!calendarService.hasConnectedCalendar()) {
+      // Show calendar connection modal
+      setShowCalendarConnection(true);
+      return;
+    }
+    
     handlePreviewEmail();
   };
+
+  const handleCalendarConnected = (provider, userInfo) => {
+    setConnectedCalendars(calendarService.getConnectedCalendars());
+    toast.success(`${provider === 'google' ? 'Google' : 'Outlook'} Calendar connected successfully!`);
+    setShowCalendarConnection(false);
+    // After connecting calendar, proceed to email preview
+    handlePreviewEmail();
+  };
+
+  // Load connected calendars on component mount
+  useEffect(() => {
+    setConnectedCalendars(calendarService.getConnectedCalendars());
+  }, []);
 
   if (success) {
     return (
@@ -453,6 +523,14 @@ The Hiring Team`
             </div>
           </div>
         </div>
+      )}
+
+      {/* Calendar Connection Modal */}
+      {showCalendarConnection && (
+        <CalendarConnection
+          onCalendarConnected={handleCalendarConnected}
+          onClose={() => setShowCalendarConnection(false)}
+        />
       )}
     </div>
   );
