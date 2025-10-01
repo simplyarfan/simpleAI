@@ -118,39 +118,45 @@ Make questions specific to the candidate's background and job requirements.`;
   }
 
   /**
-   * Generate ICS calendar invite
+   * Generate ICS calendar invite (updated for new workflow)
    */
-  generateICSInvite(schedule) {
+  generateICSInvite(interviewData) {
     console.log('📧 Generating ICS calendar invite...');
 
-    const startDate = new Date(schedule.interview.scheduled_time);
-    const endDate = new Date(startDate.getTime() + (schedule.interview.duration * 60000));
+    const startDate = new Date(interviewData.scheduledTime);
+    const duration = interviewData.duration || 60;
+    const endDate = new Date(startDate.getTime() + (duration * 60000));
 
     const formatDate = (date) => {
       return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     };
 
+    const escapeText = (text) => {
+      return text.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    };
+
+    const title = `Interview - ${interviewData.candidateName} - ${interviewData.position}`;
+    const description = `Interview with ${interviewData.candidateName}\\n\\nPosition: ${interviewData.position}\\nInterview Type: ${interviewData.interviewType || 'General'}\\nDuration: ${duration} minutes\\nPlatform: ${interviewData.platform || 'Video Call'}${interviewData.meetingLink ? `\\n\\nMeeting Link: ${interviewData.meetingLink}` : ''}`;
+
     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//AI Platform//Interview Coordinator//EN
+PRODID:-//Nexus AI Platform//Interview Coordinator//EN
 CALSCALE:GREGORIAN
-METHOD:REQUEST
+METHOD:PUBLISH
 BEGIN:VEVENT
-UID:${schedule.id}@aiplatform.com
+UID:${interviewData.id}@nexusai.com
 DTSTART:${formatDate(startDate)}
 DTEND:${formatDate(endDate)}
-SUMMARY:${schedule.interview.title}
-DESCRIPTION:Interview with ${schedule.candidate.name}\\n\\nPosition: ${schedule.interview.type}\\nDuration: ${schedule.interview.duration} minutes\\n\\nMeeting Link: ${schedule.interview.meeting_link}
-LOCATION:${schedule.interview.location}
-ORGANIZER:mailto:hr@aiplatform.com
-ATTENDEE;ROLE=REQ-PARTICIPANT;RSVP=TRUE:mailto:${schedule.candidate.email}
-${schedule.panel.map(panelist => `ATTENDEE;ROLE=REQ-PARTICIPANT;RSVP=TRUE:mailto:${panelist.email}`).join('\n')}
+DTSTAMP:${formatDate(new Date())}
+SUMMARY:${escapeText(title)}
+DESCRIPTION:${escapeText(description)}
+LOCATION:${escapeText(interviewData.platform || 'Video Call')}
 STATUS:CONFIRMED
 SEQUENCE:0
 BEGIN:VALARM
 TRIGGER:-PT15M
 ACTION:DISPLAY
-DESCRIPTION:Interview reminder
+DESCRIPTION:Interview starts in 15 minutes
 END:VALARM
 END:VEVENT
 END:VCALENDAR`;

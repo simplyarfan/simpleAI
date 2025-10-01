@@ -1,6 +1,6 @@
 /**
  * INTERVIEW COORDINATOR ROUTES (HR-02)
- * Handles interview scheduling, management, and coordination
+ * Multi-stage interview workflow with availability request and scheduling
  */
 
 const express = require('express');
@@ -42,21 +42,21 @@ router.get('/interviews', authenticateToken, async (req, res) => {
     await database.run(`
       CREATE TABLE IF NOT EXISTS interviews (
         id VARCHAR(255) PRIMARY KEY,
-        candidate_id VARCHAR(255) NOT NULL,
+        candidate_id VARCHAR(255),
         candidate_name VARCHAR(255) NOT NULL,
         candidate_email VARCHAR(255) NOT NULL,
-        job_title VARCHAR(255) NOT NULL,
-        interview_type VARCHAR(50) DEFAULT 'technical',
-        status VARCHAR(50) DEFAULT 'scheduled',
+        position VARCHAR(255) NOT NULL,
+        interview_type VARCHAR(50),
+        status VARCHAR(50) DEFAULT 'awaiting_response',
         scheduled_time TIMESTAMP,
-        duration INTEGER DEFAULT 60,
-        location VARCHAR(255) DEFAULT 'Video Call',
+        duration INTEGER,
+        platform VARCHAR(50),
         meeting_link TEXT,
-        calendly_link TEXT,
         google_form_link TEXT,
-        panel_members TEXT,
-        generated_questions TEXT,
+        availability_request_sent_at TIMESTAMP,
+        scheduled_at TIMESTAMP,
         notes TEXT,
+        outcome VARCHAR(50),
         scheduled_by INTEGER NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -107,23 +107,6 @@ router.get('/interview/:id', authenticateToken, async (req, res) => {
       });
     }
 
-    // Parse JSON fields
-    if (interview.panel_members) {
-      try {
-        interview.panel_members = JSON.parse(interview.panel_members);
-      } catch (e) {
-        interview.panel_members = [];
-      }
-    }
-
-    if (interview.generated_questions) {
-      try {
-        interview.generated_questions = JSON.parse(interview.generated_questions);
-      } catch (e) {
-        interview.generated_questions = null;
-      }
-    }
-
     res.json({
       success: true,
       data: interview,
@@ -141,36 +124,36 @@ router.get('/interview/:id', authenticateToken, async (req, res) => {
 });
 
 /**
- * POST /schedule - Schedule a new interview
+ * POST /request-availability - Stage 1: Send availability request email
  */
-router.post('/schedule', authenticateToken, async (req, res) => {
+router.post('/request-availability', authenticateToken, async (req, res) => {
   try {
-    console.log('📅 Scheduling interview for user:', req.user.id);
+    console.log('📧 Sending availability request for user:', req.user.id);
     
     const {
       candidateId,
       candidateName,
       candidateEmail,
-      jobTitle,
-      interviewType,
-      scheduledTime,
-      duration,
-      location,
-      meetingLink,
-      calendlyLink,
+      position,
       googleFormLink,
-      panelMembers,
-      notes,
-      sendEmail,
-      jobDescription,
-      candidateData
+      emailSubject,
+      emailContent,
+      ccEmails,
+      bccEmails
     } = req.body;
 
     // Validation
-    if (!candidateName || !candidateEmail || !jobTitle) {
+    if (!candidateName || !candidateEmail || !position) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields: candidateName, candidateEmail, jobTitle'
+        message: 'Missing required fields: candidateName, candidateEmail, position'
+      });
+    }
+
+    if (!OutlookEmailService) {
+      return res.status(503).json({
+        success: false,
+        message: 'Email service not available. Please connect your Outlook account.'
       });
     }
 
@@ -179,146 +162,181 @@ router.post('/schedule', authenticateToken, async (req, res) => {
     // Generate interview ID
     const interviewId = `interview_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-    // Generate interview questions using AI
-    let generatedQuestions = null;
-    if (InterviewCoordinatorService) {
-      try {
-        generatedQuestions = await InterviewCoordinatorService.generateInterviewQuestions(
-          jobDescription || `Position: ${jobTitle}`,
-          candidateData || { name: candidateName },
-          interviewType || 'technical'
-        );
-      } catch (error) {
-        console.error('Question generation failed:', error.message);
-      }
-    }
-
-    // Prepare panel members data
-    const panelMembersData = panelMembers || [];
-    const panelEmails = panelMembersData.map(p => p.email).filter(Boolean);
-
-    // Insert interview record
+    // Insert interview record with "awaiting_response" status
     await database.run(`
       INSERT INTO interviews (
-        id, candidate_id, candidate_name, candidate_email, job_title,
-        interview_type, status, scheduled_time, duration, location,
-        meeting_link, calendly_link, google_form_link, panel_members,
-        generated_questions, notes, scheduled_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, candidate_id, candidate_name, candidate_email, position,
+        status, google_form_link, availability_request_sent_at, scheduled_by
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       interviewId,
-      candidateId || interviewId,
+      candidateId || null,
       candidateName,
       candidateEmail,
-      jobTitle,
-      interviewType || 'technical',
-      sendEmail ? 'invitation_sent' : 'draft',
-      scheduledTime || null,
-      duration || 60,
-      location || 'Video Call',
-      meetingLink || null,
-      calendlyLink || null,
+      position,
+      'awaiting_response',
       googleFormLink || null,
-      JSON.stringify(panelMembersData),
-      generatedQuestions ? JSON.stringify(generatedQuestions) : null,
-      notes || '',
+      new Date().toISOString(),
       req.user.id
     ]);
 
-    // Generate ICS invite
-    let icsContent = null;
-    if (scheduledTime && InterviewCoordinatorService) {
-      icsContent = InterviewCoordinatorService.generateICSInvite({
-        id: interviewId,
-        candidateName,
+    // Send availability request email
+    try {
+      await OutlookEmailService.sendAvailabilityRequest(
+        req.user.id,
         candidateEmail,
-        jobTitle,
-        interviewType: interviewType || 'technical',
-        scheduledTime,
-        duration: duration || 60,
-        location: location || 'Video Call',
-        meetingLink: meetingLink || '',
-        panelMembers: panelMembersData,
-        calendlyLink,
-        googleFormLink
+        {
+          candidateName,
+          position,
+          googleFormLink,
+          customSubject: emailSubject,
+          customContent: emailContent,
+          ccEmails: ccEmails || [],
+          bccEmails: bccEmails || []
+        }
+      );
+
+      console.log('✅ Availability request email sent successfully');
+
+      res.json({
+        success: true,
+        data: {
+          interviewId,
+          status: 'awaiting_response',
+          message: 'Availability request sent successfully'
+        },
+        message: 'Availability request sent successfully'
+      });
+
+    } catch (emailError) {
+      console.error('❌ Failed to send email:', emailError.message);
+      
+      // Delete the interview record since email failed
+      await database.run('DELETE FROM interviews WHERE id = ?', [interviewId]);
+      
+      throw new Error(`Failed to send email: ${emailError.message}`);
+    }
+
+  } catch (error) {
+    console.error('Request availability error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send availability request',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * POST /schedule-interview - Stage 2: Schedule interview after candidate responds
+ */
+router.post('/schedule-interview', authenticateToken, async (req, res) => {
+  try {
+    console.log('📅 Scheduling interview for user:', req.user.id);
+    
+    const {
+      interviewId,
+      interviewType,
+      scheduledTime,
+      duration,
+      platform,
+      meetingLink,
+      notes,
+      emailSubject,
+      emailContent,
+      ccEmails,
+      bccEmails
+    } = req.body;
+
+    // Validation
+    if (!interviewId || !scheduledTime || !platform) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: interviewId, scheduledTime, platform'
       });
     }
 
-    // Send email invitation if requested
+    await database.connect();
+
+    // Verify interview exists and belongs to user
+    const interview = await database.get(`
+      SELECT * FROM interviews 
+      WHERE id = ? AND scheduled_by = ?
+    `, [interviewId, req.user.id]);
+
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview not found'
+      });
+    }
+
+    // Update interview with schedule details
+    await database.run(`
+      UPDATE interviews 
+      SET interview_type = ?,
+          scheduled_time = ?,
+          duration = ?,
+          platform = ?,
+          meeting_link = ?,
+          notes = ?,
+          status = 'scheduled',
+          scheduled_at = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [
+      interviewType || 'technical',
+      scheduledTime,
+      duration || 60,
+      platform,
+      meetingLink || null,
+      notes || null,
+      new Date().toISOString(),
+      interviewId
+    ]);
+
+    // Generate ICS calendar file
+    let icsContent = null;
+    if (InterviewCoordinatorService) {
+      icsContent = InterviewCoordinatorService.generateICSInvite({
+        id: interviewId,
+        candidateName: interview.candidate_name,
+        candidateEmail: interview.candidate_email,
+        position: interview.position,
+        interviewType: interviewType || 'technical',
+        scheduledTime,
+        duration: duration || 60,
+        platform,
+        meetingLink: meetingLink || ''
+      });
+    }
+
+    // Send confirmation email with calendar invite
     let emailSent = false;
-    if (sendEmail && scheduledTime && OutlookEmailService) {
+    if (OutlookEmailService) {
       try {
-        await OutlookEmailService.sendInterviewInvitation(
+        await OutlookEmailService.sendInterviewConfirmation(
           req.user.id,
-          candidateEmail,
+          interview.candidate_email,
           {
-            candidateName,
-            jobTitle,
+            candidateName: interview.candidate_name,
+            position: interview.position,
             interviewType: interviewType || 'technical',
             scheduledTime,
             duration: duration || 60,
-            location: location || 'Video Call',
+            platform,
             meetingLink: meetingLink || '',
-            panelMembers: panelMembersData,
-            panelEmails,
-            calendlyLink,
-            googleFormLink
+            customSubject: emailSubject,
+            customContent: emailContent,
+            ccEmails: ccEmails || [],
+            bccEmails: bccEmails || []
           },
           icsContent
         );
         emailSent = true;
-        console.log('✅ Interview invitation email sent successfully');
+        console.log('✅ Interview confirmation email sent successfully');
       } catch (error) {
         console.error('❌ Failed to send email:', error.message);
-      }
-    }
-
-    // Generate reminders if scheduled
-    if (scheduledTime && InterviewCoordinatorService) {
-      try {
-        const reminders = InterviewCoordinatorService.generateReminders(
-          interviewId,
-          scheduledTime,
-          candidateEmail,
-          panelEmails
-        );
-
-        // Create reminders table if needed
-        await database.run(`
-          CREATE TABLE IF NOT EXISTS interview_reminders (
-            id VARCHAR(255) PRIMARY KEY,
-            interview_id VARCHAR(255) NOT NULL,
-            reminder_type VARCHAR(50) NOT NULL,
-            recipient_email VARCHAR(255) NOT NULL,
-            message TEXT NOT NULL,
-            send_at TIMESTAMP NOT NULL,
-            sent BOOLEAN DEFAULT FALSE,
-            sent_at TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (interview_id) REFERENCES interviews(id) ON DELETE CASCADE
-          )
-        `);
-
-        // Insert reminders
-        for (const reminder of reminders) {
-          await database.run(`
-            INSERT INTO interview_reminders 
-            (id, interview_id, reminder_type, recipient_email, message, send_at, sent)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-          `, [
-            reminder.id,
-            reminder.interview_id,
-            reminder.reminder_type,
-            reminder.recipient_email,
-            reminder.message,
-            reminder.send_at,
-            false
-          ]);
-        }
-
-        console.log(`✅ Created ${reminders.length} reminders`);
-      } catch (error) {
-        console.error('❌ Failed to create reminders:', error.message);
       }
     }
 
@@ -327,10 +345,11 @@ router.post('/schedule', authenticateToken, async (req, res) => {
       data: {
         interviewId,
         emailSent,
-        hasQuestions: !!generatedQuestions,
-        message: sendEmail 
-          ? (emailSent ? 'Interview scheduled and invitation sent' : 'Interview scheduled but email failed')
-          : 'Interview draft saved'
+        icsGenerated: !!icsContent,
+        status: 'scheduled',
+        message: emailSent 
+          ? 'Interview scheduled and confirmation sent' 
+          : 'Interview scheduled but email failed'
       },
       message: 'Interview scheduled successfully'
     });
@@ -346,93 +365,37 @@ router.post('/schedule', authenticateToken, async (req, res) => {
 });
 
 /**
- * PUT /interview/:id - Update interview
+ * PUT /interview/:id/status - Update interview status (scheduled/completed/selected/rejected)
  */
-router.put('/interview/:id', authenticateToken, async (req, res) => {
+router.put('/interview/:id/status', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, notes, scheduledTime, duration, location, meetingLink } = req.body;
+    const { status, outcome, notes } = req.body;
 
-    await database.connect();
-
-    // Verify ownership
-    const interview = await database.get(`
-      SELECT * FROM interviews WHERE id = ? AND scheduled_by = ?
-    `, [id, req.user.id]);
-
-    if (!interview) {
-      return res.status(404).json({
-        success: false,
-        message: 'Interview not found'
-      });
-    }
-
-    // Build update query dynamically
-    const updates = [];
-    const values = [];
-
-    if (status !== undefined) {
-      updates.push('status = ?');
-      values.push(status);
-    }
-    if (notes !== undefined) {
-      updates.push('notes = ?');
-      values.push(notes);
-    }
-    if (scheduledTime !== undefined) {
-      updates.push('scheduled_time = ?');
-      values.push(scheduledTime);
-    }
-    if (duration !== undefined) {
-      updates.push('duration = ?');
-      values.push(duration);
-    }
-    if (location !== undefined) {
-      updates.push('location = ?');
-      values.push(location);
-    }
-    if (meetingLink !== undefined) {
-      updates.push('meeting_link = ?');
-      values.push(meetingLink);
-    }
-
-    if (updates.length === 0) {
+    if (!status) {
       return res.status(400).json({
         success: false,
-        message: 'No fields to update'
+        message: 'Status is required'
       });
     }
 
-    updates.push('updated_at = CURRENT_TIMESTAMP');
-    values.push(id);
+    const validStatuses = ['awaiting_response', 'scheduled', 'completed', 'cancelled'];
+    const validOutcomes = ['selected', 'rejected', null];
 
-    await database.run(`
-      UPDATE interviews 
-      SET ${updates.join(', ')}
-      WHERE id = ?
-    `, values);
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status. Must be one of: ${validStatuses.join(', ')}`
+      });
+    }
 
-    res.json({
-      success: true,
-      message: 'Interview updated successfully'
-    });
+    if (outcome && !validOutcomes.includes(outcome)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid outcome. Must be one of: selected, rejected, or null`
+      });
+    }
 
-  } catch (error) {
-    console.error('Update interview error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update interview',
-      error: error.message
-    });
-  }
-});
-
-/**
- * DELETE /interview/:id - Delete interview
- */
-router.delete('/interview/:id', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params;
     await database.connect();
 
     // Verify ownership
@@ -447,19 +410,26 @@ router.delete('/interview/:id', authenticateToken, async (req, res) => {
       });
     }
 
-    // Delete interview (reminders will cascade delete)
-    await database.run('DELETE FROM interviews WHERE id = ?', [id]);
+    // Update status
+    await database.run(`
+      UPDATE interviews 
+      SET status = ?,
+          outcome = ?,
+          notes = COALESCE(?, notes),
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `, [status, outcome || null, notes || null, id]);
 
     res.json({
       success: true,
-      message: 'Interview deleted successfully'
+      message: 'Interview status updated successfully'
     });
 
   } catch (error) {
-    console.error('Delete interview error:', error);
+    console.error('Update status error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete interview',
+      message: 'Failed to update interview status',
       error: error.message
     });
   }
@@ -471,6 +441,7 @@ router.delete('/interview/:id', authenticateToken, async (req, res) => {
 router.get('/calendar/:id/ics', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
+    const { type } = req.query; // google, outlook, or apple
     
     await database.connect();
     
@@ -497,33 +468,20 @@ router.get('/calendar/:id/ics', authenticateToken, async (req, res) => {
       throw new Error('Interview Coordinator Service not available');
     }
 
-    // Parse panel members
-    let panelMembers = [];
-    if (interview.panel_members) {
-      try {
-        panelMembers = JSON.parse(interview.panel_members);
-      } catch (e) {
-        panelMembers = [];
-      }
-    }
-
     const icsContent = InterviewCoordinatorService.generateICSInvite({
       id: interview.id,
       candidateName: interview.candidate_name,
       candidateEmail: interview.candidate_email,
-      jobTitle: interview.job_title,
+      position: interview.position,
       interviewType: interview.interview_type,
       scheduledTime: interview.scheduled_time,
       duration: interview.duration,
-      location: interview.location,
-      meetingLink: interview.meeting_link,
-      panelMembers,
-      calendlyLink: interview.calendly_link,
-      googleFormLink: interview.google_form_link
+      platform: interview.platform,
+      meetingLink: interview.meeting_link
     });
 
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-    res.setHeader('Content-Disposition', `attachment; filename="interview-${id}.ics"`);
+    res.setHeader('Content-Disposition', `attachment; filename="interview-${interview.candidate_name.replace(/\s+/g, '-')}.ics"`);
     res.send(icsContent);
 
   } catch (error) {
@@ -537,25 +495,16 @@ router.get('/calendar/:id/ics', authenticateToken, async (req, res) => {
 });
 
 /**
- * POST /interview/:id/send-reminder - Manually send a reminder
+ * DELETE /interview/:id - Delete/cancel interview
  */
-router.post('/interview/:id/send-reminder', authenticateToken, async (req, res) => {
+router.delete('/interview/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { reminderType } = req.body;
-
-    if (!OutlookEmailService) {
-      return res.status(503).json({
-        success: false,
-        message: 'Email service not available'
-      });
-    }
-
     await database.connect();
 
+    // Verify ownership
     const interview = await database.get(`
-      SELECT * FROM interviews
-      WHERE id = ? AND scheduled_by = ?
+      SELECT * FROM interviews WHERE id = ? AND scheduled_by = ?
     `, [id, req.user.id]);
 
     if (!interview) {
@@ -565,42 +514,105 @@ router.post('/interview/:id/send-reminder', authenticateToken, async (req, res) 
       });
     }
 
-    // Parse panel members
-    let panelMembers = [];
-    if (interview.panel_members) {
-      try {
-        panelMembers = JSON.parse(interview.panel_members);
-      } catch (e) {
-        panelMembers = [];
-      }
-    }
-
-    // Send reminder to candidate
-    await OutlookEmailService.sendInterviewReminder(
-      req.user.id,
-      interview.candidate_email,
-      {
-        candidateName: interview.candidate_name,
-        jobTitle: interview.job_title,
-        interviewType: interview.interview_type,
-        scheduledTime: interview.scheduled_time,
-        duration: interview.duration,
-        location: interview.location,
-        meetingLink: interview.meeting_link
-      },
-      reminderType || '2h_before'
-    );
+    // Delete interview
+    await database.run('DELETE FROM interviews WHERE id = ?', [id]);
 
     res.json({
       success: true,
-      message: 'Reminder sent successfully'
+      message: 'Interview cancelled successfully'
     });
 
   } catch (error) {
-    console.error('Send reminder error:', error);
+    console.error('Delete interview error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to send reminder',
+      message: 'Failed to cancel interview',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /email-template/availability - Get default availability request template
+ */
+router.get('/email-template/availability', authenticateToken, async (req, res) => {
+  try {
+    const { candidateName, position } = req.query;
+    
+    const template = {
+      subject: `Interview Opportunity - ${position}`,
+      content: `Dear ${candidateName},
+
+We are pleased to inform you that we would like to invite you for an interview for the ${position} position at our company.
+
+Before we proceed with scheduling, we would like to understand your availability. Please fill out the following form with your available time slots:
+
+[Google Forms Link will be inserted here]
+
+Additionally, please let us know your preferred interview times by replying to this email.
+
+We look forward to speaking with you soon.
+
+Best regards,
+[Your Company Name]`
+    };
+
+    res.json({
+      success: true,
+      data: template,
+      message: 'Email template retrieved successfully'
+    });
+
+  } catch (error) {
+    console.error('Get email template error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get email template',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /email-template/confirmation - Get default confirmation email template
+ */
+router.get('/email-template/confirmation', authenticateToken, async (req, res) => {
+  try {
+    const { candidateName, position, scheduledTime, duration, platform } = req.query;
+    
+    const template = {
+      subject: `Interview Scheduled - ${position}`,
+      content: `Dear ${candidateName},
+
+Your interview for the ${position} position has been confirmed.
+
+Interview Details:
+• Date & Time: ${scheduledTime}
+• Duration: ${duration} minutes
+• Platform: ${platform}
+• Meeting Link: [Will be inserted]
+
+Please add this interview to your calendar using the attached calendar file or the buttons below.
+
+If you need to reschedule, please let us know as soon as possible.
+
+We look forward to meeting you!
+
+Best regards,
+[Your Company Name]`
+    };
+
+    res.json({
+      success: true,
+      data: template,
+      message: 'Email template retrieved successfully'
+    });
+
+  } catch (error) {
+    console.error('Get email template error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get email template',
       error: error.message
     });
   }

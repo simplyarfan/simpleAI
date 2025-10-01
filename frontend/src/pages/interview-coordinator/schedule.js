@@ -97,33 +97,29 @@ ${user?.email || ''}`;
     try {
       setLoading(true);
 
-      // Prepare interview data
-      const interviewData = {
+      // Prepare availability request data
+      const requestData = {
         candidateName: formData.candidateName,
         candidateEmail: formData.candidateEmail,
-        jobTitle: formData.title,
-        interviewType: formData.type,
-        scheduledTime: formData.scheduledTime || null,
-        duration: formData.duration,
-        location: formData.location,
-        meetingLink: formData.meetingLink,
-        notes: formData.notes,
-        sendEmail: true
+        position: formData.title,
+        googleFormLink: formData.meetingLink, // Repurpose this field
+        emailSubject: `Interview Opportunity - ${formData.title}`,
+        emailContent: `Dear ${formData.candidateName},\n\nWe would like to invite you for an interview for the ${formData.title} position.\n\nPlease let us know your availability.\n\nBest regards`
       };
 
-      // Create interview record
+      // Send availability request
       const headers = getAuthHeaders();
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/schedule`,
-        interviewData,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/request-availability`,
+        requestData,
         { headers }
       );
 
       if (response.data?.success) {
-        toast.success('Interview scheduled and invitation sent successfully!');
+        toast.success('Availability request sent successfully!');
         router.push('/interview-coordinator');
       } else {
-        toast.error('Failed to schedule interview');
+        toast.error('Failed to send availability request');
       }
     } catch (error) {
       console.error('Error scheduling interview:', error);
