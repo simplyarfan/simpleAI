@@ -146,8 +146,12 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
     // Generate interview ID
     const interviewId = `interview_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     
+    // Generate candidate ID if not provided (using email as unique identifier)
+    const generatedCandidateId = candidateId || `candidate_${candidateEmail.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`;
+    
     console.log('📝 Preparing to insert interview:', {
       interviewId,
+      candidateId: generatedCandidateId,
       candidateName,
       candidateEmail,
       position,
@@ -162,7 +166,7 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `, [
       interviewId,
-      candidateId || null,
+      generatedCandidateId,
       candidateName,
       candidateEmail,
       position,

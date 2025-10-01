@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { Mail, MessageSquare, MapPin, Phone } from 'lucide-react';
-import DotGrid from '../components/backgrounds/DotGrid';
+import StaticDotGrid from '../components/backgrounds/StaticDotGrid';
 import GradientText from '../components/text/GradientText';
 
 export default function Contact() {
@@ -28,13 +28,11 @@ export default function Contact() {
       </Head>
 
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
-        {/* Dot Grid Background */}
-        <DotGrid 
-          dotSize={1.5}
+        {/* Static Dot Grid Background */}
+        <StaticDotGrid 
+          dotSize={1}
           dotColor="#f97316"
           spacing={40}
-          glowRadius={200}
-          maxGlowSize={6}
         />
 
         {/* Navigation */}
@@ -206,8 +204,12 @@ export default function Contact() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
-                      whileHover={{ scale: 1.02, x: 10 }}
-                      className="flex items-start space-x-4 bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-orange-500/50 transition-all duration-300"
+                      whileHover={{ 
+                        scale: 1.02, 
+                        x: 10,
+                        transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
+                      }}
+                      className="flex items-start space-x-4 bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/20 transition-all duration-300 cursor-pointer"
                     >
                       <div className={`w-12 h-12 bg-gradient-to-br ${item.gradient} rounded-xl flex items-center justify-center flex-shrink-0`}>
                         <item.icon className="w-6 h-6 text-white" />
