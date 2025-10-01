@@ -2,9 +2,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Users, BarChart3, Sparkles, Menu, X } from 'lucide-react';
+import { Brain, Users, BarChart3, Sparkles, Menu, X, Star } from 'lucide-react';
 import Particles from '../components/reactbits/Particles';
 import BlurText from '../components/reactbits/BlurText';
+import SplitText from '../components/reactbits/SplitText';
+import Cubes from '../components/reactbits/Cubes';
+import InfiniteScroll from '../components/reactbits/InfiniteScroll';
 import GradientText from '../components/text/GradientText';
 
 export default function LandingPage() {
@@ -97,7 +100,11 @@ export default function LandingPage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-[0.85] tracking-tight"
               >
-                <span className="text-white">Stop hiring expensive</span>
+                <SplitText 
+                  text="Stop hiring expensive"
+                  className="text-white text-5xl md:text-7xl lg:text-8xl"
+                  delay={50}
+                />
                 <br />
                 <GradientText 
                   colors={['#ef4444', '#f97316', '#eab308', '#ef4444']}
@@ -261,6 +268,66 @@ export default function LandingPage() {
               <div className="text-center">
                 <p className="text-gray-500 text-lg font-medium">Join 10,000+ professionals who stopped playing fair</p>
               </div>
+            </div>
+          </section>
+
+          {/* Testimonials with InfiniteScroll */}
+          <section className="py-20 bg-white/5 backdrop-blur-sm overflow-hidden">
+            <div className="max-w-7xl mx-auto px-6 mb-12">
+              <div className="text-center">
+                <h2 className="text-4xl font-bold text-white mb-4">Loved by Teams Worldwide</h2>
+                <p className="text-lg text-gray-400">See what our customers are saying</p>
+              </div>
+            </div>
+            
+            <InfiniteScroll speed={20}>
+              {[
+                { name: "Sarah Chen", role: "HR Director", company: "TechCorp", text: "Cut our hiring time by 70%. The CV Intelligence is incredible!", rating: 5 },
+                { name: "Marcus Johnson", role: "CFO", company: "FinanceHub", text: "Saved $100K in the first month. ROI was immediate.", rating: 5 },
+                { name: "Emily Rodriguez", role: "Sales VP", company: "GrowthCo", text: "Our lead generation increased 3x. Game changer!", rating: 5 },
+                { name: "David Kim", role: "CEO", company: "StartupXYZ", text: "Best investment we made this year. Highly recommend!", rating: 5 },
+                { name: "Lisa Wang", role: "Operations", company: "LogiTech", text: "The automation is seamless. Our team loves it!", rating: 5 },
+                { name: "James Brown", role: "CTO", company: "DevOps Inc", text: "Integration was smooth. Support is fantastic!", rating: 5 }
+              ].map((testimonial, index) => (
+                <div key={index} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 min-w-[350px] mx-4">
+                  <div className="flex items-center gap-1 mb-3">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-orange-500 text-orange-500" />
+                    ))}
+                  </div>
+                  <p className="text-gray-300 mb-4 italic">"{testimonial.text}"</p>
+                  <div>
+                    <p className="text-white font-semibold">{testimonial.name}</p>
+                    <p className="text-gray-400 text-sm">{testimonial.role} at {testimonial.company}</p>
+                  </div>
+                </div>
+              ))}
+            </InfiniteScroll>
+          </section>
+
+          {/* Tech Showcase with Cubes */}
+          <section className="py-32 relative overflow-hidden bg-gradient-to-b from-black to-gray-900">
+            <div className="absolute inset-0 flex items-center justify-center opacity-30">
+              <Cubes 
+                gridSize={6}
+                maxAngle={45}
+                speed={0.5}
+              />
+            </div>
+            <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+                  Built with <GradientText colors={['#ef4444', '#f97316']} className="text-4xl md:text-5xl">cutting-edge AI</GradientText>
+                </h2>
+                <p className="text-xl text-gray-400 mb-8">
+                  Powered by the latest advances in machine learning, natural language processing, and computer vision.
+                </p>
+              </motion.div>
             </div>
           </section>
 

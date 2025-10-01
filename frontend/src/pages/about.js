@@ -6,6 +6,7 @@ import { Brain, Users, BarChart3, Rocket, Target, Award, TrendingUp } from 'luci
 import DotGrid from '../components/backgrounds/DotGrid';
 import ProfileCard from '../components/reactbits/ProfileCard';
 import RotatingText from '../components/reactbits/RotatingText';
+import LogoLoop from '../components/reactbits/LogoLoop';
 import GradientText from '../components/text/GradientText';
 
 export default function About() {
@@ -233,6 +234,30 @@ export default function About() {
                   ))}
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Tech Stack Section */}
+          <section className="py-20 bg-white/5 backdrop-blur-sm">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-bold text-white mb-4">Powered By</h2>
+                <p className="text-lg text-gray-400">Cutting-edge technologies we use</p>
+              </div>
+
+              <LogoLoop 
+                logos={[
+                  { name: 'React', src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg' },
+                  { name: 'Next.js', src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg' },
+                  { name: 'Node.js', src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg' },
+                  { name: 'Python', src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg' },
+                  { name: 'TensorFlow', src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg' },
+                  { name: 'PostgreSQL', src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg' },
+                  { name: 'Docker', src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg' },
+                  { name: 'AWS', src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg' }
+                ]}
+                speed={30}
+              />
             </div>
           </section>
 
