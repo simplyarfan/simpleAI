@@ -2,8 +2,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Users, BarChart3, Sparkles } from 'lucide-react';
-import Aurora from '../components/reactbits/Aurora';
+import { Brain, Users, BarChart3, Sparkles, Menu, X } from 'lucide-react';
+import Threads from '../components/reactbits/Threads';
+import BlurText from '../components/reactbits/BlurText';
+import StaggeredMenu from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
 export default function LandingPage() {
@@ -17,9 +19,13 @@ export default function LandingPage() {
       </Head>
 
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
-        {/* Aurora Background - Stunning gradient animation */}
+        {/* Threads Background - Animated thread lines */}
         <div className="fixed inset-0 z-0">
-          <Aurora />
+          <Threads 
+            quantity={30}
+            color="#f97316"
+            speed={0.5}
+          />
         </div>
 
 
@@ -242,7 +248,9 @@ export default function LandingPage() {
                     <div className={`text-sm font-semibold bg-gradient-to-r ${useCase.color} bg-clip-text text-transparent mb-3`}>
                       {useCase.subtitle}
                     </div>
-                    <p className="text-gray-400 text-sm leading-relaxed mb-4">{useCase.description}</p>
+                    <div className="text-gray-400 text-sm leading-relaxed mb-4">
+                      <BlurText text={useCase.description} delay={50} />
+                    </div>
                     <div className="text-xs font-bold text-orange-400 bg-orange-400/10 px-3 py-1 rounded-full inline-block">
                       {useCase.benefit}
                     </div>

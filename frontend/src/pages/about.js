@@ -3,7 +3,9 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { Brain, Users, BarChart3, Rocket, Target, Award, TrendingUp } from 'lucide-react';
-import DotGrid from '../components/backgrounds/DotGrid';
+import Threads from '../components/reactbits/Threads';
+import ProfileCard from '../components/reactbits/ProfileCard';
+import RotatingText from '../components/reactbits/RotatingText';
 import GradientText from '../components/text/GradientText';
 
 export default function About() {
@@ -15,15 +17,14 @@ export default function About() {
       </Head>
 
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
-        {/* Dot Grid Background */}
-        <DotGrid 
-          dotSize={1.5}
-          dotColor="#f97316"
-          backgroundColor="transparent"
-          spacing={40}
-          glowRadius={200}
-          maxGlowSize={6}
-        />
+        {/* Threads Background */}
+        <div className="fixed inset-0 z-0">
+          <Threads 
+            quantity={25}
+            color="#f97316"
+            speed={0.3}
+          />
+        </div>
 
 
 
@@ -67,12 +68,10 @@ export default function About() {
                 <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
                   Building the Future of
                   <br />
-                  <GradientText 
-                    colors={['#ef4444', '#f97316', '#eab308']}
-                    className="text-5xl md:text-6xl"
-                  >
-                    Artificial Intelligence
-                  </GradientText>
+                  <RotatingText 
+                    words={['Artificial Intelligence', 'Business Automation', 'Smart Solutions', 'Digital Innovation']}
+                    className="text-5xl md:text-6xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent"
+                  />
                 </h1>
                 <p className="text-xl text-gray-400 max-w-4xl mx-auto">
                   We're on a mission to make advanced AI accessible to every business, empowering innovation and driving positive change across industries.
@@ -232,6 +231,58 @@ export default function About() {
                     </motion.div>
                   ))}
                 </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Team Section */}
+          <section className="py-20">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-bold text-white mb-4">Meet Our Team</h2>
+                <p className="text-lg text-gray-400">The brilliant minds behind Nexus AI</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                {[
+                  {
+                    name: "Sarah Chen",
+                    role: "CEO & Co-Founder",
+                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
+                    bio: "Former AI researcher at Google. PhD in Machine Learning from MIT.",
+                    social: { twitter: "#", linkedin: "#", github: "#" }
+                  },
+                  {
+                    name: "Marcus Rodriguez",
+                    role: "CTO & Co-Founder",
+                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus",
+                    bio: "Ex-Tesla AI Lead. 15+ years in autonomous systems and deep learning.",
+                    social: { twitter: "#", linkedin: "#", github: "#" }
+                  },
+                  {
+                    name: "Aisha Patel",
+                    role: "Head of Product",
+                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aisha",
+                    bio: "Product visionary from Microsoft. Specialized in AI-powered SaaS.",
+                    social: { twitter: "#", linkedin: "#", github: "#" }
+                  }
+                ].map((member, index) => (
+                  <motion.div
+                    key={member.name}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.2 }}
+                    viewport={{ once: true }}
+                  >
+                    <ProfileCard
+                      name={member.name}
+                      role={member.role}
+                      image={member.image}
+                      bio={member.bio}
+                      className="h-full"
+                    />
+                  </motion.div>
+                ))}
               </div>
             </div>
           </section>
