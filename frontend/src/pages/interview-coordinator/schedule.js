@@ -101,8 +101,8 @@ ${user?.email || ''}`;
       const interviewData = {
         candidateName: formData.candidateName,
         candidateEmail: formData.candidateEmail,
-        title: formData.title,
-        type: formData.type,
+        jobTitle: formData.title,
+        interviewType: formData.type,
         scheduledTime: formData.scheduledTime || null,
         duration: formData.duration,
         location: formData.location,
