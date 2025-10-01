@@ -124,18 +124,43 @@ class EmailService {
 
       console.log('🔐 Starting Outlook OAuth...');
       
-      // Save our auth tokens before MSAL popup (in case MSAL clears storage)
-      const savedAccessToken = typeof window !== 'undefined' ? 
-        document.cookie.split('; ').find(row => row.startsWith('accessToken='))?.split('=')[1] : null;
-      const savedRefreshToken = typeof window !== 'undefined' ? 
-        document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1] : null;
+      // Import Cookies library to properly save/restore tokens
+      const Cookies = (await import('js-cookie')).default;
+      
+      // Save our auth tokens before MSAL popup (MSAL popup WILL clear them!)
+      const savedAccessToken = Cookies.get('accessToken');
+      const savedRefreshToken = Cookies.get('refreshToken');
+      
+      console.log('💾 Saving auth tokens before Outlook OAuth:', {
+        hasAccessToken: !!savedAccessToken,
+        hasRefreshToken: !!savedRefreshToken
+      });
       
       const response = await msalInstance.loginPopup(loginRequest);
       
-      // Restore our auth tokens after MSAL popup (in case they were cleared)
-      if (savedAccessToken && typeof window !== 'undefined') {
+      // CRITICAL: Restore our auth tokens after MSAL popup (they WILL be cleared!)
+      if (savedAccessToken && savedRefreshToken) {
         console.log('🔒 Restoring auth tokens after Outlook login');
-        // Tokens are in cookies, they should persist, but log for debugging
+        
+        const isProduction = window.location.hostname !== 'localhost' && 
+          window.location.hostname !== '127.0.0.1';
+        
+        const cookieOptions = {
+          expires: 30,
+          path: '/',
+          secure: isProduction,
+          sameSite: isProduction ? 'none' : 'lax'
+        };
+        
+        Cookies.set('accessToken', savedAccessToken, cookieOptions);
+        Cookies.set('refreshToken', savedRefreshToken, {
+          ...cookieOptions,
+          expires: 90
+        });
+        
+        console.log('✅ Auth tokens restored successfully');
+      } else {
+        console.error('❌ Could not restore auth tokens - they were not saved properly');
       }
       
       this.outlookAuth = response;
