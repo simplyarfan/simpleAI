@@ -141,9 +141,18 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
     }
 
     await database.connect();
+    console.log('✅ Database connected');
 
     // Generate interview ID
     const interviewId = `interview_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    
+    console.log('📝 Preparing to insert interview:', {
+      interviewId,
+      candidateName,
+      candidateEmail,
+      position,
+      userId: req.user.id
+    });
 
     // Insert interview record with "awaiting_response" status
     await database.run(`
@@ -162,6 +171,8 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
       new Date().toISOString(),
       req.user.id
     ]);
+    
+    console.log('✅ Interview record inserted successfully');
 
     // For now, skip email sending and just create the record
     // TODO: Implement proper email integration later
@@ -178,11 +189,24 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Request availability error:', error);
+    console.error('❌ Request availability error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      userId: req.user?.id,
+      body: req.body
+    });
+    
     res.status(500).json({
       success: false,
       message: 'Failed to send availability request',
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? {
+        stack: error.stack,
+        code: error.code
+      } : undefined
     });
   }
 });
