@@ -17,8 +17,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Get the API base URL
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
+  // Get the API base URL and remove /api suffix if present
+  let API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
+  if (API_BASE.endsWith('/api')) {
+    console.warn('⚠️ [AUTH] API_BASE had /api suffix, removing it');
+    API_BASE = API_BASE.slice(0, -4);
+  }
   
   // Development logging helper
   const isDev = process.env.NODE_ENV === 'development';

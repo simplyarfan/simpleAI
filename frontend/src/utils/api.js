@@ -6,24 +6,32 @@ import jwtDecode from 'jwt-decode';
 
 // Environment-based API URL configuration
 const getApiBaseUrl = () => {
+  let baseUrl;
+  
   // Use environment variable if available
   if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
-  }
-  
-  if (typeof window === 'undefined') {
+    baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  } else if (typeof window === 'undefined') {
     // Server-side rendering fallback
-    return 'https://thesimpleai.vercel.app';
+    baseUrl = 'https://thesimpleai.vercel.app';
+  } else {
+    // Client-side fallback
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      baseUrl = 'http://localhost:5000';
+    } else {
+      // Production fallback
+      baseUrl = 'https://thesimpleai.vercel.app';
+    }
   }
   
-  // Client-side fallback
-  const hostname = window.location.hostname;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:5000';
+  // CRITICAL FIX: Remove trailing /api if it exists (to prevent /api/api duplication)
+  if (baseUrl.endsWith('/api')) {
+    console.warn('⚠️ API_BASE_URL had /api suffix, removing it to prevent duplication');
+    baseUrl = baseUrl.slice(0, -4);
   }
   
-  // Production fallback
-  return 'https://thesimpleai.vercel.app';
+  return baseUrl;
 };
 
 const API_BASE_URL = getApiBaseUrl();

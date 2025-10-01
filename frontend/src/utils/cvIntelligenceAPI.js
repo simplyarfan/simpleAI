@@ -1,11 +1,17 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
+let API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
+
+// Remove /api suffix if present to prevent duplication
+if (API_BASE_URL.endsWith('/api')) {
+  console.warn('⚠️ [CV-API] API_BASE_URL had /api suffix, removing it');
+  API_BASE_URL = API_BASE_URL.slice(0, -4);
+}
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/cv-intelligence`,
+  baseURL: `${API_BASE_URL}/api/cv-intelligence`,
   timeout: 300000, // 5 minutes for file processing
   headers: {
     'Content-Type': 'application/json',
