@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import * as Icons from 'lucide-react';
+import { 
+  Calendar, 
+  Plus, 
+  User, 
+  ArrowLeft, 
+  Search, 
+  X 
+} from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -270,7 +277,7 @@ Best regards,
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-4">
                 <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
-                  <Icons.Calendar className="w-5 h-5 text-white" />
+                  <Calendar className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <h1 className="text-xl font-semibold text-gray-900">Interview Coordinator</h1>
@@ -282,21 +289,21 @@ Best regards,
                   onClick={() => router.back()}
                   className="flex items-center px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors"
                 >
-                  <Icons.ArrowLeft className="w-4 h-4 mr-2" />
+                  <ArrowLeft className="w-4 h-4 mr-2" />
                   Back
                 </button>
                 <button
                   onClick={() => setShowAvailabilityModal(true)}
                   className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center"
                 >
-                  <Icons.Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-4 h-4 mr-2" />
                   Request Availability
                 </button>
                 <button
                   onClick={() => router.push('/profile')}
                   className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <Icons.User className="w-5 h-5 text-gray-600" />
+                  <User className="w-5 h-5 text-gray-600" />
                 </button>
               </div>
             </div>
@@ -309,7 +316,7 @@ Best regards,
           <div className="mb-6 flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Icons.Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
                   placeholder="Search candidates or positions..."
@@ -340,7 +347,7 @@ Best regards,
             </div>
           ) : filteredInterviews.length === 0 ? (
             <div className="text-center py-12">
-              <Icons.Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No interviews found</h3>
               <p className="text-gray-600 mb-4">Start by requesting availability from candidates</p>
               <button
@@ -439,7 +446,7 @@ Best regards,
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">Request Availability</h3>
                   <button onClick={() => setShowAvailabilityModal(false)}>
-                    <Icons.X className="w-5 h-5 text-gray-400" />
+                    <X className="w-5 h-5 text-gray-400" />
                   </button>
                 </div>
               </div>
@@ -556,7 +563,7 @@ Best regards,
                     Schedule Interview - {selectedInterview.candidate_name}
                   </h3>
                   <button onClick={() => setShowScheduleModal(false)}>
-                    <Icons.X className="w-5 h-5 text-gray-400" />
+                    <X className="w-5 h-5 text-gray-400" />
                   </button>
                 </div>
               </div>
