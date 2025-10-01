@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { Brain, Users, BarChart3, Rocket, Target, Award, TrendingUp } from 'lucide-react';
-import Threads from '../components/reactbits/Threads';
+import DotGrid from '../components/backgrounds/DotGrid';
 import ProfileCard from '../components/reactbits/ProfileCard';
 import RotatingText from '../components/reactbits/RotatingText';
 import GradientText from '../components/text/GradientText';
@@ -17,14 +17,13 @@ export default function About() {
       </Head>
 
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
-        {/* Threads Background */}
-        <div className="fixed inset-0 z-0">
-          <Threads 
-            quantity={25}
-            color="#f97316"
-            speed={0.3}
-          />
-        </div>
+        {/* Dot Grid Background */}
+        <DotGrid 
+          dotSize={1.5}
+          dotColor="rgba(249, 115, 22, 0.4)"
+          backgroundColor="transparent"
+          spacing={40}
+        />
 
 
 
@@ -235,54 +234,33 @@ export default function About() {
             </div>
           </section>
 
-          {/* Team Section */}
+          {/* Founder Section */}
           <section className="py-20">
             <div className="max-w-7xl mx-auto px-6">
               <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold text-white mb-4">Meet Our Team</h2>
-                <p className="text-lg text-gray-400">The brilliant minds behind Nexus AI</p>
+                <h2 className="text-4xl font-bold text-white mb-4">Meet the Founder</h2>
+                <p className="text-lg text-gray-400">The visionary behind Nexus AI</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                {[
-                  {
-                    name: "Sarah Chen",
-                    role: "CEO & Co-Founder",
-                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah",
-                    bio: "Former AI researcher at Google. PhD in Machine Learning from MIT.",
-                    social: { twitter: "#", linkedin: "#", github: "#" }
-                  },
-                  {
-                    name: "Marcus Rodriguez",
-                    role: "CTO & Co-Founder",
-                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus",
-                    bio: "Ex-Tesla AI Lead. 15+ years in autonomous systems and deep learning.",
-                    social: { twitter: "#", linkedin: "#", github: "#" }
-                  },
-                  {
-                    name: "Aisha Patel",
-                    role: "Head of Product",
-                    image: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aisha",
-                    bio: "Product visionary from Microsoft. Specialized in AI-powered SaaS.",
-                    social: { twitter: "#", linkedin: "#", github: "#" }
-                  }
-                ].map((member, index) => (
-                  <motion.div
-                    key={member.name}
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.2 }}
-                    viewport={{ once: true }}
-                  >
-                    <ProfileCard
-                      name={member.name}
-                      role={member.role}
-                      image={member.image}
-                      bio={member.bio}
-                      className="h-full"
-                    />
-                  </motion.div>
-                ))}
+              <div className="max-w-md mx-auto">
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  viewport={{ once: true }}
+                >
+                  <ProfileCard
+                    name="Syed Arfan Hussain"
+                    title="Founder & CEO"
+                    handle="@syedarfan"
+                    status="Online"
+                    avatarUrl="https://api.dicebear.com/7.x/avataaars/svg?seed=Arfan"
+                    contactText="Contact Me"
+                    showsInfo={true}
+                    enableMobileTilt={false}
+                    onContactClick={() => window.location.href = '/contact'}
+                  />
+                </motion.div>
               </div>
             </div>
           </section>

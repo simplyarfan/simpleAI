@@ -3,9 +3,8 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Users, BarChart3, Sparkles, Menu, X } from 'lucide-react';
-import Threads from '../components/reactbits/Threads';
+import Particles from '../components/reactbits/Particles';
 import BlurText from '../components/reactbits/BlurText';
-import StaggeredMenu from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
 export default function LandingPage() {
@@ -19,12 +18,13 @@ export default function LandingPage() {
       </Head>
 
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
-        {/* Threads Background - Animated thread lines */}
-        <div className="fixed inset-0 z-0">
-          <Threads 
-            quantity={30}
+        {/* Particles Background - Subtle floating particles */}
+        <div className="fixed inset-0 z-0 opacity-40">
+          <Particles 
+            quantity={80}
             color="#f97316"
-            speed={0.5}
+            size={1.5}
+            refresh={false}
           />
         </div>
 
