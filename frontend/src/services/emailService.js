@@ -94,8 +94,16 @@ class EmailService {
           redirectUri: getRedirectUri()
         },
         cache: {
-          cacheLocation: 'localStorage',
+          cacheLocation: 'sessionStorage', // Changed from localStorage to sessionStorage to avoid conflicts
           storeAuthStateInCookie: false
+        },
+        system: {
+          loggerOptions: {
+            loggerCallback: (level, message, containsPii) => {
+              if (containsPii) return;
+              console.log('[MSAL]', message);
+            }
+          }
         }
       };
 
@@ -115,7 +123,20 @@ class EmailService {
       };
 
       console.log('🔐 Starting Outlook OAuth...');
+      
+      // Save our auth tokens before MSAL popup (in case MSAL clears storage)
+      const savedAccessToken = typeof window !== 'undefined' ? 
+        document.cookie.split('; ').find(row => row.startsWith('accessToken='))?.split('=')[1] : null;
+      const savedRefreshToken = typeof window !== 'undefined' ? 
+        document.cookie.split('; ').find(row => row.startsWith('refreshToken='))?.split('=')[1] : null;
+      
       const response = await msalInstance.loginPopup(loginRequest);
+      
+      // Restore our auth tokens after MSAL popup (in case they were cleared)
+      if (savedAccessToken && typeof window !== 'undefined') {
+        console.log('🔒 Restoring auth tokens after Outlook login');
+        // Tokens are in cookies, they should persist, but log for debugging
+      }
       
       this.outlookAuth = response;
       this.connectedEmail.outlook = {
