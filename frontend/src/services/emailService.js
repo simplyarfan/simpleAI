@@ -188,8 +188,11 @@ class EmailService {
         const axios = (await import('axios')).default;
         const accessToken = Cookies.get('accessToken');
         
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
+        const cleanUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+        
         await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app'}/api/auth/outlook/connect`,
+          `${cleanUrl}/api/auth/outlook/connect`,
           {
             accessToken: response.accessToken,
             refreshToken: response.account.idTokenClaims?.refresh_token || null,

@@ -254,14 +254,18 @@ Best regards,
     
     try {
       const headers = getAuthHeaders();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
+      const cleanUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+      
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/interview/${interviewId}`,
+        `${cleanUrl}/api/interview-coordinator/interview/${interviewId}`,
         { headers }
       );
       
       toast.success('Interview deleted successfully!');
       fetchInterviews();
     } catch (error) {
+      console.error('Delete error:', error);
       toast.error('Failed to delete interview');
     }
   };
