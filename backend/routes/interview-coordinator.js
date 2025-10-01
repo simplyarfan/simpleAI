@@ -38,36 +38,10 @@ router.get('/interviews', authenticateToken, async (req, res) => {
     console.log('📋 Getting interviews for user:', req.user.id);
     await database.connect();
     
-    // Create interviews table if it doesn't exist (PostgreSQL compatible)
-    await database.run(`
-      CREATE TABLE IF NOT EXISTS interviews (
-        id VARCHAR(255) PRIMARY KEY,
-        candidate_id VARCHAR(255),
-        candidate_name VARCHAR(255) NOT NULL,
-        candidate_email VARCHAR(255) NOT NULL,
-        position VARCHAR(255) NOT NULL,
-        interview_type VARCHAR(50),
-        status VARCHAR(50) DEFAULT 'awaiting_response',
-        scheduled_time TIMESTAMP,
-        duration INTEGER,
-        platform VARCHAR(50),
-        meeting_link TEXT,
-        google_form_link TEXT,
-        availability_request_sent_at TIMESTAMP,
-        scheduled_at TIMESTAMP,
-        notes TEXT,
-        outcome VARCHAR(50),
-        scheduled_by INTEGER NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    
-    console.log('✅ Interviews table created/verified');
-    
+    // Try to query interviews directly (table should already exist from initializeTables)
     const interviews = await database.all(`
       SELECT * FROM interviews 
-      WHERE scheduled_by = ? 
+      WHERE scheduled_by = $1 
       ORDER BY created_at DESC
     `, [req.user.id]);
 
@@ -80,11 +54,18 @@ router.get('/interviews', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Get interviews error:', error);
+    console.error('❌ Get interviews error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id
+    });
+    
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve interviews',
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
