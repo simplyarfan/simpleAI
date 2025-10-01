@@ -13,17 +13,17 @@ const getApiBaseUrl = () => {
   
   if (typeof window === 'undefined') {
     // Server-side rendering fallback
-    return 'https://thesimpleai.vercel.app/api';
+    return 'https://thesimpleai.vercel.app';
   }
   
   // Client-side fallback
   const hostname = window.location.hostname;
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:5000/api';
+    return 'http://localhost:5000';
   }
   
   // Production fallback
-  return 'https://thesimpleai.vercel.app/api';
+  return 'https://thesimpleai.vercel.app';
 };
 
 const API_BASE_URL = getApiBaseUrl();
