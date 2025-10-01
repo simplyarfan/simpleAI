@@ -286,21 +286,35 @@ router.post('/schedule-interview', authenticateToken, async (req, res) => {
       scheduledTime,
       duration,
       platform,
-      meetingLink,
-      notes,
-      emailSubject,
-      emailContent,
-      ccEmails,
-      bccEmails
+      notes
     } = req.body;
-
-    // Validation
+    
     if (!interviewId || !scheduledTime || !platform) {
       return res.status(400).json({
         success: false,
         message: 'Missing required fields: interviewId, scheduledTime, platform'
       });
     }
+
+    // Auto-generate meeting link based on platform
+    let meetingLink = '';
+    const meetingId = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    
+    switch(platform) {
+      case 'Google Meet':
+        meetingLink = `https://meet.google.com/${meetingId}`;
+        break;
+      case 'Microsoft Teams':
+        meetingLink = `https://teams.microsoft.com/l/meetup-join/${meetingId}`;
+        break;
+      case 'Zoom':
+        meetingLink = `https://zoom.us/j/${meetingId}`;
+        break;
+      default:
+        meetingLink = 'To be provided';
+    }
+    
+    console.log('🔗 Auto-generated meeting link:', meetingLink);
 
     await database.connect();
 
@@ -659,6 +673,74 @@ Best regards,
     res.status(500).json({
       success: false,
       message: 'Failed to get email template',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /interview/:id/calendar - Generate and download .ics calendar file
+ */
+router.get('/interview/:id/calendar', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await database.connect();
+
+    const interview = await database.get(`
+      SELECT * FROM interviews 
+      WHERE id = $1 AND scheduled_by = $2
+    `, [id, req.user.id]);
+
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview not found'
+      });
+    }
+
+    // Generate .ics file content
+    const startDate = new Date(interview.scheduled_time);
+    const endDate = new Date(startDate.getTime() + (interview.duration || 60) * 60000);
+    
+    const formatDate = (date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Interview Coordinator//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:REQUEST',
+      'BEGIN:VEVENT',
+      `UID:${interview.id}@interviewcoordinator.com`,
+      `DTSTART:${formatDate(startDate)}`,
+      `DTEND:${formatDate(endDate)}`,
+      `SUMMARY:${interview.interview_type || 'Interview'} - ${interview.candidate_name}`,
+      `DESCRIPTION:Interview for ${interview.job_title}\\n\\nCandidate: ${interview.candidate_name}\\nEmail: ${interview.candidate_email}\\n\\nMeeting Link: ${interview.meeting_link || 'TBD'}\\n\\nNotes: ${interview.notes || 'None'}`,
+      `LOCATION:${interview.meeting_link || interview.location || 'Online'}`,
+      `ORGANIZER:mailto:${req.user.email || 'noreply@example.com'}`,
+      `ATTENDEE:mailto:${interview.candidate_email}`,
+      'STATUS:CONFIRMED',
+      'SEQUENCE:0',
+      'BEGIN:VALARM',
+      'TRIGGER:-PT15M',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Interview Reminder',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    res.setHeader('Content-Type', 'text/calendar');
+    res.setHeader('Content-Disposition', `attachment; filename="interview-${interview.candidate_name.replace(/\s+/g, '-')}.ics"`);
+    res.send(icsContent);
+
+  } catch (error) {
+    console.error('Calendar generation error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate calendar file',
       error: error.message
     });
   }

@@ -63,13 +63,8 @@ Best regards,
     interviewType: 'technical',
     scheduledTime: '',
     duration: 60,
-    platform: 'Teams',
-    meetingLink: '',
-    notes: '',
-    emailSubject: '',
-    emailContent: '',
-    ccEmails: '',
-    bccEmails: ''
+    platform: 'Google Meet',
+    notes: ''
   });
 
   useEffect(() => {
@@ -230,8 +225,11 @@ Best regards,
   const downloadCalendar = async (interviewId, candidateName) => {
     try {
       const headers = getAuthHeaders();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
+      const cleanUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+      
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/calendar/${interviewId}/ics`,
+        `${cleanUrl}/api/interview-coordinator/interview/${interviewId}/calendar`,
         { headers, responseType: 'blob' }
       );
       
@@ -242,7 +240,9 @@ Best regards,
       link.download = `interview-${candidateName.replace(/\s+/g, '-')}.ics`;
       link.click();
       window.URL.revokeObjectURL(url);
+      toast.success('Calendar file downloaded! Add it to your calendar app.');
     } catch (error) {
+      console.error('Calendar download error:', error);
       toast.error('Failed to download calendar');
     }
   };
@@ -654,20 +654,11 @@ Best regards,
                       onChange={(e) => setScheduleForm({...scheduleForm, platform: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     >
-                      <option value="Teams">Microsoft Teams</option>
+                      <option value="Google Meet">Google Meet</option>
+                      <option value="Microsoft Teams">Microsoft Teams</option>
                       <option value="Zoom">Zoom</option>
-                      <option value="Meet">Google Meet</option>
-                      <option value="In-Person">In-Person</option>
                     </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Meeting Link</label>
-                    <input
-                      type="url"
-                      value={scheduleForm.meetingLink}
-                      onChange={(e) => setScheduleForm({...scheduleForm, meetingLink: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    />
+                    <p className="mt-1 text-sm text-gray-500">✨ Meeting link will be auto-generated</p>
                   </div>
                 </div>
 
