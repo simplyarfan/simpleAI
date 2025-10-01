@@ -1,181 +1,141 @@
-import { useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-import { Brain, Users, BarChart3, FileText, Sparkles, CheckCircle, ArrowRight } from 'lucide-react';
-import Navbar from '../components/shared/Navbar';
+import { motion } from 'framer-motion';
+import { Brain, Users, BarChart3, FileText, Zap, Shield, Globe, TrendingUp } from 'lucide-react';
+import DotGrid from '../components/backgrounds/DotGrid';
+import GradientText from '../components/text/GradientText';
 
 export default function Features() {
   return (
     <>
       <Head>
-        <title>Features - Nexus AI Agents</title>
-        <meta name="description" content="Discover the powerful AI agents that transform your HR, Finance, and Sales departments with intelligent automation." />
+        <title>Features - Nexus AI Platform</title>
+        <meta name="description" content="Discover powerful AI agents for HR, Finance, and Sales automation." />
       </Head>
 
-      <div className="relative min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 text-gray-900">
-        <Navbar />
+      <div className="relative min-h-screen bg-black text-white overflow-hidden">
+        {/* Dot Grid Background */}
+        <DotGrid 
+          dotSize={1.5}
+          dotColor="#f97316"
+          spacing={40}
+          glowRadius={200}
+          maxGlowSize={6}
+        />
 
-        {/* Hero Section */}
-        <section className="pt-32 pb-8">
-          <div className="max-w-7xl mx-auto px-6 text-center">
-            <div className="mb-8">
-              <div className="inline-block bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
-                Powerful AI Features
+        {/* Navigation */}
+        <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <Link href="/">
+              <div className="flex items-center space-x-2 cursor-pointer hover:scale-105 transition-transform duration-300">
+                <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
+                  <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
+                </div>
+                <span className="text-xl font-bold">Nexus</span>
               </div>
-              <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                AI Agents That Actually
-                <br />
-                <span className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
-                  Get Things Done
-                </span>
-              </h1>
-              <p className="text-xl text-gray-600 mb-0 max-w-3xl mx-auto">
-                Transform your business operations with specialized AI agents designed for HR, Finance, and Sales departments.
-              </p>
+            </Link>
+
+            <div className="hidden md:flex space-x-8 text-sm font-medium">
+              <Link href="/features" className="text-orange-500 font-semibold">Features</Link>
+              <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
+              <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link>
             </div>
+
+            <Link href="/auth/login">
+              <button className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300">
+                Get Started
+              </button>
+            </Link>
+          </div>
+        </nav>
+
+        {/* Hero */}
+        <section className="pt-32 pb-20">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <h1 className="text-5xl md:text-7xl font-bold mb-6">
+                <GradientText 
+                  colors={['#ef4444', '#f97316', '#eab308']}
+                  className="text-5xl md:text-7xl"
+                >
+                  Powerful AI Agents
+                </GradientText>
+                <br />
+                <span className="text-white">For Every Department</span>
+              </h1>
+              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+                Automate workflows, analyze data, and make smarter decisions with AI agents built for real business needs.
+              </p>
+            </motion.div>
           </div>
         </section>
 
         {/* Features Grid */}
-        <section className="py-12">
+        <section className="py-20">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              {/* HR Features */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-6">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">HR Department</h3>
-                <p className="text-gray-600 mb-6">Revolutionize your hiring and employee management processes.</p>
-                
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">CV Intelligence</h4>
-                      <p className="text-sm text-gray-600">Analyze hundreds of CVs in seconds, extract key skills, and rank candidates automatically.</p>
-                    </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[
+                { icon: Brain, title: "CV Intelligence", description: "Screen 100 CVs in seconds. AI-powered candidate ranking and analysis.", color: "from-blue-500 to-indigo-600" },
+                { icon: Users, title: "Interview Coordinator", description: "Automated interview scheduling with calendar integration and reminders.", color: "from-purple-500 to-pink-600" },
+                { icon: FileText, title: "Invoice Processor", description: "Extract data from invoices instantly. Automated validation and fraud detection.", color: "from-green-500 to-emerald-600" },
+                { icon: BarChart3, title: "Expense Auditor", description: "Real-time expense tracking and anomaly detection for financial compliance.", color: "from-orange-500 to-red-600" },
+                { icon: Zap, title: "Lead Generator", description: "24/7 automated lead discovery and qualification for your sales team.", color: "from-yellow-500 to-orange-600" },
+                { icon: TrendingUp, title: "Campaign Optimizer", description: "AI-powered campaign analysis and optimization recommendations.", color: "from-red-500 to-pink-600" },
+                { icon: Shield, title: "Security First", description: "Enterprise-grade security with SOC 2 compliance and data encryption.", color: "from-gray-500 to-gray-700" },
+                { icon: Globe, title: "Global Support", description: "Multi-language support and 24/7 customer service across all time zones.", color: "from-cyan-500 to-blue-600" }
+              ].map((feature, index) => (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ scale: 1.05, y: -10 }}
+                  className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:border-orange-500/50 transition-all duration-300"
+                >
+                  <div className={`w-12 h-12 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center mb-4`}>
+                    <feature.icon className="w-6 h-6 text-white" />
                   </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Interview Coordinator</h4>
-                      <p className="text-sm text-gray-600">Schedule interviews, send reminders, and generate interview questions based on job requirements.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Candidate Matching</h4>
-                      <p className="text-sm text-gray-600">Match candidates to job requirements using advanced AI algorithms.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Finance Features */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40">
-                <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6">
-                  <BarChart3 className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Finance Department</h3>
-                <p className="text-gray-600 mb-6">Automate financial processes and ensure accuracy at scale.</p>
-                
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Invoice Processor</h4>
-                      <p className="text-sm text-gray-600">Process invoices instantly, extract data, and integrate with accounting systems.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Expense Auditor</h4>
-                      <p className="text-sm text-gray-600">Audit expenses automatically, detect anomalies, and flag potential fraud.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Financial Analytics</h4>
-                      <p className="text-sm text-gray-600">Generate insights and reports from financial data automatically.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sales Features */}
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/40">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6">
-                  <Brain className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Sales & Marketing</h3>
-                <p className="text-gray-600 mb-6">Supercharge your sales and marketing efforts with AI.</p>
-                
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Lead Generator</h4>
-                      <p className="text-sm text-gray-600">Generate qualified leads 24/7 using advanced targeting and outreach.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Campaign Optimizer</h4>
-                      <p className="text-sm text-gray-600">Optimize marketing campaigns in real-time for maximum ROI.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold text-gray-900">Sales Analytics</h4>
-                      <p className="text-sm text-gray-600">Track performance, predict trends, and identify opportunities.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                  <p className="text-gray-400 text-sm">{feature.description}</p>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-16">
+        {/* CTA */}
+        <section className="py-20 bg-gradient-to-br from-orange-500 to-red-600">
           <div className="max-w-4xl mx-auto px-6 text-center">
-            <div className="space-y-8">
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                Ready to Transform Your Business?
-              </h2>
-              <p className="text-xl text-gray-600 mb-8">
-                Start using AI agents today and see the difference they make.
-              </p>
-              <Link href="/auth/login">
-                <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300 inline-flex items-center space-x-2">
-                  <span>Try today</span>
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </Link>
-            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+              Ready to Get Started?
+            </h2>
+            <p className="text-xl text-orange-100 mb-8">
+              Join thousands of businesses automating with AI.
+            </p>
+            <Link href="/auth/register">
+              <button className="px-8 py-4 bg-white text-orange-600 font-semibold rounded-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                Start Free Trial
+              </button>
+            </Link>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="py-12 bg-white border-t border-gray-100">
+        <footer className="py-12 bg-black border-t border-white/10">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <div className="flex justify-between items-center">
               <div className="flex items-center space-x-2">
                 <div className="w-6 h-6 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
                   <div className="w-3 h-3 bg-white rounded-sm transform rotate-45"></div>
                 </div>
-                <span className="text-lg font-bold text-gray-900">Nexus</span>
+                <span className="text-lg font-bold">Nexus</span>
               </div>
-              
-              <div className="text-sm text-gray-500">
-                © 2025 Nexus. All rights reserved.
-              </div>
+              <div className="text-sm text-gray-500">© 2025 Nexus. All rights reserved.</div>
             </div>
           </div>
         </footer>

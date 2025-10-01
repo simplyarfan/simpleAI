@@ -1,7 +1,7 @@
 /**
- * REACT BITS - DOT GRID BACKGROUND
- * Interactive dot grid that follows your cursor
- * Source: reactbits.dev/backgrounds/dot-grid
+ * REACT BITS - DOT GRID BACKGROUND (ENHANCED)
+ * Super reactive dot grid that glows and scales near cursor
+ * Like the one on reactbits.dev
  */
 
 'use client';
@@ -9,10 +9,12 @@
 import { useEffect, useRef } from 'react';
 
 export default function DotGrid({
-  dotSize = 1,
-  dotColor = '#999',
+  dotSize = 1.5,
+  dotColor = '#ff6b35',
   backgroundColor = 'transparent',
-  spacing = 30,
+  spacing = 40,
+  glowRadius = 200,
+  maxGlowSize = 8,
   className = ''
 }) {
   const canvasRef = useRef(null);
@@ -34,6 +36,7 @@ export default function DotGrid({
 
     let mouseX = -1000;
     let mouseY = -1000;
+    let rafId;
 
     const handleMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect();
@@ -50,8 +53,12 @@ export default function DotGrid({
     canvas.addEventListener('mouseleave', handleMouseLeave);
 
     const draw = () => {
-      ctx.fillStyle = backgroundColor;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      if (backgroundColor !== 'transparent') {
+        ctx.fillStyle = backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
 
       const cols = Math.ceil(canvas.width / spacing);
       const rows = Math.ceil(canvas.height / spacing);
@@ -61,21 +68,43 @@ export default function DotGrid({
           const x = i * spacing;
           const y = j * spacing;
 
+          // Calculate distance from mouse
           const dx = x - mouseX;
           const dy = y - mouseY;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          const maxDistance = 150;
-          const scale = distance < maxDistance ? 1 + (1 - distance / maxDistance) * 2 : 1;
+          // Super reactive glow effect
+          if (distance < glowRadius) {
+            const intensity = 1 - (distance / glowRadius);
+            const glowSize = dotSize + (intensity * maxGlowSize);
+            
+            // Outer glow
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, glowSize * 3);
+            gradient.addColorStop(0, `${dotColor}${Math.floor(intensity * 255).toString(16).padStart(2, '0')}`);
+            gradient.addColorStop(0.5, `${dotColor}${Math.floor(intensity * 100).toString(16).padStart(2, '0')}`);
+            gradient.addColorStop(1, 'transparent');
+            
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(x, y, glowSize * 3, 0, Math.PI * 2);
+            ctx.fill();
 
-          ctx.fillStyle = dotColor;
-          ctx.beginPath();
-          ctx.arc(x, y, dotSize * scale, 0, Math.PI * 2);
-          ctx.fill();
+            // Inner bright dot
+            ctx.fillStyle = dotColor;
+            ctx.beginPath();
+            ctx.arc(x, y, glowSize, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // Normal dot (dimmed)
+            ctx.fillStyle = `${dotColor}40`; // 25% opacity
+            ctx.beginPath();
+            ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
       }
 
-      requestAnimationFrame(draw);
+      rafId = requestAnimationFrame(draw);
     };
 
     draw();
@@ -84,13 +113,14 @@ export default function DotGrid({
       window.removeEventListener('resize', resizeCanvas);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
+      if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [dotSize, dotColor, backgroundColor, spacing]);
+  }, [dotSize, dotColor, backgroundColor, spacing, glowRadius, maxGlowSize]);
 
   return (
     <canvas
       ref={canvasRef}
-      className={`absolute inset-0 pointer-events-none ${className}`}
+      className={`absolute inset-0 w-full h-full ${className}`}
       style={{ zIndex: 0 }}
     />
   );

@@ -157,9 +157,9 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
     // Insert interview record with "awaiting_response" status
     await database.run(`
       INSERT INTO interviews (
-        id, candidate_id, candidate_name, candidate_email, position,
-        status, google_form_link, availability_request_sent_at, scheduled_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        id, candidate_id, candidate_name, candidate_email, job_title,
+        status, google_form_link, scheduled_by
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `, [
       interviewId,
       candidateId || null,
@@ -168,7 +168,6 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
       position,
       'awaiting_response',
       googleFormLink || null,
-      new Date().toISOString(),
       req.user.id
     ]);
     
