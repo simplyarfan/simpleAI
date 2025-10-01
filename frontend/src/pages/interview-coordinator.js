@@ -121,7 +121,14 @@ Best regards,
       }
     } catch (error) {
       console.error('Failed to load interviews:', error);
-      if (error.response?.status !== 401) {
+      if (error.response?.status === 401) {
+        console.log('Authentication failed - token may be invalid');
+        toast.error('Session expired. Please log in again.');
+        // Don't redirect here, let the interceptor handle it
+      } else if (error.response?.status === 404) {
+        console.log('Interview coordinator endpoint not found');
+        toast.error('Interview coordinator service unavailable');
+      } else {
         toast.error('Failed to load interviews');
       }
       setInterviews([]);
