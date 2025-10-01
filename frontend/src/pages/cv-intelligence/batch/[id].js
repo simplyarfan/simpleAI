@@ -33,30 +33,19 @@ const BatchDetail = () => {
   };
 
   const handleScheduleInterview = (candidate) => {
-    // Check if email is connected
-    const email = emailService.getConnectedEmail();
-    if (!emailService.hasConnectedEmail()) {
-      // Show email connection modal
-      setShowCalendarConnection(true);
-      return;
-    }
-    
-    // Store selected candidate for interview scheduling
-    setSelectedCandidate(candidate);
-    
-    // Navigate to interview coordinator with candidate data
+    // Navigate to the new interview coordinator with pre-filled data
     router.push({
-      pathname: '/interview-coordinator/schedule',
+      pathname: '/interview-coordinator',
       query: {
-        candidateId: candidate.id,
+        action: 'request-availability',
         candidateName: candidate.name,
         candidateEmail: candidate.email,
-        jobTitle: batch?.job_title || 'Position',
+        position: candidate.position || 'Software Engineer',
+        from: 'cv-intelligence',
         batchId: id
       }
     });
   };
-
   const handleEmailConnected = (provider, userInfo) => {
     setConnectedEmail(emailService.getConnectedEmail());
     toast.success(`${provider === 'outlook' ? 'Outlook' : 'Email'} connected successfully!`);

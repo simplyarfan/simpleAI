@@ -29,6 +29,29 @@ const InterviewCoordinator = () => {
     bccEmails: ''
   });
 
+  // Load default email template when modal opens
+  const loadDefaultEmailTemplate = (candidateName, position) => {
+    const defaultSubject = `Interview Opportunity - ${position}`;
+    const defaultContent = `Dear ${candidateName},
+
+We are pleased to inform you that we have shortlisted you for an interview for the ${position} position at our company.
+
+We need some details prior to the interview, which you can fill in the following Google Form: [Google Form Link will be inserted here]
+
+Additionally, please mention what time would you be available for a meeting?
+
+We look forward to hearing from you soon.
+
+Best regards,
+[Your Company Name]`;
+
+    setAvailabilityForm(prev => ({
+      ...prev,
+      emailSubject: defaultSubject,
+      emailContent: defaultContent
+    }));
+  };
+
   const [scheduleForm, setScheduleForm] = useState({
     interviewType: 'technical',
     scheduledTime: '',
@@ -48,12 +71,36 @@ const InterviewCoordinator = () => {
       return;
     }
     fetchInterviews();
-  }, [user]);
+    
+    // Handle pre-filled data from CV Intelligence
+    if (router.query.action === 'request-availability') {
+      const { candidateName, candidateEmail, position } = router.query;
+      if (candidateName && candidateEmail && position) {
+        setAvailabilityForm(prev => ({
+          ...prev,
+          candidateName: candidateName,
+          candidateEmail: candidateEmail,
+          position: position
+        }));
+        // Load template with the pre-filled data
+        loadDefaultEmailTemplate(candidateName, position);
+        // Open the modal
+        setShowAvailabilityModal(true);
+      }
+    }
+  }, [user, router.query]);
 
   const fetchInterviews = async () => {
     try {
       setLoading(true);
       const headers = getAuthHeaders();
+      
+      if (!headers) {
+        console.log('No auth headers available, skipping fetch');
+        setLoading(false);
+        return;
+      }
+      
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/interviews`,
         { headers }
@@ -61,9 +108,16 @@ const InterviewCoordinator = () => {
       
       if (response.data?.success) {
         setInterviews(response.data.data || []);
+      } else {
+        console.error('API response not successful:', response.data);
+        setInterviews([]);
       }
     } catch (error) {
-      toast.error('Failed to load interviews');
+      console.error('Failed to load interviews:', error);
+      if (error.response?.status !== 401) {
+        toast.error('Failed to load interviews');
+      }
+      setInterviews([]);
     } finally {
       setLoading(false);
     }
@@ -220,6 +274,13 @@ const InterviewCoordinator = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => router.back()}
+                  className="flex items-center px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <Icons.ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </button>
                 <button
                   onClick={() => setShowAvailabilityModal(true)}
                   className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center"
@@ -386,7 +447,14 @@ const InterviewCoordinator = () => {
                     <input
                       type="text"
                       value={availabilityForm.candidateName}
-                      onChange={(e) => setAvailabilityForm({...availabilityForm, candidateName: e.target.value})}
+                      onChange={(e) => {
+                        const newName = e.target.value;
+                        setAvailabilityForm({...availabilityForm, candidateName: newName});
+                        // Auto-update email template when name changes
+                        if (newName && availabilityForm.position) {
+                          loadDefaultEmailTemplate(newName, availabilityForm.position);
+                        }
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                       required
                     />
@@ -408,7 +476,14 @@ const InterviewCoordinator = () => {
                   <input
                     type="text"
                     value={availabilityForm.position}
-                    onChange={(e) => setAvailabilityForm({...availabilityForm, position: e.target.value})}
+                    onChange={(e) => {
+                      const newPosition = e.target.value;
+                      setAvailabilityForm({...availabilityForm, position: newPosition});
+                      // Auto-update email template when position changes
+                      if (availabilityForm.candidateName && newPosition) {
+                        loadDefaultEmailTemplate(availabilityForm.candidateName, newPosition);
+                      }
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                     required
                   />
@@ -421,6 +496,7 @@ const InterviewCoordinator = () => {
                     value={availabilityForm.googleFormLink}
                     onChange={(e) => setAvailabilityForm({...availabilityForm, googleFormLink: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    placeholder="Will be inserted into email template"
                   />
                 </div>
 
