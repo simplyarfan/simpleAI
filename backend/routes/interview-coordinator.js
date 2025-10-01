@@ -177,19 +177,79 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
     
     console.log('✅ Interview record inserted successfully');
 
-    // For now, skip email sending and just create the record
-    // TODO: Implement proper email integration later
-    console.log('📧 Email sending temporarily disabled - record created successfully');
+    // Send email using Microsoft Graph API
+    try {
+      // Get user's Outlook tokens from database
+      const user = await database.get(`
+        SELECT outlook_access_token, outlook_email 
+        FROM users 
+        WHERE id = $1
+      `, [req.user.id]);
 
-    res.json({
-      success: true,
-      data: {
-        interviewId,
-        status: 'awaiting_response',
-        message: 'Availability request created successfully (email sending temporarily disabled)'
-      },
-      message: 'Availability request created successfully'
-    });
+      if (!user || !user.outlook_access_token) {
+        console.log('⚠️ No Outlook token found, skipping email');
+        return res.json({
+          success: true,
+          data: { interviewId, status: 'awaiting_response' },
+          message: 'Interview created (email not sent - please connect Outlook)'
+        });
+      }
+
+      // Send email via Microsoft Graph API
+      const axios = require('axios');
+      const emailBody = emailContent || `Dear ${candidateName},
+
+We are pleased to inform you that we have shortlisted you for an interview for the ${position} position.
+
+${googleFormLink ? `Please fill out this form: ${googleFormLink}` : ''}
+
+Please let us know your availability.
+
+Best regards`;
+
+      await axios.post(
+        'https://graph.microsoft.com/v1.0/me/sendMail',
+        {
+          message: {
+            subject: emailSubject || `Interview Opportunity - ${position}`,
+            body: {
+              contentType: 'Text',
+              content: emailBody
+            },
+            toRecipients: [
+              { emailAddress: { address: candidateEmail } }
+            ],
+            ccRecipients: ccEmails?.map(email => ({ emailAddress: { address: email } })) || [],
+            bccRecipients: bccEmails?.map(email => ({ emailAddress: { address: email } })) || []
+          }
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${user.outlook_access_token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log('✅ Email sent successfully via Outlook');
+
+      res.json({
+        success: true,
+        data: { interviewId, status: 'awaiting_response' },
+        message: 'Availability request sent successfully!'
+      });
+
+    } catch (emailError) {
+      console.error('❌ Email sending failed:', emailError.response?.data || emailError.message);
+      
+      // Still return success since the interview was created
+      res.json({
+        success: true,
+        data: { interviewId, status: 'awaiting_response' },
+        message: 'Interview created but email failed to send. Please check your Outlook connection.',
+        emailError: emailError.message
+      });
+    }
 
   } catch (error) {
     console.error('❌ Request availability error:', error);

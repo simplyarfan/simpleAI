@@ -182,6 +182,33 @@ class EmailService {
       };
       
       this.saveConnectedEmail();
+      
+      // Save tokens to backend database
+      try {
+        const axios = (await import('axios')).default;
+        const accessToken = Cookies.get('accessToken');
+        
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app'}/api/auth/outlook/connect`,
+          {
+            accessToken: response.accessToken,
+            refreshToken: response.account.idTokenClaims?.refresh_token || null,
+            expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(), // 1 hour from now
+            email: response.account.username
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        console.log('✅ Outlook tokens saved to backend database');
+      } catch (saveError) {
+        console.error('Failed to save Outlook tokens to backend:', saveError);
+        // Don't fail the connection if backend save fails
+      }
+      
       return { success: true, provider: 'outlook', user: this.connectedEmail.outlook };
     } catch (error) {
       console.error('Gmail connection failed:', error);

@@ -190,4 +190,45 @@ router.post('/logout-all',
   AuthController.logoutAll
 );
 
+/**
+ * POST /auth/outlook/connect - Save Outlook tokens
+ */
+router.post('/outlook/connect', authenticateToken, async (req, res) => {
+  try {
+    const { accessToken, refreshToken, expiresAt, email } = req.body;
+    
+    if (!accessToken || !email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: accessToken, email'
+      });
+    }
+
+    await database.connect();
+    
+    await database.run(`
+      UPDATE users 
+      SET outlook_access_token = $1,
+          outlook_refresh_token = $2,
+          outlook_token_expires_at = $3,
+          outlook_email = $4,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $5
+    `, [accessToken, refreshToken, expiresAt, email, req.user.id]);
+
+    res.json({
+      success: true,
+      message: 'Outlook account connected successfully'
+    });
+
+  } catch (error) {
+    console.error('Outlook connect error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to connect Outlook account',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

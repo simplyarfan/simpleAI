@@ -158,6 +158,10 @@ class Database {
       try {
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER DEFAULT 0`);
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS account_locked_until TIMESTAMP`);
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_access_token TEXT`);
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_refresh_token TEXT`);
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_token_expires_at TIMESTAMP`);
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_email VARCHAR(255)`);
         console.log('✅ Added missing columns to users table');
       } catch (error) {
         console.log('ℹ️ Columns may already exist:', error.message);
