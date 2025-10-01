@@ -69,17 +69,41 @@ class EmailService {
       // If you get "multi-tenant" error, you need to either:
       // 1. Change app to multi-tenant in Azure Portal, OR
       // 2. Use your tenant ID: 'https://login.microsoftonline.com/{your-tenant-id}'
+      // Get the correct redirect URI based on environment
+      const getRedirectUri = () => {
+        if (typeof window !== 'undefined') {
+          const origin = window.location.origin;
+          // For production, use the root domain (more likely to be configured in Azure)
+          if (origin.includes('thesimpleai.netlify.app')) {
+            return 'https://thesimpleai.netlify.app';
+          }
+          // For localhost development
+          if (origin.includes('localhost')) {
+            return 'http://localhost:3000';
+          }
+          // Fallback to current origin
+          return origin;
+        }
+        return 'https://thesimpleai.netlify.app';
+      };
+
       const msalConfig = {
         auth: {
-          clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID,
+          clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID || '64897226-99b4-4df0-8668-213000bf46e',
           authority: 'https://login.microsoftonline.com/organizations',
-          redirectUri: window.location.origin
+          redirectUri: getRedirectUri()
         },
         cache: {
           cacheLocation: 'localStorage',
           storeAuthStateInCookie: false
         }
       };
+
+      console.log('🔧 MSAL Config:', {
+        clientId: msalConfig.auth.clientId,
+        redirectUri: msalConfig.auth.redirectUri,
+        authority: msalConfig.auth.authority
+      });
 
       const msalInstance = new window.msal.PublicClientApplication(msalConfig);
       await msalInstance.initialize();
