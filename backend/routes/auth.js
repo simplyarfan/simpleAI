@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const AuthController = require('../controllers/AuthController');
+const database = require('../models/database');
 const { 
   authenticateToken, 
   validateCompanyDomain, 
