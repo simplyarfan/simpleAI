@@ -670,7 +670,10 @@ Best regards,
 router.delete('/interview/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('🗑️ Delete request for interview:', id, 'by user:', req.user?.id);
+    
     await database.connect();
+    console.log('✅ Database connected for delete');
 
     // Verify the interview belongs to the user
     const interview = await database.get(`
@@ -678,7 +681,10 @@ router.delete('/interview/:id', authenticateToken, async (req, res) => {
       WHERE id = $1 AND scheduled_by = $2
     `, [id, req.user.id]);
 
+    console.log('📋 Interview found:', !!interview);
+
     if (!interview) {
+      console.log('❌ Interview not found or permission denied');
       return res.status(404).json({
         success: false,
         message: 'Interview not found or you do not have permission to delete it'
@@ -686,9 +692,12 @@ router.delete('/interview/:id', authenticateToken, async (req, res) => {
     }
 
     // Delete the interview
+    console.log('🗑️ Deleting interview...');
     await database.run(`
       DELETE FROM interviews WHERE id = $1
     `, [id]);
+
+    console.log('✅ Interview deleted successfully');
 
     res.json({
       success: true,
@@ -696,11 +705,20 @@ router.delete('/interview/:id', authenticateToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Delete interview error:', error);
+    console.error('❌ Delete interview error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      userId: req.user?.id,
+      interviewId: req.params.id
+    });
+    
     res.status(500).json({
       success: false,
       message: 'Failed to delete interview',
-      error: error.message
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
