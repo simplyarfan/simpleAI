@@ -143,13 +143,28 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
     await database.connect();
     console.log('✅ Database connected');
 
+    // Get user's Outlook tokens from database FIRST
+    const user = await database.get(`
+      SELECT outlook_access_token, outlook_email 
+      FROM users 
+      WHERE id = $1
+    `, [req.user.id]);
+
+    if (!user || !user.outlook_access_token) {
+      console.log('⚠️ No Outlook token found');
+      return res.status(400).json({
+        success: false,
+        message: 'Please connect your Outlook account first to send emails'
+      });
+    }
+
     // Generate interview ID
     const interviewId = `interview_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     
     // Generate candidate ID if not provided (using email as unique identifier)
     const generatedCandidateId = candidateId || `candidate_${candidateEmail.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`;
     
-    console.log('📝 Preparing to insert interview:', {
+    console.log('📝 Preparing to send email and create interview:', {
       interviewId,
       candidateId: generatedCandidateId,
       candidateName,
@@ -158,42 +173,8 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
       userId: req.user.id
     });
 
-    // Insert interview record with "awaiting_response" status
-    await database.run(`
-      INSERT INTO interviews (
-        id, candidate_id, candidate_name, candidate_email, job_title,
-        status, google_form_link, scheduled_by
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    `, [
-      interviewId,
-      generatedCandidateId,
-      candidateName,
-      candidateEmail,
-      position,
-      'awaiting_response',
-      googleFormLink || null,
-      req.user.id
-    ]);
-    
-    console.log('✅ Interview record inserted successfully');
-
-    // Send email using Microsoft Graph API
+    // Send email FIRST using Microsoft Graph API
     try {
-      // Get user's Outlook tokens from database
-      const user = await database.get(`
-        SELECT outlook_access_token, outlook_email 
-        FROM users 
-        WHERE id = $1
-      `, [req.user.id]);
-
-      if (!user || !user.outlook_access_token) {
-        console.log('⚠️ No Outlook token found, skipping email');
-        return res.json({
-          success: true,
-          data: { interviewId, status: 'awaiting_response' },
-          message: 'Interview created (email not sent - please connect Outlook)'
-        });
-      }
 
       // Send email via Microsoft Graph API
       const axios = require('axios');
@@ -233,6 +214,25 @@ Best regards`;
 
       console.log('✅ Email sent successfully via Outlook');
 
+      // NOW create the interview record AFTER email is sent
+      await database.run(`
+        INSERT INTO interviews (
+          id, candidate_id, candidate_name, candidate_email, job_title,
+          status, google_form_link, scheduled_by
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `, [
+        interviewId,
+        generatedCandidateId,
+        candidateName,
+        candidateEmail,
+        position,
+        'awaiting_response',
+        googleFormLink || null,
+        req.user.id
+      ]);
+      
+      console.log('✅ Interview record created after successful email');
+
       res.json({
         success: true,
         data: { interviewId, status: 'awaiting_response' },
@@ -242,12 +242,11 @@ Best regards`;
     } catch (emailError) {
       console.error('❌ Email sending failed:', emailError.response?.data || emailError.message);
       
-      // Still return success since the interview was created
-      res.json({
-        success: true,
-        data: { interviewId, status: 'awaiting_response' },
-        message: 'Interview created but email failed to send. Please check your Outlook connection.',
-        emailError: emailError.message
+      // Don't create interview if email fails
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send email. Interview not created.',
+        error: emailError.response?.data?.error?.message || emailError.message
       });
     }
 

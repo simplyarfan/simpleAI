@@ -255,7 +255,7 @@ Best regards,
     try {
       const headers = getAuthHeaders();
       await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/interview/${interviewId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/interview/${interviewId}`,
         { headers }
       );
       

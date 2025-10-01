@@ -191,7 +191,7 @@ router.post('/logout-all',
 );
 
 /**
- * POST /auth/outlook/connect - Save Outlook tokens
+ * POST /outlook/connect - Save Outlook tokens
  */
 router.post('/outlook/connect', authenticateToken, async (req, res) => {
   try {
