@@ -18,28 +18,37 @@ class EmailService {
 
   loadUserEmailConnection() {
     try {
-      // Get current user from cookies
-      const userCookie = document.cookie.split('; ').find(row => row.startsWith('user='));
-      if (userCookie) {
-        const userData = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
-        this.currentUserId = userData.id;
-        const storageKey = `connectedEmail_${this.currentUserId}`;
-        const stored = localStorage.getItem(storageKey);
-        if (stored) {
-          const storedData = JSON.parse(stored);
+      // Get current user ID from access token
+      const Cookies = require('js-cookie');
+      const accessToken = Cookies.get('accessToken');
+      
+      if (accessToken) {
+        try {
+          // Decode JWT to get user ID (simple base64 decode of payload)
+          const payload = JSON.parse(atob(accessToken.split('.')[1]));
+          this.currentUserId = payload.userId || payload.id;
           
-          // Check if the stored data has expired
-          if (storedData.expiresAt && new Date() > new Date(storedData.expiresAt)) {
-            console.log('🔄 Email connection expired, removing...');
-            localStorage.removeItem(storageKey);
-            this.connectedEmail = {};
-            return;
+          const storageKey = `connectedEmail_${this.currentUserId}`;
+          const stored = localStorage.getItem(storageKey);
+          
+          if (stored) {
+            const storedData = JSON.parse(stored);
+            
+            // Check if the stored data has expired
+            if (storedData.expiresAt && new Date() > new Date(storedData.expiresAt)) {
+              console.log('🔄 Email connection expired, removing...');
+              localStorage.removeItem(storageKey);
+              this.connectedEmail = {};
+              return;
+            }
+            
+            // Remove expiration metadata before using
+            const { savedAt, expiresAt, persistAcrossSessions, ...emailData } = storedData;
+            this.connectedEmail = emailData;
+            console.log('✅ Loaded email connection for user:', this.currentUserId);
           }
-          
-          // Remove expiration metadata before using
-          const { savedAt, expiresAt, ...emailData } = storedData;
-          this.connectedEmail = emailData;
-          console.log('✅ Loaded email connection for user:', this.currentUserId);
+        } catch (decodeError) {
+          console.error('Failed to decode access token:', decodeError);
         }
       }
     } catch (e) {

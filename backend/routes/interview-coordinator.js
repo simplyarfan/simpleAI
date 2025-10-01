@@ -150,7 +150,7 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
       INSERT INTO interviews (
         id, candidate_id, candidate_name, candidate_email, position,
         status, google_form_link, availability_request_sent_at, scheduled_by
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `, [
       interviewId,
       candidateId || null,

@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Brain, Users, BarChart3, FileText, Sparkles, Download, Linkedin, Github } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Brain, Users, BarChart3, Sparkles } from 'lucide-react';
+import DotGrid from '../components/backgrounds/DotGrid';
+import GradientText from '../components/text/GradientText';
 
 export default function LandingPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,34 +16,41 @@ export default function LandingPage() {
         <meta name="description" content="Stop hiring expensive consultants. Get specialized AI agents for HR, Finance, and Sales that work 24/7 and never ask for a raise." />
       </Head>
 
-      <div className="relative min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50 text-gray-900 overflow-hidden">
-        {/* Clean Background - No Floating Elements */}
+      <div className="relative min-h-screen bg-black text-white overflow-hidden">
+        {/* Dot Grid Background */}
+        <DotGrid 
+          dotSize={1.5}
+          dotColor="rgba(249, 115, 22, 0.4)"
+          backgroundColor="transparent"
+          spacing={40}
+        />
+
+        {/* Animated Gradient Orbs */}
         <div className="fixed inset-0 pointer-events-none z-0">
-          {/* Subtle Gradient Orbs Only */}
-          <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-gradient-to-r from-orange-400/10 to-red-600/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-yellow-400/10 to-orange-600/10 rounded-full blur-3xl animate-pulse delay-1000" />
+          <div className="absolute top-1/4 left-1/3 w-96 h-96 bg-gradient-to-r from-orange-500/20 to-red-600/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/3 w-80 h-80 bg-gradient-to-r from-yellow-500/20 to-orange-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
         </div>
 
         {/* Navigation */}
-        <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-white/20">
+        <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10">
           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer hover:scale-105 transition-transform duration-300">
                 <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
                   <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
                 </div>
-                <span className="text-xl font-bold text-gray-900">Nexus</span>
+                <span className="text-xl font-bold text-white">Nexus</span>
               </div>
             </Link>
 
             <div className="hidden md:flex space-x-8 text-sm font-medium">
-              <Link href="/features" className="text-gray-600 hover:text-gray-900 transition-colors">Features</Link>
-              <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">About</Link>
-              <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">Contact</Link>
+              <Link href="/features" className="text-gray-300 hover:text-white transition-colors">Features</Link>
+              <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
+              <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link>
             </div>
 
             <Link href="/auth/login">
-              <button className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300">
+              <button className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300">
                 Get Started
               </button>
             </Link>
@@ -52,13 +61,13 @@ export default function LandingPage() {
         <AnimatePresence>
           {isLoading && (
             <motion.div
-              className="fixed inset-0 bg-white z-40 flex items-center justify-center"
+              className="fixed inset-0 bg-black z-40 flex items-center justify-center"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <motion.div
-                className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full"
+                className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
               />
@@ -71,49 +80,84 @@ export default function LandingPage() {
           {/* Hero Section */}
           <section className="relative min-h-screen flex items-center justify-center pt-24 pb-20">
             <div className="max-w-6xl mx-auto px-6 text-center">
-              <div className="mb-8">
-                <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-sm border border-white/40 rounded-full px-6 py-3 mb-8 shadow-lg">
-                  <div className="w-4 h-4 bg-gradient-to-br from-orange-600 to-red-600 rounded-sm transform rotate-45"></div>
-                  <span className="text-sm font-medium text-gray-700">AI Agents That Actually Work</span>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="mb-8"
+              >
+                <div className="inline-flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3 mb-8 shadow-lg">
+                  <div className="w-4 h-4 bg-gradient-to-br from-orange-600 to-red-600 rounded-sm transform rotate-45 animate-pulse"></div>
+                  <span className="text-sm font-medium text-gray-200">AI Agents That Actually Work</span>
                 </div>
-              </div>
+              </motion.div>
 
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-[0.85] tracking-tight">
-                <span className="text-gray-900">Stop hiring expensive</span>
+              <motion.h1 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-[0.85] tracking-tight"
+              >
+                <span className="text-white">Stop hiring expensive</span>
                 <br />
-                <span className="bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 bg-clip-text text-transparent">
+                <GradientText 
+                  colors={['#ef4444', '#f97316', '#eab308', '#ef4444']}
+                  animationSpeed={6}
+                  className="text-5xl md:text-7xl lg:text-8xl"
+                >
                   consultants
-                </span>
-              </h1>
+                </GradientText>
+              </motion.h1>
 
-              <p className="text-xl md:text-2xl text-gray-700 mb-6 max-w-3xl mx-auto leading-relaxed font-medium">
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="text-xl md:text-2xl text-gray-300 mb-6 max-w-3xl mx-auto leading-relaxed font-medium"
+              >
                 Get specialized AI agents for HR, Finance, and Sales that work 24/7 and never ask for a raise.
-              </p>
+              </motion.p>
 
-              <p className="text-lg text-gray-500 mb-16 max-w-2xl mx-auto italic">
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="text-lg text-gray-400 mb-16 max-w-2xl mx-auto italic"
+              >
                 "Wait, you fired the whole consulting team?" - Your CFO, probably
-              </p>
+              </motion.p>
 
-              <div className="flex justify-center mb-20">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.8 }}
+                className="flex justify-center mb-20"
+              >
                 <Link href="/auth/login">
-                  <button className="px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-xl hover:scale-105 transition-all duration-300">
-                    Try today
+                  <button className="group relative px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold rounded-xl hover:shadow-2xl hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300 overflow-hidden">
+                    <span className="relative z-10">Try today</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </button>
                 </Link>
-              </div>
+              </motion.div>
 
-              {/* Question Card like Cluely */}
-              <div className="max-w-2xl mx-auto">
-                <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-white/40">
+              {/* Question Card */}
+              <motion.div 
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 1 }}
+                className="max-w-2xl mx-auto"
+              >
+                <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10 hover:border-orange-500/50 transition-all duration-300">
                   <div className="flex items-center space-x-3 mb-6">
-                    <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
                       <Sparkles className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-sm font-medium text-gray-500">Question: "Why would I even use Nexus?"</span>
+                    <span className="text-sm font-medium text-gray-400">Question: "Why would I even use Nexus?"</span>
                   </div>
                   
                   <div className="text-left space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Tired of waiting weeks for basic tasks?</h3>
+                    <h3 className="text-lg font-semibold text-white mb-4">Tired of waiting weeks for basic tasks?</h3>
                     <div className="space-y-3">
                       {[
                         '"We need CV analysis for 50 candidates" [Weeks of manual work]',
@@ -122,39 +166,39 @@ export default function LandingPage() {
                       ].map((scenario, index) => (
                         <div key={index} className="flex items-start space-x-2">
                           <span className="text-red-500 mt-1">•</span>
-                          <span className="text-gray-700 font-medium">{scenario}</span>
+                          <span className="text-gray-300 font-medium">{scenario}</span>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-6 p-4 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-200">
-                      <p className="text-sm text-orange-700 font-medium">
-                        <span className="text-orange-600">With Nexus:</span> Get the same results instantly with our free AI agents. They work 24/7 and never complain.
+                    <div className="mt-6 p-4 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-lg border border-orange-500/30">
+                      <p className="text-sm text-orange-300 font-medium">
+                        <span className="text-orange-400 font-bold">With Nexus:</span> Get the same results instantly with our AI agents. They work 24/7 and never complain.
                       </p>
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </section>
 
-
-          {/* Use Cases Section */}
-          <section className="py-32 bg-black text-white relative overflow-hidden">
-            {/* Dark background with subtle pattern */}
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_50%)]"></div>
+          {/* AI Agents Showcase */}
+          <section className="py-32 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-900 to-black"></div>
             
             <div className="max-w-7xl mx-auto px-6 relative z-10">
               <div className="text-center mb-20">
-                <div className="inline-block bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
+                <div className="inline-block text-orange-500 text-sm font-bold mb-4 uppercase tracking-wider">
                   Unfair Advantage Mode
                 </div>
                 <h2 className="text-4xl md:text-6xl font-black text-white mb-8">
                   Stop pretending you know everything.
                   <br />
-                  <span className="bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent">
+                  <GradientText 
+                    colors={['#fbbf24', '#ef4444', '#ec4899']}
+                    className="text-4xl md:text-6xl"
+                  >
                     Start actually knowing everything.
-                  </span>
+                  </GradientText>
                 </h2>
               </div>
 
@@ -166,7 +210,7 @@ export default function LandingPage() {
                     description: "Analyze 100 CVs in seconds. Find the perfect candidates. Schedule interviews automatically. What used to take weeks now takes minutes.",
                     icon: Users,
                     color: "from-orange-400 to-red-600",
-                    benefit: "Instant candidate screening and interview scheduling"
+                    benefit: "Instant candidate screening"
                   },
                   { 
                     title: "Finance Department", 
@@ -174,7 +218,7 @@ export default function LandingPage() {
                     description: "Process invoices instantly. Audit expenses automatically. Catch fraud before it happens. Your CFO will think you hired a team of 10.",
                     icon: BarChart3,
                     color: "from-red-400 to-pink-600",
-                    benefit: "Automated financial processing and fraud detection"
+                    benefit: "Automated fraud detection"
                   },
                   { 
                     title: "Sales & Marketing", 
@@ -182,98 +226,112 @@ export default function LandingPage() {
                     description: "Generate qualified leads 24/7. Optimize campaigns in real-time. Turn your marketing budget into a revenue machine.",
                     icon: Brain,
                     color: "from-yellow-400 to-orange-600",
-                    benefit: "24/7 lead generation and campaign optimization"
+                    benefit: "24/7 lead generation"
                   }
                 ].map((useCase, index) => (
-                  <div
+                  <motion.div
                     key={useCase.title}
-                    className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:scale-105 hover:-translate-y-2 transition-all duration-500 ease-out cursor-pointer"
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.2 }}
+                    viewport={{ once: true }}
+                    whileHover={{ scale: 1.05, y: -10 }}
+                    className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-orange-500/50 transition-all duration-500 ease-out cursor-pointer"
                   >
                     <div className="mb-4">
-                      <useCase.icon className="w-12 h-12 text-white" />
+                      <useCase.icon className="w-12 h-12 text-orange-500 group-hover:scale-110 transition-transform duration-300" />
                     </div>
                     <h3 className="text-xl font-bold text-white mb-2">{useCase.title}</h3>
                     <div className={`text-sm font-semibold bg-gradient-to-r ${useCase.color} bg-clip-text text-transparent mb-3`}>
                       {useCase.subtitle}
                     </div>
-                    <p className="text-gray-300 text-sm leading-relaxed mb-4">{useCase.description}</p>
-                    <div className="text-xs font-bold text-blue-400 bg-blue-400/10 px-3 py-1 rounded-full">
+                    <p className="text-gray-400 text-sm leading-relaxed mb-4">{useCase.description}</p>
+                    <div className="text-xs font-bold text-orange-400 bg-orange-400/10 px-3 py-1 rounded-full inline-block">
                       {useCase.benefit}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
               <div className="text-center">
-                <p className="text-gray-400 text-lg font-medium">Join 10,000+ professionals who stopped playing fair</p>
+                <p className="text-gray-500 text-lg font-medium">Join 10,000+ professionals who stopped playing fair</p>
               </div>
             </div>
           </section>
 
           {/* Final CTA */}
-          <section className="py-32 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-100/50 to-orange-100/50"></div>
+          <section className="py-32 bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5"></div>
             <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-              <div>
-                <div className="inline-block bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent text-sm font-bold mb-4 uppercase tracking-wider">
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <div className="inline-block text-orange-500 text-sm font-bold mb-4 uppercase tracking-wider">
                   Ready to Transform Your Business?
                 </div>
-                <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-6">
+                <h2 className="text-4xl md:text-6xl font-black text-white mb-6">
                   Your departments are waiting for 
                   <br />
-                  <span className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 bg-clip-text text-transparent">
+                  <GradientText 
+                    colors={['#ef4444', '#f97316', '#eab308']}
+                    className="text-4xl md:text-6xl"
+                  >
                     their AI agents.
-                  </span>
+                  </GradientText>
                 </h2>
-                <p className="text-xl text-gray-700 mb-8 font-medium">
+                <p className="text-xl text-gray-400 mb-8 font-medium">
                   Stop waiting weeks for work AI can do in minutes.
                 </p>
                 
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-orange-200 shadow-xl">
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-white/10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
                     <div>
-                      <h4 className="font-bold text-red-600 mb-3">Without Nexus:</h4>
-                      <ul className="space-y-2 text-sm text-gray-600">
-                        <li>• Hiring external recruiting consultants</li>
-                        <li>• Waiting weeks for expense audits</li>
-                        <li>• Manual CV screening taking forever</li>
-                        <li>• Slow marketing agencies with delayed results</li>
+                      <h4 className="font-bold text-red-500 mb-3">Without Nexus:</h4>
+                      <ul className="space-y-2 text-sm text-gray-400">
+                        <li>• Hiring external consultants</li>
+                        <li>• Waiting weeks for audits</li>
+                        <li>• Manual CV screening forever</li>
+                        <li>• Slow agencies with delays</li>
                       </ul>
                     </div>
                     <div>
-                      <h4 className="font-bold text-green-600 mb-3">With Nexus:</h4>
-                      <ul className="space-y-2 text-sm text-gray-600">
-                        <li>• Free AI agents working 24/7</li>
-                        <li>• Instant invoice processing and fraud detection</li>
-                        <li>• 100 CVs analyzed in seconds</li>
-                        <li>• Lead generation and campaign optimization automated</li>
+                      <h4 className="font-bold text-green-500 mb-3">With Nexus:</h4>
+                      <ul className="space-y-2 text-sm text-gray-400">
+                        <li>• AI agents working 24/7</li>
+                        <li>• Instant fraud detection</li>
+                        <li>• 100 CVs in seconds</li>
+                        <li>• Automated optimization</li>
                       </ul>
                     </div>
                   </div>
                 </div>
 
                 <Link href="/auth/login">
-                  <button className="bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 text-white font-bold px-16 py-6 rounded-2xl text-2xl hover:shadow-2xl hover:scale-105 hover:-translate-y-1 transition-all duration-500 ease-out mb-4">
-                    Try today
+                  <button className="group relative bg-gradient-to-r from-red-600 via-orange-600 to-yellow-600 text-white font-bold px-16 py-6 rounded-2xl text-2xl hover:shadow-2xl hover:shadow-orange-500/50 hover:scale-105 hover:-translate-y-1 transition-all duration-500 ease-out mb-4 overflow-hidden">
+                    <span className="relative z-10">Try today</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </button>
                 </Link>
                 
                 <p className="text-sm text-gray-500">
                   Setup takes 5 minutes. Your first AI agent can be working today.
                 </p>
-              </div>
+              </motion.div>
             </div>
           </section>
 
-          {/* Clean Minimalistic Footer */}
-          <footer className="py-12 bg-white border-t border-gray-100">
+          {/* Footer */}
+          <footer className="py-12 bg-black border-t border-white/10">
             <div className="max-w-7xl mx-auto px-6">
               <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                 <div className="flex items-center space-x-2">
                   <div className="w-6 h-6 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
                     <div className="w-3 h-3 bg-white rounded-sm transform rotate-45"></div>
                   </div>
-                  <span className="text-lg font-bold text-gray-900">Nexus</span>
+                  <span className="text-lg font-bold text-white">Nexus</span>
                 </div>
                 
                 <div className="text-sm text-gray-500">
