@@ -28,6 +28,23 @@ export const AuthProvider = ({ children }) => {
 
   log('🔗 API Base URL:', API_BASE);
 
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const token = tokenManager.getAccessToken();
+    console.log('🔐 [AUTH] Getting headers - Token exists:', !!token);
+    
+    if (!token) {
+      console.log('🔐 [AUTH] No token found');
+      return null;
+    }
+    
+    // Don't check expiration here - let the interceptor handle it
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  };
+
   // Check authentication status on mount
   useEffect(() => {
     checkAuthStatus();
@@ -43,13 +60,16 @@ export const AuthProvider = ({ children }) => {
 
       log('🔐 Token exists, verifying with server...');
       
-      // Verify token with server and get real user data
+      const headers = getAuthHeaders();
+      if (!headers) {
+        console.log('🔐 [AUTH] No valid headers, skipping auth check');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(`${API_BASE}/auth/check`, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
       });
 
       if (response.ok) {

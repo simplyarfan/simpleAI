@@ -64,7 +64,7 @@ export const tokenManager = {
       window.location.hostname !== '127.0.0.1';
     
     const cookieOptions = {
-      expires: 7,
+      expires: 30, // Increased from 7 to 30 days
       path: '/',
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'lax'
@@ -73,10 +73,10 @@ export const tokenManager = {
     Cookies.set('accessToken', accessToken, cookieOptions);
     Cookies.set('refreshToken', refreshToken, {
       ...cookieOptions,
-      expires: 30
+      expires: 90 // Increased from 30 to 90 days
     });
     
-    console.log('🍪 [TOKENS] Tokens saved to cookies');
+    console.log('🍪 [TOKENS] Tokens saved to cookies with extended expiration');
   },
   
   clearTokens: () => {
@@ -138,30 +138,40 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     
     if (error.response?.status === 401 && !originalRequest._retry) {
+      console.log('🔄 [AUTH] 401 error, attempting token refresh...');
       originalRequest._retry = true;
       
       const refreshToken = tokenManager.getRefreshToken();
       if (refreshToken && !tokenManager.isTokenExpired(refreshToken)) {
         try {
+          console.log('🔄 [AUTH] Refreshing token...');
           const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
             refreshToken
           });
           
-          const { accessToken } = response.data.data;
-          tokenManager.setTokens(accessToken, refreshToken);
-          
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return api(originalRequest);
+          if (response.data?.success) {
+            const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+            tokenManager.setTokens(accessToken, newRefreshToken || refreshToken);
+            
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            console.log('✅ [AUTH] Token refreshed successfully, retrying request');
+            return api(originalRequest);
+          } else {
+            throw new Error('Token refresh response invalid');
+          }
         } catch (refreshError) {
-          console.error('❌ Token refresh failed');
+          console.error('❌ [AUTH] Token refresh failed:', refreshError.message);
           tokenManager.clearTokens();
-          if (typeof window !== 'undefined') {
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/')) {
+            console.log('🔄 [AUTH] Redirecting to login...');
             window.location.href = '/auth/login';
           }
         }
       } else {
+        console.log('❌ [AUTH] No valid refresh token, clearing tokens');
         tokenManager.clearTokens();
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/')) {
+          console.log('🔄 [AUTH] Redirecting to login...');
           window.location.href = '/auth/login';
         }
       }

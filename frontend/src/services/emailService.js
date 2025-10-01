@@ -308,18 +308,20 @@ class EmailService {
     return this.connectedEmail.outlook?.connected || false;
   }
 
-  // Save to localStorage (per-user)
+  // Save to localStorage (per-user) with longer expiration
   saveConnectedEmail() {
     if (typeof window !== 'undefined' && this.currentUserId) {
       const storageKey = `connectedEmail_${this.currentUserId}`;
       const dataToStore = {
         ...this.connectedEmail,
         savedAt: new Date().toISOString(),
-        // Set expiration to 30 days from now
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        // Set expiration to 90 days from now (longer persistence)
+        expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+        // Add a flag to indicate this should persist across sessions
+        persistAcrossSessions: true
       };
       localStorage.setItem(storageKey, JSON.stringify(dataToStore));
-      console.log('✅ Email connection saved with 30-day expiration');
+      console.log('✅ Email connection saved with 90-day expiration and session persistence');
     }
   }
 
