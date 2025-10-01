@@ -313,7 +313,8 @@ export const AuthProvider = ({ children }) => {
     verifyEmail,
     resendVerification,
     checkAuthStatus,
-    updateUser
+    updateUser,
+    getAuthHeaders
   };
 
   return (
