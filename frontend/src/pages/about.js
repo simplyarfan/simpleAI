@@ -46,8 +46,9 @@ export default function About() {
             </div>
 
             <Link href="/auth/login">
-              <button className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300">
-                Get Started
+              <button className="group relative px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300 overflow-hidden">
+                <span className="relative z-10">Get Started</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
             </Link>
           </div>
@@ -236,24 +237,25 @@ export default function About() {
           </section>
 
           {/* CTA Section */}
-          <section className="py-20 bg-gradient-to-br from-orange-500 to-red-600">
+          <section className="py-16 bg-gradient-to-br from-orange-500/10 to-red-500/10 border-y border-orange-500/20">
             <div className="max-w-4xl mx-auto px-6 text-center">
               <motion.div
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
-                className="space-y-8"
+                className="space-y-6"
               >
-                <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                   Join Us on This Journey
                 </h2>
-                <p className="text-xl text-orange-100 mb-8">
+                <p className="text-lg text-gray-400 mb-6">
                   Be part of the AI revolution and transform your business today.
                 </p>
                 <Link href="/auth/register">
-                  <button className="px-8 py-4 bg-white text-orange-600 font-semibold rounded-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
-                    Start Your Free Trial
+                  <button className="group relative px-8 py-3 bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold rounded-xl hover:shadow-2xl hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300 overflow-hidden">
+                    <span className="relative z-10">Start Your Free Trial</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </button>
                 </Link>
               </motion.div>

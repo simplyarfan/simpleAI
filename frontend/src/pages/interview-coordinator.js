@@ -243,13 +243,32 @@ Best regards,
       link.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      toast.error('Failed to download calendar file');
+      toast.error('Failed to download calendar');
+    }
+  };
+
+  const deleteInterview = async (interviewId) => {
+    if (!confirm('Are you sure you want to delete this interview?')) {
+      return;
+    }
+    
+    try {
+      const headers = getAuthHeaders();
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/interview/${interviewId}`,
+        { headers }
+      );
+      
+      toast.success('Interview deleted successfully!');
+      fetchInterviews();
+    } catch (error) {
+      toast.error('Failed to delete interview');
     }
   };
 
   const filteredInterviews = interviews.filter(interview => {
     const matchesSearch = interview.candidate_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         interview.position.toLowerCase().includes(searchTerm.toLowerCase());
+                         interview.job_title?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || interview.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -386,7 +405,7 @@ Best regards,
                             <div className="text-sm text-gray-500">{interview.candidate_email}</div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{interview.position}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{interview.job_title}</td>
                         <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(interview.status, interview.outcome)}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {interview.scheduled_time ? new Date(interview.scheduled_time).toLocaleString() : '-'}
@@ -435,6 +454,12 @@ Best regards,
                               </button>
                             </>
                           )}
+                          <button
+                            onClick={() => deleteInterview(interview.id)}
+                            className="text-red-600 hover:text-red-900 ml-2"
+                          >
+                            Delete
+                          </button>
                         </td>
                       </tr>
                     ))}

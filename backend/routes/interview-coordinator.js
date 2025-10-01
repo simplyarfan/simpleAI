@@ -605,4 +605,45 @@ Best regards,
   }
 });
 
+/**
+ * DELETE /interview/:id - Delete an interview
+ */
+router.delete('/interview/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    await database.connect();
+
+    // Verify the interview belongs to the user
+    const interview = await database.get(`
+      SELECT * FROM interviews 
+      WHERE id = $1 AND scheduled_by = $2
+    `, [id, req.user.id]);
+
+    if (!interview) {
+      return res.status(404).json({
+        success: false,
+        message: 'Interview not found or you do not have permission to delete it'
+      });
+    }
+
+    // Delete the interview
+    await database.run(`
+      DELETE FROM interviews WHERE id = $1
+    `, [id]);
+
+    res.json({
+      success: true,
+      message: 'Interview deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete interview error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete interview',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

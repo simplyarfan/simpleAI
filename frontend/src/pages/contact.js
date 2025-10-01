@@ -54,8 +54,9 @@ export default function Contact() {
             </div>
 
             <Link href="/auth/login">
-              <button className="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300">
-                Get Started
+              <button className="group relative px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300 overflow-hidden">
+                <span className="relative z-10">Get Started</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
             </Link>
           </div>
