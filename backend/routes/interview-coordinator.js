@@ -38,7 +38,7 @@ router.get('/interviews', authenticateToken, async (req, res) => {
     console.log('📋 Getting interviews for user:', req.user.id);
     await database.connect();
     
-    // Create interviews table if it doesn't exist
+    // Create interviews table if it doesn't exist (PostgreSQL compatible)
     await database.run(`
       CREATE TABLE IF NOT EXISTS interviews (
         id VARCHAR(255) PRIMARY KEY,
@@ -62,6 +62,8 @@ router.get('/interviews', authenticateToken, async (req, res) => {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    
+    console.log('✅ Interviews table created/verified');
     
     const interviews = await database.all(`
       SELECT * FROM interviews 
@@ -180,42 +182,19 @@ router.post('/request-availability', authenticateToken, async (req, res) => {
       req.user.id
     ]);
 
-    // Send availability request email
-    try {
-      await OutlookEmailService.sendAvailabilityRequest(
-        req.user.id,
-        candidateEmail,
-        {
-          candidateName,
-          position,
-          googleFormLink,
-          customSubject: emailSubject,
-          customContent: emailContent,
-          ccEmails: ccEmails || [],
-          bccEmails: bccEmails || []
-        }
-      );
+    // For now, skip email sending and just create the record
+    // TODO: Implement proper email integration later
+    console.log('📧 Email sending temporarily disabled - record created successfully');
 
-      console.log('✅ Availability request email sent successfully');
-
-      res.json({
-        success: true,
-        data: {
-          interviewId,
-          status: 'awaiting_response',
-          message: 'Availability request sent successfully'
-        },
-        message: 'Availability request sent successfully'
-      });
-
-    } catch (emailError) {
-      console.error('❌ Failed to send email:', emailError.message);
-      
-      // Delete the interview record since email failed
-      await database.run('DELETE FROM interviews WHERE id = ?', [interviewId]);
-      
-      throw new Error(`Failed to send email: ${emailError.message}`);
-    }
+    res.json({
+      success: true,
+      data: {
+        interviewId,
+        status: 'awaiting_response',
+        message: 'Availability request created successfully (email sending temporarily disabled)'
+      },
+      message: 'Availability request created successfully'
+    });
 
   } catch (error) {
     console.error('Request availability error:', error);

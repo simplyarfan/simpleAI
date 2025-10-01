@@ -34,13 +34,14 @@ const BatchDetail = () => {
 
   const handleScheduleInterview = (candidate) => {
     // Navigate to the new interview coordinator with pre-filled data
+    // Use batch name as position instead of candidate.position
     router.push({
       pathname: '/interview-coordinator',
       query: {
         action: 'request-availability',
         candidateName: candidate.name,
         candidateEmail: candidate.email,
-        position: candidate.position || 'Software Engineer',
+        position: batch?.name || 'Software Engineer', // Use batch name as position
         from: 'cv-intelligence',
         batchId: id
       }

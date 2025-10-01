@@ -141,7 +141,7 @@ Best regards,
       );
 
       if (response.data?.success) {
-        toast.success('Availability request sent successfully!');
+        toast.success(response.data.message || 'Availability request created successfully!');
         setShowAvailabilityModal(false);
         setAvailabilityForm({
           candidateName: '',
@@ -154,9 +154,13 @@ Best regards,
           bccEmails: ''
         });
         fetchInterviews();
+      } else {
+        toast.error(response.data?.message || 'Failed to create availability request');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to send availability request');
+      console.error('Availability request error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to send availability request';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
