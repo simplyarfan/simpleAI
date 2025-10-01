@@ -4,10 +4,6 @@ import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Users, BarChart3, Sparkles } from 'lucide-react';
 import Aurora from '../components/reactbits/Aurora';
-import Particles from '../components/reactbits/Particles';
-import SplitText from '../components/reactbits/SplitText';
-import BlurText from '../components/reactbits/BlurText';
-import TiltedCard from '../components/reactbits/TiltedCard';
 import GradientText from '../components/text/GradientText';
 
 export default function LandingPage() {
@@ -24,15 +20,6 @@ export default function LandingPage() {
         {/* Aurora Background - Stunning gradient animation */}
         <div className="fixed inset-0 z-0">
           <Aurora />
-        </div>
-        
-        {/* Floating Particles */}
-        <div className="fixed inset-0 z-0 opacity-30">
-          <Particles 
-            quantity={50}
-            color="#f97316"
-            size={2}
-          />
         </div>
 
 
@@ -115,18 +102,14 @@ export default function LandingPage() {
                 </GradientText>
               </motion.h1>
 
-              <motion.div 
+              <motion.p 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
                 className="text-xl md:text-2xl text-gray-300 mb-6 max-w-3xl mx-auto leading-relaxed font-medium"
               >
-                <BlurText 
-                  text="Get specialized AI agents for HR, Finance, and Sales that work 24/7 and never ask for a raise."
-                  delay={100}
-                  className="text-xl md:text-2xl"
-                />
-              </motion.div>
+                Get specialized AI agents for HR, Finance, and Sales that work 24/7 and never ask for a raise.
+              </motion.p>
 
               <motion.p 
                 initial={{ opacity: 0, y: 20 }}
@@ -245,29 +228,24 @@ export default function LandingPage() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, delay: index * 0.2 }}
                     viewport={{ once: true }}
+                    whileHover={{ 
+                      scale: 1.05, 
+                      y: -10,
+                      transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
+                    }}
+                    className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/20 transition-all duration-300 ease-out cursor-pointer"
                   >
-                    <TiltedCard
-                      className="h-full"
-                      glareEnable={true}
-                      glareMaxOpacity={0.3}
-                      glareColor="#f97316"
-                      glarePosition="all"
-                      glareBorderRadius="16px"
-                    >
-                      <div className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 hover:border-orange-500/50 hover:shadow-2xl hover:shadow-orange-500/20 transition-all duration-300 ease-out cursor-pointer h-full">
-                        <div className="mb-4">
-                          <useCase.icon className="w-12 h-12 text-orange-500 group-hover:scale-110 transition-transform duration-300" />
-                        </div>
-                        <h3 className="text-xl font-bold text-white mb-2">{useCase.title}</h3>
-                        <div className={`text-sm font-semibold bg-gradient-to-r ${useCase.color} bg-clip-text text-transparent mb-3`}>
-                          {useCase.subtitle}
-                        </div>
-                        <p className="text-gray-400 text-sm leading-relaxed mb-4">{useCase.description}</p>
-                        <div className="text-xs font-bold text-orange-400 bg-orange-400/10 px-3 py-1 rounded-full inline-block">
-                          {useCase.benefit}
-                        </div>
-                      </div>
-                    </TiltedCard>
+                    <div className="mb-4">
+                      <useCase.icon className="w-12 h-12 text-orange-500 group-hover:scale-110 transition-transform duration-300" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">{useCase.title}</h3>
+                    <div className={`text-sm font-semibold bg-gradient-to-r ${useCase.color} bg-clip-text text-transparent mb-3`}>
+                      {useCase.subtitle}
+                    </div>
+                    <p className="text-gray-400 text-sm leading-relaxed mb-4">{useCase.description}</p>
+                    <div className="text-xs font-bold text-orange-400 bg-orange-400/10 px-3 py-1 rounded-full inline-block">
+                      {useCase.benefit}
+                    </div>
                   </motion.div>
                 ))}
               </div>
