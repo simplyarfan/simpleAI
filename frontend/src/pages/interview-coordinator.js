@@ -109,7 +109,7 @@ Best regards,
       }
       
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/interviews`,
+        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/interviews`,
         { headers }
       );
       
@@ -149,7 +149,7 @@ Best regards,
       };
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/request-availability`,
+        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/request-availability`,
         payload,
         { headers }
       );
@@ -193,7 +193,7 @@ Best regards,
       };
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/schedule-interview`,
+        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/schedule-interview`,
         payload,
         { headers }
       );
@@ -215,7 +215,7 @@ Best regards,
     try {
       const headers = getAuthHeaders();
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/interview/${interviewId}/status`,
+        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/interview/${interviewId}/status`,
         { status, outcome },
         { headers }
       );
@@ -231,7 +231,7 @@ Best regards,
     try {
       const headers = getAuthHeaders();
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/interview-coordinator/calendar/${interviewId}/ics`,
+        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/calendar/${interviewId}/ics`,
         { headers, responseType: 'blob' }
       );
       
