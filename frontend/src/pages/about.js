@@ -67,10 +67,12 @@ export default function About() {
                 <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
                   Building the Future of
                   <br />
-                  <RotatingText 
-                    words={['Artificial Intelligence', 'Business Automation', 'Smart Solutions', 'Digital Innovation']}
-                    className="text-5xl md:text-6xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent"
-                  />
+                  <div className="inline-block bg-gradient-to-r from-orange-500/20 to-red-600/20 backdrop-blur-sm px-8 py-4 rounded-2xl border border-orange-500/30 mt-4">
+                    <RotatingText 
+                      words={['Artificial Intelligence', 'Business Automation', 'Smart Solutions', 'Digital Innovation']}
+                      className="text-5xl md:text-6xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent font-bold"
+                    />
+                  </div>
                 </h1>
                 <p className="text-xl text-gray-400 max-w-4xl mx-auto">
                   We're on a mission to make advanced AI accessible to every business, empowering innovation and driving positive change across industries.
