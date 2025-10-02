@@ -35,29 +35,27 @@ export default function LandingPage() {
 
 
         {/* StaggeredMenu Navigation */}
-        <div style={{ height: '100vh', background: '#1a1a1a' }}>
-          <StaggeredMenu
-            position="right"
-            items={[
-              { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
-              { label: 'Features', link: '/features', ariaLabel: 'View features' },
-              { label: 'About', link: '/about', ariaLabel: 'About us' },
-              { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' }
-            ]}
-            socialItems={[
-              { label: 'GitHub', link: 'https://github.com' },
-              { label: 'Twitter', link: 'https://twitter.com' },
-              { label: 'LinkedIn', link: 'https://linkedin.com' }
-            ]}
-            displaySocials={true}
-            displayItemNumbering={true}
-            menuButtonColor="#fff"
-            openMenuButtonColor="#fff"
-            changeMenuColorOnOpen={true}
-            colors={['#B19EEF', '#5227FF']}
-            accentColor="#ff6b6b"
-          />
-        </div>
+        <StaggeredMenu
+          position="right"
+          items={[
+            { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
+            { label: 'Features', link: '/features', ariaLabel: 'View features' },
+            { label: 'About', link: '/about', ariaLabel: 'About us' },
+            { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' }
+          ]}
+          socialItems={[
+            { label: 'GitHub', link: 'https://github.com' },
+            { label: 'Twitter', link: 'https://twitter.com' },
+            { label: 'LinkedIn', link: 'https://linkedin.com' }
+          ]}
+          displaySocials={true}
+          displayItemNumbering={true}
+          menuButtonColor="#fff"
+          openMenuButtonColor="#fff"
+          changeMenuColorOnOpen={true}
+          colors={['#B19EEF', '#5227FF']}
+          accentColor="#ff6b6b"
+        />
 
         {/* Loading Transition */}
         <AnimatePresence>
