@@ -224,21 +224,6 @@ export default function Contact() {
                     </motion.div>
                   ))}
                 </div>
-
-                <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-2xl p-6 border border-orange-500/30">
-                  <h3 className="text-lg font-bold text-white mb-2">Need immediate help?</h3>
-                  <p className="text-gray-400 text-sm mb-4">
-                    Check out our documentation or start a live chat with our support team.
-                  </p>
-                  <div className="flex space-x-4">
-                    <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-lg transition-colors">
-                      Documentation
-                    </button>
-                    <button className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm font-medium rounded-lg hover:shadow-lg transition-all">
-                      Start Chat
-                    </button>
-                  </div>
-                </div>
               </motion.div>
             </div>
           </div>
