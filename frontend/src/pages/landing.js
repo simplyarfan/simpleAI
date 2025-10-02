@@ -43,9 +43,9 @@ export default function LandingPage() {
             { label: 'Sign Up', link: '/auth/register', ariaLabel: 'Create new account' }
           ]}
           socialItems={[
-            { label: 'GitHub', link: 'https://github.com' },
-            { label: 'Twitter', link: 'https://twitter.com' },
-            { label: 'LinkedIn', link: 'https://linkedin.com' }
+            { label: 'GitHub', link: 'https://github.com/simplyarfan/simpleAI' },
+            { label: 'Twitter', link: 'https://x.com/simplyarfan' },
+            { label: 'LinkedIn', link: 'https://www.linkedin.com/in/syedarfan/' }
           ]}
           displaySocials={true}
           displayItemNumbering={true}
