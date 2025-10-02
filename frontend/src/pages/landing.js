@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Users, BarChart3, Sparkles, Menu, X, Star } from 'lucide-react';
-import Particles from '../components/reactbits/Particles';
+import Aurora from '../components/reactbits/Aurora';
 import BlurText from '../components/reactbits/BlurText';
 import SplitText from '../components/reactbits/SplitText';
 import Cubes from '../components/reactbits/Cubes';
@@ -21,13 +21,13 @@ export default function LandingPage() {
       </Head>
 
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
-        {/* Particles Background - Subtle floating particles */}
-        <div className="fixed inset-0 z-0 opacity-40">
-          <Particles 
-            quantity={80}
-            color="#f97316"
-            size={1.5}
-            refresh={false}
+        {/* Aurora Background - Beautiful gradient waves */}
+        <div className="fixed inset-0 z-0">
+          <Aurora 
+            colorStops={["#ef4444", "#f97316", "#eab308"]}
+            blend={0.5}
+            amplitude={1.0}
+            speed={0.5}
           />
         </div>
 
