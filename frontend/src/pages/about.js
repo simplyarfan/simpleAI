@@ -33,7 +33,9 @@ export default function About() {
             { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
             { label: 'Features', link: '/features', ariaLabel: 'View features' },
             { label: 'About', link: '/about', ariaLabel: 'About us' },
-            { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' }
+            { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' },
+            { label: 'Login', link: '/auth/login', ariaLabel: 'Login to your account' },
+            { label: 'Sign Up', link: '/auth/register', ariaLabel: 'Create new account' }
           ]}
           socialItems={[
             { label: 'GitHub', link: 'https://github.com' },
@@ -46,7 +48,7 @@ export default function About() {
           openMenuButtonColor="#000"
           changeMenuColorOnOpen={true}
           accentColor="#f97316"
-          logoUrl="/logo.png"
+          logoUrl="/images/logo.png"
         />
 
         {/* Main Content */}

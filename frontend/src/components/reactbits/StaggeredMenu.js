@@ -394,6 +394,15 @@ export const StaggeredMenu = ({
           </button>
         </header>
 
+        {/* Backdrop overlay when menu is open */}
+        {open && (
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9996]"
+            onClick={toggleMenu}
+            aria-hidden="true"
+          />
+        )}
+
         <aside
           id="staggered-menu-panel"
           ref={panelRef}

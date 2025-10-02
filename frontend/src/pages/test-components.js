@@ -5,7 +5,6 @@ import SplitText from '../components/reactbits/SplitText';
 import BlurText from '../components/reactbits/BlurText';
 import RotatingText from '../components/reactbits/RotatingText';
 import LogoLoop from '../components/reactbits/LogoLoop';
-import Cubes from '../components/reactbits/Cubes';
 import InfiniteScroll from '../components/reactbits/InfiniteScroll';
 
 export default function TestComponents() {
@@ -119,18 +118,6 @@ export default function TestComponents() {
           </div>
         </section>
 
-        {/* Cubes Test */}
-        <section className="py-32 bg-gray-900 flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold mb-12">Cubes Component</h2>
-            <Cubes 
-              gridSize={6}
-              maxAngle={45}
-              radius={3}
-              speed={0.5}
-            />
-          </div>
-        </section>
 
         {/* InfiniteScroll Test */}
         <section className="py-32 bg-black">
