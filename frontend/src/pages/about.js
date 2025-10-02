@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Brain, Users, BarChart3, Rocket, Target, Award, TrendingUp } from 'lucide-react';
 import DotGrid from '../components/backgrounds/DotGrid';
 import RotatingText from '../components/reactbits/RotatingText';
+import LogoLoop from '../components/reactbits/LogoLoop';
 import { StaggeredMenu } from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
@@ -238,6 +239,35 @@ export default function About() {
                   ))}
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Tech Stack Section */}
+          <section className="py-20 bg-white/5">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-bold text-white mb-4">Powered By Cutting-Edge Technology</h2>
+                <p className="text-lg text-gray-400">Built with the best tools and frameworks</p>
+              </div>
+
+              <LogoLoop
+                logos={[
+                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg', alt: 'React' },
+                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg', alt: 'Next.js' },
+                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg', alt: 'Node.js' },
+                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg', alt: 'Python' },
+                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg', alt: 'TensorFlow' },
+                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg', alt: 'PostgreSQL' },
+                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg', alt: 'Docker' },
+                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg', alt: 'AWS' }
+                ]}
+                speed={120}
+                direction="left"
+                logoHeight={48}
+                gap={40}
+                pauseOnHover={true}
+                fadeOut={true}
+              />
             </div>
           </section>
          
