@@ -6,6 +6,7 @@ import { Brain, Users, BarChart3, Sparkles, Star } from 'lucide-react';
 import Aurora from '../components/reactbits/Aurora';
 import BlurText from '../components/reactbits/BlurText';
 import SplitText from '../components/reactbits/SplitText';
+import InfiniteScroll from '../components/reactbits/InfiniteScroll';
 import { StaggeredMenu } from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
@@ -268,17 +269,39 @@ export default function LandingPage() {
             </div>
           </section>
 
+          {/* Testimonials Scroll */}
+          <section className="py-20 bg-white/5">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-bold text-white mb-4">What Our Clients Say</h2>
+                <p className="text-lg text-gray-400">Join thousands of businesses already using Nexus AI</p>
+              </div>
+              <InfiniteScroll 
+                items={[
+                  '⭐⭐⭐⭐⭐ "Nexus AI transformed our HR department!" - Sarah M., HR Director',
+                  '🚀 "Best investment we made this year. ROI in 3 months!" - John D., CEO',
+                  '💼 "Our sales team loves the AI assistant. 40% productivity boost!" - Mike R., Sales Manager',
+                  '✨ "Finally, AI that actually works for our business!" - Lisa K., Operations',
+                  '🎯 "Cut our hiring time in half with Nexus AI agents" - David L., Recruiter',
+                  '💎 "Game changer for our finance team. Highly recommended!" - Emma S., CFO'
+                ]}
+                autoplay={true}
+                autoplaySpeed={0.8}
+                pauseOnHover={true}
+              />
+            </div>
+          </section>
 
           {/* Final CTA */}
-          <section className="py-32 bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-red-500/5"></div>
-            <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+          <section className="py-32 relative">
+            <div className="max-w-4xl mx-auto px-6 text-center">
               <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8 }}
                 viewport={{ once: true }}
-              >
+                className="space-y-8"
+              >  
                 <div className="inline-block text-orange-500 text-sm font-bold mb-4 uppercase tracking-wider">
                   Ready to Transform Your Business?
                 </div>
