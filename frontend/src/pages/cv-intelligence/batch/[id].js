@@ -435,9 +435,9 @@ const BatchDetail = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
               {/* Contact Information */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <div className="bg-white border border-gray-200 rounded-lg p-6 h-fit">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <Icons.User className="w-5 h-5 mr-2 text-blue-600" />
                   Contact Information
@@ -646,85 +646,57 @@ const BatchDetail = () => {
                             <span className="font-semibold text-gray-900">{experienceYears} years • {experience.length} positions</span>
                           </div>
                           
-                          {/* Experience Cards */}
-                          <div className="space-y-3">
-                            {experience.map((exp, index) => {
-                              const achievements = exp.achievements || [];
-                              // Show ALL achievements, not just 2
-                              const summary = achievements.length > 0 
-                                ? achievements.join('. ') + '.'
-                                : 'Key contributions and responsibilities in this role.';
-                              
-                              return (
-                                <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                                  <div className="flex justify-between items-start mb-2">
-                                    <div className="flex-1">
-                                      <h4 className="font-semibold text-gray-900 text-sm">{exp.role || 'Role not specified'}</h4>
-                                      <p className="text-sm text-blue-600 font-medium">{exp.company || 'Company not specified'}</p>
+                          {/* Experience Cards with Timeline */}
+                          <div className="relative">
+                            {/* Timeline Line */}
+                            {experience.length > 1 && (
+                              <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gradient-to-b from-green-500 via-blue-500 to-purple-500"></div>
+                            )}
+                            
+                            <div className="space-y-4">
+                              {experience.map((exp, index) => {
+                                const achievements = exp.achievements || [];
+                                const summary = achievements.length > 0 
+                                  ? achievements.join('. ') + '.'
+                                  : 'Key contributions and responsibilities in this role.';
+                                const isCurrent = exp.endDate && exp.endDate.toLowerCase().includes('present');
+                                
+                                return (
+                                  <div key={index} className="relative pl-12">
+                                    {/* Timeline Dot */}
+                                    <div className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                      isCurrent ? 'bg-green-500 ring-4 ring-green-100' : 'bg-blue-500 ring-4 ring-blue-100'
+                                    }`}>
+                                      <span className="text-white text-xs font-bold">{index + 1}</span>
                                     </div>
-                                    <div className="text-right">
-                                      <p className="text-xs text-gray-500">{exp.startDate || 'Start'} - {exp.endDate || 'Present'}</p>
-                                      {index === 0 && exp.endDate && exp.endDate.toLowerCase().includes('present') && (
-                                        <span className="inline-block mt-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Current</span>
-                                      )}
+                                    
+                                    {/* Experience Card */}
+                                    <div className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                      <div className="flex justify-between items-start mb-2">
+                                        <div className="flex-1">
+                                          <h4 className="font-semibold text-gray-900 text-sm">{exp.role || 'Role not specified'}</h4>
+                                          <p className="text-sm text-blue-600 font-medium">{exp.company || 'Company not specified'}</p>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className="flex items-center space-x-1 text-xs text-gray-500 mb-1">
+                                            <Icons.Calendar className="w-3 h-3" />
+                                            <span>{exp.startDate || 'Start'} - {exp.endDate || 'Present'}</span>
+                                          </div>
+                                          {isCurrent && (
+                                            <span className="inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">Current</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">{summary}</p>
                                     </div>
                                   </div>
-                                  {/* Show full description without line-clamp */}
-                                  <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">{summary}</p>
-                                </div>
-                              );
-                            })}
+                                );
+                              })}
+                            </div>
                           </div>
                           
                           {experience.length === 0 && (
                             <p className="text-gray-500 text-sm text-center py-4">Experience details not available</p>
-                          )}
-                          
-                          {/* Experience Timeline */}
-                          {experience.length > 0 && (
-                            <div className="mt-6 pt-6 border-t border-gray-200">
-                              <h4 className="text-sm font-semibold text-gray-900 mb-4">Career Timeline</h4>
-                              <div className="relative">
-                                {/* Timeline Line */}
-                                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green-500 via-blue-500 to-purple-500"></div>
-                                
-                                {/* Timeline Items */}
-                                <div className="space-y-6">
-                                  {experience.map((exp, index) => {
-                                    const isCurrent = exp.endDate && exp.endDate.toLowerCase().includes('present');
-                                    return (
-                                      <div key={index} className="relative pl-12">
-                                        {/* Timeline Dot */}
-                                        <div className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                                          isCurrent ? 'bg-green-500 ring-4 ring-green-100' : 'bg-blue-500 ring-4 ring-blue-100'
-                                        }`}>
-                                          <span className="text-white text-xs font-bold">{index + 1}</span>
-                                        </div>
-                                        
-                                        {/* Timeline Content */}
-                                        <div className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                                          <div className="flex justify-between items-start mb-2">
-                                            <div>
-                                              <h5 className="font-bold text-gray-900">{exp.role}</h5>
-                                              <p className="text-sm text-blue-600 font-medium">{exp.company}</p>
-                                            </div>
-                                            {isCurrent && (
-                                              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
-                                                Current
-                                              </span>
-                                            )}
-                                          </div>
-                                          <div className="flex items-center space-x-2 text-xs text-gray-500">
-                                            <Icons.Calendar className="w-3 h-3" />
-                                            <span>{exp.startDate} - {exp.endDate || 'Present'}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </div>
                           )}
                         </div>
                       );
@@ -881,6 +853,20 @@ const BatchDetail = () => {
                       fullCandidate: selectedCandidate
                     });
 
+                    // Get candidate data for ranking explanation
+                    const profileData = selectedCandidate.profile_json || {};
+                    const candidateSkills = profileData.skills || [];
+                    const candidateExp = (profileData.experience || []).filter(exp => {
+                      const company = (exp.company || '').toLowerCase();
+                      return !company.includes('competition') && !company.includes('hackathon');
+                    });
+                    
+                    const requiredSkills = ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'AWS', 'Git', 'HTML', 'CSS', 'MongoDB', 'Express'];
+                    const matchedSkills = candidateSkills.filter(skill => 
+                      requiredSkills.some(req => req.toLowerCase() === skill.toLowerCase())
+                    );
+                    const skillMatchRate = Math.round((matchedSkills.length / requiredSkills.length) * 100);
+
                     return (
                       <div className="space-y-4">
                         {/* Main Assessment from rankingReason */}
@@ -893,6 +879,40 @@ const BatchDetail = () => {
                             <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-wrap">{rankingReason}</p>
                           </div>
                         )}
+                        
+                        {/* Ranking Explanation */}
+                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-4">
+                          <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                            <Icons.Info className="w-4 h-4 mr-2 text-indigo-600" />
+                            Ranking Methodology
+                          </h4>
+                          <div className="space-y-2 text-xs text-gray-700">
+                            <p className="leading-relaxed">
+                              <span className="font-semibold">Ranking is based on weighted factors:</span>
+                            </p>
+                            <ul className="space-y-1 ml-4">
+                              <li className="flex items-start">
+                                <span className="text-indigo-600 mr-2">•</span>
+                                <span><strong>Professional Experience (40%):</strong> {candidateExp.length} real company position(s)</span>
+                              </li>
+                              <li className="flex items-start">
+                                <span className="text-indigo-600 mr-2">•</span>
+                                <span><strong>Skills Match (30%):</strong> {skillMatchRate}% match with JD requirements ({matchedSkills.length}/{requiredSkills.length} skills)</span>
+                              </li>
+                              <li className="flex items-start">
+                                <span className="text-indigo-600 mr-2">•</span>
+                                <span><strong>Project Quality (20%):</strong> Depth and relevance of achievements</span>
+                              </li>
+                              <li className="flex items-start">
+                                <span className="text-indigo-600 mr-2">•</span>
+                                <span><strong>Growth Potential (10%):</strong> Learning trajectory and certifications</span>
+                              </li>
+                            </ul>
+                            <p className="mt-2 text-gray-600 italic">
+                              Note: A candidate with more experience but fewer matched skills may rank higher due to the heavier weight on professional experience and project quality.
+                            </p>
+                          </div>
+                        </div>
                         
                         {/* Ranking Badge */}
                         <div className="flex items-center justify-between pt-2">
@@ -966,124 +986,6 @@ const BatchDetail = () => {
                       </div>
                     );
                   }
-                })()}
-              </div>
-            </div>
-            
-            {/* Interview Readiness Assessment */}
-            <div className="mt-6 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Icons.CheckCircle className="w-5 h-5 mr-2 text-purple-600" />
-                Interview Readiness Assessment
-              </h3>
-              <div className="space-y-4">
-                {(() => {
-                  const profileData = selectedCandidate.profile_json || {};
-                  const experience = (profileData.experience || []).filter(exp => {
-                    const company = (exp.company || '').toLowerCase();
-                    return !company.includes('competition') && !company.includes('hackathon');
-                  });
-                  const skills = profileData.skills || [];
-                  const certifications = profileData.certifications || [];
-                  const education = profileData.education || [];
-                  
-                  // Calculate readiness factors
-                  const hasRelevantExp = experience.length > 0;
-                  const hasStrongSkills = skills.length >= 5;
-                  const hasCertifications = certifications.length > 0;
-                  const hasEducation = education.length > 0;
-                  
-                  const readinessScore = [hasRelevantExp, hasStrongSkills, hasCertifications, hasEducation].filter(Boolean).length;
-                  
-                  return (
-                    <div className="space-y-4">
-                      {/* Readiness Factors */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Technical Preparedness */}
-                        <div className={`border-2 rounded-lg p-4 ${hasStrongSkills ? 'bg-green-50 border-green-300' : 'bg-yellow-50 border-yellow-300'}`}>
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Icons.Code className={`w-5 h-5 ${hasStrongSkills ? 'text-green-600' : 'text-yellow-600'}`} />
-                            <h4 className="font-semibold text-gray-900">Technical Preparedness</h4>
-                          </div>
-                          <p className="text-sm text-gray-700">
-                            {hasStrongSkills 
-                              ? `Strong technical foundation with ${skills.length} documented skills. Ready for technical discussions.`
-                              : `Limited technical skills listed (${skills.length}). May need preparation for technical questions.`
-                            }
-                          </p>
-                        </div>
-                        
-                        {/* Experience Readiness */}
-                        <div className={`border-2 rounded-lg p-4 ${hasRelevantExp ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Icons.Briefcase className={`w-5 h-5 ${hasRelevantExp ? 'text-green-600' : 'text-red-600'}`} />
-                            <h4 className="font-semibold text-gray-900">Experience Readiness</h4>
-                          </div>
-                          <p className="text-sm text-gray-700">
-                            {hasRelevantExp 
-                              ? `${experience.length} professional role(s) documented. Can discuss real-world project experience.`
-                              : 'No professional experience listed. Focus on academic projects and theoretical knowledge.'
-                            }
-                          </p>
-                        </div>
-                        
-                        {/* Credential Strength */}
-                        <div className={`border-2 rounded-lg p-4 ${hasCertifications ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-300'}`}>
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Icons.Award className={`w-5 h-5 ${hasCertifications ? 'text-green-600' : 'text-gray-600'}`} />
-                            <h4 className="font-semibold text-gray-900">Credential Strength</h4>
-                          </div>
-                          <p className="text-sm text-gray-700">
-                            {hasCertifications 
-                              ? `${certifications.length} certification(s) earned. Demonstrates commitment to professional development.`
-                              : 'No certifications listed. Consider highlighting any ongoing learning initiatives.'
-                            }
-                          </p>
-                        </div>
-                        
-                        {/* Educational Foundation */}
-                        <div className={`border-2 rounded-lg p-4 ${hasEducation ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Icons.GraduationCap className={`w-5 h-5 ${hasEducation ? 'text-green-600' : 'text-red-600'}`} />
-                            <h4 className="font-semibold text-gray-900">Educational Foundation</h4>
-                          </div>
-                          <p className="text-sm text-gray-700">
-                            {hasEducation 
-                              ? `${education.length} degree(s) completed. Strong academic background for role requirements.`
-                              : 'No formal education listed. May need to emphasize self-taught skills and practical experience.'
-                            }
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Overall Readiness */}
-                      <div className={`border-2 rounded-lg p-4 ${
-                        readinessScore >= 3 ? 'bg-green-50 border-green-300' :
-                        readinessScore === 2 ? 'bg-yellow-50 border-yellow-300' :
-                        'bg-orange-50 border-orange-300'
-                      }`}>
-                        <h4 className="font-bold text-gray-900 mb-2 flex items-center">
-                          <span className={`w-3 h-3 rounded-full mr-2 ${
-                            readinessScore >= 3 ? 'bg-green-500' :
-                            readinessScore === 2 ? 'bg-yellow-500' :
-                            'bg-orange-500'
-                          }`}></span>
-                          Overall Interview Readiness
-                        </h4>
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          {readinessScore >= 3 && 
-                            "Candidate is well-prepared for interviews with strong credentials across multiple areas. Recommend proceeding with technical and behavioral interview rounds."
-                          }
-                          {readinessScore === 2 && 
-                            "Candidate shows moderate readiness with some strong areas. Consider targeted preparation in weaker areas before interview. May benefit from preliminary screening call."
-                          }
-                          {readinessScore < 2 && 
-                            "Candidate may need additional preparation before formal interviews. Consider requesting additional information or portfolio work to better assess capabilities."
-                          }
-                        </p>
-                      </div>
-                    </div>
-                  );
                 })()}
               </div>
             </div>
