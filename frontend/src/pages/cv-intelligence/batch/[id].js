@@ -525,23 +525,25 @@ const BatchDetail = () => {
                             </div>
                           )}
 
-                          {allSkills.length > 0 && (
-                            <div>
-                              <p className="text-sm font-medium text-blue-700 mb-2">All Technical Skills:</p>
-                              <div className="flex flex-wrap gap-2">
-                                {allSkills.slice(0, 10).map((skill, index) => (
-                                  <span key={index} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                                    {skill}
-                                  </span>
-                                ))}
-                                {allSkills.length > 10 && (
-                                  <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-                                    +{allSkills.length - 10} more
-                                  </span>
-                                )}
+                          {(() => {
+                            // Get irrelevant skills (skills candidate has but not in required list)
+                            const irrelevantSkills = allSkills.filter(skill => 
+                              !requiredSkills.some(req => req.toLowerCase() === skill.toLowerCase())
+                            );
+                            
+                            return irrelevantSkills.length > 0 && (
+                              <div>
+                                <p className="text-sm font-medium text-gray-700 mb-2">Additional Skills (Not Required for JD):</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {irrelevantSkills.map((skill, index) => (
+                                    <span key={index} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium">
+                                      {skill}
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            );
+                          })()}
 
                           {matchedSkills.length === 0 && missingSkills.length === 0 && allSkills.length === 0 && (
                             <p className="text-gray-500 text-sm">Skills analysis not available</p>
@@ -566,17 +568,36 @@ const BatchDetail = () => {
                   {(() => {
                     try {
                       const profileData = selectedCandidate.profile_json || {};
-                      const experience = profileData.experience || [];
+                      const allExperience = profileData.experience || [];
                       
-                      // Get the most recent experience (first in array)
-                      const latestExperience = Array.isArray(experience) && experience.length > 0 ? experience[0] : {};
-                      const currentRole = latestExperience.role || 'Role not specified';
-                      const currentCompany = latestExperience.company || 'Company not specified';
-                      const startDate = latestExperience.startDate || 'Start date not specified';
-                      const endDate = latestExperience.endDate || 'Present';
+                      // Filter out competitions - only count real company jobs
+                      const realJobs = allExperience.filter(exp => {
+                        const company = (exp.company || '').toLowerCase();
+                        const role = (exp.role || '').toLowerCase();
+                        // Exclude if it's a competition, hackathon, or similar
+                        return !company.includes('competition') && 
+                               !company.includes('hackathon') && 
+                               !role.includes('competitor') &&
+                               !role.includes('participant');
+                      });
                       
-                      // Calculate experience level based on number of roles
-                      const experienceYears = experience.length > 0 ? Math.max(1, experience.length * 1.5) : 0;
+                      // Calculate actual years of experience from date ranges
+                      const calculateYears = (start, end) => {
+                        try {
+                          const startDate = new Date(start);
+                          const endDate = end && end.toLowerCase() !== 'present' ? new Date(end) : new Date();
+                          const months = (endDate - startDate) / (1000 * 60 * 60 * 24 * 30);
+                          return Math.max(0, months / 12);
+                        } catch {
+                          return 0;
+                        }
+                      };
+                      
+                      const experienceYears = realJobs.reduce((total, exp) => {
+                        return total + calculateYears(exp.startDate, exp.endDate);
+                      }, 0).toFixed(1);
+                      
+                      const experience = realJobs; // Use only real jobs
 
                       return (
                         <div className="space-y-4">
@@ -589,8 +610,9 @@ const BatchDetail = () => {
                           <div className="space-y-3">
                             {experience.map((exp, index) => {
                               const achievements = exp.achievements || [];
+                              // Show ALL achievements, not just 2
                               const summary = achievements.length > 0 
-                                ? achievements.slice(0, 2).join('. ') + (achievements.length > 2 ? '...' : '.')
+                                ? achievements.join('. ') + '.'
                                 : 'Key contributions and responsibilities in this role.';
                               
                               return (
@@ -602,12 +624,13 @@ const BatchDetail = () => {
                                     </div>
                                     <div className="text-right">
                                       <p className="text-xs text-gray-500">{exp.startDate || 'Start'} - {exp.endDate || 'Present'}</p>
-                                      {index === 0 && (
+                                      {index === 0 && exp.endDate && exp.endDate.toLowerCase().includes('present') && (
                                         <span className="inline-block mt-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Current</span>
                                       )}
                                     </div>
                                   </div>
-                                  <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">{summary}</p>
+                                  {/* Show full description without line-clamp */}
+                                  <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">{summary}</p>
                                 </div>
                               );
                             })}
@@ -703,6 +726,46 @@ const BatchDetail = () => {
                   })()}
                 </div>
               </div>
+
+              {/* Certifications */}
+              <div className="bg-white border border-gray-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Icons.Award className="w-5 h-5 mr-2 text-yellow-600" />
+                  Certifications
+                </h3>
+                <div className="space-y-3">
+                  {(() => {
+                    try {
+                      const profileData = selectedCandidate.profile_json || {};
+                      const certifications = profileData.certifications || [];
+                      
+                      if (!Array.isArray(certifications) || certifications.length === 0) {
+                        return <p className="text-gray-500 text-sm">No certifications listed</p>;
+                      }
+
+                      return (
+                        <div className="grid gap-3">
+                          {certifications.map((cert, index) => (
+                            <div key={index} className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                              <div className="flex items-start space-x-3">
+                                <div className="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                  <Icons.Award className="w-5 h-5 text-yellow-600" />
+                                </div>
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-gray-900 text-sm mb-1">{cert}</h4>
+                                  <p className="text-xs text-gray-600">Professional Certification</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    } catch (e) {
+                      return <p className="text-gray-500 text-sm">Certifications data not available</p>;
+                    }
+                  })()}
+                </div>
+              </div>
             </div>
 
             {/* Professional Assessment */}
@@ -715,46 +778,55 @@ const BatchDetail = () => {
                 {/* Extract professional summary from analysis_data */}
                 {(() => {
                   try {
+                    // Always use rankingReason as it has the best data
+                    const rankingReason = selectedCandidate.rankingReason || '';
+                    const rank = selectedCandidate.rank || 0;
+                    
+                    // Parse analysis_data for additional insights
                     const analysisData = typeof selectedCandidate.analysis_data === 'string' 
                       ? JSON.parse(selectedCandidate.analysis_data) 
                       : selectedCandidate.analysis_data || {};
                     
-                    const analysis = analysisData.analysis || analysisData.ai_analysis?.analysis || {};
-                    const professionalSummary = analysis.professional_summary || selectedCandidate.summary;
-                    const strengths = analysis.strengths || [];
+                    console.log('Professional Assessment Data:', {
+                      rankingReason,
+                      rank,
+                      analysisData,
+                      fullCandidate: selectedCandidate
+                    });
 
                     return (
-                      <div className="space-y-3">
-                        {professionalSummary && (
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-900 mb-2">Summary:</h4>
-                            <p className="text-gray-700 leading-relaxed">{professionalSummary}</p>
+                      <div className="space-y-4">
+                        {/* Main Assessment from rankingReason */}
+                        {rankingReason && (
+                          <div className="bg-white border border-blue-200 rounded-lg p-4">
+                            <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                              Overall Assessment
+                            </h4>
+                            <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-wrap">{rankingReason}</p>
                           </div>
                         )}
                         
-                        {strengths.length > 0 && (
-                          <div>
-                            <h4 className="text-sm font-medium text-gray-900 mb-2">Key Strengths:</h4>
-                            <ul className="space-y-1">
-                              {strengths.map((strength, index) => (
-                                <li key={index} className="flex items-start space-x-2">
-                                  <span className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
-                                  <span className="text-gray-700 text-sm">{strength}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                        
-                        <div className="flex items-center justify-between pt-3 border-t border-blue-200">
-                          <span className="text-sm font-medium text-gray-600">Recommendation:</span>
-                          <span className="px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
-                            Under Review
+                        {/* Ranking Badge */}
+                        <div className="flex items-center justify-between pt-2">
+                          <span className="text-sm font-medium text-gray-600">Candidate Rank:</span>
+                          <span className={`px-4 py-2 rounded-full text-sm font-bold ${
+                            rank === 1 ? 'bg-green-100 text-green-800 border-2 border-green-300' :
+                            rank === 2 ? 'bg-blue-100 text-blue-800 border-2 border-blue-300' :
+                            rank === 3 ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300' :
+                            'bg-gray-100 text-gray-800 border-2 border-gray-300'
+                          }`}>
+                            #{rank} {rank === 1 ? '🏆' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : ''}
                           </span>
                         </div>
+                        
+                        {!rankingReason && (
+                          <p className="text-gray-500 text-sm text-center py-4">Professional assessment data not available</p>
+                        )}
                       </div>
                     );
                   } catch (e) {
+                    console.error('Error parsing assessment:', e);
                     return (
                       <div>
                         <div className="space-y-4">
