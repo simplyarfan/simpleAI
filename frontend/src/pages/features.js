@@ -118,13 +118,12 @@ export default function Features() {
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
                 className="space-y-6"
               >
                 <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                   Ready to Get Started?
                 </h2>
-                <p className="text-lg text-gray-400 mb-6">
+                <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-8">
                   Join thousands of businesses automating with AI.
                 </p>
                 <Link href="/auth/register">

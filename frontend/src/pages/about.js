@@ -286,7 +286,7 @@ export default function About() {
                 <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                   Join Us on This Journey
                 </h2>
-                <p className="text-lg text-gray-400 mb-6">
+                <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-8">
                   Be part of the AI revolution and transform your business today.
                 </p>
                 <Link href="/auth/register">
