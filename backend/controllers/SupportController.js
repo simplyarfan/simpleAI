@@ -26,7 +26,7 @@ class SupportController {
       `, [req.user.id, subject, description, priority, category]);
 
       // Get ticket ID from PostgreSQL result
-      const ticketId = result.id;
+      const ticketId = result.rows?.[0]?.id || result.id;
       console.log('🎫 [SUPPORT] Ticket created with ID:', ticketId);
 
       // Get created ticket
@@ -269,9 +269,11 @@ class SupportController {
       `, [ticket_id, req.user.id, comment, isInternalComment]);
 
       console.log('🎫 [SUPPORT] Database result:', result);
-      const commentId = result.id;
+      // Handle PostgreSQL result format
+      const commentId = result.rows?.[0]?.id || result.id;
       
       if (!commentId) {
+        console.error('🎫 [SUPPORT] Failed to get comment ID from result:', result);
         throw new Error('Failed to get comment ID from database');
       }
       
