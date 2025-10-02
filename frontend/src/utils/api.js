@@ -290,6 +290,7 @@ export const supportAPI = {
     is_internal: isInternal
   }),
   updateTicket: (ticketId, updateData) => api.put(`/support/${ticketId}`, updateData),
+  updateTicketStatus: (ticketId, status) => api.put(`/support/${ticketId}`, { status }),
   deleteTicket: (ticketId) => api.delete(`/support/${ticketId}`),
   getStats: (timeframe = '30d') => api.get('/support/admin/stats', { params: { timeframe } })
 };

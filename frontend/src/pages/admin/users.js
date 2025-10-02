@@ -317,24 +317,27 @@ export default function UsersManagement() {
         <div className="relative z-10">
         
           <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Back to Dashboard Button */}
+            <div className="mb-6">
+              <button
+                onClick={() => router.push('/superadmin')}
+                className="flex items-center text-gray-600 hover:text-gray-800 bg-white border border-gray-200 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-gray-50 shadow-sm"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Dashboard
+              </button>
+            </div>
+            
             {/* Header */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-8 mb-8 shadow-sm">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => router.push('/superadmin')}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <ArrowLeft className="w-5 h-5 text-gray-600" />
-                  </button>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-                      <Users className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-                      <p className="text-gray-600">Manage system users and their permissions</p>
-                    </div>
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Users className="w-6 h-6 text-orange-600" />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+                    <p className="text-gray-600">Manage system users and their permissions</p>
                   </div>
                 </div>
                 <button
