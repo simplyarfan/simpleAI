@@ -86,19 +86,10 @@ export default function TicketDetail() {
         toast.success('Comment added successfully!');
         setNewComment('');
         
-        // Add the new comment to the list immediately for instant feedback
-        const newCommentObj = {
-          id: Date.now(), // Temporary ID
-          comment: newComment,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          role: user.role,
-          created_at: new Date().toISOString()
-        };
-        setComments(prev => [...prev, newCommentObj]);
-        
-        // Then fetch to get the real data
+        // Force immediate refresh without optimistic update to see real data
+        console.log('Comments before refresh:', comments.length);
         await fetchTicketDetails();
+        console.log('Comments after refresh should be updated');
       } else {
         toast.error(response.data?.message || 'Failed to add comment');
       }

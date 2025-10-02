@@ -159,7 +159,7 @@ export default function TicketsManagement() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-black relative overflow-hidden">
+      <div className="min-h-screen bg-gray-50 relative overflow-hidden">
 
         <Head>
           <title>Support Tickets - SimpleAI</title>
@@ -170,36 +170,42 @@ export default function TicketsManagement() {
         
           <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Back to Dashboard Button */}
-            <div className="mb-6">
+            <motion.div 
+              className="mb-6"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
               <motion.button
-                onClick={() => router.push('/superadmin')}
-                className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                onClick={() => router.push('/admin')}
+                className="flex items-center text-gray-600 hover:text-gray-800 bg-white border border-gray-200 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-gray-50 shadow-sm"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Dashboard
               </motion.button>
-            </div>
+            </motion.div>
             
             {/* Header */}
             <motion.div 
               className="mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-white/10 border border-white/20 rounded-lg">
-                      <LifeBuoy className="w-6 h-6 text-green-400" />
+                    <div className="p-2 bg-orange-100 rounded-lg">
+                      <LifeBuoy className="w-6 h-6 text-orange-600" />
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Support Management</h1>
-                      <p className="text-gray-400">Manage and respond to user support tickets</p>
+                      <h1 className="text-2xl font-bold text-gray-900">Support Management</h1>
+                      <p className="text-gray-600">Manage and respond to user support tickets</p>
                     </div>
                   </div>
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-gray-500">
                     {filteredTickets.length} ticket{filteredTickets.length !== 1 ? 's' : ''}
                   </div>
                 </div>
@@ -208,7 +214,7 @@ export default function TicketsManagement() {
 
             {/* Filters */}
             <motion.div 
-              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-6"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -222,7 +228,7 @@ export default function TicketsManagement() {
                       placeholder="Search tickets..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-3 w-full bg-white/10 border border-white/20 text-white placeholder-gray-400 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="pl-10 pr-4 py-3 w-full bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                     />
                   </div>
                 </div>
@@ -230,7 +236,7 @@ export default function TicketsManagement() {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 text-gray-900 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   >
                     <option value="all">All Status</option>
                     <option value="open">Open</option>
@@ -243,7 +249,7 @@ export default function TicketsManagement() {
                   <select
                     value={priorityFilter}
                     onChange={(e) => setPriorityFilter(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/10 border border-white/20 text-white rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 text-gray-900 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                   >
                     <option value="all">All Priority</option>
                     <option value="high">High</option>
@@ -256,7 +262,7 @@ export default function TicketsManagement() {
 
             {/* Tickets List */}
             <motion.div 
-              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -274,40 +280,40 @@ export default function TicketsManagement() {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-white/10">
-                    <thead className="bg-white/5">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Ticket
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           User
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Priority
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Created
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/10">
+                    <tbody className="bg-white divide-y divide-gray-200">
                       {filteredTickets.map((ticket) => (
-                        <tr key={ticket.id} className="hover:bg-white/5 transition-colors">
+                        <tr key={ticket.id} className="hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4">
                             <div className="flex items-center">
                               {getStatusIcon(ticket.status)}
                               <div className="ml-3">
-                                <div className="text-sm font-medium text-white">
+                                <div className="text-sm font-medium text-gray-900">
                                   {ticket.subject}
                                 </div>
-                                <div className="text-sm text-gray-400">
+                                <div className="text-sm text-gray-500">
                                   #{ticket.id}
                                 </div>
                               </div>
