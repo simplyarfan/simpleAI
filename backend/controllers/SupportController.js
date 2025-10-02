@@ -22,6 +22,10 @@ class SupportController {
         VALUES ($1, $2, $3, $4, $5) RETURNING id
       `, [req.user.id, subject, description, priority, category]);
 
+      // Get ticket ID from PostgreSQL result
+      const ticketId = result.id;
+      console.log('🎫 [SUPPORT] Ticket created with ID:', ticketId);
+
       // Get created ticket
       const ticket = await database.get(`
         SELECT 
@@ -32,16 +36,16 @@ class SupportController {
         FROM support_tickets st
         JOIN users u ON st.user_id = u.id
         WHERE st.id = $1
-      `, [result.rows[0].id]);
+      `, [ticketId]);
 
       // Track ticket creation activity
       await database.run(`
         INSERT INTO user_analytics (user_id, action, metadata, ip_address, user_agent)
-        VALUES ($1, $2, $3, $4, $5) RETURNING id
+        VALUES ($1, $2, $3, $4, $5)
       `, [
         req.user.id,
         'support_ticket_created',
-        JSON.stringify({ ticket_id: result.rows[0].id, subject, priority, category }),
+        JSON.stringify({ ticket_id: ticketId, subject, priority, category }),
         req.ip,
         req.get('User-Agent')
       ]);
@@ -260,7 +264,7 @@ class SupportController {
         VALUES ($1, $2, $3, $4) RETURNING id
       `, [ticket_id, req.user.id, comment, isInternalComment]);
 
-      const commentId = result.rows && result.rows[0] ? result.rows[0].id : result.lastID;
+      const commentId = result.id;
       console.log('🎫 [SUPPORT] Comment created with ID:', commentId);
 
       // Update ticket's updated_at timestamp

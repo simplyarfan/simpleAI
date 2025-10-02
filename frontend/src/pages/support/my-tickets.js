@@ -45,7 +45,8 @@ export default function MyTickets() {
       setLoading(true);
       const response = await supportAPI.getMyTickets();
       if (response.data && response.data.success) {
-        setTickets(response.data.data || []);
+        // Data structure: { success: true, data: { tickets: [], pagination: {} } }
+        setTickets(response.data.data?.tickets || []);
       } else {
         toast.error('Failed to load tickets');
       }
