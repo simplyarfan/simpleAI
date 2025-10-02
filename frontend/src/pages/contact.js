@@ -37,32 +37,28 @@ export default function Contact() {
         />
 
         {/* StaggeredMenu Navigation */}
-        <div className="fixed top-0 left-0 w-full h-screen z-50 pointer-events-none">
-          <div className="pointer-events-auto">
-            <StaggeredMenu
-              position="right"
-              colors={['#1a1a1a', '#2d2d2d']}
-              items={[
-                { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
-                { label: 'Features', link: '/features', ariaLabel: 'View features' },
-                { label: 'About', link: '/about', ariaLabel: 'About us' },
-                { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' }
-              ]}
-              socialItems={[
-                { label: 'GitHub', link: 'https://github.com' },
-                { label: 'Twitter', link: 'https://twitter.com' },
-                { label: 'LinkedIn', link: 'https://linkedin.com' }
-              ]}
-              displaySocials={true}
-              displayItemNumbering={true}
-              menuButtonColor="#fff"
-              openMenuButtonColor="#000"
-              changeMenuColorOnOpen={true}
-              accentColor="#f97316"
-              logoUrl="/logo.png"
-            />
-          </div>
-        </div>
+        <StaggeredMenu
+          position="right"
+          colors={['#1a1a1a', '#2d2d2d']}
+          items={[
+            { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
+            { label: 'Features', link: '/features', ariaLabel: 'View features' },
+            { label: 'About', link: '/about', ariaLabel: 'About us' },
+            { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' }
+          ]}
+          socialItems={[
+            { label: 'GitHub', link: 'https://github.com' },
+            { label: 'Twitter', link: 'https://twitter.com' },
+            { label: 'LinkedIn', link: 'https://linkedin.com' }
+          ]}
+          displaySocials={true}
+          displayItemNumbering={true}
+          menuButtonColor="#fff"
+          openMenuButtonColor="#000"
+          changeMenuColorOnOpen={true}
+          accentColor="#f97316"
+          logoUrl="/logo.png"
+        />
 
 
         {/* Hero */}
