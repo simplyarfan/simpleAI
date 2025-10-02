@@ -13,23 +13,20 @@ const getApiBaseUrl = () => {
     baseUrl = process.env.NEXT_PUBLIC_API_URL;
   } else if (typeof window === 'undefined') {
     // Server-side rendering fallback
-    baseUrl = 'https://thesimpleai.vercel.app';
+    baseUrl = 'https://thesimpleai.vercel.app/api';
   } else {
     // Client-side fallback
     const hostname = window.location.hostname;
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      baseUrl = 'http://localhost:5000';
+      baseUrl = 'http://localhost:5000/api';
     } else {
       // Production fallback
-      baseUrl = 'https://thesimpleai.vercel.app';
+      baseUrl = 'https://thesimpleai.vercel.app/api';
     }
   }
   
-  // CRITICAL FIX: Remove trailing /api if it exists (to prevent /api/api duplication)
-  if (baseUrl.endsWith('/api')) {
-    console.warn('⚠️ API_BASE_URL had /api suffix, removing it to prevent duplication');
-    baseUrl = baseUrl.slice(0, -4);
-  }
+  // Log the configured base URL for debugging
+  console.log('🔍 [API] Base URL configured:', baseUrl);
   
   return baseUrl;
 };
@@ -38,7 +35,7 @@ const API_BASE_URL = getApiBaseUrl();
 
 // Create optimized axios instance
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,  // Add /api prefix to all requests
+  baseURL: API_BASE_URL,  // Use baseURL as-is (already has /api from .env.local)
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
