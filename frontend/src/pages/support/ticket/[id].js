@@ -99,7 +99,12 @@ export default function TicketDetail() {
         };
         
         console.log('Adding new comment to UI:', newCommentObj);
-        setComments(prevComments => [...prevComments, newCommentObj]);
+        console.log('Current comments before adding:', comments.length);
+        setComments(prevComments => {
+          const updatedComments = [...prevComments, newCommentObj];
+          console.log('Updated comments after adding:', updatedComments.length);
+          return updatedComments;
+        });
         
         // Also refresh from backend to ensure consistency (optional since we have real data)
         setTimeout(async () => {
