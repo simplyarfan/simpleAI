@@ -76,10 +76,25 @@ export default function TicketDetail() {
       setIsSubmitting(true);
       const response = await supportAPI.addComment(id, newComment, false);
       
+      console.log('Add comment response:', response.data);
+      
       if (response.data?.success) {
         toast.success('Comment added successfully!');
         setNewComment('');
-        fetchTicketDetails(); // Refresh to get new comment
+        
+        // Add the new comment to the list immediately for instant feedback
+        const newCommentObj = {
+          id: Date.now(), // Temporary ID
+          comment: newComment,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          role: user.role,
+          created_at: new Date().toISOString()
+        };
+        setComments(prev => [...prev, newCommentObj]);
+        
+        // Then fetch to get the real data
+        await fetchTicketDetails();
       } else {
         toast.error(response.data?.message || 'Failed to add comment');
       }
