@@ -39,9 +39,9 @@ export default function About() {
             { label: 'Sign Up', link: '/auth/register', ariaLabel: 'Create new account' }
           ]}
           socialItems={[
-            { label: 'GitHub', link: 'https://github.com' },
-            { label: 'Twitter', link: 'https://twitter.com' },
-            { label: 'LinkedIn', link: 'https://linkedin.com' }
+            { label: 'GitHub', link: 'https://github.com/simplyarfan/simpleAI' },
+            { label: 'Twitter', link: 'https://x.com/simplyarfan' },
+            { label: 'LinkedIn', link: 'https://www.linkedin.com/in/syedarfan/' }
           ]}
           displaySocials={true}
           displayItemNumbering={true}
@@ -250,7 +250,7 @@ export default function About() {
             </div>
 
             <div className="max-w-6xl mx-auto px-6">
-              <div className="bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 p-8" style={{ height: '200px', position: 'relative', overflow: 'hidden' }}>
+              <div className="bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 py-12 px-8 flex items-center justify-center" style={{ height: '200px', position: 'relative', overflow: 'hidden' }}>
                 <LogoLoop
                   logos={[
                     { node: <SiTypescript />, title: 'TypeScript', href: 'https://www.typescriptlang.org' },
@@ -263,8 +263,8 @@ export default function About() {
                   ]}
                   speed={120}
                   direction="left"
-                  logoHeight={48}
-                  gap={40}
+                  logoHeight={64}
+                  gap={60}
                   pauseOnHover={true}
                   scaleOnHover={true}
                   fadeOut={false}
