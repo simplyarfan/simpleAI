@@ -104,11 +104,9 @@ export default function TicketDetail() {
         // DON'T add to UI first - just wait for backend refresh
         // The issue is that adding optimistically then refreshing causes the new comment to disappear
         
-        // Wait a moment for database to commit, then refresh
-        setTimeout(async () => {
-          console.log('Refreshing from backend to get new comment...');
-          await fetchTicketDetails();
-        }, 1000);
+        // Immediately refresh to get the new comment
+        console.log('Refreshing from backend to get new comment...');
+        await refreshTicket();
       } else {
         toast.error(response.data?.message || 'Failed to add comment');
       }
@@ -137,8 +135,15 @@ export default function TicketDetail() {
   };
 
   useEffect(() => {
+    console.log('useEffect triggered - fetching ticket details for ID:', id);
     fetchTicketDetails();
   }, [id]);
+  
+  // Add a refresh function that can be called from anywhere
+  const refreshTicket = async () => {
+    console.log('Manual refresh triggered');
+    await fetchTicketDetails();
+  };
 
   if (!user) {
     return (
