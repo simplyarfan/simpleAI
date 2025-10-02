@@ -165,22 +165,26 @@ export default function TestComponents() {
         <section className="py-32 bg-black">
           <div className="max-w-6xl mx-auto px-6">
             <h2 className="text-3xl font-bold mb-12 text-center">InfiniteScroll Component</h2>
-            <InfiniteScroll 
-              width="30rem"
-              maxHeight="400px"
-              items={[
-                { content: <div className="text-center"><Star className="inline w-6 h-6 text-yellow-500 mb-2" /><p className="text-lg">Amazing product! ⭐⭐⭐⭐⭐</p></div> },
-                { content: <div className="text-center"><Star className="inline w-6 h-6 text-yellow-500 mb-2" /><p className="text-lg">Best service ever! 🎉</p></div> },
-                { content: <div className="text-center"><Star className="inline w-6 h-6 text-yellow-500 mb-2" /><p className="text-lg">Highly recommend! 👍</p></div> },
-                { content: <div className="text-center"><Star className="inline w-6 h-6 text-yellow-500 mb-2" /><p className="text-lg">Incredible experience! 🚀</p></div> },
-                { content: <div className="text-center"><Star className="inline w-6 h-6 text-yellow-500 mb-2" /><p className="text-lg">Will use again! ✨</p></div> }
-              ]}
-              itemMinHeight={150}
-              autoplay={true}
-              autoplaySpeed={0.5}
-              autoplayDirection="down"
-              pauseOnHover={true}
-            />
+            <p className="text-center text-gray-400 mb-4">Scroll with mouse or drag to interact</p>
+            <div className="flex justify-center">
+              <InfiniteScroll 
+                width="30rem"
+                maxHeight="400px"
+                items={[
+                  { content: 'Amazing product! ⭐⭐⭐⭐⭐' },
+                  { content: 'Best service ever! 🎉' },
+                  { content: 'Highly recommend! 👍' },
+                  { content: 'Incredible experience! 🚀' },
+                  { content: 'Will use again! ✨' },
+                  { content: 'Outstanding quality! 💎' }
+                ]}
+                itemMinHeight={150}
+                autoplay={true}
+                autoplaySpeed={0.5}
+                autoplayDirection="down"
+                pauseOnHover={true}
+              />
+            </div>
           </div>
         </section>
 
