@@ -5,8 +5,6 @@ import { motion } from 'framer-motion';
 import { Brain, Users, BarChart3, Rocket, Target, Award, TrendingUp } from 'lucide-react';
 import DotGrid from '../components/backgrounds/DotGrid';
 import RotatingText from '../components/reactbits/RotatingText';
-import LogoLoop from '../components/reactbits/LogoLoop';
-import StaggeredMenu from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
 export default function About() {
@@ -44,8 +42,8 @@ export default function About() {
                   <br />
                   <div className="inline-block bg-gradient-to-r from-orange-500/20 to-red-600/20 backdrop-blur-sm px-8 py-4 rounded-2xl border border-orange-500/30 mt-4">
                     <RotatingText 
-                      words={['Artificial Intelligence', 'Business Automation', 'Smart Solutions', 'Digital Innovation']}
-                      className="text-5xl md:text-6xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent font-bold"
+                      texts={['Artificial Intelligence', 'Business Automation', 'Smart Solutions', 'Digital Innovation']}
+                      mainClassName="text-5xl md:text-6xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent font-bold"
                     />
                   </div>
                 </h1>
@@ -211,32 +209,8 @@ export default function About() {
             </div>
           </section>
 
-          {/* Tech Stack Section */}
-          <section className="py-20 bg-white/5 backdrop-blur-sm">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold text-white mb-4">Powered By</h2>
-                <p className="text-lg text-gray-400">Cutting-edge technologies we use</p>
-              </div>
 
-              <LogoLoop 
-                logos={[
-                  'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg',
-                  'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg',
-                  'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg',
-                  'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg',
-                  'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg',
-                  'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg',
-                  'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg',
-                  'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg'
-                ]}
-                speed={30}
-              />
-            </div>
-          </section>
-
-
-          {/* CTA Section */}
+         
           <section className="py-16 bg-gradient-to-br from-orange-500/10 to-red-500/10 border-y border-orange-500/20">
             <div className="max-w-4xl mx-auto px-6 text-center">
               <motion.div
