@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { Brain, Users, BarChart3, Rocket, Target, Award, TrendingUp } from 'lucide-react';
+import { SiReact, SiNextdotjs, SiTypescript, SiTailwindcss, SiGithub, SiPostgresql, SiDocker } from 'react-icons/si';
 import StaticDotGrid from '../components/backgrounds/StaticDotGrid';
 import RotatingText from '../components/reactbits/RotatingText';
 import LogoLoop from '../components/reactbits/LogoLoop';
@@ -248,26 +249,28 @@ export default function About() {
               <p className="text-lg text-gray-400">Built with the best tools and frameworks</p>
             </div>
 
-            <div style={{ height: '200px', position: 'relative', overflow: 'hidden', width: '100%' }}>
-              <LogoLoop
-                logos={[
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" alt="TypeScript" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'TypeScript', href: 'https://www.typescriptlang.org' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'Next.js', href: 'https://nextjs.org' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'React', href: 'https://react.dev' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-original.svg" alt="Tailwind CSS" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'Tailwind CSS', href: 'https://tailwindcss.com' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt="GitHub" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'GitHub', href: 'https://github.com' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'PostgreSQL', href: 'https://postgresql.org' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'Docker', href: 'https://docker.com' }
-                ]}
-                speed={120}
-                direction="left"
-                logoHeight={48}
-                gap={40}
-                pauseOnHover={true}
-                scaleOnHover={true}
-                fadeOut={false}
-                ariaLabel="Technology stack"
-              />
+            <div className="max-w-6xl mx-auto px-6">
+              <div className="bg-white/5 backdrop-blur-sm rounded-3xl border border-white/10 p-8" style={{ height: '200px', position: 'relative', overflow: 'hidden' }}>
+                <LogoLoop
+                  logos={[
+                    { node: <SiTypescript />, title: 'TypeScript', href: 'https://www.typescriptlang.org' },
+                    { node: <SiNextdotjs />, title: 'Next.js', href: 'https://nextjs.org' },
+                    { node: <SiReact />, title: 'React', href: 'https://react.dev' },
+                    { node: <SiTailwindcss />, title: 'Tailwind CSS', href: 'https://tailwindcss.com' },
+                    { node: <SiGithub />, title: 'GitHub', href: 'https://github.com' },
+                    { node: <SiPostgresql />, title: 'PostgreSQL', href: 'https://postgresql.org' },
+                    { node: <SiDocker />, title: 'Docker', href: 'https://docker.com' }
+                  ]}
+                  speed={120}
+                  direction="left"
+                  logoHeight={48}
+                  gap={40}
+                  pauseOnHover={true}
+                  scaleOnHover={true}
+                  fadeOut={false}
+                  ariaLabel="Technology stack"
+                />
+              </div>
             </div>
           </section>
          
