@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { Brain, Users, BarChart3, Rocket, Target, Award, TrendingUp } from 'lucide-react';
-import DotGrid from '../components/backgrounds/DotGrid';
+import StaticDotGrid from '../components/backgrounds/StaticDotGrid';
 import RotatingText from '../components/reactbits/RotatingText';
 import LogoLoop from '../components/reactbits/LogoLoop';
 import { StaggeredMenu } from '../components/reactbits/StaggeredMenu';
@@ -18,11 +18,10 @@ export default function About() {
       </Head>
 
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
-        {/* Dot Grid Background */}
-        <DotGrid 
-          dotSize={1.5}
-          dotColor="rgba(249, 115, 22, 0.4)"
-          backgroundColor="transparent"
+        {/* Static Dot Grid Background */}
+        <StaticDotGrid 
+          dotSize={1}
+          dotColor="#f97316"
           spacing={40}
         />
 
@@ -243,33 +242,32 @@ export default function About() {
           </section>
 
           {/* Tech Stack Section */}
-          <section className="py-20 bg-white/5">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold text-white mb-4">Powered By Cutting-Edge Technology</h2>
-                <p className="text-lg text-gray-400">Built with the best tools and frameworks</p>
-              </div>
+          <section className="py-20 bg-transparent">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-white mb-4">Powered By Cutting-Edge Technology</h2>
+              <p className="text-lg text-gray-400">Built with the best tools and frameworks</p>
+            </div>
 
-              <div style={{ height: '200px', position: 'relative', overflow: 'hidden' }}>
-                <LogoLoop
-                  logos={[
-                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React" style={{ width: '48px', height: '48px' }} />, title: 'React' },
-                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" style={{ width: '48px', height: '48px', filter: 'invert(1)' }} />, title: 'Next.js' },
-                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js" style={{ width: '48px', height: '48px' }} />, title: 'Node.js' },
-                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" style={{ width: '48px', height: '48px' }} />, title: 'Python' },
-                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg" alt="TensorFlow" style={{ width: '48px', height: '48px' }} />, title: 'TensorFlow' },
-                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" style={{ width: '48px', height: '48px' }} />, title: 'PostgreSQL' },
-                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker" style={{ width: '48px', height: '48px' }} />, title: 'Docker' },
-                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg" alt="AWS" style={{ width: '48px', height: '48px' }} />, title: 'AWS' }
-                  ]}
-                  speed={120}
-                  direction="left"
-                  logoHeight={48}
-                  gap={40}
-                  pauseOnHover={true}
-                  fadeOut={true}
-                />
-              </div>
+            <div style={{ height: '200px', position: 'relative', overflow: 'hidden', width: '100%' }}>
+              <LogoLoop
+                logos={[
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'React' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'Next.js' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'Node.js' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'Python' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg" alt="TensorFlow" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'TensorFlow' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'PostgreSQL' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'Docker' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg" alt="AWS" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'AWS' }
+                ]}
+                speed={120}
+                direction="left"
+                logoHeight={64}
+                gap={60}
+                pauseOnHover={true}
+                fadeOut={false}
+                scaleOnHover={false}
+              />
             </div>
           </section>
          
