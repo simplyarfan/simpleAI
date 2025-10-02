@@ -6,7 +6,6 @@ import { Brain, Users, BarChart3, Sparkles, Star } from 'lucide-react';
 import Aurora from '../components/reactbits/Aurora';
 import BlurText from '../components/reactbits/BlurText';
 import SplitText from '../components/reactbits/SplitText';
-import CurvedLoop from '../components/reactbits/CurvedLoop';
 import { StaggeredMenu } from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
@@ -266,29 +265,6 @@ export default function LandingPage() {
               <div className="text-center">
                 <p className="text-gray-500 text-lg font-medium">Join 10,000+ professionals who stopped playing fair</p>
               </div>
-            </div>
-          </section>
-
-          {/* CurvedLoop Section */}
-          <section className="py-20 bg-gradient-to-b from-black to-gray-900">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="text-center mb-12">
-                <h2 className="text-4xl font-bold text-white mb-4">Trusted by Industry Leaders</h2>
-                <p className="text-lg text-gray-400">Companies using Nexus AI to transform their operations</p>
-              </div>
-              <CurvedLoop
-                items={[
-                  'Enterprise Solutions',
-                  'Fortune 500 Companies',
-                  'Startups & Scale-ups',
-                  'Global Organizations',
-                  'Tech Innovators',
-                  'Industry Pioneers'
-                ]}
-                speed={0.5}
-                itemClassName="text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent px-8"
-                containerClassName="h-32"
-              />
             </div>
           </section>
 

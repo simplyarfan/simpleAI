@@ -250,24 +250,26 @@ export default function About() {
                 <p className="text-lg text-gray-400">Built with the best tools and frameworks</p>
               </div>
 
-              <LogoLoop
-                logos={[
-                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg', alt: 'React' },
-                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg', alt: 'Next.js' },
-                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg', alt: 'Node.js' },
-                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg', alt: 'Python' },
-                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg', alt: 'TensorFlow' },
-                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg', alt: 'PostgreSQL' },
-                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg', alt: 'Docker' },
-                  { src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg', alt: 'AWS' }
-                ]}
-                speed={120}
-                direction="left"
-                logoHeight={48}
-                gap={40}
-                pauseOnHover={true}
-                fadeOut={true}
-              />
+              <div style={{ height: '200px', position: 'relative', overflow: 'hidden' }}>
+                <LogoLoop
+                  logos={[
+                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React" style={{ width: '48px', height: '48px' }} />, title: 'React' },
+                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" style={{ width: '48px', height: '48px', filter: 'invert(1)' }} />, title: 'Next.js' },
+                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js" style={{ width: '48px', height: '48px' }} />, title: 'Node.js' },
+                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" style={{ width: '48px', height: '48px' }} />, title: 'Python' },
+                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg" alt="TensorFlow" style={{ width: '48px', height: '48px' }} />, title: 'TensorFlow' },
+                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" style={{ width: '48px', height: '48px' }} />, title: 'PostgreSQL' },
+                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker" style={{ width: '48px', height: '48px' }} />, title: 'Docker' },
+                    { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg" alt="AWS" style={{ width: '48px', height: '48px' }} />, title: 'AWS' }
+                  ]}
+                  speed={120}
+                  direction="left"
+                  logoHeight={48}
+                  gap={40}
+                  pauseOnHover={true}
+                  fadeOut={true}
+                />
+              </div>
             </div>
           </section>
          
