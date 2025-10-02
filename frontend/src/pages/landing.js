@@ -6,7 +6,6 @@ import { Brain, Users, BarChart3, Sparkles, Star } from 'lucide-react';
 import Aurora from '../components/reactbits/Aurora';
 import BlurText from '../components/reactbits/BlurText';
 import SplitText from '../components/reactbits/SplitText';
-import GradualBlur from '../components/reactbits/GradualBlur';
 import CurvedLoop from '../components/reactbits/CurvedLoop';
 import { StaggeredMenu } from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
@@ -195,12 +194,16 @@ export default function LandingPage() {
                 <div className="inline-block text-orange-500 text-sm font-bold mb-4 uppercase tracking-wider">
                   Unfair Advantage Mode
                 </div>
-                <GradualBlur
-                  text="Stop pretending you know everything. Start actually knowing everything."
-                  className="text-4xl md:text-6xl font-black text-white mb-8"
-                  animateOn="view"
-                  blurAmount={8}
-                />
+                <h2 className="text-4xl md:text-6xl font-black text-white mb-8">
+                  Stop pretending you know everything.
+                  <br />
+                  <GradientText 
+                    colors={['#fbbf24', '#ef4444', '#ec4899']}
+                    className="text-4xl md:text-6xl"
+                  >
+                    Start actually knowing everything.
+                  </GradientText>
+                </h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">

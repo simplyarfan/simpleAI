@@ -3,8 +3,7 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { Mail, MessageSquare, MapPin, Phone } from 'lucide-react';
-import Prism from '../components/reactbits/Prism';
-import Stepper from '../components/reactbits/Stepper';
+import StaticDotGrid from '../components/backgrounds/StaticDotGrid';
 import { StaggeredMenu } from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
@@ -30,13 +29,12 @@ export default function Contact() {
       </Head>
 
       <div className="relative min-h-screen bg-black text-white overflow-hidden">
-        {/* Prism Background */}
-        <div className="fixed inset-0 z-0">
-          <Prism 
-            colors={['#f97316', '#ef4444', '#eab308']}
-            intensity={0.5}
-          />
-        </div>
+        {/* Static Dot Grid Background */}
+        <StaticDotGrid 
+          dotSize={1}
+          dotColor="#f97316"
+          spacing={40}
+        />
 
         {/* StaggeredMenu Navigation */}
         <StaggeredMenu
