@@ -680,7 +680,8 @@ const updateUser = async (req, res) => {
       department, 
       job_title,
       jobTitle,
-      is_active 
+      is_active,
+      newPassword  // Add password field
     } = req.body;
 
     // Handle field name variations
@@ -698,18 +699,37 @@ const updateUser = async (req, res) => {
       });
     }
 
-    await database.run(`
-      UPDATE users SET 
-        first_name = $1,
-        last_name = $2,
-        email = $3,
-        role = $4,
-        department = $5,
-        job_title = $6,
-        is_active = COALESCE($7, is_active),
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = $8
-    `, [finalFirstName, finalLastName, email, role, department, finalJobTitle, is_active, user_id]);
+    // If password is provided, hash it
+    if (newPassword && newPassword.trim()) {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await database.run(`
+        UPDATE users SET 
+          first_name = $1,
+          last_name = $2,
+          email = $3,
+          role = $4,
+          department = $5,
+          job_title = $6,
+          is_active = COALESCE($7, is_active),
+          password = $8,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $9
+      `, [finalFirstName, finalLastName, email, role, department, finalJobTitle, is_active, hashedPassword, user_id]);
+    } else {
+      // Update without changing password
+      await database.run(`
+        UPDATE users SET 
+          first_name = $1,
+          last_name = $2,
+          email = $3,
+          role = $4,
+          department = $5,
+          job_title = $6,
+          is_active = COALESCE($7, is_active),
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $8
+      `, [finalFirstName, finalLastName, email, role, department, finalJobTitle, is_active, user_id]);
+    }
 
     const updatedUser = await database.get(
       'SELECT id, email, first_name, last_name, role, department, job_title, is_active FROM users WHERE id = $1',

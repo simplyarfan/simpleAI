@@ -661,6 +661,18 @@ export default function UsersManagement() {
                   <option value="admin">Admin</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  New Password <span className="text-gray-500 text-xs">(leave blank to keep current)</span>
+                </label>
+                <input
+                  type="password"
+                  placeholder="Enter new password (optional)"
+                  value={formData.newPassword || ''}
+                  onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"

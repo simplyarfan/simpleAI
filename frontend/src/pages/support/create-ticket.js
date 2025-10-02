@@ -50,11 +50,12 @@ export default function CreateTicket() {
         userId: user?.id
       });
 
-      if (response.success) {
+      // Response is axios response, data is in response.data
+      if (response.data && response.data.success) {
         toast.success('Ticket created successfully!');
         router.push('/support/my-tickets');
       } else {
-        toast.error(response.message || 'Failed to create ticket');
+        toast.error(response.data?.message || 'Failed to create ticket');
       }
     } catch (error) {
       console.error('Error creating ticket:', error);
