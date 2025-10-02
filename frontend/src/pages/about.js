@@ -251,22 +251,24 @@ export default function About() {
             <div style={{ height: '200px', position: 'relative', overflow: 'hidden', width: '100%' }}>
               <LogoLoop
                 logos={[
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'React' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'Next.js' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'Node.js' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'Python' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg" alt="TensorFlow" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'TensorFlow' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'PostgreSQL' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'Docker' },
-                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg" alt="AWS" style={{ width: '64px', height: '64px', filter: 'brightness(0) invert(1)' }} />, title: 'AWS' }
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'React', href: 'https://react.dev' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'Next.js', href: 'https://nextjs.org' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt="Node.js" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'Node.js', href: 'https://nodejs.org' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt="Python" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'Python', href: 'https://python.org' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg" alt="TensorFlow" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'TensorFlow', href: 'https://tensorflow.org' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'PostgreSQL', href: 'https://postgresql.org' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" alt="Docker" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'Docker', href: 'https://docker.com' },
+                  { node: <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original.svg" alt="AWS" style={{ width: '48px', height: '48px', filter: 'brightness(0) invert(1)' }} />, title: 'AWS', href: 'https://aws.amazon.com' }
                 ]}
                 speed={120}
                 direction="left"
-                logoHeight={64}
-                gap={60}
+                logoHeight={48}
+                gap={40}
                 pauseOnHover={true}
-                fadeOut={false}
-                scaleOnHover={false}
+                scaleOnHover={true}
+                fadeOut={true}
+                fadeOutColor="#ffffff"
+                ariaLabel="Technology partners"
               />
             </div>
           </section>
