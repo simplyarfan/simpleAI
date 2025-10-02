@@ -35,28 +35,29 @@ export default function LandingPage() {
 
 
         {/* StaggeredMenu Navigation */}
-        <StaggeredMenu
-          position="right"
-          colors={['#1a1a1a', '#2d2d2d']}
-          items={[
-            { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
-            { label: 'Features', link: '/features', ariaLabel: 'View features' },
-            { label: 'About', link: '/about', ariaLabel: 'About us' },
-            { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' }
-          ]}
-          socialItems={[
-            { label: 'GitHub', link: 'https://github.com' },
-            { label: 'Twitter', link: 'https://twitter.com' },
-            { label: 'LinkedIn', link: 'https://linkedin.com' }
-          ]}
-          displaySocials={true}
-          displayItemNumbering={true}
-          logoUrl="/logo.png"
-          menuButtonColor="#fff"
-          openMenuButtonColor="#000"
-          changeMenuColorOnOpen={true}
-          accentColor="#f97316"
-        />
+        <div style={{ height: '100vh', background: '#1a1a1a' }}>
+          <StaggeredMenu
+            position="right"
+            items={[
+              { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
+              { label: 'Features', link: '/features', ariaLabel: 'View features' },
+              { label: 'About', link: '/about', ariaLabel: 'About us' },
+              { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' }
+            ]}
+            socialItems={[
+              { label: 'GitHub', link: 'https://github.com' },
+              { label: 'Twitter', link: 'https://twitter.com' },
+              { label: 'LinkedIn', link: 'https://linkedin.com' }
+            ]}
+            displaySocials={true}
+            displayItemNumbering={true}
+            menuButtonColor="#fff"
+            openMenuButtonColor="#fff"
+            changeMenuColorOnOpen={true}
+            colors={['#B19EEF', '#5227FF']}
+            accentColor="#ff6b6b"
+          />
+        </div>
 
         {/* Loading Transition */}
         <AnimatePresence>
@@ -270,65 +271,6 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* Testimonials with InfiniteScroll */}
-          <section className="py-20 bg-white/5 backdrop-blur-sm overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6 mb-12">
-              <div className="text-center">
-                <h2 className="text-4xl font-bold text-white mb-4">Loved by Teams Worldwide</h2>
-                <p className="text-lg text-gray-400">See what our customers are saying</p>
-              </div>
-            </div>
-            
-            <InfiniteScroll speed={20}>
-              {[
-                { name: "Sarah Chen", role: "HR Director", company: "TechCorp", text: "Cut our hiring time by 70%. The CV Intelligence is incredible!", rating: 5 },
-                { name: "Marcus Johnson", role: "CFO", company: "FinanceHub", text: "Saved $100K in the first month. ROI was immediate.", rating: 5 },
-                { name: "Emily Rodriguez", role: "Sales VP", company: "GrowthCo", text: "Our lead generation increased 3x. Game changer!", rating: 5 },
-                { name: "David Kim", role: "CEO", company: "StartupXYZ", text: "Best investment we made this year. Highly recommend!", rating: 5 },
-                { name: "Lisa Wang", role: "Operations", company: "LogiTech", text: "The automation is seamless. Our team loves it!", rating: 5 },
-                { name: "James Brown", role: "CTO", company: "DevOps Inc", text: "Integration was smooth. Support is fantastic!", rating: 5 }
-              ].map((testimonial, index) => (
-                <div key={index} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 min-w-[350px] mx-4">
-                  <div className="flex items-center gap-1 mb-3">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-orange-500 text-orange-500" />
-                    ))}
-                  </div>
-                  <p className="text-gray-300 mb-4 italic">"{testimonial.text}"</p>
-                  <div>
-                    <p className="text-white font-semibold">{testimonial.name}</p>
-                    <p className="text-gray-400 text-sm">{testimonial.role} at {testimonial.company}</p>
-                  </div>
-                </div>
-              ))}
-            </InfiniteScroll>
-          </section>
-
-          {/* Tech Showcase with Cubes */}
-          <section className="py-32 relative overflow-hidden bg-gradient-to-b from-black to-gray-900">
-            <div className="absolute inset-0 flex items-center justify-center opacity-30">
-              <Cubes 
-                gridSize={6}
-                maxAngle={45}
-                speed={0.5}
-              />
-            </div>
-            <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-                  Built with <GradientText colors={['#ef4444', '#f97316']} className="text-4xl md:text-5xl">cutting-edge AI</GradientText>
-                </h2>
-                <p className="text-xl text-gray-400 mb-8">
-                  Powered by the latest advances in machine learning, natural language processing, and computer vision.
-                </p>
-              </motion.div>
-            </div>
-          </section>
 
           {/* Final CTA */}
           <section className="py-32 bg-gradient-to-br from-gray-900 via-black to-gray-900 relative overflow-hidden">
