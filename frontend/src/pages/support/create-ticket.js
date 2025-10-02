@@ -45,10 +45,7 @@ export default function CreateTicket() {
 
     setIsSubmitting(true);
     try {
-      const response = await supportAPI.createTicket({
-        ...formData,
-        userId: user?.id
-      });
+      const response = await supportAPI.createTicket(formData);
 
       // Response is axios response, data is in response.data
       if (response.data && response.data.success) {
