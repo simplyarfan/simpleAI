@@ -100,17 +100,15 @@ export default function TicketDetail() {
         
         console.log('Adding new comment to UI:', newCommentObj);
         console.log('Current comments before adding:', comments.length);
-        setComments(prevComments => {
-          const updatedComments = [...prevComments, newCommentObj];
-          console.log('Updated comments after adding:', updatedComments.length);
-          return updatedComments;
-        });
         
-        // Also refresh from backend to ensure consistency (optional since we have real data)
+        // DON'T add to UI first - just wait for backend refresh
+        // The issue is that adding optimistically then refreshing causes the new comment to disappear
+        
+        // Wait a moment for database to commit, then refresh
         setTimeout(async () => {
-          console.log('Refreshing from backend for consistency...');
+          console.log('Refreshing from backend to get new comment...');
           await fetchTicketDetails();
-        }, 2000);
+        }, 1000);
       } else {
         toast.error(response.data?.message || 'Failed to add comment');
       }
