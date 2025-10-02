@@ -4,6 +4,7 @@ import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { Mail, MessageSquare, MapPin, Phone } from 'lucide-react';
 import StaticDotGrid from '../components/backgrounds/StaticDotGrid';
+import { StaggeredMenu } from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
 export default function Contact() {
@@ -35,32 +36,34 @@ export default function Contact() {
           spacing={40}
         />
 
-        {/* Navigation */}
-        <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <Link href="/">
-              <div className="flex items-center space-x-2 cursor-pointer hover:scale-105 transition-transform duration-300">
-                <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
-                </div>
-                <span className="text-xl font-bold">Nexus</span>
-              </div>
-            </Link>
-
-            <div className="hidden md:flex space-x-8 text-sm font-medium">
-              <Link href="/features" className="text-gray-300 hover:text-white transition-colors">Features</Link>
-              <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About</Link>
-              <Link href="/contact" className="text-orange-500 font-semibold">Contact</Link>
-            </div>
-
-            <Link href="/auth/login">
-              <button className="group relative px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300 overflow-hidden">
-                <span className="relative z-10">Get Started</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </button>
-            </Link>
+        {/* StaggeredMenu Navigation */}
+        <div className="fixed top-0 left-0 w-full h-screen z-50 pointer-events-none">
+          <div className="pointer-events-auto">
+            <StaggeredMenu
+              position="right"
+              colors={['#1a1a1a', '#2d2d2d']}
+              items={[
+                { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
+                { label: 'Features', link: '/features', ariaLabel: 'View features' },
+                { label: 'About', link: '/about', ariaLabel: 'About us' },
+                { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' }
+              ]}
+              socialItems={[
+                { label: 'GitHub', link: 'https://github.com' },
+                { label: 'Twitter', link: 'https://twitter.com' },
+                { label: 'LinkedIn', link: 'https://linkedin.com' }
+              ]}
+              displaySocials={true}
+              displayItemNumbering={true}
+              menuButtonColor="#fff"
+              openMenuButtonColor="#000"
+              changeMenuColorOnOpen={true}
+              accentColor="#f97316"
+              logoUrl="/logo.png"
+            />
           </div>
-        </nav>
+        </div>
+
 
         {/* Hero */}
         <section className="pt-32 pb-12">
