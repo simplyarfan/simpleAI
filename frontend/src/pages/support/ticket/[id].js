@@ -86,14 +86,26 @@ export default function TicketDetail() {
         toast.success('Comment added successfully!');
         setNewComment('');
         
-        // Force immediate refresh and wait a bit for database consistency
-        console.log('Comments before refresh:', comments.length);
+        // Add the new comment immediately to the UI for instant feedback
+        const backendComment = response.data.data?.comment;
+        const newCommentObj = backendComment || {
+          id: Date.now(), // Fallback temp ID
+          comment: newComment,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          role: user.role,
+          created_at: new Date().toISOString(),
+          user_id: user.id
+        };
         
-        // Wait a moment for database consistency, then refresh
+        console.log('Adding new comment to UI:', newCommentObj);
+        setComments(prevComments => [...prevComments, newCommentObj]);
+        
+        // Also refresh from backend to ensure consistency (optional since we have real data)
         setTimeout(async () => {
+          console.log('Refreshing from backend for consistency...');
           await fetchTicketDetails();
-          console.log('Comments after delayed refresh');
-        }, 500);
+        }, 2000);
       } else {
         toast.error(response.data?.message || 'Failed to add comment');
       }
