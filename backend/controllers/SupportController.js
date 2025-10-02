@@ -5,8 +5,10 @@ class SupportController {
   // Create new support ticket
   static async createTicket(req, res) {
     try {
+      console.log('🎫 [SUPPORT] Create ticket request:', req.body);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        console.log('🎫 [SUPPORT] Validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           message: 'Validation errors',
@@ -15,6 +17,7 @@ class SupportController {
       }
 
       const { subject, description, priority = 'medium', category = 'general' } = req.body;
+      console.log('🎫 [SUPPORT] Creating ticket for user:', req.user.id);
 
       // Create ticket
       const result = await database.run(`
@@ -259,12 +262,19 @@ class SupportController {
       const isInternalComment = is_internal && isAdmin;
 
       // Add comment
+      console.log('🎫 [SUPPORT] Inserting comment:', { ticket_id, user_id: req.user.id, comment, isInternalComment });
       const result = await database.run(`
         INSERT INTO ticket_comments (ticket_id, user_id, comment, is_internal)
         VALUES ($1, $2, $3, $4) RETURNING id
       `, [ticket_id, req.user.id, comment, isInternalComment]);
 
+      console.log('🎫 [SUPPORT] Database result:', result);
       const commentId = result.id;
+      
+      if (!commentId) {
+        throw new Error('Failed to get comment ID from database');
+      }
+      
       console.log('🎫 [SUPPORT] Comment created with ID:', commentId);
 
       // Update ticket's updated_at timestamp
