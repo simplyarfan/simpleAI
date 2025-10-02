@@ -548,6 +548,46 @@ const BatchDetail = () => {
                           {matchedSkills.length === 0 && missingSkills.length === 0 && allSkills.length === 0 && (
                             <p className="text-gray-500 text-sm">Skills analysis not available</p>
                           )}
+                          
+                          {/* Skills Gap Chart */}
+                          {(matchedSkills.length > 0 || missingSkills.length > 0) && (
+                            <div className="mt-6 pt-6 border-t border-gray-200">
+                              <h4 className="text-sm font-semibold text-gray-900 mb-4">Skills Gap Analysis</h4>
+                              <div className="space-y-3">
+                                {/* Match Percentage Bar */}
+                                <div>
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="text-xs font-medium text-gray-600">JD Match Rate</span>
+                                    <span className="text-xs font-bold text-gray-900">
+                                      {Math.round((matchedSkills.length / requiredSkills.length) * 100)}%
+                                    </span>
+                                  </div>
+                                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                    <div 
+                                      className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500"
+                                      style={{ width: `${(matchedSkills.length / requiredSkills.length) * 100}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                                
+                                {/* Skills Breakdown */}
+                                <div className="grid grid-cols-3 gap-3 mt-4">
+                                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                                    <div className="text-2xl font-bold text-green-700">{matchedSkills.length}</div>
+                                    <div className="text-xs text-green-600 mt-1">Matched</div>
+                                  </div>
+                                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                                    <div className="text-2xl font-bold text-red-700">{missingSkills.length}</div>
+                                    <div className="text-xs text-red-600 mt-1">Missing</div>
+                                  </div>
+                                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                                    <div className="text-2xl font-bold text-blue-700">{allSkills.length}</div>
+                                    <div className="text-xs text-blue-600 mt-1">Total Skills</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </>
                       );
                     } catch (e) {
@@ -638,6 +678,53 @@ const BatchDetail = () => {
                           
                           {experience.length === 0 && (
                             <p className="text-gray-500 text-sm text-center py-4">Experience details not available</p>
+                          )}
+                          
+                          {/* Experience Timeline */}
+                          {experience.length > 0 && (
+                            <div className="mt-6 pt-6 border-t border-gray-200">
+                              <h4 className="text-sm font-semibold text-gray-900 mb-4">Career Timeline</h4>
+                              <div className="relative">
+                                {/* Timeline Line */}
+                                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-green-500 via-blue-500 to-purple-500"></div>
+                                
+                                {/* Timeline Items */}
+                                <div className="space-y-6">
+                                  {experience.map((exp, index) => {
+                                    const isCurrent = exp.endDate && exp.endDate.toLowerCase().includes('present');
+                                    return (
+                                      <div key={index} className="relative pl-12">
+                                        {/* Timeline Dot */}
+                                        <div className={`absolute left-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                                          isCurrent ? 'bg-green-500 ring-4 ring-green-100' : 'bg-blue-500 ring-4 ring-blue-100'
+                                        }`}>
+                                          <span className="text-white text-xs font-bold">{index + 1}</span>
+                                        </div>
+                                        
+                                        {/* Timeline Content */}
+                                        <div className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                          <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                              <h5 className="font-bold text-gray-900">{exp.role}</h5>
+                                              <p className="text-sm text-blue-600 font-medium">{exp.company}</p>
+                                            </div>
+                                            {isCurrent && (
+                                              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-full">
+                                                Current
+                                              </span>
+                                            )}
+                                          </div>
+                                          <div className="flex items-center space-x-2 text-xs text-gray-500">
+                                            <Icons.Calendar className="w-3 h-3" />
+                                            <span>{exp.startDate} - {exp.endDate || 'Present'}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
                           )}
                         </div>
                       );
@@ -879,6 +966,124 @@ const BatchDetail = () => {
                       </div>
                     );
                   }
+                })()}
+              </div>
+            </div>
+            
+            {/* Interview Readiness Assessment */}
+            <div className="mt-6 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Icons.CheckCircle className="w-5 h-5 mr-2 text-purple-600" />
+                Interview Readiness Assessment
+              </h3>
+              <div className="space-y-4">
+                {(() => {
+                  const profileData = selectedCandidate.profile_json || {};
+                  const experience = (profileData.experience || []).filter(exp => {
+                    const company = (exp.company || '').toLowerCase();
+                    return !company.includes('competition') && !company.includes('hackathon');
+                  });
+                  const skills = profileData.skills || [];
+                  const certifications = profileData.certifications || [];
+                  const education = profileData.education || [];
+                  
+                  // Calculate readiness factors
+                  const hasRelevantExp = experience.length > 0;
+                  const hasStrongSkills = skills.length >= 5;
+                  const hasCertifications = certifications.length > 0;
+                  const hasEducation = education.length > 0;
+                  
+                  const readinessScore = [hasRelevantExp, hasStrongSkills, hasCertifications, hasEducation].filter(Boolean).length;
+                  
+                  return (
+                    <div className="space-y-4">
+                      {/* Readiness Factors */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Technical Preparedness */}
+                        <div className={`border-2 rounded-lg p-4 ${hasStrongSkills ? 'bg-green-50 border-green-300' : 'bg-yellow-50 border-yellow-300'}`}>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Icons.Code className={`w-5 h-5 ${hasStrongSkills ? 'text-green-600' : 'text-yellow-600'}`} />
+                            <h4 className="font-semibold text-gray-900">Technical Preparedness</h4>
+                          </div>
+                          <p className="text-sm text-gray-700">
+                            {hasStrongSkills 
+                              ? `Strong technical foundation with ${skills.length} documented skills. Ready for technical discussions.`
+                              : `Limited technical skills listed (${skills.length}). May need preparation for technical questions.`
+                            }
+                          </p>
+                        </div>
+                        
+                        {/* Experience Readiness */}
+                        <div className={`border-2 rounded-lg p-4 ${hasRelevantExp ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Icons.Briefcase className={`w-5 h-5 ${hasRelevantExp ? 'text-green-600' : 'text-red-600'}`} />
+                            <h4 className="font-semibold text-gray-900">Experience Readiness</h4>
+                          </div>
+                          <p className="text-sm text-gray-700">
+                            {hasRelevantExp 
+                              ? `${experience.length} professional role(s) documented. Can discuss real-world project experience.`
+                              : 'No professional experience listed. Focus on academic projects and theoretical knowledge.'
+                            }
+                          </p>
+                        </div>
+                        
+                        {/* Credential Strength */}
+                        <div className={`border-2 rounded-lg p-4 ${hasCertifications ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-300'}`}>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Icons.Award className={`w-5 h-5 ${hasCertifications ? 'text-green-600' : 'text-gray-600'}`} />
+                            <h4 className="font-semibold text-gray-900">Credential Strength</h4>
+                          </div>
+                          <p className="text-sm text-gray-700">
+                            {hasCertifications 
+                              ? `${certifications.length} certification(s) earned. Demonstrates commitment to professional development.`
+                              : 'No certifications listed. Consider highlighting any ongoing learning initiatives.'
+                            }
+                          </p>
+                        </div>
+                        
+                        {/* Educational Foundation */}
+                        <div className={`border-2 rounded-lg p-4 ${hasEducation ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}`}>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Icons.GraduationCap className={`w-5 h-5 ${hasEducation ? 'text-green-600' : 'text-red-600'}`} />
+                            <h4 className="font-semibold text-gray-900">Educational Foundation</h4>
+                          </div>
+                          <p className="text-sm text-gray-700">
+                            {hasEducation 
+                              ? `${education.length} degree(s) completed. Strong academic background for role requirements.`
+                              : 'No formal education listed. May need to emphasize self-taught skills and practical experience.'
+                            }
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Overall Readiness */}
+                      <div className={`border-2 rounded-lg p-4 ${
+                        readinessScore >= 3 ? 'bg-green-50 border-green-300' :
+                        readinessScore === 2 ? 'bg-yellow-50 border-yellow-300' :
+                        'bg-orange-50 border-orange-300'
+                      }`}>
+                        <h4 className="font-bold text-gray-900 mb-2 flex items-center">
+                          <span className={`w-3 h-3 rounded-full mr-2 ${
+                            readinessScore >= 3 ? 'bg-green-500' :
+                            readinessScore === 2 ? 'bg-yellow-500' :
+                            'bg-orange-500'
+                          }`}></span>
+                          Overall Interview Readiness
+                        </h4>
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          {readinessScore >= 3 && 
+                            "Candidate is well-prepared for interviews with strong credentials across multiple areas. Recommend proceeding with technical and behavioral interview rounds."
+                          }
+                          {readinessScore === 2 && 
+                            "Candidate shows moderate readiness with some strong areas. Consider targeted preparation in weaker areas before interview. May benefit from preliminary screening call."
+                          }
+                          {readinessScore < 2 && 
+                            "Candidate may need additional preparation before formal interviews. Consider requesting additional information or portfolio work to better assess capabilities."
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  );
                 })()}
               </div>
             </div>
