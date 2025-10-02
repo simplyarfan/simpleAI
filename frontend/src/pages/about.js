@@ -4,9 +4,9 @@ import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { Brain, Users, BarChart3, Rocket, Target, Award, TrendingUp } from 'lucide-react';
 import DotGrid from '../components/backgrounds/DotGrid';
-import ProfileCard from '../components/reactbits/ProfileCard';
 import RotatingText from '../components/reactbits/RotatingText';
 import LogoLoop from '../components/reactbits/LogoLoop';
+import StaggeredMenu from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
 export default function About() {
@@ -28,32 +28,29 @@ export default function About() {
 
 
 
-        {/* Navigation */}
-        <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-black/50 border-b border-white/10">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <Link href="/">
-              <div className="flex items-center space-x-2 cursor-pointer hover:scale-105 transition-transform duration-300">
-                <div className="w-8 h-8 bg-gradient-to-br from-orange-600 to-red-600 rounded-lg flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rounded-sm transform rotate-45"></div>
-                </div>
-                <span className="text-xl font-bold text-white">Nexus</span>
-              </div>
-            </Link>
-
-            <div className="hidden md:flex space-x-8 text-sm font-medium">
-              <Link href="/features" className="text-gray-300 hover:text-white transition-colors">Features</Link>
-              <Link href="/about" className="text-orange-500 font-semibold">About</Link>
-              <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link>
-            </div>
-
-            <Link href="/auth/login">
-              <button className="group relative px-6 py-2.5 bg-gradient-to-r from-orange-600 to-red-600 text-white text-sm font-medium rounded-full hover:shadow-lg hover:shadow-orange-500/50 hover:scale-105 transition-all duration-300 overflow-hidden">
-                <span className="relative z-10">Get Started</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </button>
-            </Link>
-          </div>
-        </nav>
+        {/* StaggeredMenu Navigation */}
+        <StaggeredMenu
+          position="right"
+          colors={['#1a1a1a', '#2d2d2d']}
+          items={[
+            { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
+            { label: 'Features', link: '/features', ariaLabel: 'View features' },
+            { label: 'About', link: '/about', ariaLabel: 'About us' },
+            { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' }
+          ]}
+          socialItems={[
+            { label: 'GitHub', link: 'https://github.com' },
+            { label: 'Twitter', link: 'https://twitter.com' },
+            { label: 'LinkedIn', link: 'https://linkedin.com' }
+          ]}
+          displaySocials={true}
+          displayItemNumbering={true}
+          logoUrl="/logo.png"
+          menuButtonColor="#fff"
+          openMenuButtonColor="#000"
+          changeMenuColorOnOpen={true}
+          accentColor="#f97316"
+        />
 
         {/* Main Content */}
         <div className="relative z-10">
@@ -261,36 +258,6 @@ export default function About() {
             </div>
           </section>
 
-          {/* Founder Section */}
-          <section className="py-20">
-            <div className="max-w-7xl mx-auto px-6">
-              <div className="text-center mb-16">
-                <h2 className="text-4xl font-bold text-white mb-4">Meet the Founder</h2>
-                <p className="text-lg text-gray-400">The visionary behind Nexus AI</p>
-              </div>
-
-              <div className="max-w-md mx-auto">
-                <motion.div
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                  viewport={{ once: true }}
-                >
-                  <ProfileCard
-                    name="Syed Arfan Hussain"
-                    title="Founder & CEO"
-                    handle="@syedarfan"
-                    status="Online"
-                    avatarUrl="https://api.dicebear.com/7.x/avataaars/svg?seed=Arfan"
-                    contactText="Contact Me"
-                    showsInfo={true}
-                    enableMobileTilt={false}
-                    onContactClick={() => window.location.href = '/contact'}
-                  />
-                </motion.div>
-              </div>
-            </div>
-          </section>
 
           {/* CTA Section */}
           <section className="py-16 bg-gradient-to-br from-orange-500/10 to-red-500/10 border-y border-orange-500/20">
