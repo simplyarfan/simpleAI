@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Brain, Users, BarChart3, Rocket, Target, Award, TrendingUp } from 'lucide-react';
 import DotGrid from '../components/backgrounds/DotGrid';
 import RotatingText from '../components/reactbits/RotatingText';
+import ProfileCard from '../components/reactbits/ProfileCard';
 import { StaggeredMenu } from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
@@ -64,12 +65,18 @@ export default function About() {
                 <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
                   Building the Future of
                   <br />
-                  <div className="inline-block bg-gradient-to-r from-orange-500/20 to-red-600/20 backdrop-blur-sm px-8 py-4 rounded-2xl border border-orange-500/30 mt-4">
-                    <RotatingText 
-                      texts={['Artificial Intelligence', 'Business Automation', 'Smart Solutions', 'Digital Innovation']}
-                      mainClassName="text-5xl md:text-6xl bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent font-bold"
-                    />
-                  </div>
+                  <RotatingText 
+                    texts={['Artificial Intelligence', 'Business Automation', 'Smart Solutions', 'Digital Innovation']}
+                    mainClassName="inline-block px-8 py-4 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-2xl mt-4"
+                    staggerFrom="last"
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "-120%" }}
+                    staggerDuration={0.025}
+                    splitLevelClassName="overflow-hidden pb-1"
+                    transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                    rotationInterval={2500}
+                  />
                 </h1>
                 <p className="text-xl text-gray-400 max-w-4xl mx-auto">
                   We're on a mission to make advanced AI accessible to every business, empowering innovation and driving positive change across industries.
@@ -233,7 +240,48 @@ export default function About() {
             </div>
           </section>
 
+          {/* Team Section */}
+          <section className="py-20 bg-white/5">
+            <div className="max-w-7xl mx-auto px-6">
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-bold text-white mb-4">Meet Our Team</h2>
+                <p className="text-lg text-gray-400">The brilliant minds behind Nexus AI</p>
+              </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <ProfileCard
+                  name="Sarah Chen"
+                  title="CEO & Co-Founder"
+                  avatarUrl=""
+                  status="Online"
+                  handle="@sarahchen"
+                  contactText="Connect"
+                  showUserInfo={true}
+                  enableTilt={true}
+                />
+                <ProfileCard
+                  name="Marcus Rodriguez"
+                  title="CTO & Co-Founder"
+                  avatarUrl=""
+                  status="Online"
+                  handle="@marcusr"
+                  contactText="Connect"
+                  showUserInfo={true}
+                  enableTilt={true}
+                />
+                <ProfileCard
+                  name="Aisha Patel"
+                  title="Head of AI Research"
+                  avatarUrl=""
+                  status="Online"
+                  handle="@aishap"
+                  contactText="Connect"
+                  showUserInfo={true}
+                  enableTilt={true}
+                />
+              </div>
+            </div>
+          </section>
          
           <section className="py-16 bg-gradient-to-br from-orange-500/10 to-red-500/10 border-y border-orange-500/20">
             <div className="max-w-4xl mx-auto px-6 text-center">

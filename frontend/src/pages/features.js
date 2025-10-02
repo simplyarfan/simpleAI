@@ -3,6 +3,7 @@ import Head from 'next/head';
 import { motion } from 'framer-motion';
 import { Brain, Users, BarChart3, FileText, Zap, Shield, Globe, TrendingUp } from 'lucide-react';
 import StaticDotGrid from '../components/backgrounds/StaticDotGrid';
+import TiltedCard from '../components/reactbits/TiltedCard';
 import { StaggeredMenu } from '../components/reactbits/StaggeredMenu';
 import GradientText from '../components/text/GradientText';
 
