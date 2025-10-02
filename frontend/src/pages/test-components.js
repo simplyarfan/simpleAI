@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import Head from 'next/head';
-import StaggeredMenu from '../components/reactbits/StaggeredMenu';
+import Link from 'next/link';
 import Aurora from '../components/reactbits/Aurora';
 import SplitText from '../components/reactbits/SplitText';
 import BlurText from '../components/reactbits/BlurText';
@@ -8,7 +7,6 @@ import RotatingText from '../components/reactbits/RotatingText';
 import LogoLoop from '../components/reactbits/LogoLoop';
 import Cubes from '../components/reactbits/Cubes';
 import InfiniteScroll from '../components/reactbits/InfiniteScroll';
-import { Star } from 'lucide-react';
 
 export default function TestComponents() {
   return (
@@ -18,43 +16,16 @@ export default function TestComponents() {
       </Head>
 
       <div className="min-h-screen bg-black text-white">
-        {/* StaggeredMenu Test */}
-        <div style={{ height: '100vh', background: '#1a1a1a' }}>
-          <StaggeredMenu
-            position="right"
-            items={[
-              { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
-              { label: 'About', link: '/about', ariaLabel: 'Learn about us' },
-              { label: 'Services', link: '/services', ariaLabel: 'View our services' },
-              { label: 'Contact', link: '/contact', ariaLabel: 'Get in touch' }
-            ]}
-            socialItems={[
-              { label: 'Twitter', link: 'https://twitter.com' },
-              { label: 'GitHub', link: 'https://github.com' },
-              { label: 'LinkedIn', link: 'https://linkedin.com' }
-            ]}
-            displaySocials={true}
-            displayItemNumbering={true}
-            menuButtonColor="#fff"
-            openMenuButtonColor="#fff"
-            changeMenuColorOnOpen={true}
-            colors={['#B19EEF', '#5227FF']}
-            logoUrl="/path-to-your-logo.svg"
-            accentColor="#ff6b6b"
-            onMenuOpen={() => console.log('Menu opened')}
-            onMenuClose={() => console.log('Menu closed')}
-          />
-
-          {/* Content */}
-          <div className="relative z-10 flex items-center justify-center h-full">
-            <div className="text-center">
-              <h1 className="text-6xl font-bold mb-4">React Bits Components Test</h1>
-              <p className="text-xl text-gray-400">Click the menu button in the top-right corner</p>
-            </div>
+        {/* Header */}
+        <div className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-sm border-b border-white/10 px-6 py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">React Bits Test</h1>
+            <Link href="/" className="text-orange-500 hover:underline">← Back to Home</Link>
           </div>
         </div>
 
-        {/* Aurora Test */}
+        <div className="pt-20">
+          {/* Aurora Test */}
         <section className="relative h-screen flex items-center justify-center">
           <div className="absolute inset-0 z-0">
             <Aurora 
@@ -182,11 +153,12 @@ export default function TestComponents() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="py-12 bg-gray-900 text-center">
-          <p className="text-gray-400">All React Bits components are working! 🎉</p>
-          <p className="text-sm text-gray-500 mt-2">Visit <a href="/" className="text-orange-500 hover:underline">/</a> to go back to the main site</p>
-        </footer>
+          {/* Footer */}
+          <footer className="py-12 bg-gray-900 text-center">
+            <p className="text-gray-400">All React Bits components are working! 🎉</p>
+            <p className="text-sm text-gray-500 mt-2">Visit <a href="/" className="text-orange-500 hover:underline">/</a> to go back to the main site</p>
+          </footer>
+        </div>
       </div>
     </>
   );
