@@ -48,9 +48,13 @@ export default function TicketDetail() {
       setIsLoading(true);
       const response = await supportAPI.getTicket(id);
       
+      console.log('Fetch ticket response:', response.data);
+      
       if (response.data?.success) {
         setTicket(response.data.data.ticket);
-        setComments(response.data.data.comments || []);
+        const fetchedComments = response.data.data.comments || [];
+        console.log('Setting comments:', fetchedComments);
+        setComments(fetchedComments);
       } else {
         toast.error('Failed to load ticket details');
         router.push('/support/my-tickets');

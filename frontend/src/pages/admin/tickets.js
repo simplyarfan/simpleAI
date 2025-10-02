@@ -150,26 +150,8 @@ export default function TicketsManagement() {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
-          <p className="mt-4 text-white text-sm">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user || user.email !== 'syedarfan@securemaxtech.com') {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <LifeBuoy className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">Access Denied</h2>
-          <p className="text-gray-400 mb-6">You don't have permission to access this page.</p>
-          <button
-            onClick={() => router.push('/')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Go to Dashboard
-          </button>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-white">Loading tickets...</p>
         </div>
       </div>
     );
@@ -177,7 +159,7 @@ export default function TicketsManagement() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50 relative overflow-hidden">
+      <div className="min-h-screen bg-black relative overflow-hidden">
 
         <Head>
           <title>Support Tickets - SimpleAI</title>
