@@ -23,7 +23,7 @@ class NotificationController {
         FROM notifications n
         LEFT JOIN support_tickets st ON n.type = 'ticket_response' AND (n.metadata->>'ticket_id')::int = st.id
         LEFT JOIN users u ON n.type = 'ticket_response' AND (n.metadata->>'responder_id')::int = u.id
-        WHERE n.user_id = ?
+        WHERE n.user_id = $1
       `;
       
       const params = [req.user.id];
@@ -34,7 +34,7 @@ class NotificationController {
 
       query += `
         ORDER BY n.created_at DESC
-        LIMIT ? OFFSET ?
+        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
       `;
       
       params.push(limit, offset);
@@ -42,7 +42,7 @@ class NotificationController {
       const notifications = await database.all(query, params);
 
       // Get total count for pagination
-      let countQuery = 'SELECT COUNT(*) as total FROM notifications WHERE user_id = ?';
+      let countQuery = 'SELECT COUNT(*) as total FROM notifications WHERE user_id = $1';
       const countParams = [req.user.id];
 
       if (unread_only === 'true') {
@@ -80,7 +80,7 @@ class NotificationController {
 
       // Check if notification exists and belongs to user
       const notification = await database.get(`
-        SELECT * FROM notifications WHERE id = ? AND user_id = ?
+        SELECT * FROM notifications WHERE id = $1 AND user_id = $2
       `, [notification_id, req.user.id]);
 
       if (!notification) {
@@ -94,7 +94,7 @@ class NotificationController {
       await database.run(`
         UPDATE notifications 
         SET is_read = true, read_at = CURRENT_TIMESTAMP 
-        WHERE id = ?
+        WHERE id = $1
       `, [notification_id]);
 
       res.json({
@@ -117,7 +117,7 @@ class NotificationController {
       await database.run(`
         UPDATE notifications 
         SET is_read = true, read_at = CURRENT_TIMESTAMP 
-        WHERE user_id = ? AND is_read = false
+        WHERE user_id = $1 AND is_read = false
       `, [req.user.id]);
 
       res.json({
@@ -139,7 +139,7 @@ class NotificationController {
     try {
       const result = await database.get(`
         SELECT COUNT(*) as count FROM notifications 
-        WHERE user_id = ? AND is_read = false
+        WHERE user_id = $1 AND is_read = false
       `, [req.user.id]);
 
       res.json({
@@ -163,7 +163,7 @@ class NotificationController {
     try {
       const result = await database.run(`
         INSERT INTO notifications (user_id, type, title, message, metadata)
-        VALUES (?, ?, ?, ?, ?)
+        VALUES ($1, $2, $3, $4, $5)
       `, [userId, type, title, message, JSON.stringify(metadata)]);
 
       return result.lastID;
@@ -181,7 +181,7 @@ class NotificationController {
         SELECT st.*, u.first_name, u.last_name 
         FROM support_tickets st
         JOIN users u ON st.user_id = u.id
-        WHERE st.id = ?
+        WHERE st.id = $1
       `, [ticketId]);
 
       if (!ticket) {
@@ -190,7 +190,7 @@ class NotificationController {
 
       // Get responder details
       const responder = await database.get(`
-        SELECT first_name, last_name FROM users WHERE id = ?
+        SELECT first_name, last_name FROM users WHERE id = $1
       `, [responderId]);
 
       if (!responder) {
@@ -229,7 +229,7 @@ class NotificationController {
         SELECT st.*, u.first_name, u.last_name 
         FROM support_tickets st
         JOIN users u ON st.user_id = u.id
-        WHERE st.id = ?
+        WHERE st.id = $1
       `, [ticketId]);
 
       if (!ticket) {
@@ -238,7 +238,7 @@ class NotificationController {
 
       // Get updater details
       const updater = await database.get(`
-        SELECT first_name, last_name FROM users WHERE id = ?
+        SELECT first_name, last_name FROM users WHERE id = $1
       `, [updatedBy]);
 
       const statusMessages = {
@@ -280,7 +280,7 @@ class NotificationController {
 
       // Check if notification exists and belongs to user
       const notification = await database.get(`
-        SELECT * FROM notifications WHERE id = ? AND user_id = ?
+        SELECT * FROM notifications WHERE id = $1 AND user_id = $2
       `, [notification_id, req.user.id]);
 
       if (!notification) {
@@ -291,7 +291,7 @@ class NotificationController {
       }
 
       // Delete notification
-      await database.run('DELETE FROM notifications WHERE id = ?', [notification_id]);
+      await database.run('DELETE FROM notifications WHERE id = $1', [notification_id]);
 
       res.json({
         success: true,
