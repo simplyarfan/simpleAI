@@ -86,10 +86,14 @@ export default function TicketDetail() {
         toast.success('Comment added successfully!');
         setNewComment('');
         
-        // Force immediate refresh without optimistic update to see real data
+        // Force immediate refresh and wait a bit for database consistency
         console.log('Comments before refresh:', comments.length);
-        await fetchTicketDetails();
-        console.log('Comments after refresh should be updated');
+        
+        // Wait a moment for database consistency, then refresh
+        setTimeout(async () => {
+          await fetchTicketDetails();
+          console.log('Comments after delayed refresh');
+        }, 500);
       } else {
         toast.error(response.data?.message || 'Failed to add comment');
       }
@@ -169,13 +173,7 @@ export default function TicketDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-32 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
-        <div className="absolute -bottom-40 -left-32 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-10"></div>
-      </div>
+    <div className="min-h-screen bg-gray-50 relative overflow-hidden">
 
       <Head>
         <title>Ticket #{ticket.id} - {ticket.subject} - simpleAI</title>
@@ -191,7 +189,7 @@ export default function TicketDetail() {
               const isAdmin = ['admin', 'superadmin'].includes(user?.role);
               router.push(isAdmin ? '/admin/tickets' : '/support/my-tickets');
             }}
-            className="flex items-center text-gray-300 hover:text-white bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-xl transition-all duration-200 hover:bg-white/20"
+            className="flex items-center text-gray-600 hover:text-gray-800 bg-white border border-gray-200 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-gray-50 shadow-sm"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             {['admin', 'superadmin'].includes(user?.role) ? 'Back to Support Management' : 'Back to My Tickets'}
@@ -199,11 +197,11 @@ export default function TicketDetail() {
         </div>
 
         {/* Ticket Header */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-sm text-gray-400">#{ticket.id}</span>
+                <span className="text-sm text-gray-500">#{ticket.id}</span>
                 <span className={`inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium ${getStatusStyle(ticket.status)}`}>
                   {getStatusIcon(ticket.status)}
                   <span className="ml-2 capitalize">{ticket.status.replace('_', ' ')}</span>
@@ -212,13 +210,13 @@ export default function TicketDetail() {
                   {ticket.priority.toUpperCase()} PRIORITY
                 </span>
               </div>
-              <h1 className="text-2xl font-bold text-white mb-3">{ticket.subject}</h1>
-              <p className="text-gray-300 leading-relaxed">{ticket.description}</p>
+              <h1 className="text-2xl font-bold text-gray-900 mb-3">{ticket.subject}</h1>
+              <p className="text-gray-600 leading-relaxed">{ticket.description}</p>
             </div>
           </div>
 
           {/* Ticket Meta */}
-          <div className="flex items-center gap-6 text-sm text-gray-400 pt-4 border-t border-white/10">
+          <div className="flex items-center gap-6 text-sm text-gray-500 pt-4 border-t border-gray-200">
             <div className="flex items-center">
               <Calendar className="w-4 h-4 mr-2" />
               Created {new Date(ticket.created_at).toLocaleDateString()}
@@ -237,8 +235,8 @@ export default function TicketDetail() {
         </div>
 
         {/* Comments Section */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6 flex items-center">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
             <MessageSquare className="w-5 h-5 mr-2" />
             Conversation ({comments.length})
           </h2>
@@ -248,29 +246,29 @@ export default function TicketDetail() {
             {comments.length === 0 ? (
               <div className="text-center py-8">
                 <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-300">No comments yet. Start the conversation!</p>
+                <p className="text-gray-600">No comments yet. Start the conversation!</p>
               </div>
             ) : (
               comments.map((comment) => (
-                <div key={comment.id} className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-4">
+                <div key={comment.id} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center">
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center mr-3">
                         <User className="w-4 h-4 text-white" />
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-white">
+                        <div className="text-sm font-medium text-gray-900">
                           {comment.first_name} {comment.last_name}
-                          {comment.role === 'admin' && <span className="ml-2 text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">Admin</span>}
-                          {comment.role === 'superadmin' && <span className="ml-2 text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded">Superadmin</span>}
+                          {comment.role === 'admin' && <span className="ml-2 text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded">Admin</span>}
+                          {comment.role === 'superadmin' && <span className="ml-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">Superadmin</span>}
                         </div>
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-gray-500">
                           {new Date(comment.created_at).toLocaleString()}
                         </div>
                       </div>
                     </div>
                   </div>
-                  <p className="text-gray-300 leading-relaxed ml-11">{comment.comment}</p>
+                  <p className="text-gray-700 leading-relaxed ml-11">{comment.comment}</p>
                 </div>
               ))
             )}
@@ -278,16 +276,16 @@ export default function TicketDetail() {
 
           {/* Add Comment Form */}
           {ticket.status !== 'resolved' && (
-            <form onSubmit={handleAddComment} className="border-t border-white/10 pt-6">
+            <form onSubmit={handleAddComment} className="border-t border-gray-200 pt-6">
               <div className="mb-4">
-                <label className="block text-sm font-medium text-white mb-2">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Add a comment
                 </label>
                 <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none"
                   placeholder="Type your message..."
                   disabled={isSubmitting}
                 />
@@ -296,7 +294,7 @@ export default function TicketDetail() {
                 <button
                   type="submit"
                   disabled={isSubmitting || !newComment.trim()}
-                  className="flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>
@@ -315,10 +313,10 @@ export default function TicketDetail() {
           )}
 
           {ticket.status === 'resolved' && (
-            <div className="border-t border-white/10 pt-6">
-              <div className="bg-green-500/20 border border-green-500/30 rounded-xl p-4 text-center">
-                <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-                <p className="text-gray-300">This ticket has been resolved. If you need further assistance, please create a new ticket.</p>
+            <div className="border-t border-gray-200 pt-6">
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                <p className="text-gray-700">This ticket has been resolved. If you need further assistance, please create a new ticket.</p>
               </div>
             </div>
           )}
