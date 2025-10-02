@@ -731,7 +731,11 @@ const BatchDetail = () => {
                           {education.map((edu, index) => {
                             const university = edu.institution || 'Institution not specified';
                             const degree = edu.degree || 'Degree not specified';
-                            const field = edu.field || 'Field not specified';
+                            const rawField = edu.field || '';
+                            // Smart field handling - show "Not specified" if empty or same as degree
+                            const field = rawField && rawField.toLowerCase() !== degree.toLowerCase() 
+                              ? rawField 
+                              : 'Not specified';
                             const graduationYear = edu.year || 'Year not specified';
                             
                             return (
@@ -755,15 +759,16 @@ const BatchDetail = () => {
                                       </div>
                                     </div>
                                   )}
-                                  {field && field !== 'Field not specified' && (
-                                    <div className="flex items-center space-x-2">
-                                      <Icons.BookOpen className="w-4 h-4 text-indigo-600" />
-                                      <div>
-                                        <span className="text-xs text-gray-500 uppercase tracking-wide">Field of Study</span>
-                                        <p className="font-medium text-gray-900">{field}</p>
-                                      </div>
+                                  {/* Always show field of study, even if "Not specified" */}
+                                  <div className="flex items-center space-x-2">
+                                    <Icons.BookOpen className="w-4 h-4 text-indigo-600" />
+                                    <div>
+                                      <span className="text-xs text-gray-500 uppercase tracking-wide">Field of Study</span>
+                                      <p className={`font-medium ${field === 'Not specified' ? 'text-gray-500 italic' : 'text-gray-900'}`}>
+                                        {field}
+                                      </p>
                                     </div>
-                                  )}
+                                  </div>
                                   {graduationYear && graduationYear !== 'Year not specified' && (
                                     <div className="flex items-center space-x-2">
                                       <Icons.Calendar className="w-4 h-4 text-indigo-600" />
