@@ -38,7 +38,7 @@ const API_BASE_URL = getApiBaseUrl();
 
 // Create optimized axios instance
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api`,  // Add /api prefix to all requests
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
