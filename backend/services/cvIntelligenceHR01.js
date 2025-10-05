@@ -71,28 +71,31 @@ class CVIntelligenceHR01 {
     console.log('🤖 Sending JD to AI for extraction...');
     console.log('🤖 JD text preview (first 300 chars):', jdText.substring(0, 300));
     
-    const prompt = `Extract ALL specific skills and requirements from this job description. Return ONLY valid JSON matching this exact schema:
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
+    
+    const prompt = `[EXTRACTION_${timestamp}] Analyze this job description and extract technical requirements. Return ONLY valid JSON:
 
 {
-  "skills": ["skill1", "skill2", "skill3"],
-  "experience": ["requirement1", "requirement2"],
-  "education": ["degree1", "degree2"],
+  "skills": ["technical_skill1", "technical_skill2"],
+  "experience": ["experience_req1", "experience_req2"],
+  "education": ["education_req1", "education_req2"],
   "mustHave": ["critical_skill1", "critical_skill2"]
 }
 
-Job Description:
+DOCUMENT TO ANALYZE:
 ${jdText}
 
-IMPORTANT: Extract EVERY specific skill mentioned, including:
-- Technical tools (Jira, Azure DevOps, etc.)
-- Methodologies (Scrum, Agile, Kanban, SAFe)
-- Certifications (Scrum Master, CSM, etc.)
-- Soft skills (Leadership, Communication, etc.)
-- Process skills (Sprint Planning, Retrospectives, etc.)
+EXTRACTION RULES:
+- Extract ONLY skills/technologies mentioned in the document
+- Include programming languages (Python, Java, JavaScript, etc.)
+- Include frameworks and libraries (TensorFlow, React, Django, etc.)
+- Include tools and platforms (Docker, AWS, Azure, etc.)
+- Include databases (MySQL, PostgreSQL, MongoDB, etc.)
+- DO NOT add skills not mentioned in the document
+- DO NOT use generic placeholder skills
 
-Be very thorough and extract ALL skills mentioned in the text, not just generic categories.
-
-Return only the JSON object:`;
+Return valid JSON only:`;
 
     try {
       const response = await axios.post(this.apiUrl, {
@@ -114,6 +117,17 @@ Return only the JSON object:`;
       const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
       const requirements = JSON.parse(cleanContent);
       
+      // VALIDATE that we got actual skills, not garbage
+      if (requirements.skills && requirements.skills.includes('PDF parsing')) {
+        console.error('❌ AI returned garbage skills including "PDF parsing" - rejecting response');
+        throw new Error('AI returned invalid skills');
+      }
+      
+      if (requirements.skills && requirements.skills.includes('Scrum') && jdText.toLowerCase().includes('ai engineer')) {
+        console.error('❌ AI returned Scrum skills for AI Engineer JD - rejecting response');
+        throw new Error('AI returned wrong skills for job type');
+      }
+      
       console.log('✅ JD requirements extracted via AI:', requirements);
       return requirements;
       
@@ -121,13 +135,8 @@ Return only the JSON object:`;
       console.error('❌ Error extracting JD requirements via AI:', error);
       console.error('❌ Full error:', error.response?.data || error.message);
       
-      // Return empty structure if AI fails
-      return {
-        skills: [],
-        experience: [],
-        education: [],
-        mustHave: []
-      };
+      // NO FALLBACK - FAIL COMPLETELY
+      throw new Error(`JD extraction failed: ${error.message}`);
     }
   }
 
@@ -148,24 +157,28 @@ Return only the JSON object:`;
   }
 
   /**
-   * STEP 2: PARSING - Docling → text + layout blocks
    */
   async parseDocument(fileBuffer, fileType) {
-    // Simulating Docling parsing
-    // In production: use actual Docling library
     let text = '';
-    
+
     if (fileType === 'pdf') {
-      // Use pdf-parse if available, otherwise fallback
       try {
-        const pdf = require('pdf-parse');
         const pdfData = await pdf(fileBuffer);
-        text = pdfData.text;
+        text = pdfData.text || '';
+        
+        if (!text || text.trim().length === 0) {
+          throw new Error('PDF contains no extractable text');
+        }
       } catch (e) {
-        text = 'PDF parsing not available - please install pdf-parse';
+        console.error('❌ PDF parsing failed:', e.message);
+        throw new Error(`Failed to parse PDF: ${e.message}`);
       }
     } else {
       text = fileBuffer.toString('utf-8');
+    }
+
+    if (!text || text.trim().length === 0) {
+      throw new Error('Document contains no readable text');
     }
 
     return {
