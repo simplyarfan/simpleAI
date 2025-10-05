@@ -475,9 +475,10 @@ const BatchDetail = () => {
                       const profileData = selectedCandidate.profile_json || {};
                       const candidateSkills = profileData.skills || [];
                       
-                      // Define critical skills for the job (these would come from JD in real implementation)
-                      const criticalSkills = ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'AWS'];
-                      const requiredSkills = ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'AWS', 'Git', 'HTML', 'CSS', 'MongoDB', 'Express'];
+                      // Get skills from JD requirements (dynamic from backend)
+                      const jdRequirements = batch?.jd_requirements || { skills: [], mustHave: [] };
+                      const criticalSkills = jdRequirements.mustHave || [];
+                      const requiredSkills = jdRequirements.skills || [];
                       
                       // Convert skills array to display format
                       const allSkills = Array.isArray(candidateSkills) ? candidateSkills : [];
@@ -869,11 +870,13 @@ const BatchDetail = () => {
                       return !company.includes('competition') && !company.includes('hackathon');
                     });
                     
-                    const requiredSkills = ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'AWS', 'Git', 'HTML', 'CSS', 'MongoDB', 'Express'];
+                    // Get skills from JD requirements (dynamic from backend)
+                    const jdRequirements = batch?.jd_requirements || { skills: [], mustHave: [] };
+                    const requiredSkills = jdRequirements.skills || [];
                     const matchedSkills = candidateSkills.filter(skill => 
                       requiredSkills.some(req => req.toLowerCase() === skill.toLowerCase())
                     );
-                    const skillMatchRate = Math.round((matchedSkills.length / requiredSkills.length) * 100);
+                    const skillMatchRate = requiredSkills.length > 0 ? Math.round((matchedSkills.length / requiredSkills.length) * 100) : 0;
 
                     return (
                       <div className="space-y-4">

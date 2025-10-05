@@ -157,14 +157,14 @@ router.post('/batch/:id/process', authenticateToken, upload.fields([
       console.log('⚠️ Continuing without database - files will be processed but not stored');
     }
 
-    // Update batch status and file count (if database available)
+    // Update batch status, file count, and JD requirements (if database available)
     if (databaseAvailable) {
       try {
         await database.run(`
           UPDATE cv_batches 
-          SET status = 'processing', total_resumes = $1, updated_at = CURRENT_TIMESTAMP
-          WHERE id = $2 AND user_id = $3
-        `, [cvFiles.length, batchId, req.user.id]);
+          SET status = 'processing', total_resumes = $1, jd_requirements = $2, updated_at = CURRENT_TIMESTAMP
+          WHERE id = $3 AND user_id = $4
+        `, [cvFiles.length, JSON.stringify(parsedRequirements), batchId, req.user.id]);
       } catch (dbError) {
         console.error('Database update failed:', dbError);
         databaseAvailable = false;
@@ -482,10 +482,11 @@ router.get('/batch/:id', authenticateToken, async (req, res) => {
       ORDER BY overall_score DESC
     `, [id]);
 
-    // Add cv_count field for frontend compatibility
+    // Add cv_count field and parse JD requirements for frontend compatibility
     const batchWithCount = {
       ...batch,
-      cv_count: batch.total_resumes || candidates.length
+      cv_count: batch.total_resumes || candidates.length,
+      jd_requirements: batch.jd_requirements ? JSON.parse(batch.jd_requirements) : { skills: [], experience: [], education: [], mustHave: [] }
     };
 
     // Rank candidates and add ranking reasons (remove scores)

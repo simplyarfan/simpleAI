@@ -243,10 +243,18 @@ class Database {
           status VARCHAR(50) DEFAULT 'processing',
           total_resumes INTEGER DEFAULT 0,
           processed_resumes INTEGER DEFAULT 0,
+          jd_requirements TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
+
+      // Add jd_requirements column if it doesn't exist (for existing databases)
+      try {
+        await this.run(`ALTER TABLE cv_batches ADD COLUMN jd_requirements TEXT`);
+      } catch (e) {
+        // Column already exists, ignore error
+      }
 
       // Simple candidates table
       await this.run(`
