@@ -97,8 +97,18 @@ export default function LivelyHRDashboard() {
             {aiAgents.map((agent) => (
               <button
                 key={agent.id}
-                onClick={() => router.push(agent.route)}
-                className="w-full flex items-center px-3 py-3 text-left text-gray-700 rounded-lg hover:bg-gray-100 transition-colors group"
+                onClick={() => {
+                  // Make Interview Coordinator unclickable for users but keep link active
+                  if (agent.id === 'interview-coordinator') {
+                    return; // Do nothing on click
+                  }
+                  router.push(agent.route);
+                }}
+                className={`w-full flex items-center px-3 py-3 text-left rounded-lg transition-colors group ${
+                  agent.id === 'interview-coordinator' 
+                    ? 'text-gray-400 cursor-not-allowed' 
+                    : 'text-gray-700 hover:bg-gray-100 cursor-pointer'
+                }`}
               >
                 <div className={`w-10 h-10 bg-gradient-to-br ${agent.color} rounded-lg flex items-center justify-center mr-3`}>
                   <agent.icon className="w-5 h-5 text-white" />

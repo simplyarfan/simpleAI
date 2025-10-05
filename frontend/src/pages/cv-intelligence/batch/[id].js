@@ -321,9 +321,12 @@ const BatchDetail = () => {
                       </div>
                       <div className="flex items-center space-x-2">
                         <button
-                          onClick={() => handleScheduleInterview(candidate)}
-                          disabled={schedulingInterview === candidate.id}
-                          className="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white rounded-lg transition-colors text-sm font-medium"
+                          onClick={() => {
+                            // Make Schedule Interview unclickable but keep button visible
+                            return; // Do nothing on click
+                          }}
+                          disabled={true}
+                          className="inline-flex items-center px-3 py-2 bg-gray-400 cursor-not-allowed text-white rounded-lg transition-colors text-sm font-medium"
                         >
                           {schedulingInterview === candidate.id ? (
                             <>

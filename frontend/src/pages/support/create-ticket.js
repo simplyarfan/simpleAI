@@ -93,7 +93,7 @@ export default function CreateTicket() {
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-4">
                 <button
-                  onClick={() => router.back()}
+                  onClick={() => router.push('/')}
                   className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -233,7 +233,7 @@ export default function CreateTicket() {
               <div className="flex items-center justify-between pt-6 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={() => router.back()}
+                  onClick={() => router.push('/')}
                   className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors font-medium"
                 >
                   Cancel
