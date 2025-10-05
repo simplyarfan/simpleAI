@@ -46,7 +46,7 @@ class CVIntelligenceHR01 {
    */
   async extractJobRequirements(jdText) {
     try {
-      const prompt = `Extract job requirements from this job description. Return ONLY valid JSON matching this exact schema:
+      const prompt = `Extract ALL specific skills and requirements from this job description. Return ONLY valid JSON matching this exact schema:
 
 {
   "skills": ["skill1", "skill2", "skill3"],
@@ -58,11 +58,14 @@ class CVIntelligenceHR01 {
 Job Description:
 ${jdText}
 
-Extract:
-- skills: Technical and soft skills mentioned
-- experience: Years of experience, specific experience requirements
-- education: Required degrees, certifications
-- mustHave: Critical/mandatory requirements (usually marked as "required", "must have", "essential")
+IMPORTANT: Extract EVERY specific skill mentioned, including:
+- Technical tools (Jira, Azure DevOps, etc.)
+- Methodologies (Scrum, Agile, Kanban, SAFe)
+- Certifications (Scrum Master, CSM, etc.)
+- Soft skills (Leadership, Communication, etc.)
+- Process skills (Sprint Planning, Retrospectives, etc.)
+
+Be very thorough and extract ALL skills mentioned in the text, not just generic categories.
 
 Return only the JSON object:`;
 
@@ -108,16 +111,37 @@ Return only the JSON object:`;
   extractBasicRequirements(jdText) {
     const text = jdText.toLowerCase();
     
-    // Common technical skills
-    const commonSkills = [
+    // Comprehensive skill patterns including Agile/Scrum skills
+    const skillPatterns = [
+      // Technical skills
       'javascript', 'python', 'java', 'react', 'node.js', 'sql', 'html', 'css',
       'mongodb', 'express', 'aws', 'docker', 'kubernetes', 'git', 'typescript',
-      'angular', 'vue', 'php', 'laravel', 'django', 'flask', 'postgresql', 'mysql'
+      'angular', 'vue', 'php', 'laravel', 'django', 'flask', 'postgresql', 'mysql',
+      
+      // Agile/Scrum specific skills
+      'scrum master', 'scrum', 'agile', 'kanban', 'safe', 'jira', 'azure devops',
+      'sprint planning', 'daily standups', 'retrospectives', 'backlog management',
+      'product owner', 'stakeholder management', 'burndown charts', 'velocity tracking',
+      'continuous improvement', 'servant leadership', 'coaching', 'mentoring',
+      'conflict resolution', 'team building', 'facilitation', 'communication',
+      
+      // Project management
+      'project management', 'agile metrics', 'reporting', 'sprint management',
+      'cross-functional', 'collaboration', 'leadership'
     ];
     
-    const foundSkills = commonSkills.filter(skill => 
-      text.includes(skill.toLowerCase())
-    );
+    const foundSkills = [];
+    
+    // Check for exact skill matches
+    skillPatterns.forEach(skill => {
+      if (text.includes(skill.toLowerCase())) {
+        // Capitalize first letter of each word for display
+        const displaySkill = skill.split(' ').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+        foundSkills.push(displaySkill);
+      }
+    });
     
     // Extract years of experience
     const experienceMatch = text.match(/(\d+)[\+\-\s]*year[s]?\s+(?:of\s+)?experience/i);
@@ -131,12 +155,26 @@ Return only the JSON object:`;
     if (text.includes('master')) {
       education.push('Master\'s degree');
     }
+    if (text.includes('computer science')) {
+      education.push('Computer Science degree');
+    }
+    
+    // Identify must-have skills (look for "required", "must", "essential" keywords)
+    const mustHaveSkills = foundSkills.filter(skill => {
+      const skillLower = skill.toLowerCase();
+      // Check if skill appears near "required", "must", "essential" keywords
+      const requiredPattern = new RegExp(`(required|must|essential|mandatory).{0,50}${skillLower}|${skillLower}.{0,50}(required|must|essential|mandatory)`, 'i');
+      return requiredPattern.test(jdText);
+    });
+    
+    console.log('🎯 Extracted skills from JD:', foundSkills);
+    console.log('🎯 Must-have skills:', mustHaveSkills);
     
     return {
       skills: foundSkills,
       experience: experience,
       education: education,
-      mustHave: foundSkills.slice(0, 3) // First 3 skills as must-have
+      mustHave: mustHaveSkills.length > 0 ? mustHaveSkills : foundSkills.slice(0, 5) // Top 5 as must-have if no specific ones found
     };
   }
 
