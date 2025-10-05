@@ -80,23 +80,19 @@ export default function TicketsManagement() {
   };
 
   const updateTicketStatus = async (ticketId, newStatus) => {
+    setIsLoading(true);
+    
     try {
       console.log('🔧 Updating ticket status:', ticketId, 'to:', newStatus);
       const response = await supportAPI.updateTicketStatus(ticketId, newStatus);
-      console.log('📝 Update status response:', response);
-      console.log('📝 Response data:', response.data);
-      console.log('📝 Response success:', response?.data?.success);
-      console.log('📝 Response success alt:', response?.success);
+      console.log('📝 Update response:', response);
       
-      // Check if response.data exists and has success property (SAME AS USER MANAGEMENT)
+      // Check if response.data exists and has success property (EXACT COPY FROM USER MANAGEMENT)
       const isSuccess = response?.data?.success || response?.success;
       
       if (isSuccess) {
         toast.success('Ticket status updated');
-        
-        // Just refresh from backend like User Management does
-        console.log('✅ Ticket status updated, refreshing from backend...');
-        await fetchTickets();
+        fetchTickets(); // Refresh the ticket list (EXACT COPY FROM USER MANAGEMENT)
       } else {
         const errorMessage = response?.data?.message || response?.message || 'Failed to update ticket status';
         console.error('❌ Update failed:', response);
@@ -106,16 +102,15 @@ export default function TicketsManagement() {
       console.error('❌ Error updating ticket status:', error);
       console.error('Error details:', error.response?.data);
       
-      // Check if the error is actually a successful update (status 200 or 201) - SAME AS USER MANAGEMENT
-      if (error.response?.status === 200 || error.response?.status === 201 || error.response?.data?.success) {
+      // Check if the error is actually a successful update (status 200) (EXACT COPY FROM USER MANAGEMENT)
+      if (error.response?.status === 200 || error.response?.data?.success) {
         toast.success('Ticket status updated');
-        
-        // Just refresh from backend like User Management does
-        console.log('✅ (Catch) Ticket status updated, refreshing from backend...');
-        await fetchTickets();
+        fetchTickets();
       } else {
         toast.error(`Failed to update ticket status: ${error.response?.data?.message || error.message}`);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 

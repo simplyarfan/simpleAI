@@ -81,40 +81,34 @@ export default function TicketDetail() {
       return;
     }
 
+    setIsSubmitting(true);
+    
     try {
-      setIsSubmitting(true);
+      console.log('🔧 Adding comment to ticket:', id, newComment);
       const response = await supportAPI.addComment(id, newComment, false);
+      console.log('📝 Add comment response:', response);
       
-      console.log('Add comment response:', response.data);
-      console.log('Add comment response full:', response);
-      
-      // Check if response.data exists and has success property (SAME AS USER MANAGEMENT)
+      // Check if response.data exists and has success property (EXACT COPY FROM USER MANAGEMENT)
       const isSuccess = response?.data?.success || response?.success;
       
       if (isSuccess) {
-        toast.success('Comment added successfully!');
+        toast.success('Comment added successfully');
         setNewComment('');
-        
-        // Just refresh from backend like User Management does
-        console.log('Comment added, refreshing from backend...');
-        await fetchTicketDetails();
+        fetchTicketDetails(); // Refresh the ticket details (EXACT COPY FROM USER MANAGEMENT)
       } else {
         const errorMessage = response?.data?.message || response?.message || 'Failed to add comment';
-        console.error('❌ Comment add failed:', response);
+        console.error('❌ Add comment failed:', response);
         toast.error(errorMessage);
       }
     } catch (error) {
       console.error('❌ Error adding comment:', error);
       console.error('Error details:', error.response?.data);
       
-      // Check if the error is actually a successful comment add (status 200 or 201) - SAME AS USER MANAGEMENT
-      if (error.response?.status === 200 || error.response?.status === 201 || error.response?.data?.success) {
-        toast.success('Comment added successfully!');
+      // Check if the error is actually a successful comment add (status 200) (EXACT COPY FROM USER MANAGEMENT)
+      if (error.response?.status === 200 || error.response?.data?.success) {
+        toast.success('Comment added successfully');
         setNewComment('');
-        
-        // Just refresh from backend like User Management does
-        console.log('✅ (Catch) Comment added, refreshing from backend...');
-        await fetchTicketDetails();
+        fetchTicketDetails();
       } else {
         toast.error(`Failed to add comment: ${error.response?.data?.message || error.message}`);
       }
