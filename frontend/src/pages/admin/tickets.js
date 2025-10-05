@@ -117,8 +117,8 @@ export default function TicketsManagement() {
       console.error('❌ Error updating ticket status:', error);
       console.error('Error details:', error.response?.data);
       
-      // Check if the error is actually a successful update (status 200) - SAME AS USER MANAGEMENT
-      if (error.response?.status === 200 || error.response?.data?.success) {
+      // Check if the error is actually a successful update (status 200 or 201) - SAME AS USER MANAGEMENT
+      if (error.response?.status === 200 || error.response?.status === 201 || error.response?.data?.success) {
         toast.success('Ticket status updated');
         
         // Force immediate UI update
