@@ -87,13 +87,16 @@ export default function TicketsManagement() {
         toast.success('Ticket status updated');
         
         // Force immediate UI update by updating the ticket in the current state
-        setTickets(prevTickets => 
-          prevTickets.map(ticket => 
+        console.log('Updating ticket', ticketId, 'to status:', newStatus);
+        setTickets(prevTickets => {
+          const updated = prevTickets.map(ticket => 
             ticket.id === ticketId 
               ? { ...ticket, status: newStatus }
               : ticket
-          )
-        );
+          );
+          console.log('Updated tickets:', updated);
+          return updated;
+        });
         
         // Also fetch fresh data from backend
         await fetchTickets();
