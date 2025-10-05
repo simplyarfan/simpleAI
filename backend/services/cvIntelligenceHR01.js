@@ -256,6 +256,14 @@ Return only the JSON object:`;
   "certifications": ["string"]
 }
 
+CRITICAL: For skills extraction, scan the ENTIRE resume text including:
+- Skills sections
+- Experience descriptions (tools/technologies mentioned like "Using Jira", "worked with Python", etc.)
+- Project descriptions
+- Any technical tools, programming languages, frameworks, methodologies mentioned anywhere
+
+Extract ALL skills mentioned throughout the resume, not just from dedicated skills sections.
+
 Resume text:
 ${text}
 
@@ -275,7 +283,12 @@ Return only the JSON object, no other text:`;
       });
 
       const jsonText = response.data.choices[0].message.content.trim();
-      return JSON.parse(jsonText);
+      console.log('🤖 AI CV extraction response:', jsonText);
+      
+      const structuredData = JSON.parse(jsonText);
+      console.log('✅ CV skills extracted:', structuredData.skills);
+      
+      return structuredData;
     } catch (error) {
       console.error('LLM extraction failed:', error.message);
       return this.getFallbackStructure(entities, text);
