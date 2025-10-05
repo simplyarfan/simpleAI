@@ -10,6 +10,13 @@ class CVIntelligenceHR01 {
     this.apiKey = process.env.OPENAI_API_KEY;
     this.apiUrl = 'https://api.openai.com/v1/chat/completions';
     this.model = 'gpt-3.5-turbo'; // Using available model instead of Llama 3.1
+    
+    // Check if API key is configured
+    if (!this.apiKey) {
+      console.error('❌ OPENAI_API_KEY not configured in environment variables');
+    } else {
+      console.log('✅ OpenAI API key configured');
+    }
   }
 
   /**
@@ -42,11 +49,10 @@ class CVIntelligenceHR01 {
   }
 
   /**
-   * Extract job requirements from JD text using AI
+   * Extract job requirements from JD text using AI ONLY
    */
   async extractJobRequirements(jdText) {
-    try {
-      const prompt = `Extract ALL specific skills and requirements from this job description. Return ONLY valid JSON matching this exact schema:
+    const prompt = `Extract ALL specific skills and requirements from this job description. Return ONLY valid JSON matching this exact schema:
 
 {
   "skills": ["skill1", "skill2", "skill3"],
@@ -69,11 +75,12 @@ Be very thorough and extract ALL skills mentioned in the text, not just generic 
 
 Return only the JSON object:`;
 
+    try {
       const response = await axios.post(this.apiUrl, {
         model: this.model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
-        max_tokens: 1000
+        max_tokens: 1500
       }, {
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
@@ -82,101 +89,29 @@ Return only the JSON object:`;
       });
 
       const content = response.data.choices[0].message.content.trim();
+      console.log('🤖 AI JD extraction response:', content);
       
-      // Parse JSON response
-      let requirements;
-      try {
-        // Remove any markdown formatting
-        const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
-        requirements = JSON.parse(cleanContent);
-      } catch (parseError) {
-        console.error('❌ Failed to parse JD requirements JSON:', parseError);
-        // Fallback to basic extraction
-        requirements = this.extractBasicRequirements(jdText);
-      }
-
-      console.log('✅ JD requirements extracted:', requirements);
+      // Remove any markdown formatting
+      const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
+      const requirements = JSON.parse(cleanContent);
+      
+      console.log('✅ JD requirements extracted via AI:', requirements);
       return requirements;
       
     } catch (error) {
-      console.error('❌ Error extracting JD requirements:', error);
-      // Fallback to basic extraction
-      return this.extractBasicRequirements(jdText);
+      console.error('❌ Error extracting JD requirements via AI:', error);
+      console.error('❌ Full error:', error.response?.data || error.message);
+      
+      // Return empty structure if AI fails
+      return {
+        skills: [],
+        experience: [],
+        education: [],
+        mustHave: []
+      };
     }
   }
 
-  /**
-   * Fallback method to extract basic requirements from JD text
-   */
-  extractBasicRequirements(jdText) {
-    const text = jdText.toLowerCase();
-    
-    // Comprehensive skill patterns including Agile/Scrum skills
-    const skillPatterns = [
-      // Technical skills
-      'javascript', 'python', 'java', 'react', 'node.js', 'sql', 'html', 'css',
-      'mongodb', 'express', 'aws', 'docker', 'kubernetes', 'git', 'typescript',
-      'angular', 'vue', 'php', 'laravel', 'django', 'flask', 'postgresql', 'mysql',
-      
-      // Agile/Scrum specific skills
-      'scrum master', 'scrum', 'agile', 'kanban', 'safe', 'jira', 'azure devops',
-      'sprint planning', 'daily standups', 'retrospectives', 'backlog management',
-      'product owner', 'stakeholder management', 'burndown charts', 'velocity tracking',
-      'continuous improvement', 'servant leadership', 'coaching', 'mentoring',
-      'conflict resolution', 'team building', 'facilitation', 'communication',
-      
-      // Project management
-      'project management', 'agile metrics', 'reporting', 'sprint management',
-      'cross-functional', 'collaboration', 'leadership'
-    ];
-    
-    const foundSkills = [];
-    
-    // Check for exact skill matches
-    skillPatterns.forEach(skill => {
-      if (text.includes(skill.toLowerCase())) {
-        // Capitalize first letter of each word for display
-        const displaySkill = skill.split(' ').map(word => 
-          word.charAt(0).toUpperCase() + word.slice(1)
-        ).join(' ');
-        foundSkills.push(displaySkill);
-      }
-    });
-    
-    // Extract years of experience
-    const experienceMatch = text.match(/(\d+)[\+\-\s]*year[s]?\s+(?:of\s+)?experience/i);
-    const experience = experienceMatch ? [`${experienceMatch[1]}+ years of experience`] : [];
-    
-    // Extract education requirements
-    const education = [];
-    if (text.includes('bachelor') || text.includes('degree')) {
-      education.push('Bachelor\'s degree');
-    }
-    if (text.includes('master')) {
-      education.push('Master\'s degree');
-    }
-    if (text.includes('computer science')) {
-      education.push('Computer Science degree');
-    }
-    
-    // Identify must-have skills (look for "required", "must", "essential" keywords)
-    const mustHaveSkills = foundSkills.filter(skill => {
-      const skillLower = skill.toLowerCase();
-      // Check if skill appears near "required", "must", "essential" keywords
-      const requiredPattern = new RegExp(`(required|must|essential|mandatory).{0,50}${skillLower}|${skillLower}.{0,50}(required|must|essential|mandatory)`, 'i');
-      return requiredPattern.test(jdText);
-    });
-    
-    console.log('🎯 Extracted skills from JD:', foundSkills);
-    console.log('🎯 Must-have skills:', mustHaveSkills);
-    
-    return {
-      skills: foundSkills,
-      experience: experience,
-      education: education,
-      mustHave: mustHaveSkills.length > 0 ? mustHaveSkills : foundSkills.slice(0, 5) // Top 5 as must-have if no specific ones found
-    };
-  }
 
   /**
    * STEP 1: INGRESS - PDF/Docx upload → Supabase Storage
