@@ -158,35 +158,52 @@ router.post('/batch/:id/process', authenticateToken, upload.fields([
     }
 
     // Process JD file to extract requirements FIRST
-    let parsedRequirements = { skills: [], experience: [], education: [] };
+    let parsedRequirements = { skills: [], experience: [], education: [], mustHave: [] };
     
     if (jdFile && CVIntelligenceHR01) {
       try {
         console.log('🔄 Processing Job Description:', jdFile.originalname);
+        console.log('🔄 JD file size:', jdFile.size, 'bytes');
+        
         const jdResult = await CVIntelligenceHR01.processJobDescription(jdFile.buffer, jdFile.originalname);
-        if (jdResult.success) {
+        console.log('🔄 JD processing result:', JSON.stringify(jdResult, null, 2));
+        
+        if (jdResult.success && jdResult.requirements) {
           parsedRequirements = jdResult.requirements;
-          console.log('✅ JD processed successfully:', parsedRequirements);
+          console.log('✅ JD processed successfully!');
+          console.log('✅ Extracted skills:', parsedRequirements.skills);
+          console.log('✅ Must-have skills:', parsedRequirements.mustHave);
+          console.log('✅ Experience requirements:', parsedRequirements.experience);
+          console.log('✅ Education requirements:', parsedRequirements.education);
         } else {
-          console.log('⚠️ JD processing failed, using empty requirements');
+          console.error('⚠️ JD processing failed!');
+          console.error('⚠️ Result:', jdResult);
         }
       } catch (error) {
         console.error('❌ Error processing JD:', error);
+        console.error('❌ Error stack:', error.stack);
       }
     } else {
-      console.log('⚠️ No JD file provided, using empty requirements');
+      console.error('⚠️ No JD file provided or CVIntelligenceHR01 not available!');
+      console.error('⚠️ jdFile:', jdFile ? 'present' : 'missing');
+      console.error('⚠️ CVIntelligenceHR01:', CVIntelligenceHR01 ? 'available' : 'missing');
     }
 
     // Update batch status, file count, and JD requirements (if database available)
     if (databaseAvailable) {
       try {
+        const jdRequirementsJSON = JSON.stringify(parsedRequirements);
+        console.log('💾 Storing JD requirements in database:', jdRequirementsJSON);
+        
         await database.run(`
           UPDATE cv_batches 
           SET status = 'processing', total_resumes = $1, jd_requirements = $2, updated_at = CURRENT_TIMESTAMP
           WHERE id = $3 AND user_id = $4
-        `, [cvFiles.length, JSON.stringify(parsedRequirements), batchId, req.user.id]);
+        `, [cvFiles.length, jdRequirementsJSON, batchId, req.user.id]);
+        
+        console.log('✅ JD requirements stored successfully for batch:', batchId);
       } catch (dbError) {
-        console.error('Database update failed:', dbError);
+        console.error('❌ Database update failed:', dbError);
         databaseAvailable = false;
       }
     }
@@ -363,10 +380,16 @@ router.get('/batch/:id', authenticateToken, async (req, res) => {
     `, [id]);
 
     // Add cv_count field and parse JD requirements for frontend compatibility
+    console.log('📖 Retrieved batch from database:', batch.id);
+    console.log('📖 Raw jd_requirements from DB:', batch.jd_requirements);
+    
+    const jdRequirements = batch.jd_requirements ? JSON.parse(batch.jd_requirements) : { skills: [], experience: [], education: [], mustHave: [] };
+    console.log('📖 Parsed JD requirements:', jdRequirements);
+    
     const batchWithCount = {
       ...batch,
       cv_count: batch.total_resumes || candidates.length,
-      jd_requirements: batch.jd_requirements ? JSON.parse(batch.jd_requirements) : { skills: [], experience: [], education: [], mustHave: [] }
+      jd_requirements: jdRequirements
     };
 
     // Rank candidates and add ranking reasons (remove scores)
