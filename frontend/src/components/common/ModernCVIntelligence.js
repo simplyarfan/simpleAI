@@ -395,17 +395,13 @@ const ModernCVIntelligence = () => {
                       {getStatusIcon(batch.status)} {batch.status}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">CVs Uploaded</span>
-                    <span className="text-sm font-medium text-gray-900">{batch.cv_count || 0}</span>
-                  </div>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div className="flex items-center space-x-2">
                     <Icons.FileText className="w-4 h-4 text-gray-400" />
                     <span className="text-sm text-gray-600">
-                      {batch.cv_count || 0} CVs uploaded
+                      {batch.total_resumes || batch.cv_count || 0} CVs uploaded
                     </span>
                   </div>
                   <button

@@ -257,10 +257,14 @@ Return only the JSON object:`;
 }
 
 CRITICAL: For skills extraction, scan the ENTIRE resume text including:
-- Skills sections
+- Dedicated skills sections
 - Experience descriptions (tools/technologies mentioned like "Using Jira", "worked with Python", etc.)
-- Project descriptions
-- Any technical tools, programming languages, frameworks, methodologies mentioned anywhere
+- Project descriptions and achievements
+- Certifications (extract the technology/skill from certification names)
+- Education (extract relevant technologies/skills from coursework, projects)
+- Any technical tools, programming languages, frameworks, methodologies mentioned ANYWHERE
+
+IMPORTANT: Extract skills from certifications like "AWS Certified", "Scrum Master Certified", "Oracle Certified" - extract the core skill (AWS, Scrum Master, Oracle).
 
 Extract ALL skills mentioned throughout the resume, not just from dedicated skills sections.
 
