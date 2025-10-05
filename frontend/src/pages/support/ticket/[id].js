@@ -95,20 +95,9 @@ export default function TicketDetail() {
         toast.success('Comment added successfully!');
         setNewComment('');
         
-        // Add the comment to UI immediately for instant feedback
-        const newCommentData = response.data.data?.comment;
-        console.log('New comment data from backend:', newCommentData);
-        
-        if (newCommentData) {
-          console.log('Adding comment to UI immediately:', newCommentData);
-          setComments(prevComments => [...prevComments, newCommentData]);
-        } else {
-          // If no comment data returned, refresh to get it
-          console.log('No comment data returned, refreshing...');
-          setTimeout(async () => {
-            await fetchTicketDetails();
-          }, 1000);
-        }
+        // Just refresh from backend like User Management does
+        console.log('Comment added, refreshing from backend...');
+        await fetchTicketDetails();
       } else {
         const errorMessage = response?.data?.message || response?.message || 'Failed to add comment';
         console.error('❌ Comment add failed:', response);
@@ -123,11 +112,9 @@ export default function TicketDetail() {
         toast.success('Comment added successfully!');
         setNewComment('');
         
-        // Refresh ticket details only in catch block
-        console.log('✅ (Catch) Comment added, refreshing...');
-        setTimeout(async () => {
-          await fetchTicketDetails();
-        }, 1000);
+        // Just refresh from backend like User Management does
+        console.log('✅ (Catch) Comment added, refreshing from backend...');
+        await fetchTicketDetails();
       } else {
         toast.error(`Failed to add comment: ${error.response?.data?.message || error.message}`);
       }

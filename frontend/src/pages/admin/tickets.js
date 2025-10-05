@@ -94,20 +94,9 @@ export default function TicketsManagement() {
       if (isSuccess) {
         toast.success('Ticket status updated');
         
-        // Force immediate UI update by updating the ticket in the current state
-        console.log('✅ Updating ticket', ticketId, 'to status:', newStatus);
-        setTickets(prevTickets => {
-          const updated = prevTickets.map(ticket => 
-            ticket.id === ticketId 
-              ? { ...ticket, status: newStatus }
-              : ticket
-          );
-          console.log('✅ Updated tickets:', updated);
-          return updated;
-        });
-        
-        // Also fetch fresh data from backend
-        fetchTickets();
+        // Just refresh from backend like User Management does
+        console.log('✅ Ticket status updated, refreshing from backend...');
+        await fetchTickets();
       } else {
         const errorMessage = response?.data?.message || response?.message || 'Failed to update ticket status';
         console.error('❌ Update failed:', response);
@@ -121,19 +110,9 @@ export default function TicketsManagement() {
       if (error.response?.status === 200 || error.response?.status === 201 || error.response?.data?.success) {
         toast.success('Ticket status updated');
         
-        // Force immediate UI update
-        console.log('✅ (Catch) Updating ticket', ticketId, 'to status:', newStatus);
-        setTickets(prevTickets => {
-          const updated = prevTickets.map(ticket => 
-            ticket.id === ticketId 
-              ? { ...ticket, status: newStatus }
-              : ticket
-          );
-          console.log('✅ (Catch) Updated tickets:', updated);
-          return updated;
-        });
-        
-        fetchTickets();
+        // Just refresh from backend like User Management does
+        console.log('✅ (Catch) Ticket status updated, refreshing from backend...');
+        await fetchTickets();
       } else {
         toast.error(`Failed to update ticket status: ${error.response?.data?.message || error.message}`);
       }
