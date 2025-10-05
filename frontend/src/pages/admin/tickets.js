@@ -85,7 +85,18 @@ export default function TicketsManagement() {
       console.log('Update status response:', response);
       if (response.data?.success) {
         toast.success('Ticket status updated');
-        fetchTickets();
+        
+        // Force immediate UI update by updating the ticket in the current state
+        setTickets(prevTickets => 
+          prevTickets.map(ticket => 
+            ticket.id === ticketId 
+              ? { ...ticket, status: newStatus }
+              : ticket
+          )
+        );
+        
+        // Also fetch fresh data from backend
+        await fetchTickets();
       } else {
         toast.error('Failed to update ticket status');
       }

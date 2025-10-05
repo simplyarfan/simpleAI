@@ -91,9 +91,18 @@ export default function TicketDetail() {
         toast.success('Comment added successfully!');
         setNewComment('');
         
-        // Refresh ticket details to get the new comment
-        console.log('Comment added successfully, refreshing ticket details...');
-        await fetchTicketDetails();
+        // Add the comment to UI immediately for instant feedback
+        const newCommentData = response.data.data?.comment;
+        if (newCommentData) {
+          console.log('Adding comment to UI immediately:', newCommentData);
+          setComments(prevComments => [...prevComments, newCommentData]);
+        }
+        
+        // Also refresh ticket details to ensure consistency
+        console.log('Refreshing ticket details for consistency...');
+        setTimeout(async () => {
+          await fetchTicketDetails();
+        }, 500);
       } else {
         toast.error(response.data?.message || 'Failed to add comment');
       }
