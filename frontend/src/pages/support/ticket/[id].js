@@ -49,12 +49,17 @@ export default function TicketDetail() {
       const response = await supportAPI.getTicket(id);
       
       console.log('Fetch ticket response:', response.data);
+      console.log('Comments in response:', response.data?.data?.comments);
       
       if (response.data?.success) {
-        setTicket(response.data.data.ticket);
-        const fetchedComments = response.data.data.comments || [];
-        console.log('Setting comments:', fetchedComments);
-        setComments(fetchedComments);
+        const ticketData = response.data.data.ticket;
+        const commentsData = response.data.data.comments || [];
+        
+        console.log('Setting ticket:', ticketData);
+        console.log('Setting comments count:', commentsData.length);
+        
+        setTicket(ticketData);
+        setComments(commentsData);
       } else {
         toast.error('Failed to load ticket details');
         router.push('/support/my-tickets');
@@ -86,27 +91,9 @@ export default function TicketDetail() {
         toast.success('Comment added successfully!');
         setNewComment('');
         
-        // Add the new comment immediately to the UI for instant feedback
-        const backendComment = response.data.data?.comment;
-        const newCommentObj = backendComment || {
-          id: Date.now(), // Fallback temp ID
-          comment: newComment,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          role: user.role,
-          created_at: new Date().toISOString(),
-          user_id: user.id
-        };
-        
-        console.log('Adding new comment to UI:', newCommentObj);
-        console.log('Current comments before adding:', comments.length);
-        
-        // DON'T add to UI first - just wait for backend refresh
-        // The issue is that adding optimistically then refreshing causes the new comment to disappear
-        
-        // Immediately refresh to get the new comment
-        console.log('Refreshing from backend to get new comment...');
-        await refreshTicket();
+        // Refresh ticket details to get the new comment
+        console.log('Comment added successfully, refreshing ticket details...');
+        await fetchTicketDetails();
       } else {
         toast.error(response.data?.message || 'Failed to add comment');
       }

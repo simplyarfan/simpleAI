@@ -82,7 +82,8 @@ export default function TicketsManagement() {
   const updateTicketStatus = async (ticketId, newStatus) => {
     try {
       const response = await supportAPI.updateTicketStatus(ticketId, newStatus);
-      if (response.success) {
+      console.log('Update status response:', response);
+      if (response.data?.success) {
         toast.success('Ticket status updated');
         fetchTickets();
       } else {
