@@ -13,6 +13,134 @@ class CVIntelligenceHR01 {
   }
 
   /**
+   * PROCESS JOB DESCRIPTION - Extract required skills dynamically
+   */
+  async processJobDescription(fileBuffer, fileName) {
+    try {
+      console.log('🔄 Processing Job Description:', fileName);
+      
+      // Parse the JD document
+      const fileType = fileName.split('.').pop().toLowerCase();
+      const parsedJD = await this.parseDocument(fileBuffer, fileType);
+      
+      // Extract requirements using AI
+      const requirements = await this.extractJobRequirements(parsedJD.text);
+      
+      return {
+        success: true,
+        requirements: requirements,
+        fileName: fileName
+      };
+    } catch (error) {
+      console.error('❌ Error processing JD:', error);
+      return {
+        success: false,
+        error: error.message,
+        requirements: { skills: [], experience: [], education: [] }
+      };
+    }
+  }
+
+  /**
+   * Extract job requirements from JD text using AI
+   */
+  async extractJobRequirements(jdText) {
+    try {
+      const prompt = `Extract job requirements from this job description. Return ONLY valid JSON matching this exact schema:
+
+{
+  "skills": ["skill1", "skill2", "skill3"],
+  "experience": ["requirement1", "requirement2"],
+  "education": ["degree1", "degree2"],
+  "mustHave": ["critical_skill1", "critical_skill2"]
+}
+
+Job Description:
+${jdText}
+
+Extract:
+- skills: Technical and soft skills mentioned
+- experience: Years of experience, specific experience requirements
+- education: Required degrees, certifications
+- mustHave: Critical/mandatory requirements (usually marked as "required", "must have", "essential")
+
+Return only the JSON object:`;
+
+      const response = await axios.post(this.apiUrl, {
+        model: this.model,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.1,
+        max_tokens: 1000
+      }, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const content = response.data.choices[0].message.content.trim();
+      
+      // Parse JSON response
+      let requirements;
+      try {
+        // Remove any markdown formatting
+        const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
+        requirements = JSON.parse(cleanContent);
+      } catch (parseError) {
+        console.error('❌ Failed to parse JD requirements JSON:', parseError);
+        // Fallback to basic extraction
+        requirements = this.extractBasicRequirements(jdText);
+      }
+
+      console.log('✅ JD requirements extracted:', requirements);
+      return requirements;
+      
+    } catch (error) {
+      console.error('❌ Error extracting JD requirements:', error);
+      // Fallback to basic extraction
+      return this.extractBasicRequirements(jdText);
+    }
+  }
+
+  /**
+   * Fallback method to extract basic requirements from JD text
+   */
+  extractBasicRequirements(jdText) {
+    const text = jdText.toLowerCase();
+    
+    // Common technical skills
+    const commonSkills = [
+      'javascript', 'python', 'java', 'react', 'node.js', 'sql', 'html', 'css',
+      'mongodb', 'express', 'aws', 'docker', 'kubernetes', 'git', 'typescript',
+      'angular', 'vue', 'php', 'laravel', 'django', 'flask', 'postgresql', 'mysql'
+    ];
+    
+    const foundSkills = commonSkills.filter(skill => 
+      text.includes(skill.toLowerCase())
+    );
+    
+    // Extract years of experience
+    const experienceMatch = text.match(/(\d+)[\+\-\s]*year[s]?\s+(?:of\s+)?experience/i);
+    const experience = experienceMatch ? [`${experienceMatch[1]}+ years of experience`] : [];
+    
+    // Extract education requirements
+    const education = [];
+    if (text.includes('bachelor') || text.includes('degree')) {
+      education.push('Bachelor\'s degree');
+    }
+    if (text.includes('master')) {
+      education.push('Master\'s degree');
+    }
+    
+    return {
+      skills: foundSkills,
+      experience: experience,
+      education: education,
+      mustHave: foundSkills.slice(0, 3) // First 3 skills as must-have
+    };
+  }
+
+  /**
    * STEP 1: INGRESS - PDF/Docx upload → Supabase Storage
    */
   async ingressDocument(fileBuffer, fileName) {

@@ -114,8 +114,16 @@ export default function LivelyHRDashboard() {
                   <agent.icon className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">{agent.name}</p>
-                  <p className="text-xs text-gray-500">{agent.description}</p>
+                  <p className={`text-sm font-medium ${
+                    agent.id === 'interview-coordinator' 
+                      ? 'text-gray-400' 
+                      : 'text-gray-900'
+                  }`}>{agent.name}</p>
+                  <p className={`text-xs ${
+                    agent.id === 'interview-coordinator' 
+                      ? 'text-gray-400' 
+                      : 'text-gray-500'
+                  }`}>{agent.description}</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
               </button>

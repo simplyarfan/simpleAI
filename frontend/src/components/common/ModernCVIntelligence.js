@@ -17,7 +17,6 @@ const ModernCVIntelligence = () => {
   const [selectedFiles, setSelectedFiles] = useState({ cvFiles: [], jdFile: null });
   const [searchQuery, setSearchQuery] = useState('');
   const [processingProgress, setProcessingProgress] = useState({ show: false, current: 0, total: 0, message: '' });
-  const [filterStatus, setFilterStatus] = useState('all');
   const [openMenuId, setOpenMenuId] = useState(null);
   const handleLogout = async () => {
     try {
@@ -227,8 +226,7 @@ const ModernCVIntelligence = () => {
 
   const filteredBatches = batches.filter(batch => {
     const matchesSearch = batch.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || batch.status === filterStatus;
-    return matchesSearch && matchesFilter;
+    return matchesSearch;
   });
 
   const getStatusColor = (status) => {
@@ -315,19 +313,6 @@ const ModernCVIntelligence = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             />
           </div>
-          <div className="flex items-center space-x-2">
-            <Icons.Filter className="w-4 h-4 text-gray-400" />
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            >
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="processing">Processing</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
         </div>
 
         {/* Batches Grid */}
@@ -337,15 +322,15 @@ const ModernCVIntelligence = () => {
               <Icons.Brain className="w-10 h-10 text-white" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              {searchQuery || filterStatus !== 'all' ? 'No batches found' : 'No CV batches yet'}
+              {searchQuery ? 'No batches found' : 'No CV batches yet'}
             </h3>
             <p className="text-gray-600 mb-8">
-              {searchQuery || filterStatus !== 'all' 
-                ? 'Try adjusting your search or filters' 
+              {searchQuery 
+                ? 'Try adjusting your search' 
                 : 'Upload your first batch of CVs to get started with AI analysis'
               }
             </p>
-            {(!searchQuery && filterStatus === 'all') && (
+            {!searchQuery && (
               <button
                 onClick={() => setShowUploadModal(true)}
                 className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-6 py-3 rounded-lg inline-flex items-center font-medium transition-colors"

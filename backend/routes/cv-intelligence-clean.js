@@ -171,9 +171,28 @@ router.post('/batch/:id/process', authenticateToken, upload.fields([
       }
     }
 
+    // Process JD file to extract requirements
+    let parsedRequirements = { skills: [], experience: [], education: [] };
+    
+    if (jdFile && CVIntelligenceHR01) {
+      try {
+        console.log('🔄 Processing Job Description:', jdFile.originalname);
+        const jdResult = await CVIntelligenceHR01.processJobDescription(jdFile.buffer, jdFile.originalname);
+        if (jdResult.success) {
+          parsedRequirements = jdResult.requirements;
+          console.log('✅ JD processed successfully:', parsedRequirements);
+        } else {
+          console.log('⚠️ JD processing failed, using empty requirements');
+        }
+      } catch (error) {
+        console.error('❌ Error processing JD:', error);
+      }
+    } else {
+      console.log('⚠️ No JD file provided, using empty requirements');
+    }
+
     // Process each CV file
     const candidates = [];
-    const parsedRequirements = { skills: [], experience: [], education: [] };
 
     for (let i = 0; i < cvFiles.length; i++) {
       const file = cvFiles[i];
