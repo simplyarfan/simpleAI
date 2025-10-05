@@ -81,31 +81,59 @@ export default function TicketsManagement() {
 
   const updateTicketStatus = async (ticketId, newStatus) => {
     try {
+      console.log('🔧 Updating ticket status:', ticketId, 'to:', newStatus);
       const response = await supportAPI.updateTicketStatus(ticketId, newStatus);
-      console.log('Update status response:', response);
-      if (response.data?.success) {
+      console.log('📝 Update status response:', response);
+      
+      // Check if response.data exists and has success property (SAME AS USER MANAGEMENT)
+      const isSuccess = response?.data?.success || response?.success;
+      
+      if (isSuccess) {
         toast.success('Ticket status updated');
         
         // Force immediate UI update by updating the ticket in the current state
-        console.log('Updating ticket', ticketId, 'to status:', newStatus);
+        console.log('✅ Updating ticket', ticketId, 'to status:', newStatus);
         setTickets(prevTickets => {
           const updated = prevTickets.map(ticket => 
             ticket.id === ticketId 
               ? { ...ticket, status: newStatus }
               : ticket
           );
-          console.log('Updated tickets:', updated);
+          console.log('✅ Updated tickets:', updated);
           return updated;
         });
         
         // Also fetch fresh data from backend
-        await fetchTickets();
+        fetchTickets();
       } else {
-        toast.error('Failed to update ticket status');
+        const errorMessage = response?.data?.message || response?.message || 'Failed to update ticket status';
+        console.error('❌ Update failed:', response);
+        toast.error(errorMessage);
       }
     } catch (error) {
-      console.error('Error updating ticket status:', error);
-      toast.error('Failed to update ticket status');
+      console.error('❌ Error updating ticket status:', error);
+      console.error('Error details:', error.response?.data);
+      
+      // Check if the error is actually a successful update (status 200) - SAME AS USER MANAGEMENT
+      if (error.response?.status === 200 || error.response?.data?.success) {
+        toast.success('Ticket status updated');
+        
+        // Force immediate UI update
+        console.log('✅ (Catch) Updating ticket', ticketId, 'to status:', newStatus);
+        setTickets(prevTickets => {
+          const updated = prevTickets.map(ticket => 
+            ticket.id === ticketId 
+              ? { ...ticket, status: newStatus }
+              : ticket
+          );
+          console.log('✅ (Catch) Updated tickets:', updated);
+          return updated;
+        });
+        
+        fetchTickets();
+      } else {
+        toast.error(`Failed to update ticket status: ${error.response?.data?.message || error.message}`);
+      }
     }
   };
 
