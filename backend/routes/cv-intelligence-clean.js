@@ -195,13 +195,19 @@ router.post('/batch/:id/process', authenticateToken, upload.fields([
         const jdRequirementsJSON = JSON.stringify(parsedRequirements);
         console.log('💾 Storing JD requirements in database:', jdRequirementsJSON);
         
+        // FORCE UPDATE - Clear any cached/corrupted JD requirements
         await database.run(`
           UPDATE cv_batches 
           SET status = 'processing', total_resumes = $1, jd_requirements = $2, updated_at = CURRENT_TIMESTAMP
           WHERE id = $3 AND user_id = $4
         `, [cvFiles.length, jdRequirementsJSON, batchId, req.user.id]);
         
-        console.log('✅ JD requirements stored successfully for batch:', batchId);
+        console.log('✅ JD requirements FORCE UPDATED for batch:', batchId);
+        
+        // Also clear any existing candidates to force re-processing
+        await database.run(`DELETE FROM candidates WHERE batch_id = $1`, [batchId]);
+        console.log('✅ Cleared existing candidates for fresh processing');
+        
       } catch (dbError) {
         console.error('❌ Database update failed:', dbError);
         databaseAvailable = false;
@@ -473,6 +479,39 @@ router.get('/candidate/:id/evidence', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve candidate details',
+    });
+  }
+});
+
+// POST /api/cv-intelligence/batch/:id/reset - Reset batch JD requirements (debug route)
+router.post('/batch/:id/reset', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    await database.connect();
+    
+    // Clear JD requirements and candidates for this batch
+    await database.run(`
+      UPDATE cv_batches 
+      SET jd_requirements = NULL, status = 'created', total_resumes = 0, processed_resumes = 0
+      WHERE id = $1 AND user_id = $2
+    `, [id, req.user.id]);
+    
+    await database.run(`DELETE FROM candidates WHERE batch_id = $1`, [id]);
+    
+    console.log('🧹 Batch reset completed for:', id);
+    
+    res.json({
+      success: true,
+      message: 'Batch reset successfully - ready for fresh JD upload'
+    });
+    
+  } catch (error) {
+    console.error('Reset batch error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reset batch',
+      error: error.message
     });
   }
 });
