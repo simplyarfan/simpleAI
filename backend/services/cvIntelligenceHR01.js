@@ -30,6 +30,9 @@ class CVIntelligenceHR01 {
       const fileType = fileName.split('.').pop().toLowerCase();
       const parsedJD = await this.parseDocument(fileBuffer, fileType);
       
+      console.log('📄 JD text extracted (first 500 chars):', parsedJD.text.substring(0, 500));
+      console.log('📄 JD text length:', parsedJD.text.length, 'characters');
+      
       // Extract requirements using AI
       const requirements = await this.extractJobRequirements(parsedJD.text);
       
@@ -52,6 +55,9 @@ class CVIntelligenceHR01 {
    * Extract job requirements from JD text using AI ONLY
    */
   async extractJobRequirements(jdText) {
+    console.log('🤖 Sending JD to AI for extraction...');
+    console.log('🤖 JD text preview (first 300 chars):', jdText.substring(0, 300));
+    
     const prompt = `Extract ALL specific skills and requirements from this job description. Return ONLY valid JSON matching this exact schema:
 
 {
