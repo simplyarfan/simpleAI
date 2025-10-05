@@ -102,13 +102,13 @@ export default function TicketDetail() {
         if (newCommentData) {
           console.log('Adding comment to UI immediately:', newCommentData);
           setComments(prevComments => [...prevComments, newCommentData]);
+        } else {
+          // If no comment data returned, refresh to get it
+          console.log('No comment data returned, refreshing...');
+          setTimeout(async () => {
+            await fetchTicketDetails();
+          }, 1000);
         }
-        
-        // Also refresh ticket details to ensure consistency
-        console.log('Refreshing ticket details for consistency...');
-        setTimeout(async () => {
-          await fetchTicketDetails();
-        }, 500);
       } else {
         const errorMessage = response?.data?.message || response?.message || 'Failed to add comment';
         console.error('❌ Comment add failed:', response);
@@ -118,16 +118,16 @@ export default function TicketDetail() {
       console.error('❌ Error adding comment:', error);
       console.error('Error details:', error.response?.data);
       
-      // Check if the error is actually a successful comment add (status 200) - SAME AS USER MANAGEMENT
-      if (error.response?.status === 200 || error.response?.data?.success) {
+      // Check if the error is actually a successful comment add (status 200 or 201) - SAME AS USER MANAGEMENT
+      if (error.response?.status === 200 || error.response?.status === 201 || error.response?.data?.success) {
         toast.success('Comment added successfully!');
         setNewComment('');
         
-        // Refresh ticket details
+        // Refresh ticket details only in catch block
         console.log('✅ (Catch) Comment added, refreshing...');
         setTimeout(async () => {
           await fetchTicketDetails();
-        }, 500);
+        }, 1000);
       } else {
         toast.error(`Failed to add comment: ${error.response?.data?.message || error.message}`);
       }
