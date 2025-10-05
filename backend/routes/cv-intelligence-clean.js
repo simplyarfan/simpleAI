@@ -157,21 +157,7 @@ router.post('/batch/:id/process', authenticateToken, upload.fields([
       console.log('⚠️ Continuing without database - files will be processed but not stored');
     }
 
-    // Update batch status, file count, and JD requirements (if database available)
-    if (databaseAvailable) {
-      try {
-        await database.run(`
-          UPDATE cv_batches 
-          SET status = 'processing', total_resumes = $1, jd_requirements = $2, updated_at = CURRENT_TIMESTAMP
-          WHERE id = $3 AND user_id = $4
-        `, [cvFiles.length, JSON.stringify(parsedRequirements), batchId, req.user.id]);
-      } catch (dbError) {
-        console.error('Database update failed:', dbError);
-        databaseAvailable = false;
-      }
-    }
-
-    // Process JD file to extract requirements
+    // Process JD file to extract requirements FIRST
     let parsedRequirements = { skills: [], experience: [], education: [] };
     
     if (jdFile && CVIntelligenceHR01) {
@@ -189,6 +175,20 @@ router.post('/batch/:id/process', authenticateToken, upload.fields([
       }
     } else {
       console.log('⚠️ No JD file provided, using empty requirements');
+    }
+
+    // Update batch status, file count, and JD requirements (if database available)
+    if (databaseAvailable) {
+      try {
+        await database.run(`
+          UPDATE cv_batches 
+          SET status = 'processing', total_resumes = $1, jd_requirements = $2, updated_at = CURRENT_TIMESTAMP
+          WHERE id = $3 AND user_id = $4
+        `, [cvFiles.length, JSON.stringify(parsedRequirements), batchId, req.user.id]);
+      } catch (dbError) {
+        console.error('Database update failed:', dbError);
+        databaseAvailable = false;
+      }
     }
 
     // Process each CV file
