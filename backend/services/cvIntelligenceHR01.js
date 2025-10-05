@@ -30,11 +30,23 @@ class CVIntelligenceHR01 {
       const fileType = fileName.split('.').pop().toLowerCase();
       const parsedJD = await this.parseDocument(fileBuffer, fileType);
       
-      console.log('📄 JD text extracted (first 500 chars):', parsedJD.text.substring(0, 500));
-      console.log('📄 JD text length:', parsedJD.text.length, 'characters');
+      // parseDocument returns { rawText, layoutBlocks, metadata }
+      const jdText = parsedJD.rawText || parsedJD.text || '';
+      
+      if (!jdText || jdText.trim().length === 0) {
+        console.error('❌ JD text is empty after parsing!');
+        return {
+          success: false,
+          error: 'Failed to extract text from JD file',
+          requirements: { skills: [], experience: [], education: [], mustHave: [] }
+        };
+      }
+      
+      console.log('📄 JD text extracted (first 500 chars):', jdText.substring(0, 500));
+      console.log('📄 JD text length:', jdText.length, 'characters');
       
       // Extract requirements using AI
-      const requirements = await this.extractJobRequirements(parsedJD.text);
+      const requirements = await this.extractJobRequirements(jdText);
       
       return {
         success: true,
@@ -43,10 +55,11 @@ class CVIntelligenceHR01 {
       };
     } catch (error) {
       console.error('❌ Error processing JD:', error);
+      console.error('❌ Error stack:', error.stack);
       return {
         success: false,
         error: error.message,
-        requirements: { skills: [], experience: [], education: [] }
+        requirements: { skills: [], experience: [], education: [], mustHave: [] }
       };
     }
   }
