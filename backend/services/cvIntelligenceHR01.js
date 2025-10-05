@@ -4,6 +4,7 @@
  */
 
 const axios = require('axios');
+const pdf = require('pdf-parse');
 
 class CVIntelligenceHR01 {
   constructor() {
