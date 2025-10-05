@@ -75,10 +75,10 @@ class CVIntelligenceHR01 {
     // Add timestamp to prevent caching
     const timestamp = Date.now();
     
-    const prompt = `[EXTRACTION_${timestamp}] Analyze this job description and extract technical requirements. Return ONLY valid JSON:
+    const prompt = `[EXTRACTION_${timestamp}] Extract ALL skills and requirements from this job description. Return ONLY valid JSON:
 
 {
-  "skills": ["technical_skill1", "technical_skill2"],
+  "skills": ["skill1", "skill2", "skill3"],
   "experience": ["experience_req1", "experience_req2"],
   "education": ["education_req1", "education_req2"],
   "mustHave": ["critical_skill1", "critical_skill2"]
@@ -87,14 +87,20 @@ class CVIntelligenceHR01 {
 DOCUMENT TO ANALYZE:
 ${jdText}
 
-EXTRACTION RULES:
-- Extract ONLY skills/technologies mentioned in the document
-- Include programming languages (Python, Java, JavaScript, etc.)
-- Include frameworks and libraries (TensorFlow, React, Django, etc.)
-- Include tools and platforms (Docker, AWS, Azure, etc.)
-- Include databases (MySQL, PostgreSQL, MongoDB, etc.)
-- DO NOT add skills not mentioned in the document
-- DO NOT use generic placeholder skills
+CRITICAL EXTRACTION RULES - EXTRACT EVERYTHING MENTIONED:
+- Tools & Software: JIRA, Azure DevOps, Confluence, etc.
+- Methodologies: Scrum, Agile, Kanban, SAFe, Waterfall, etc.
+- Practices: Sprint Planning, Daily Stand-ups, Retrospectives, Grooming, Sprint Reviews, etc.
+- Frameworks: Agile frameworks, Scrum practices, etc.
+- Principles: Agile principles, Lean principles, etc.
+- Programming languages: Python, Java, JavaScript, C++, etc.
+- Technologies: Docker, AWS, Azure, Kubernetes, etc.
+- Databases: MySQL, PostgreSQL, MongoDB, etc.
+- Certifications: Scrum Master, CSM, PMP, etc.
+- Soft skills: Leadership, Communication, Collaboration, etc.
+
+BE EXTREMELY THOROUGH - if it's mentioned in the text, extract it as a skill!
+Extract EXACT phrases from the document, not generic terms.
 
 Return valid JSON only:`;
 
