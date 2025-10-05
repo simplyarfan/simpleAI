@@ -84,6 +84,9 @@ export default function TicketsManagement() {
       console.log('🔧 Updating ticket status:', ticketId, 'to:', newStatus);
       const response = await supportAPI.updateTicketStatus(ticketId, newStatus);
       console.log('📝 Update status response:', response);
+      console.log('📝 Response data:', response.data);
+      console.log('📝 Response success:', response?.data?.success);
+      console.log('📝 Response success alt:', response?.success);
       
       // Check if response.data exists and has success property (SAME AS USER MANAGEMENT)
       const isSuccess = response?.data?.success || response?.success;

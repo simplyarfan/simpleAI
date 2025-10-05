@@ -86,13 +86,19 @@ export default function TicketDetail() {
       const response = await supportAPI.addComment(id, newComment, false);
       
       console.log('Add comment response:', response.data);
+      console.log('Add comment response full:', response);
       
-      if (response.data?.success) {
+      // Check if response.data exists and has success property (SAME AS USER MANAGEMENT)
+      const isSuccess = response?.data?.success || response?.success;
+      
+      if (isSuccess) {
         toast.success('Comment added successfully!');
         setNewComment('');
         
         // Add the comment to UI immediately for instant feedback
         const newCommentData = response.data.data?.comment;
+        console.log('New comment data from backend:', newCommentData);
+        
         if (newCommentData) {
           console.log('Adding comment to UI immediately:', newCommentData);
           setComments(prevComments => [...prevComments, newCommentData]);
@@ -104,11 +110,27 @@ export default function TicketDetail() {
           await fetchTicketDetails();
         }, 500);
       } else {
-        toast.error(response.data?.message || 'Failed to add comment');
+        const errorMessage = response?.data?.message || response?.message || 'Failed to add comment';
+        console.error('❌ Comment add failed:', response);
+        toast.error(errorMessage);
       }
     } catch (error) {
-      console.error('Add comment error:', error);
-      toast.error(error.response?.data?.message || 'Failed to add comment');
+      console.error('❌ Error adding comment:', error);
+      console.error('Error details:', error.response?.data);
+      
+      // Check if the error is actually a successful comment add (status 200) - SAME AS USER MANAGEMENT
+      if (error.response?.status === 200 || error.response?.data?.success) {
+        toast.success('Comment added successfully!');
+        setNewComment('');
+        
+        // Refresh ticket details
+        console.log('✅ (Catch) Comment added, refreshing...');
+        setTimeout(async () => {
+          await fetchTicketDetails();
+        }, 500);
+      } else {
+        toast.error(`Failed to add comment: ${error.response?.data?.message || error.message}`);
+      }
     } finally {
       setIsSubmitting(false);
     }
