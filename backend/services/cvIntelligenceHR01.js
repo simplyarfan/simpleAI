@@ -172,7 +172,24 @@ Return valid JSON only:`;
         }
       } catch (e) {
         console.error('❌ PDF parsing failed:', e.message);
-        throw new Error(`Failed to parse PDF: ${e.message}`);
+        console.log('🔄 Trying alternative PDF parsing...');
+        
+        // Try with different options for corrupted PDFs
+        try {
+          const pdfData = await pdf(fileBuffer, { 
+            normalizeWhitespace: false,
+            disableCombineTextItems: false 
+          });
+          text = pdfData.text || '';
+          
+          if (!text || text.trim().length === 0) {
+            throw new Error('PDF contains no extractable text even with alternative parsing');
+          }
+          console.log('✅ Alternative PDF parsing succeeded');
+        } catch (e2) {
+          console.error('❌ Alternative PDF parsing also failed:', e2.message);
+          throw new Error(`PDF is corrupted or unreadable. Please save as a new PDF or convert to TXT format. Error: ${e.message}`);
+        }
       }
     } else {
       text = fileBuffer.toString('utf-8');
