@@ -534,26 +534,23 @@ const BatchDetail = () => {
                   Skills Analysis
                 </h3>
                 <div className="space-y-4">
-                  {/* Extract skills from analysis_data */}
+                  {/* Extract skills from profile_json (smart-matched by backend) */}
                   {(() => {
                     try {
-                      // Use profile_json instead of analysis_data
+                      // Use smart-matched skills from backend
                       const profileData = selectedCandidate.profile_json || {};
                       const candidateSkills = profileData.skills || [];
                       
-                      // Get skills from JD requirements (dynamic from backend)
+                      // Get smart-matched skills from backend (already computed with semantic matching)
+                      const matchedSkills = profileData.matchedSkills || [];
+                      const missingSkills = profileData.missingSkills || [];
+                      
+                      // Get critical skills from JD
                       const jdRequirements = batch?.jd_requirements || { skills: [], mustHave: [] };
                       const criticalSkills = jdRequirements.mustHave || [];
-                      const requiredSkills = jdRequirements.skills || [];
                       
-                      // Convert skills array to display format
+                      // All candidate skills
                       const allSkills = Array.isArray(candidateSkills) ? candidateSkills : [];
-                      const matchedSkills = allSkills.filter(skill => 
-                        requiredSkills.some(req => req.toLowerCase() === skill.toLowerCase())
-                      );
-                      const missingSkills = requiredSkills.filter(skill => 
-                        !allSkills.some(candidate => candidate.toLowerCase() === skill.toLowerCase())
-                      );
 
                       return (
                         <>
@@ -596,9 +593,10 @@ const BatchDetail = () => {
                           )}
 
                           {(() => {
-                            // Get irrelevant skills (skills candidate has but not in required list)
+                            // Get additional skills (skills candidate has but not in matched or missing)
+                            const allRequiredSkills = [...matchedSkills, ...missingSkills];
                             const irrelevantSkills = allSkills.filter(skill => 
-                              !requiredSkills.some(req => req.toLowerCase() === skill.toLowerCase())
+                              !allRequiredSkills.some(req => req.toLowerCase() === skill.toLowerCase())
                             );
                             
                             return irrelevantSkills.length > 0 && (
@@ -627,15 +625,15 @@ const BatchDetail = () => {
                                 {/* Match Percentage Bar */}
                                 <div>
                                   <div className="flex justify-between items-center mb-2">
-                                    <span className="text-xs font-medium text-gray-600">JD Match Rate</span>
+                                    <span className="text-xs font-medium text-gray-600">JD Match Rate (Smart Matching)</span>
                                     <span className="text-xs font-bold text-gray-900">
-                                      {Math.round((matchedSkills.length / requiredSkills.length) * 100)}%
+                                      {Math.round((matchedSkills.length / (matchedSkills.length + missingSkills.length)) * 100)}%
                                     </span>
                                   </div>
                                   <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                                     <div 
                                       className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500"
-                                      style={{ width: `${(matchedSkills.length / requiredSkills.length) * 100}%` }}
+                                      style={{ width: `${(matchedSkills.length / (matchedSkills.length + missingSkills.length)) * 100}%` }}
                                     ></div>
                                   </div>
                                 </div>

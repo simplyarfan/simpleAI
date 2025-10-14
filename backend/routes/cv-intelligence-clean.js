@@ -255,7 +255,26 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
           );
           console.log(`✅ Generated ${interviewQuestions.technicalQuestions?.length || 0} technical questions`);
           
-          // Store candidate with assessment and interview questions
+          // Perform smart skill matching
+          const candidateSkills = result.structuredData.skills || [];
+          const requiredSkills = parsedRequirements.skills || [];
+          const mustHaveSkills = parsedRequirements.mustHave || [];
+          
+          const matchedSkills = [];
+          const missingSkills = [];
+          
+          // Check each required skill with smart matching
+          for (const reqSkill of requiredSkills) {
+            if (CVIntelligenceHR01.smartSkillMatch(reqSkill, candidateSkills)) {
+              matchedSkills.push(reqSkill);
+            } else {
+              missingSkills.push(reqSkill);
+            }
+          }
+          
+          console.log(`📊 Smart skill matching: ${matchedSkills.length}/${requiredSkills.length} matched`);
+          
+          // Store candidate with assessment, interview questions, and smart skill matching
           const candidateData = {
             id: candidateId,
             name: normalizeName(result.structuredData.personal?.name || 'Name not found'),
@@ -265,6 +284,8 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
             structuredData: result.structuredData,
             assessment: assessment,
             interviewQuestions: interviewQuestions,
+            matchedSkills: matchedSkills,
+            missingSkills: missingSkills,
             cvText: cvText
           };
           
@@ -287,7 +308,9 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
                 JSON.stringify({
                   ...result.structuredData,
                   assessment: assessment,
-                  interviewQuestions: interviewQuestions
+                  interviewQuestions: interviewQuestions,
+                  matchedSkills: matchedSkills,
+                  missingSkills: missingSkills
                 }),
                 Math.round(assessment.overallFit || 0)
               ]);
@@ -334,6 +357,8 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
               ...rankedCandidate.structuredData,
               assessment: rankedCandidate.assessment,
               interviewQuestions: rankedCandidate.interviewQuestions,
+              matchedSkills: rankedCandidate.matchedSkills,
+              missingSkills: rankedCandidate.missingSkills,
               rank: rankedCandidate.rank,
               rankingReason: rankedCandidate.rankingReason,
               recommendationLevel: rankedCandidate.recommendationLevel

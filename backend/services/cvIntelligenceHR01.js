@@ -18,6 +18,56 @@ class CVIntelligenceHR01 {
     } else {
       console.log('✅ OpenAI API key configured');
     }
+    
+    // Smart skill matching mappings
+    this.skillSynonyms = {
+      'agile': ['agile frameworks', 'agile methodology', 'agile approach', 'agile best practices', 'agile development'],
+      'scrum': ['scrum practices', 'scrum framework', 'scrum techniques', 'scrum methodology'],
+      'conflict-resolution': ['resolve conflicts', 'conflict management', 'conflict resolution'],
+      'coaching': ['servant leadership', 'mentoring', 'team coaching', 'leadership coaching'],
+      'facilitation': ['facilitating', 'facilitate', 'workshop facilitation'],
+      'kanban': ['kanban board', 'kanban methodology'],
+      'javascript': ['js', 'javascript', 'ecmascript'],
+      'python': ['py', 'python'],
+      'react': ['reactjs', 'react.js'],
+      'node': ['nodejs', 'node.js'],
+      'sql': ['mysql', 'postgresql', 'sql server', 'database'],
+      'ci/cd': ['continuous integration', 'continuous deployment', 'devops'],
+      'aws': ['amazon web services', 'cloud', 'ec2', 's3'],
+      'docker': ['containerization', 'containers'],
+      'kubernetes': ['k8s', 'container orchestration']
+    };
+  }
+  
+  /**
+   * SMART SKILL MATCHING - Semantic understanding of skills
+   */
+  smartSkillMatch(requiredSkill, candidateSkills) {
+    const required = requiredSkill.toLowerCase().trim();
+    
+    // Direct match
+    if (candidateSkills.some(s => s.toLowerCase().trim() === required)) {
+      return true;
+    }
+    
+    // Check if required skill is in our synonym map
+    for (const [baseSkill, synonyms] of Object.entries(this.skillSynonyms)) {
+      // If required skill matches base or any synonym
+      if (required === baseSkill || synonyms.some(syn => required.includes(syn) || syn.includes(required))) {
+        // Check if candidate has base skill or any synonym
+        return candidateSkills.some(candidateSkill => {
+          const candidate = candidateSkill.toLowerCase().trim();
+          return candidate === baseSkill || 
+                 synonyms.some(syn => candidate.includes(syn) || syn.includes(candidate));
+        });
+      }
+    }
+    
+    // Partial match (contains)
+    return candidateSkills.some(s => {
+      const candidate = s.toLowerCase().trim();
+      return candidate.includes(required) || required.includes(candidate);
+    });
   }
 
   /**
@@ -49,6 +99,14 @@ class CVIntelligenceHR01 {
       // Extract requirements using AI
       const requirements = await this.extractJobRequirements(jdText);
       
+      // Normalize extracted skills
+      if (requirements.skills) {
+        requirements.skills = this.normalizeSkills(requirements.skills);
+      }
+      if (requirements.mustHave) {
+        requirements.mustHave = this.normalizeSkills(requirements.mustHave);
+      }
+      
       return {
         success: true,
         requirements: requirements,
@@ -63,6 +121,24 @@ class CVIntelligenceHR01 {
         requirements: { skills: [], experience: [], education: [], mustHave: [] }
       };
     }
+  }
+
+  /**
+   * NORMALIZE SKILLS - Remove redundant words and standardize
+   */
+  normalizeSkills(skills) {
+    if (!Array.isArray(skills)) return [];
+    
+    return skills.map(skill => {
+      let normalized = skill.trim();
+      
+      // Remove redundant words
+      normalized = normalized
+        .replace(/\s+(frameworks?|practices?|methodology|methodologies|techniques?|skills?|development)\s*$/i, '')
+        .trim();
+      
+      return normalized;
+    }).filter(s => s.length > 0);
   }
 
   /**
