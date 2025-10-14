@@ -81,7 +81,13 @@ app.use((req, res, next) => {
         'http://127.0.0.1:3000'
       ];
   
-  if (allowedOrigins.includes(origin)) {
+  // Allow Netlify preview deployments and main site
+  const isNetlifyDomain = origin && (
+    origin.includes('thesimpleai.netlify.app') || 
+    origin.includes('netlify.app')
+  );
+  
+  if (allowedOrigins.includes(origin) || isNetlifyDomain) {
     res.header('Access-Control-Allow-Origin', origin);
   }
   
