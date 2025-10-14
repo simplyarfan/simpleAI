@@ -47,17 +47,25 @@ export default function TicketDetail() {
     
     setIsLoading(true);
     try {
+      console.log('🎫 Loading ticket:', id);
       const response = await supportAPI.getTicket(id);
       
       if (response.data?.success) {
-        setTicket(response.data.data.ticket);
-        setComments(response.data.data.comments || []);
+        const ticketData = response.data.data.ticket;
+        const commentsData = response.data.data.comments || [];
+        
+        console.log('📦 Loaded ticket:', ticketData.id);
+        console.log('💬 Loaded comments:', commentsData.length);
+        console.log('📋 Comment IDs:', commentsData.map(c => c.id));
+        
+        setTicket(ticketData);
+        setComments(commentsData);
       } else {
         toast.error('Failed to load ticket');
         router.push('/support/my-tickets');
       }
     } catch (error) {
-      console.error('Load ticket error:', error);
+      console.error('❌ Load ticket error:', error);
       toast.error('Failed to load ticket');
       router.push('/support/my-tickets');
     } finally {
@@ -78,20 +86,32 @@ export default function TicketDetail() {
     setIsSubmitting(true);
     
     try {
+      console.log('💬 Adding comment:', commentText);
+      
       // Add comment to database
       const response = await supportAPI.addComment(id, commentText, false);
+      console.log('✅ Comment added, response:', response.data);
       
       // Clear input immediately
       setNewComment('');
       
+      // Wait a moment for database to commit
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       // Reload all comments from database
+      console.log('🔄 Fetching updated comments...');
       const ticketResponse = await supportAPI.getTicket(id);
+      console.log('📦 Received comments:', ticketResponse.data?.data?.comments?.length);
+      
       if (ticketResponse.data?.success) {
-        setComments(ticketResponse.data.data.comments || []);
+        const fetchedComments = ticketResponse.data.data.comments || [];
+        console.log('📝 Setting', fetchedComments.length, 'comments');
+        console.log('📋 Comment IDs:', fetchedComments.map(c => c.id));
+        setComments(fetchedComments);
         toast.success('Comment added');
       }
     } catch (error) {
-      console.error('Add comment error:', error);
+      console.error('❌ Add comment error:', error);
       toast.error('Failed to add comment');
       // Restore comment text on error
       setNewComment(commentText);
