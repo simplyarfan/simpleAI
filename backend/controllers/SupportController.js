@@ -53,6 +53,34 @@ class SupportController {
         req.get('User-Agent')
       ]);
 
+      // Notify all admins and superadmins about new ticket
+      try {
+        const admins = await database.all(`
+          SELECT id FROM users WHERE role IN ('admin', 'superadmin')
+        `);
+        
+        const NotificationController = require('./NotificationController');
+        for (const admin of admins) {
+          await NotificationController.createNotification(
+            admin.id,
+            'new_ticket',
+            `New Support Ticket: ${subject}`,
+            `${ticket.first_name} ${ticket.last_name} created a new ${priority} priority ticket.`,
+            {
+              ticket_id: ticketId,
+              user_id: req.user.id,
+              subject,
+              priority,
+              category
+            }
+          );
+        }
+        console.log(`📧 [SUPPORT] Notified ${admins.length} admins about new ticket`);
+      } catch (notifError) {
+        console.error('Failed to create admin notifications:', notifError);
+        // Don't fail the request if notifications fail
+      }
+
       res.status(201).json({
         success: true,
         message: 'Support ticket created successfully',
@@ -304,14 +332,51 @@ class SupportController {
         WHERE tc.id = $1
       `, [commentId]);
 
-      // Create notification for ticket owner if comment is from admin
+      // Create notifications
+      const NotificationController = require('./NotificationController');
+      
+      // If admin comments → notify ticket owner
       if (isAdmin && ticket.user_id !== req.user.id && !isInternalComment) {
-        const NotificationController = require('./NotificationController');
-        await NotificationController.createTicketResponseNotification(
-          ticket_id, 
-          req.user.id, 
-          comment
-        );
+        try {
+          await NotificationController.createTicketResponseNotification(
+            ticket_id, 
+            req.user.id, 
+            comment
+          );
+          console.log(`📧 [SUPPORT] Notified ticket owner about admin response`);
+        } catch (notifError) {
+          console.error('Failed to notify ticket owner:', notifError);
+        }
+      }
+      
+      // If user comments → notify all admins
+      if (!isAdmin) {
+        try {
+          const admins = await database.all(`
+            SELECT id FROM users WHERE role IN ('admin', 'superadmin')
+          `);
+          
+          const ticketDetails = await database.get(`
+            SELECT subject FROM support_tickets WHERE id = $1
+          `, [ticket_id]);
+          
+          for (const admin of admins) {
+            await NotificationController.createNotification(
+              admin.id,
+              'ticket_comment',
+              `New Comment on Ticket: ${ticketDetails.subject}`,
+              `${createdComment.first_name} ${createdComment.last_name} added a comment to their support ticket.`,
+              {
+                ticket_id: parseInt(ticket_id),
+                comment_id: commentId,
+                user_id: req.user.id
+              }
+            );
+          }
+          console.log(`📧 [SUPPORT] Notified ${admins.length} admins about user comment`);
+        } catch (notifError) {
+          console.error('Failed to notify admins:', notifError);
+        }
       }
 
       // Track comment activity
