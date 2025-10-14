@@ -80,20 +80,31 @@ export default function TicketsManagement() {
   };
 
   const updateTicketStatus = async (ticketId, newStatus) => {
-    setIsLoading(true);
-    
     try {
       console.log('🔧 Updating ticket status:', ticketId, 'to:', newStatus);
+      
+      // Optimistically update the UI immediately
+      setTickets(prevTickets => 
+        prevTickets.map(ticket => 
+          ticket.id === ticketId 
+            ? { ...ticket, status: newStatus, updated_at: new Date().toISOString() }
+            : ticket
+        )
+      );
+      
       const response = await supportAPI.updateTicketStatus(ticketId, newStatus);
       console.log('📝 Update response:', response);
       
-      // Check if response.data exists and has success property (EXACT COPY FROM USER MANAGEMENT)
+      // Check if response is successful
       const isSuccess = response?.data?.success || response?.success;
       
       if (isSuccess) {
         toast.success('Ticket status updated');
-        fetchTickets(); // Refresh the ticket list (EXACT COPY FROM USER MANAGEMENT)
+        // Refresh in background to ensure consistency
+        setTimeout(() => fetchTickets(), 500);
       } else {
+        // Revert optimistic update on failure
+        fetchTickets();
         const errorMessage = response?.data?.message || response?.message || 'Failed to update ticket status';
         console.error('❌ Update failed:', response);
         toast.error(errorMessage);
@@ -102,15 +113,15 @@ export default function TicketsManagement() {
       console.error('❌ Error updating ticket status:', error);
       console.error('Error details:', error.response?.data);
       
-      // Check if the error is actually a successful update (status 200) (EXACT COPY FROM USER MANAGEMENT)
+      // Check if the error is actually a successful update (status 200)
       if (error.response?.status === 200 || error.response?.data?.success) {
         toast.success('Ticket status updated');
-        fetchTickets();
+        setTimeout(() => fetchTickets(), 500);
       } else {
+        // Revert optimistic update on failure
+        fetchTickets();
         toast.error(`Failed to update ticket status: ${error.response?.data?.message || error.message}`);
       }
-    } finally {
-      setIsLoading(false);
     }
   };
 
