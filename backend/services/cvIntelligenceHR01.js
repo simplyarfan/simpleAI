@@ -281,15 +281,15 @@ Return valid JSON only:`;
    * STEP 4: LLM EXTRACTION - Llama 3.1 8B with Pydantic JSON schema
    */
   async extractStructuredData(text, entities) {
-    const prompt = `Extract structured information from this resume. Return ONLY valid JSON matching this exact schema:
+    const prompt = `You are a world-class CV analyst. Extract structured information from this resume with extreme accuracy. Return ONLY valid JSON matching this exact schema:
 
 {
   "personal": {
-    "name": "string",
-    "email": "string", 
-    "phone": "string",
-    "location": "string",
-    "linkedin": "string"
+    "name": "string or null",
+    "email": "string or null", 
+    "phone": "string or null",
+    "location": "string or null",
+    "linkedin": "string or null"
   },
   "experience": [
     {
@@ -297,7 +297,8 @@ Return valid JSON only:`;
       "role": "string", 
       "startDate": "string",
       "endDate": "string",
-      "achievements": ["string"]
+      "achievements": ["string"],
+      "technologies": ["string"]
     }
   ],
   "education": [
@@ -312,17 +313,29 @@ Return valid JSON only:`;
   "certifications": ["string"]
 }
 
-CRITICAL: For skills extraction, scan the ENTIRE resume text including:
-- Dedicated skills sections
-- Experience descriptions (tools/technologies mentioned like "Using Jira", "worked with Python", etc.)
-- Project descriptions and achievements
-- Certifications (extract the technology/skill from certification names)
-- Education (extract relevant technologies/skills from coursework, projects)
-- Any technical tools, programming languages, frameworks, methodologies mentioned ANYWHERE
+CRITICAL EXTRACTION RULES:
 
-IMPORTANT: Extract skills from certifications like "AWS Certified", "Scrum Master Certified", "Oracle Certified" - extract the core skill (AWS, Scrum Master, Oracle).
+1. SKILLS - Extract ALL technical and professional skills from:
+   - Dedicated skills sections
+   - Tools/technologies mentioned in experience ("used Python", "worked with AWS", "managed Jira")
+   - Project descriptions
+   - Technologies in job descriptions
+   - Methodologies (Agile, Scrum, Waterfall)
+   - Soft skills if explicitly listed
 
-Extract ALL skills mentioned throughout the resume, not just from dedicated skills sections.
+2. CERTIFICATIONS - ONLY extract if EXPLICITLY mentioned:
+   - Look for words like "Certified", "Certification", "Certificate"
+   - Extract the EXACT certification name as written
+   - If NO certifications are mentioned, return EMPTY array []
+   - DO NOT infer certifications from skills
+   - DO NOT create fake certifications
+
+3. EXPERIENCE - Extract:
+   - Company name, role, dates
+   - Key achievements and responsibilities
+   - Technologies used in each role (separate field)
+
+4. Use null for missing personal information, not "Not found"
 
 Resume text:
 ${text}
@@ -731,6 +744,155 @@ Return only the JSON object, no other text:`;
       }
     }
     return count;
+  }
+
+  /**
+   * HOLISTIC CV ASSESSMENT - Let ChatGPT analyze the entire CV contextually
+   * This replaces robotic skill matching with intelligent evaluation
+   */
+  async assessCVHolistically(cvText, jobRequirements) {
+    const jdText = JSON.stringify(jobRequirements, null, 2);
+    
+    const prompt = `You are a world-class HR expert and talent acquisition specialist. Analyze this CV holistically against the job requirements.
+
+JOB REQUIREMENTS:
+${jdText}
+
+CANDIDATE CV:
+${cvText}
+
+Provide a comprehensive assessment in JSON format:
+
+{
+  "overallFit": "number 0-100",
+  "strengths": ["detailed strength 1", "detailed strength 2", "detailed strength 3"],
+  "weaknesses": ["detailed weakness 1", "detailed weakness 2"],
+  "keyHighlights": ["impressive achievement 1", "impressive achievement 2"],
+  "matchedRequirements": ["requirement 1", "requirement 2"],
+  "missingRequirements": ["requirement 1", "requirement 2"],
+  "experienceRelevance": "detailed analysis of how their experience aligns",
+  "culturalFit": "assessment of soft skills and work style",
+  "recommendation": "Strong Hire | Hire | Maybe | Pass",
+  "detailedReasoning": "comprehensive paragraph explaining the recommendation"
+}
+
+ANALYSIS GUIDELINES:
+1. Look at the COMPLETE picture - experience quality, career progression, achievements, not just skill keywords
+2. Consider context: How did they use their skills? What impact did they make?
+3. Evaluate career trajectory and growth potential
+4. Assess both technical capabilities AND soft skills/leadership
+5. Be specific in your reasoning - reference actual achievements from their CV
+6. Consider transferable skills and learning ability
+7. Don't just count matching keywords - evaluate depth of experience
+
+Return only the JSON object:`;
+
+    try {
+      const response = await axios.post(this.apiUrl, {
+        model: 'gpt-4', // Use GPT-4 for better analysis
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+        max_tokens: 1500
+      }, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const jsonText = response.data.choices[0].message.content.trim();
+      const assessment = JSON.parse(jsonText);
+      
+      return assessment;
+    } catch (error) {
+      console.error('Holistic assessment failed:', error.message);
+      return {
+        overallFit: 0,
+        strengths: [],
+        weaknesses: [],
+        keyHighlights: [],
+        matchedRequirements: [],
+        missingRequirements: [],
+        experienceRelevance: 'Assessment failed',
+        culturalFit: 'Assessment failed',
+        recommendation: 'Pass',
+        detailedReasoning: 'Unable to assess candidate due to technical error'
+      };
+    }
+  }
+
+  /**
+   * RANK ALL CANDIDATES - Let ChatGPT rank them intelligently
+   */
+  async rankCandidatesIntelligently(candidates, jobRequirements) {
+    const candidateSummaries = candidates.map((c, idx) => ({
+      index: idx,
+      name: c.name || 'Candidate ' + (idx + 1),
+      assessment: c.assessment,
+      keySkills: c.structuredData?.skills?.slice(0, 10) || [],
+      experience: c.structuredData?.experience?.map(e => `${e.role} at ${e.company}`) || []
+    }));
+
+    const prompt = `You are a world-class HR expert. Rank these ${candidates.length} candidates from BEST to WORST for the given position.
+
+JOB REQUIREMENTS:
+${JSON.stringify(jobRequirements, null, 2)}
+
+CANDIDATES TO RANK:
+${JSON.stringify(candidateSummaries, null, 2)}
+
+Return a JSON array with rankings:
+
+[
+  {
+    "originalIndex": 0,
+    "rank": 1,
+    "name": "Candidate Name",
+    "rankingReason": "Detailed explanation of why this candidate ranks here. Reference specific skills, experience, and achievements.",
+    "recommendationLevel": "Strong Hire | Hire | Maybe | Pass"
+  }
+]
+
+RANKING CRITERIA:
+1. Overall fit and experience relevance (most important)
+2. Depth of required skills, not just breadth
+3. Career progression and achievements
+4. Cultural fit and soft skills
+5. Learning ability and growth potential
+6. Specific accomplishments that demonstrate capability
+
+Be specific in your reasoning. Reference actual experience and skills from each candidate.
+
+Return only the JSON array:`;
+
+    try {
+      const response = await axios.post(this.apiUrl, {
+        model: 'gpt-4',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2,
+        max_tokens: 2000
+      }, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const jsonText = response.data.choices[0].message.content.trim();
+      const rankings = JSON.parse(jsonText);
+      
+      return rankings;
+    } catch (error) {
+      console.error('Intelligent ranking failed:', error.message);
+      // Fallback to simple ranking by assessment score
+      return candidates.map((c, idx) => ({
+        originalIndex: idx,
+        rank: idx + 1,
+        name: c.name || 'Candidate ' + (idx + 1),
+        rankingReason: 'Ranked based on overall assessment score',
+        recommendationLevel: c.assessment?.recommendation || 'Maybe'
+      }));
+    }
   }
 }
 

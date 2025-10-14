@@ -215,8 +215,9 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
       }
     }
 
-    // Process each CV file
+    // Process each CV file with holistic assessment
     const candidates = [];
+    const cvTexts = []; // Store raw CV texts for ranking
 
     for (let i = 0; i < cvFiles.length; i++) {
       const file = cvFiles[i];
@@ -234,7 +235,31 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
         if (result.success) {
           const candidateId = CVIntelligenceHR01.generateId();
           
-          // Store candidate (simplified schema) - only if database available
+          // Get raw CV text for holistic assessment
+          const parseData = await CVIntelligenceHR01.parseDocument(file.buffer, file.originalname.split('.').pop().toLowerCase());
+          const cvText = parseData.rawText || '';
+          cvTexts.push(cvText);
+          
+          // Perform holistic assessment
+          console.log(`🧠 Performing holistic assessment for ${file.originalname}...`);
+          const assessment = await CVIntelligenceHR01.assessCVHolistically(cvText, parsedRequirements);
+          console.log(`✅ Assessment complete: ${assessment.recommendation} (${assessment.overallFit}/100)`);
+          
+          // Store candidate with assessment
+          const candidateData = {
+            id: candidateId,
+            name: normalizeName(result.structuredData.personal?.name || 'Name not found'),
+            email: result.structuredData.personal?.email || 'Email not found',
+            phone: result.structuredData.personal?.phone || 'Phone not found',
+            location: result.structuredData.personal?.location || 'Location not specified',
+            structuredData: result.structuredData,
+            assessment: assessment,
+            cvText: cvText
+          };
+          
+          candidates.push(candidateData);
+          
+          // Store in database (if available) - use assessment score instead of old scoring
           if (databaseAvailable) {
             try {
               await database.run(`
@@ -244,31 +269,68 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
               `, [
                 candidateId,
                 batchId,
-                result.structuredData.personal?.name || 'Name not found',
-                result.structuredData.personal?.email || 'Email not found',
-                result.structuredData.personal?.phone || 'Phone not found',
-                result.structuredData.personal?.location || 'Location not specified',
-                JSON.stringify(result.structuredData),
-                Math.round(result.scores?.overallScore || 0)
+                candidateData.name,
+                candidateData.email,
+                candidateData.phone,
+                candidateData.location,
+                JSON.stringify({
+                  ...result.structuredData,
+                  assessment: assessment
+                }),
+                Math.round(assessment.overallFit || 0)
               ]);
             } catch (dbError) {
               console.error('Failed to store candidate:', dbError);
             }
           }
 
-          candidates.push({
-            id: candidateId,
-            name: normalizeName(result.structuredData.personal?.name || 'Name not found'),
-            rank: candidates.length + 1,
-            email: result.structuredData.personal?.email || 'Email not found'
-          });
-
-          console.log(`✅ CV ${i + 1} processed successfully`);
+          console.log(`✅ CV ${i + 1} processed successfully with holistic assessment`);
         } else {
           console.error(`❌ CV ${i + 1} processing failed:`, result.error);
         }
       } catch (error) {
         console.error(`❌ Error processing CV ${i + 1}:`, error.message);
+      }
+    }
+
+    // Let ChatGPT rank all candidates intelligently
+    console.log(`🧠 Ranking ${candidates.length} candidates intelligently with ChatGPT...`);
+    const rankings = await CVIntelligenceHR01.rankCandidatesIntelligently(candidates, parsedRequirements);
+    console.log(`✅ Intelligent ranking complete`);
+    
+    // Apply rankings to candidates
+    const rankedCandidates = rankings.map(ranking => {
+      const candidate = candidates[ranking.originalIndex];
+      return {
+        ...candidate,
+        rank: ranking.rank,
+        rankingReason: ranking.rankingReason,
+        recommendationLevel: ranking.recommendationLevel
+      };
+    });
+    
+    // Update database with rankings
+    if (databaseAvailable) {
+      for (const rankedCandidate of rankedCandidates) {
+        try {
+          await database.run(`
+            UPDATE candidates 
+            SET profile_json = $1, overall_score = $2
+            WHERE id = $3
+          `, [
+            JSON.stringify({
+              ...rankedCandidate.structuredData,
+              assessment: rankedCandidate.assessment,
+              rank: rankedCandidate.rank,
+              rankingReason: rankedCandidate.rankingReason,
+              recommendationLevel: rankedCandidate.recommendationLevel
+            }),
+            rankedCandidate.rank, // Use rank as score for sorting
+            rankedCandidate.id
+          ]);
+        } catch (dbError) {
+          console.error('Failed to update candidate ranking:', dbError);
+        }
       }
     }
 
@@ -383,7 +445,7 @@ router.get('/batch/:id', authenticateToken, async (req, res) => {
     const candidates = await database.all(`
       SELECT * FROM candidates
       WHERE batch_id = $1
-      ORDER BY overall_score DESC
+      ORDER BY overall_score ASC
     `, [id]);
 
     // Add cv_count field and parse JD requirements for frontend compatibility
@@ -399,29 +461,25 @@ router.get('/batch/:id', authenticateToken, async (req, res) => {
       jd_requirements: jdRequirements
     };
 
-    // Rank candidates and add ranking reasons (remove scores)
-    const rankedCandidates = candidates.map((candidate, index) => {
+    // Parse candidates with ChatGPT rankings and assessments
+    const rankedCandidates = candidates.map((candidate) => {
       const profileData = candidate.profile_json ? JSON.parse(candidate.profile_json) : {};
       
-      // Generate ranking reason based on position
-      let rankingReason = '';
-      if (index === 0) {
-        rankingReason = 'Top candidate with the strongest skill match and most relevant experience for this position.';
-      } else if (index === 1) {
-        rankingReason = 'Strong candidate with good technical skills and solid background, second-best match overall.';
-      } else if (index === 2) {
-        rankingReason = 'Good candidate with relevant experience, third-best match with potential for growth.';
-      } else {
-        rankingReason = `Candidate ranked #${index + 1} with decent qualifications but fewer matching requirements than higher-ranked candidates.`;
-      }
+      // Extract ChatGPT ranking and assessment from profile
+      const rank = profileData.rank || candidate.overall_score || 999;
+      const rankingReason = profileData.rankingReason || 'Ranking analysis pending';
+      const assessment = profileData.assessment || {};
+      const recommendationLevel = profileData.recommendationLevel || assessment.recommendation || 'Maybe';
 
       return {
         ...candidate,
-        rank: index + 1,
+        rank: rank,
         rankingReason: rankingReason,
+        recommendationLevel: recommendationLevel,
+        assessment: assessment,
         name: candidate.name ? normalizeName(candidate.name) : 'Name not found',
         profile_json: profileData,
-        // Remove score field completely
+        // Remove score field completely - ChatGPT does the ranking
         score: undefined,
         overall_score: undefined
       };
