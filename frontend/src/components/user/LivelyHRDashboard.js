@@ -236,22 +236,41 @@ export default function LivelyHRDashboard() {
 
           {/* AI Agents Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {aiAgents.map((agent) => (
-              <div
-                key={agent.id}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-200"
-              >
-                <div className="flex items-start space-x-4">
-                  <div className={`w-12 h-12 bg-gradient-to-br ${agent.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                    <agent.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{agent.name}</h3>
-                    <p className="text-gray-600 text-sm">{agent.description}</p>
+            {aiAgents.map((agent) => {
+              const isDisabled = agent.id === 'interview-coordinator'; // Disable Interview Coordinator
+              
+              return (
+                <div
+                  key={agent.id}
+                  onClick={() => !isDisabled && router.push(agent.route)}
+                  className={`bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all ${
+                    isDisabled 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:shadow-md cursor-pointer group'
+                  }`}
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className={`w-12 h-12 bg-gradient-to-br ${agent.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                      <agent.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{agent.name}</h3>
+                      <p className="text-gray-600 text-sm mb-4">{agent.description}</p>
+                      {isDisabled ? (
+                        <div className="flex items-center text-gray-400 text-sm font-medium">
+                          <span>Coming Soon</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center text-orange-600 text-sm font-medium group-hover:text-orange-700">
+                          <span>Launch Agent</span>
+                          <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
         </div>
