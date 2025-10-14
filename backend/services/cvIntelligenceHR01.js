@@ -797,7 +797,7 @@ Return only the JSON object:`;
 
     try {
       const response = await axios.post(this.apiUrl, {
-        model: 'gpt-4', // Use GPT-4 for better analysis
+        model: 'gpt-3.5-turbo', // Use GPT-3.5 for cost efficiency
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.3,
         max_tokens: 1500
@@ -894,7 +894,7 @@ Return only the JSON object:`;
 
     try {
       const response = await axios.post(this.apiUrl, {
-        model: 'gpt-4',
+        model: 'gpt-3.5-turbo', // Use GPT-3.5 for cost efficiency
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.4,
         max_tokens: 2000
@@ -966,7 +966,7 @@ Return only the JSON array:`;
 
     try {
       const response = await axios.post(this.apiUrl, {
-        model: 'gpt-4',
+        model: 'gpt-3.5-turbo', // Use GPT-3.5 for cost efficiency
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.2,
         max_tokens: 2000

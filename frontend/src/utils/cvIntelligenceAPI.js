@@ -12,7 +12,7 @@ if (API_BASE_URL.endsWith('/api')) {
 // Create axios instance with default config
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api/cv-intelligence`,
-  timeout: 300000, // 5 minutes for file processing
+  timeout: 600000, // 10 minutes for file processing (increased for multiple CVs)
   headers: {
     'Content-Type': 'application/json',
   },
@@ -149,7 +149,7 @@ export const cvIntelligenceAPI = {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        timeout: 300000, // 5 minutes
+        timeout: 600000, // 10 minutes (increased for multiple CVs with AI processing)
         onUploadProgress: (progressEvent) => {
           if (onProgress && progressEvent.total) {
             const percentCompleted = Math.round(

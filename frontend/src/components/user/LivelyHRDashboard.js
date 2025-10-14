@@ -239,8 +239,7 @@ export default function LivelyHRDashboard() {
             {aiAgents.map((agent) => (
               <div
                 key={agent.id}
-                onClick={() => router.push(agent.route)}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer group"
+                className="bg-white rounded-xl p-6 shadow-sm border border-gray-200"
               >
                 <div className="flex items-start space-x-4">
                   <div className={`w-12 h-12 bg-gradient-to-br ${agent.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
@@ -248,11 +247,7 @@ export default function LivelyHRDashboard() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">{agent.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{agent.description}</p>
-                    <div className="flex items-center text-orange-600 text-sm font-medium group-hover:text-orange-700">
-                      <span>Launch Agent</span>
-                      <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                    </div>
+                    <p className="text-gray-600 text-sm">{agent.description}</p>
                   </div>
                 </div>
               </div>
