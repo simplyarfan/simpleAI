@@ -41,33 +41,31 @@ export default function TicketDetail() {
     { value: 'urgent', label: 'Urgent', color: 'text-red-400' }
   ];
 
-  const fetchTicketDetails = async (showLoading = true) => {
+  // Load ticket and comments on mount
+  const loadTicket = async () => {
     if (!id) return;
     
+    setIsLoading(true);
     try {
-      if (showLoading) {
-        setIsLoading(true);
-      }
       const response = await supportAPI.getTicket(id);
       
       if (response.data?.success) {
         setTicket(response.data.data.ticket);
         setComments(response.data.data.comments || []);
       } else {
-        toast.error('Failed to load ticket details');
+        toast.error('Failed to load ticket');
         router.push('/support/my-tickets');
       }
     } catch (error) {
-      console.error('Fetch ticket error:', error);
-      toast.error('Failed to load ticket details');
+      console.error('Load ticket error:', error);
+      toast.error('Failed to load ticket');
       router.push('/support/my-tickets');
     } finally {
-      if (showLoading) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
   };
 
+  // Add comment handler
   const handleAddComment = async (e) => {
     e.preventDefault();
     
@@ -76,18 +74,27 @@ export default function TicketDetail() {
       return;
     }
 
+    const commentText = newComment.trim();
     setIsSubmitting(true);
     
     try {
-      await supportAPI.addComment(id, newComment, false);
-      toast.success('Comment added successfully');
+      // Add comment to database
+      const response = await supportAPI.addComment(id, commentText, false);
+      
+      // Clear input immediately
       setNewComment('');
       
-      // Refetch without showing loading spinner
-      await fetchTicketDetails(false);
+      // Reload all comments from database
+      const ticketResponse = await supportAPI.getTicket(id);
+      if (ticketResponse.data?.success) {
+        setComments(ticketResponse.data.data.comments || []);
+        toast.success('Comment added');
+      }
     } catch (error) {
-      console.error('Error adding comment:', error);
+      console.error('Add comment error:', error);
       toast.error('Failed to add comment');
+      // Restore comment text on error
+      setNewComment(commentText);
     } finally {
       setIsSubmitting(false);
     }
@@ -110,7 +117,7 @@ export default function TicketDetail() {
   };
 
   useEffect(() => {
-    fetchTicketDetails();
+    loadTicket();
   }, [id]);
 
   if (!user) {
