@@ -7,6 +7,7 @@ const express = require('express');
 const database = require('../models/database');
 const auth = require('../middleware/auth');
 const authenticateToken = auth.authenticateToken;
+const { uploadLimiter, cvBatchLimiter } = require('../middleware/rateLimiting');
 
 // Load ONLY the clean HR-01 service
 let CVIntelligenceHR01 = null;
@@ -66,7 +67,7 @@ router.get('/test', (req, res) => {
 });
 
 // POST /api/cv-intelligence/ - Create batch (frontend compatibility)
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, cvBatchLimiter, async (req, res) => {
   try {
     const { name } = req.body;
     
@@ -121,7 +122,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // POST /api/cv-intelligence/batch/:id/process - Process CVs for existing batch
-router.post('/batch/:id/process', authenticateToken, upload.fields([
+router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.fields([
   { name: 'cvFiles', maxCount: 10 },
   { name: 'jdFile', maxCount: 1 }
 ]), async (req, res) => {

@@ -122,11 +122,9 @@ class Database {
   }
 
   async initializeTables() {
-    // Temporarily force re-initialization to create missing tables
-    // if (this.tablesInitialized) {
-    //   console.log('✅ Tables already initialized, skipping...');
-    //   return;
-    // }
+    if (this.tablesInitialized) {
+      return;
+    }
 
     try {
       console.log('🔧 Initializing PostgreSQL tables...');
@@ -135,7 +133,7 @@ class Database {
       await this.run(`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
-          email VARCHAR(255) UNIQUE NOT NULL,
+          email VARCHAR(255) NOT NULL,
           password_hash VARCHAR(255) NOT NULL,
           first_name VARCHAR(100) NOT NULL,
           last_name VARCHAR(100) NOT NULL,
@@ -162,10 +160,17 @@ class Database {
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_refresh_token TEXT`);
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_token_expires_at TIMESTAMP`);
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_email VARCHAR(255)`);
-        console.log('✅ Added missing columns to users table');
       } catch (error) {
-        console.log('ℹ️ Columns may already exist:', error.message);
+        // Columns already exist
       }
+
+      // Add critical indexes for performance
+      await this.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_users_department ON users(department)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at)`);
+      console.log('✅ User table indexes created');
 
       // User sessions table
       await this.run(`
@@ -181,6 +186,12 @@ class Database {
           FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
         )
       `);
+
+      // Add indexes for user sessions
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON user_sessions(session_token)`);
+      console.log('✅ User sessions indexes created');
 
       // User preferences table
       await this.run(`
@@ -249,6 +260,12 @@ class Database {
         )
       `);
 
+      // Add indexes for CV batches
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_cv_batches_user_id ON cv_batches(user_id)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_cv_batches_status ON cv_batches(status)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_cv_batches_created_at ON cv_batches(created_at)`);
+      console.log('✅ CV batches indexes created');
+
       // Add jd_requirements column if it doesn't exist (for existing databases)
       try {
         await this.run(`ALTER TABLE cv_batches ADD COLUMN jd_requirements TEXT`);
@@ -271,6 +288,12 @@ class Database {
         )
       `);
 
+      // Add indexes for candidates
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_candidates_batch_id ON candidates(batch_id)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_candidates_email ON candidates(email)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_candidates_overall_score ON candidates(overall_score)`);
+      console.log('✅ Candidates indexes created');
+
       // Support tickets table
       await this.run(`
         CREATE TABLE IF NOT EXISTS support_tickets (
@@ -290,6 +313,13 @@ class Database {
           FOREIGN KEY (assigned_to) REFERENCES users (id) ON DELETE SET NULL
         )
       `);
+
+      // Add indexes for support tickets
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_support_tickets_priority ON support_tickets(priority)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_support_tickets_created_at ON support_tickets(created_at)`);
+      console.log('✅ Support tickets indexes created');
 
       // Ticket comments table
       await this.run(`
@@ -384,15 +414,6 @@ class Database {
       await this.run(`CREATE INDEX IF NOT EXISTS idx_interview_reminders_send_at ON interview_reminders(send_at)`);
       await this.run(`CREATE INDEX IF NOT EXISTS idx_interview_reminders_sent ON interview_reminders(sent)`);
 
-      // Add Outlook OAuth columns to users table
-      try {
-        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_access_token TEXT`);
-        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_refresh_token TEXT`);
-        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_token_expires_at TIMESTAMP`);
-        console.log('✅ Added Outlook OAuth columns to users table');
-      } catch (error) {
-        console.log('ℹ️ Outlook columns may already exist:', error.message);
-      }
 
       console.log('✅ Interview Coordinator tables initialized successfully');
       console.log('✅ All PostgreSQL tables initialized successfully');
@@ -407,14 +428,33 @@ class Database {
 
   async createDefaultAdmin() {
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || 'syedarfan@securemaxtech.com';
+      // SECURITY: Never create default admin in production
+      if (process.env.NODE_ENV === 'production') {
+        console.log('ℹ️ Skipping default admin creation (production environment)');
+        return;
+      }
+
+      // Only create in development with explicit environment variable
+      if (!process.env.CREATE_DEFAULT_ADMIN || process.env.CREATE_DEFAULT_ADMIN !== 'true') {
+        console.log('ℹ️ Default admin creation disabled (set CREATE_DEFAULT_ADMIN=true to enable)');
+        return;
+      }
+
+      const adminEmail = process.env.ADMIN_EMAIL;
+      
+      if (!adminEmail) {
+        console.log('⚠️ ADMIN_EMAIL not set, skipping default admin creation');
+        return;
+      }
       
       const existingAdmin = await this.get('SELECT id FROM users WHERE email = $1', [adminEmail]);
       
       if (!existingAdmin) {
         const bcrypt = require('bcryptjs');
-        const defaultPassword = 'admin123'; // Simple password for testing
-        const hashedPassword = await bcrypt.hash(defaultPassword, 12);
+        // Generate random temporary password
+        const crypto = require('crypto');
+        const tempPassword = crypto.randomBytes(16).toString('hex');
+        const hashedPassword = await bcrypt.hash(tempPassword, 12);
         
         await this.run(`
           INSERT INTO users (
@@ -433,13 +473,13 @@ class Database {
           true
         ]);
         
-        console.log(`✅ Default admin created: ${adminEmail}`);
-        console.log('🔑 Default password: admin123');
+        console.log(`✅ Default admin created in development: ${adminEmail}`);
+        console.log('⚠️ Temporary password generated - check secure logs');
       } else {
-        console.log('✅ Admin user already exists');
+        console.log('ℹ️ Admin user already exists');
       }
     } catch (error) {
-      console.error('❌ Error creating default admin:', error);
+      console.error('Error creating default admin:', error.message);
     }
   }
 }

@@ -108,8 +108,8 @@ const register = async (req, res) => {
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
     ]);
 
-    // Log successful registration (simplified)
-    console.log(`✅ User registered: ${newUser.email}`);
+    // Log successful registration
+    console.log(`User registered: ${newUser.email}`);
 
     res.status(201).json({
       success: true,
@@ -141,33 +141,25 @@ const register = async (req, res) => {
 // Login user - Enterprise Grade
 const login = async (req, res) => {
   try {
-    console.log('🔐 Login attempt received:', { email: req.body.email, hasPassword: !!req.body.password });
-    
     const { email, password } = req.body;
 
     if (!email || !password) {
-      console.log('❌ Missing email or password');
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
       });
     }
 
-    console.log('🔗 Connecting to database...');
     await database.connect();
-    console.log('✅ Database connected');
 
     // Get user with security checks
-    console.log('🔍 Looking for user:', email.toLowerCase());
     const user = await database.get(`
       SELECT id, email, password_hash, first_name, last_name, role, 
              department, job_title, is_active, failed_login_attempts, account_locked_until
       FROM users WHERE email = $1
     `, [email.toLowerCase()]);
 
-    console.log('👤 User found:', user ? 'YES' : 'NO');
     if (!user) {
-      console.log('❌ User not found in database');
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -191,12 +183,9 @@ const login = async (req, res) => {
     }
 
     // Verify password
-    console.log('🔐 Verifying password...');
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    console.log('🔐 Password valid:', isPasswordValid);
     
     if (!isPasswordValid) {
-      console.log('❌ Invalid password for user:', email);
       // Increment failed login attempts
       const newFailedAttempts = (user.failed_login_attempts || 0) + 1;
       let lockUntil = null;
@@ -250,8 +239,8 @@ const login = async (req, res) => {
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     ]);
 
-    // Log successful login (simplified)
-    console.log(`✅ User login: ${user.email} (${user.role})`);
+    // Log successful login
+    console.log(`User login: ${user.email}`);
 
     res.json({
       success: true,
@@ -271,11 +260,7 @@ const login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Login error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    });
+    console.error('Login error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Login failed',
@@ -298,10 +283,6 @@ const logout = async (req, res) => {
         UPDATE user_sessions SET is_active = false WHERE session_token = $1
       `, [token]);
       
-      // Log logout (simplified)
-      if (req.user) {
-        console.log(`✅ User logout: ${req.user.email}`);
-      }
     }
 
     res.json({
@@ -583,8 +564,6 @@ const getUser = async (req, res) => {
 // Create new user
 const createUser = async (req, res) => {
   try {
-    console.log('🔧 Create user request body:', req.body);
-    
     // Handle both frontend field name variations
     const { 
       email, 
@@ -631,17 +610,13 @@ const createUser = async (req, res) => {
       RETURNING id
     `, [email.toLowerCase(), hashedPassword, finalFirstName, finalLastName, role, department, finalJobTitle, true, true]);
 
-    console.log('🔧 Database insert result:', result);
-
     const userId = result.rows[0]?.id || result.id;
-    console.log('🔧 Extracted user ID:', userId);
 
     const newUser = await database.get(
       'SELECT id, email, first_name, last_name, role, department, job_title, is_active FROM users WHERE id = $1',
       [userId]
     );
 
-    console.log('🔧 Created user:', newUser);
 
     res.status(201).json({
       success: true,
@@ -652,8 +627,7 @@ const createUser = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Create user error:', error);
-    console.error('Error stack:', error.stack);
+    console.error('Create user error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to create user',
@@ -665,10 +639,6 @@ const createUser = async (req, res) => {
 // Update user
 const updateUser = async (req, res) => {
   try {
-    console.log('🔧 [UPDATE USER] Request params:', req.params);
-    console.log('🔧 [UPDATE USER] Request body:', req.body);
-    console.log('🔧 [UPDATE USER] Request user:', req.user);
-    
     const { user_id } = req.params;
     const { 
       first_name, 
@@ -736,7 +706,6 @@ const updateUser = async (req, res) => {
       [user_id]
     );
 
-    console.log('🔧 Updated user:', updatedUser);
 
     res.json({
       success: true,
@@ -744,8 +713,7 @@ const updateUser = async (req, res) => {
       data: { user: updatedUser }
     });
   } catch (error) {
-    console.error('❌ Update user error:', error);
-    console.error('Error stack:', error.stack);
+    console.error('Update user error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to update user',
@@ -757,8 +725,6 @@ const updateUser = async (req, res) => {
 // Delete user
 const deleteUser = async (req, res) => {
   try {
-    console.log('🗑️ [DELETE USER] Request params:', req.params);
-    console.log('🗑️ [DELETE USER] Request user:', req.user);
     const { user_id } = req.params;
 
     if (parseInt(user_id) === req.user.id) {
@@ -814,21 +780,7 @@ const deleteUser = async (req, res) => {
     }
 
     // Log the deletion for audit purposes
-    console.log(`🗑️ [USER DELETION] Superadmin ${req.user.email} is deleting user:`, {
-      deletedUser: {
-        id: user.id,
-        email: user.email,
-        name: `${user.first_name} ${user.last_name}`,
-        role: user.role,
-        created_at: user.created_at
-      },
-      relatedDataToDelete: relatedDataCounts,
-      deletedBy: {
-        id: req.user.id,
-        email: req.user.email
-      },
-      timestamp: new Date().toISOString()
-    });
+    console.log(`User deletion: ${user.email} by ${req.user.email}`);
 
     // Delete the user (cascade deletion will handle related data)
     await database.run('DELETE FROM users WHERE id = $1', [user_id]);
@@ -836,7 +788,6 @@ const deleteUser = async (req, res) => {
     // Calculate total items deleted
     const totalItemsDeleted = 1 + Object.values(relatedDataCounts).reduce((sum, count) => sum + count, 0);
 
-    console.log(`✅ [USER DELETION] Successfully deleted user ${user.email} and ${totalItemsDeleted - 1} related items`);
 
     res.json({
       success: true,
@@ -848,7 +799,7 @@ const deleteUser = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ [USER DELETION] Delete user error:', error);
+    console.error('Delete user error:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to delete user',
@@ -964,19 +915,19 @@ const refreshToken = async (req, res) => {
   }
 };
 
-// Request password reset (placeholder)
+// Request password reset - TODO: Implement email-based password reset
 const requestPasswordReset = async (req, res) => {
-  res.json({
-    success: true,
-    message: 'Password reset functionality not implemented yet'
+  res.status(501).json({
+    success: false,
+    message: 'Password reset functionality not yet implemented. Please contact administrator.'
   });
 };
 
-// Reset password (placeholder)
+// Reset password - TODO: Implement email-based password reset
 const resetPassword = async (req, res) => {
-  res.json({
-    success: true,
-    message: 'Password reset functionality not implemented yet'
+  res.status(501).json({
+    success: false,
+    message: 'Password reset functionality not yet implemented. Please contact administrator.'
   });
 };
 

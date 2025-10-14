@@ -35,12 +35,14 @@ const {
 
 // User registration
 router.post('/register', 
+  authLimiter,
   validateRegistration,
   AuthController.register
 );
 
 // User login
 router.post('/login', 
+  authLimiter,
   validateLogin,
   AuthController.login
 );

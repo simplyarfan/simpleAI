@@ -7,6 +7,7 @@ const express = require('express');
 const database = require('../models/database');
 const auth = require('../middleware/auth');
 const authenticateToken = auth.authenticateToken;
+const { generalLimiter } = require('../middleware/rateLimiting');
 
 // Load Interview Coordinator Service
 let InterviewCoordinatorService = null;
@@ -33,7 +34,7 @@ const router = express.Router();
 /**
  * GET /interviews - Get all interviews for the user
  */
-router.get('/interviews', authenticateToken, async (req, res) => {
+router.get('/interviews', authenticateToken, generalLimiter, async (req, res) => {
   try {
     console.log('📋 Getting interviews for user:', req.user.id);
     await database.connect();
@@ -80,7 +81,7 @@ router.get('/interview/:id', authenticateToken, async (req, res) => {
 
     const interview = await database.get(`
       SELECT * FROM interviews 
-      WHERE id = ? AND scheduled_by = ?
+      WHERE id = $1 AND scheduled_by = $2
     `, [id, req.user.id]);
 
     if (!interview) {
@@ -109,7 +110,7 @@ router.get('/interview/:id', authenticateToken, async (req, res) => {
 /**
  * POST /request-availability - Stage 1: Send availability request email
  */
-router.post('/request-availability', authenticateToken, async (req, res) => {
+router.post('/request-availability', authenticateToken, generalLimiter, async (req, res) => {
   try {
     console.log('📧 Sending availability request for user:', req.user.id);
     
@@ -274,9 +275,9 @@ Best regards`;
 });
 
 /**
- * POST /schedule-interview - Stage 2: Schedule interview after candidate responds
+ * POST /schedule-interview - Stage 2: Schedule interview with specific time
  */
-router.post('/schedule-interview', authenticateToken, async (req, res) => {
+router.post('/schedule-interview', authenticateToken, generalLimiter, async (req, res) => {
   try {
     console.log('📅 Scheduling interview for user:', req.user.id);
     
@@ -321,7 +322,7 @@ router.post('/schedule-interview', authenticateToken, async (req, res) => {
     // Verify interview exists and belongs to user
     const interview = await database.get(`
       SELECT * FROM interviews 
-      WHERE id = ? AND scheduled_by = ?
+      WHERE id = $1 AND scheduled_by = $2
     `, [interviewId, req.user.id]);
 
     if (!interview) {
@@ -334,24 +335,24 @@ router.post('/schedule-interview', authenticateToken, async (req, res) => {
     // Update interview with schedule details
     await database.run(`
       UPDATE interviews 
-      SET interview_type = ?,
-          scheduled_time = ?,
-          duration = ?,
-          platform = ?,
-          meeting_link = ?,
-          notes = ?,
+      SET interview_type = $1,
+          scheduled_time = $2,
+          duration = $3,
+          platform = $4,
+          meeting_link = $5,
+          notes = $6,
           status = 'scheduled',
-          scheduled_at = ?,
+          scheduled_at = $7,
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
+      WHERE id = $8
     `, [
       interviewType || 'technical',
       scheduledTime,
       duration || 60,
-      platform,
-      meetingLink || null,
-      notes || null,
-      new Date().toISOString(),
+      platform || 'Video Call',
+      meetingLink || '',
+      notes || '',
+      new Date(),
       interviewId
     ]);
 
@@ -460,7 +461,7 @@ router.put('/interview/:id/status', authenticateToken, async (req, res) => {
 
     // Verify ownership
     const interview = await database.get(`
-      SELECT * FROM interviews WHERE id = ? AND scheduled_by = ?
+      SELECT * FROM interviews WHERE id = $1 AND scheduled_by = $2
     `, [id, req.user.id]);
 
     if (!interview) {
@@ -473,11 +474,11 @@ router.put('/interview/:id/status', authenticateToken, async (req, res) => {
     // Update status
     await database.run(`
       UPDATE interviews 
-      SET status = ?,
-          outcome = ?,
-          notes = COALESCE(?, notes),
+      SET status = $1,
+          outcome = $2,
+          notes = COALESCE($3, notes),
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
+      WHERE id = $4
     `, [status, outcome || null, notes || null, id]);
 
     res.json({
@@ -507,7 +508,7 @@ router.get('/calendar/:id/ics', authenticateToken, async (req, res) => {
     
     const interview = await database.get(`
       SELECT * FROM interviews
-      WHERE id = ? AND scheduled_by = ?
+      WHERE id = $1 AND scheduled_by = $2
     `, [id, req.user.id]);
 
     if (!interview) {
@@ -564,7 +565,7 @@ router.delete('/interview/:id', authenticateToken, async (req, res) => {
 
     // Verify ownership
     const interview = await database.get(`
-      SELECT * FROM interviews WHERE id = ? AND scheduled_by = ?
+      SELECT * FROM interviews WHERE id = $1 AND scheduled_by = $2
     `, [id, req.user.id]);
 
     if (!interview) {
@@ -575,7 +576,7 @@ router.delete('/interview/:id', authenticateToken, async (req, res) => {
     }
 
     // Delete interview
-    await database.run('DELETE FROM interviews WHERE id = ?', [id]);
+    await database.run('DELETE FROM interviews WHERE id = $1', [id]);
 
     res.json({
       success: true,

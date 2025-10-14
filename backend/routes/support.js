@@ -1,15 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const SupportController = require('../controllers/SupportController');
-const { 
-  authenticateToken, 
-  requireAdmin,
-  trackActivity 
-} = require('../middleware/auth');
-const {
-  ticketLimiter,
-  generalLimiter
-} = require('../middleware/rateLimiting');
+const { authenticateToken, requireAdmin, trackActivity } = require('../middleware/auth');
+const { ticketLimiter, generalLimiter } = require('../middleware/rateLimiting');
 const {
   validateTicketCreation,
   validateTicketComment,

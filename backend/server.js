@@ -68,14 +68,18 @@ const requestLogger = (req, res, next) => {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS FIX - Specific origin for credentials
+// CORS Configuration - Environment-driven
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const allowedOrigins = [
-    'https://thesimpleai.netlify.app',
-    'http://localhost:3000',
-    'http://127.0.0.1:3000'
-  ];
+  
+  // Get allowed origins from environment or use defaults
+  const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : [
+        'https://thesimpleai.netlify.app',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000'
+      ];
   
   if (allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
@@ -103,7 +107,8 @@ if (!process.env.JWT_SECRET) {
 
 // JWT_REFRESH_SECRET is optional - will use JWT_SECRET as fallback
 if (!process.env.JWT_REFRESH_SECRET) {
-  console.log('⚠️ JWT_REFRESH_SECRET not set, using JWT_SECRET as fallback');
+  console.warn('⚠️ SECURITY WARNING: JWT_REFRESH_SECRET not set, using JWT_SECRET as fallback');
+  console.warn('⚠️ For production, set separate JWT_REFRESH_SECRET for better security');
   process.env.JWT_REFRESH_SECRET = process.env.JWT_SECRET;
 }
 
@@ -115,6 +120,16 @@ database.connect().catch(error => {
 
 // Duplicate CORS configuration removed - using the specific origin one above
 
+// HTTPS Enforcement for production
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
+
 // Middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -123,41 +138,7 @@ app.use(requestLogger);
 // Trust proxy for accurate IP addresses
 app.set('trust proxy', true);
 
-// Simple test endpoint
-app.get('/test', (req, res) => {
-  console.log('🧪 Test endpoint hit from origin:', req.headers.origin);
-  res.json({
-    success: true,
-    message: 'Backend is working!',
-    timestamp: new Date().toISOString(),
-    origin: req.headers.origin
-  });
-});
-
-// Test login endpoint
-app.post('/api/test-login', async (req, res) => {
-  try {
-    console.log('🧪 Test login endpoint hit');
-    console.log('Headers:', req.headers);
-    console.log('Body:', req.body);
-    
-    res.json({
-      success: true,
-      message: 'Test login endpoint working!',
-      receivedData: req.body,
-      headers: req.headers
-    });
-  } catch (error) {
-    console.error('Test login error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Test login failed',
-      error: error.message
-    });
-  }
-});
-
-// Health Check
+// Health Check endpoint
 app.get('/health', (req, res) => {
   res.json({
     success: true,
@@ -169,23 +150,11 @@ app.get('/health', (req, res) => {
   });
 });
 
-// CORS Test endpoint
-app.get('/cors-test', (req, res) => {
-  console.log('🔍 CORS Test - Origin:', req.get('Origin'));
-  console.log('🔍 CORS Test - Headers:', req.headers);
-  res.json({
-    success: true,
-    message: 'CORS test successful',
-    origin: req.get('Origin'),
-    timestamp: new Date().toISOString(),
-    headers: req.headers
-  });
-});
-
-// Cache management endpoints
+// Cache management endpoints (admin only)
 const cacheService = require('./services/cacheService');
+const { requireSuperAdmin, authenticateToken } = require('./middleware/auth');
 
-app.get('/api/cache/stats', async (req, res) => {
+app.get('/api/cache/stats', authenticateToken, requireSuperAdmin, async (req, res) => {
   try {
     const stats = await cacheService.getCacheStats();
     res.json({
@@ -202,7 +171,7 @@ app.get('/api/cache/stats', async (req, res) => {
   }
 });
 
-app.delete('/api/cache/clear/:pattern', async (req, res) => {
+app.delete('/api/cache/clear/:pattern', authenticateToken, requireSuperAdmin, async (req, res) => {
   try {
     const { pattern } = req.params;
     await cacheService.clearCache(pattern);
@@ -219,8 +188,16 @@ app.delete('/api/cache/clear/:pattern', async (req, res) => {
   }
 });
 
-// Test endpoint - comprehensive health check
+// Test endpoint - comprehensive health check (development only)
 app.get('/api/test', async (req, res) => {
+  // Only allow in development or with admin authentication
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({
+      success: false,
+      message: 'This endpoint is disabled in production'
+    });
+  }
+  
   const results = {
     success: true,
     message: 'API Health Check',
@@ -272,21 +249,6 @@ app.get('/api/test', async (req, res) => {
   }
 });
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
-    routes: {
-      auth: !!authRoutes,
-      analytics: !!analyticsRoutes,
-      support: !!supportRoutes,
-      cvRoutes: !!cvRoutes,
-      notifications: !!notificationRoutes
-    }
-  });
-});
 
 // Database seeding endpoint (development only)
 app.post('/api/admin/seed-database', async (req, res) => {
@@ -348,15 +310,6 @@ if (authRoutes) {
   console.error('❌ Auth routes NOT mounted - authRoutes is falsy');
 }
 
-// Test route to verify auth routes are working
-app.get('/api/auth-test', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Auth test endpoint working',
-    authRoutesLoaded: !!authRoutes,
-    timestamp: new Date().toISOString()
-  });
-});
 if (analyticsRoutes) {
   app.use('/api/analytics', longCacheMiddleware, analyticsRoutes);
 }
@@ -390,34 +343,6 @@ if (interviewRoutes) {
 
 // Debug refresh token endpoint removed - security risk in production
 
-// Simple endpoints for basic functionality (fallback)
-app.get('/api/users', async (req, res) => {
-  try {
-    await database.connect();
-    const users = await database.all(`
-      SELECT id, email, first_name, last_name, role, department, job_title, 
-             is_active, created_at, last_login
-      FROM users 
-      ORDER BY created_at DESC
-    `);
-    
-    res.json({
-      success: true,
-      data: { 
-        users,
-        totalPages: 1,
-        currentPage: 1,
-        totalCount: users.length
-      }
-    });
-  } catch (error) {
-    console.error('Get users error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch users'
-    });
-  }
-});
 
 // Debug support tickets endpoint removed - not needed in production
 
@@ -500,10 +425,14 @@ app.get('/api/system/metrics', async (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('❌ Server Error:', err);
-  res.status(500).json({
+  
+  // SECURITY: Never expose stack traces in production
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  res.status(err.status || 500).json({
     success: false,
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    message: isDevelopment ? err.message : 'Internal server error',
+    ...(isDevelopment && { error: err.message, stack: err.stack })
   });
 });
 
