@@ -194,6 +194,9 @@ class SupportController {
         ORDER BY tc.created_at ASC
       `, [ticket_id, isAdmin]);
 
+      console.log(`📊 [SUPPORT] Ticket ${ticket_id} - Found ${comments.length} comments (isAdmin: ${isAdmin})`);
+      console.log(`📝 [SUPPORT] Comment IDs:`, comments.map(c => c.id));
+
       res.json({
         success: true,
         data: {
