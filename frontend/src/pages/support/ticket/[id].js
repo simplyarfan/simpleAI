@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -27,7 +27,6 @@ export default function TicketDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const hasLoadedRef = useRef(false);
 
   const statusOptions = [
     { value: 'open', label: 'Open', color: 'text-blue-400', bgColor: 'bg-blue-500/20', icon: Clock },
@@ -42,48 +41,26 @@ export default function TicketDetail() {
     { value: 'urgent', label: 'Urgent', color: 'text-red-400' }
   ];
 
-  const fetchTicketDetails = async (bustCache = false) => {
+  const fetchTicketDetails = async () => {
     if (!id) return;
     
     try {
-      if (!bustCache) {
-        setIsLoading(true);
-      }
-      
-      console.log('🔄 Fetching ticket details for ID:', id, 'Cache bust:', bustCache);
-      
+      setIsLoading(true);
       const response = await supportAPI.getTicket(id);
       
-      console.log('📦 Full fetch response:', JSON.stringify(response.data, null, 2));
-      console.log('💬 Comments in response:', response.data?.data?.comments);
-      console.log('📊 Comments count:', response.data?.data?.comments?.length);
-      
       if (response.data?.success) {
-        const ticketData = response.data.data.ticket;
-        const commentsData = response.data.data.comments || [];
-        
-        console.log('✅ Setting ticket:', ticketData?.id);
-        console.log('✅ Setting comments:', commentsData.length, 'total');
-        console.log('📝 Comment IDs:', commentsData.map(c => c.id));
-        console.log('📝 Comment texts:', commentsData.map(c => c.comment));
-        
-        setTicket(ticketData);
-        setComments(commentsData);
-        
-        console.log('✅ State updated - ticket and', commentsData.length, 'comments set');
+        setTicket(response.data.data.ticket);
+        setComments(response.data.data.comments || []);
       } else {
         toast.error('Failed to load ticket details');
         router.push('/support/my-tickets');
       }
     } catch (error) {
-      console.error('❌ Fetch ticket error:', error);
-      console.error('Error details:', error.response?.data);
+      console.error('Fetch ticket error:', error);
       toast.error('Failed to load ticket details');
       router.push('/support/my-tickets');
     } finally {
-      if (!bustCache) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
   };
 
@@ -98,66 +75,15 @@ export default function TicketDetail() {
     setIsSubmitting(true);
     
     try {
-      console.log('🔧 Adding comment to ticket:', id, newComment);
-      const response = await supportAPI.addComment(id, newComment, false);
-      console.log('📝 Full Add comment response:', JSON.stringify(response, null, 2));
+      await supportAPI.addComment(id, newComment, false);
+      toast.success('Comment added successfully');
+      setNewComment('');
       
-      // Check if response is successful
-      const isSuccess = response?.data?.success || response?.success;
-      console.log('✅ Is success:', isSuccess);
-      
-      if (isSuccess) {
-        // Get the new comment from response - try multiple paths
-        const newCommentData = response?.data?.data?.comment || response?.data?.comment;
-        console.log('💬 New comment data:', newCommentData);
-        
-        // Optimistically add the comment to the UI immediately
-        if (newCommentData) {
-          console.log('➕ Adding comment to UI optimistically');
-          setComments(prevComments => {
-            const updated = [...prevComments, newCommentData];
-            console.log('📊 Updated comments array:', updated.length, 'comments');
-            return updated;
-          });
-        } else {
-          console.warn('⚠️ No comment data in response, will rely on refresh');
-        }
-        
-        toast.success('Comment added successfully');
-        setNewComment('');
-        
-        // Refresh immediately with cache busting to ensure we get the comment
-        console.log('🔄 Triggering immediate refresh with cache bust');
-        await fetchTicketDetails(true);
-      } else {
-        const errorMessage = response?.data?.message || response?.message || 'Failed to add comment';
-        console.error('❌ Add comment failed:', response);
-        toast.error(errorMessage);
-      }
+      // Simply refetch all data from database
+      await fetchTicketDetails();
     } catch (error) {
-      console.error('❌ Error adding comment:', error);
-      console.error('Error response:', error.response);
-      console.error('Error data:', error.response?.data);
-      
-      // Check if the error is actually a successful comment add (status 201)
-      if (error.response?.status === 201 || error.response?.data?.success) {
-        console.log('✅ Status 201 - treating as success');
-        const newCommentData = error.response?.data?.data?.comment || error.response?.data?.comment;
-        
-        if (newCommentData) {
-          console.log('➕ Adding comment from error response');
-          setComments(prevComments => [...prevComments, newCommentData]);
-        }
-        
-        toast.success('Comment added successfully');
-        setNewComment('');
-        
-        // Refresh immediately with cache busting
-        console.log('🔄 Triggering immediate refresh after error-success with cache bust');
-        await fetchTicketDetails(true);
-      } else {
-        toast.error(`Failed to add comment: ${error.response?.data?.message || error.message}`);
-      }
+      console.error('Error adding comment:', error);
+      toast.error('Failed to add comment');
     } finally {
       setIsSubmitting(false);
     }
@@ -180,22 +106,8 @@ export default function TicketDetail() {
   };
 
   useEffect(() => {
-    // Only fetch on initial load or when ID changes
-    if (!hasLoadedRef.current || !ticket || ticket.id !== id) {
-      console.log('useEffect triggered - fetching ticket details for ID:', id);
-      fetchTicketDetails().then(() => {
-        hasLoadedRef.current = true;
-      });
-    } else {
-      console.log('useEffect skipped - already loaded ticket:', id);
-    }
+    fetchTicketDetails();
   }, [id]);
-  
-  // Add a refresh function that can be called from anywhere
-  const refreshTicket = async () => {
-    console.log('Manual refresh triggered');
-    await fetchTicketDetails();
-  };
 
   if (!user) {
     return (
