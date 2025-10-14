@@ -41,11 +41,13 @@ export default function TicketDetail() {
     { value: 'urgent', label: 'Urgent', color: 'text-red-400' }
   ];
 
-  const fetchTicketDetails = async () => {
+  const fetchTicketDetails = async (showLoading = true) => {
     if (!id) return;
     
     try {
-      setIsLoading(true);
+      if (showLoading) {
+        setIsLoading(true);
+      }
       const response = await supportAPI.getTicket(id);
       
       if (response.data?.success) {
@@ -60,7 +62,9 @@ export default function TicketDetail() {
       toast.error('Failed to load ticket details');
       router.push('/support/my-tickets');
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -79,8 +83,8 @@ export default function TicketDetail() {
       toast.success('Comment added successfully');
       setNewComment('');
       
-      // Simply refetch all data from database
-      await fetchTicketDetails();
+      // Refetch without showing loading spinner
+      await fetchTicketDetails(false);
     } catch (error) {
       console.error('Error adding comment:', error);
       toast.error('Failed to add comment');
