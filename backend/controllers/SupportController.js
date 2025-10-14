@@ -188,11 +188,10 @@ class SupportController {
           u.email,
           u.role
         FROM ticket_comments tc
-        JOIN users u ON tc.user_id = u.id
+        LEFT JOIN users u ON tc.user_id = u.id
         WHERE tc.ticket_id = $1
-        AND (tc.is_internal = false OR $2 = true)
         ORDER BY tc.created_at ASC
-      `, [ticket_id, isAdmin]);
+      `, [ticket_id]);
 
       console.log(`📊 [SUPPORT] Ticket ${ticket_id} - Found ${comments.length} comments (isAdmin: ${isAdmin})`);
       console.log(`📝 [SUPPORT] Comment IDs:`, comments.map(c => c.id));
