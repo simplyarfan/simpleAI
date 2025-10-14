@@ -41,22 +41,31 @@ export default function TicketDetail() {
     { value: 'urgent', label: 'Urgent', color: 'text-red-400' }
   ];
 
-  const fetchTicketDetails = async () => {
+  const fetchTicketDetails = async (bustCache = false) => {
     if (!id) return;
     
     try {
-      setIsLoading(true);
-      const response = await supportAPI.getTicket(id);
+      if (!bustCache) {
+        setIsLoading(true);
+      }
       
-      console.log('Fetch ticket response:', response.data);
-      console.log('Comments in response:', response.data?.data?.comments);
+      console.log('🔄 Fetching ticket details for ID:', id, 'Cache bust:', bustCache);
+      
+      // Add cache-busting parameter if needed
+      const timestamp = bustCache ? `?_t=${Date.now()}` : '';
+      const response = await supportAPI.getTicket(id + timestamp);
+      
+      console.log('📦 Full fetch response:', JSON.stringify(response.data, null, 2));
+      console.log('💬 Comments in response:', response.data?.data?.comments);
+      console.log('📊 Comments count:', response.data?.data?.comments?.length);
       
       if (response.data?.success) {
         const ticketData = response.data.data.ticket;
         const commentsData = response.data.data.comments || [];
         
-        console.log('Setting ticket:', ticketData);
-        console.log('Setting comments count:', commentsData.length);
+        console.log('✅ Setting ticket:', ticketData?.id);
+        console.log('✅ Setting comments:', commentsData.length, 'total');
+        console.log('📝 Comment IDs:', commentsData.map(c => c.id));
         
         setTicket(ticketData);
         setComments(commentsData);
@@ -65,11 +74,14 @@ export default function TicketDetail() {
         router.push('/support/my-tickets');
       }
     } catch (error) {
-      console.error('Fetch ticket error:', error);
+      console.error('❌ Fetch ticket error:', error);
+      console.error('Error details:', error.response?.data);
       toast.error('Failed to load ticket details');
       router.push('/support/my-tickets');
     } finally {
-      setIsLoading(false);
+      if (!bustCache) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -86,25 +98,35 @@ export default function TicketDetail() {
     try {
       console.log('🔧 Adding comment to ticket:', id, newComment);
       const response = await supportAPI.addComment(id, newComment, false);
-      console.log('📝 Add comment response:', response);
+      console.log('📝 Full Add comment response:', JSON.stringify(response, null, 2));
       
       // Check if response is successful
       const isSuccess = response?.data?.success || response?.success;
+      console.log('✅ Is success:', isSuccess);
       
       if (isSuccess) {
-        // Get the new comment from response
-        const newCommentData = response?.data?.data?.comment;
+        // Get the new comment from response - try multiple paths
+        const newCommentData = response?.data?.data?.comment || response?.data?.comment;
+        console.log('💬 New comment data:', newCommentData);
         
         // Optimistically add the comment to the UI immediately
         if (newCommentData) {
-          setComments(prevComments => [...prevComments, newCommentData]);
+          console.log('➕ Adding comment to UI optimistically');
+          setComments(prevComments => {
+            const updated = [...prevComments, newCommentData];
+            console.log('📊 Updated comments array:', updated.length, 'comments');
+            return updated;
+          });
+        } else {
+          console.warn('⚠️ No comment data in response, will rely on refresh');
         }
         
         toast.success('Comment added successfully');
         setNewComment('');
         
-        // Still refresh in background to ensure consistency
-        setTimeout(() => fetchTicketDetails(), 500);
+        // Refresh immediately with cache busting to ensure we get the comment
+        console.log('🔄 Triggering immediate refresh with cache bust');
+        await fetchTicketDetails(true);
       } else {
         const errorMessage = response?.data?.message || response?.message || 'Failed to add comment';
         console.error('❌ Add comment failed:', response);
@@ -112,19 +134,25 @@ export default function TicketDetail() {
       }
     } catch (error) {
       console.error('❌ Error adding comment:', error);
-      console.error('Error details:', error.response?.data);
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
       
       // Check if the error is actually a successful comment add (status 201)
       if (error.response?.status === 201 || error.response?.data?.success) {
-        const newCommentData = error.response?.data?.data?.comment;
+        console.log('✅ Status 201 - treating as success');
+        const newCommentData = error.response?.data?.data?.comment || error.response?.data?.comment;
         
         if (newCommentData) {
+          console.log('➕ Adding comment from error response');
           setComments(prevComments => [...prevComments, newCommentData]);
         }
         
         toast.success('Comment added successfully');
         setNewComment('');
-        setTimeout(() => fetchTicketDetails(), 500);
+        
+        // Refresh immediately with cache busting
+        console.log('🔄 Triggering immediate refresh after error-success with cache bust');
+        await fetchTicketDetails(true);
       } else {
         toast.error(`Failed to add comment: ${error.response?.data?.message || error.message}`);
       }
