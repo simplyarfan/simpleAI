@@ -245,7 +245,17 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
           const assessment = await CVIntelligenceHR01.assessCVHolistically(cvText, parsedRequirements);
           console.log(`✅ Assessment complete: ${assessment.recommendation} (${assessment.overallFit}/100)`);
           
-          // Store candidate with assessment
+          // Generate interview questions
+          console.log(`🎯 Generating interview questions for ${file.originalname}...`);
+          const interviewQuestions = await CVIntelligenceHR01.generateInterviewQuestions(
+            cvText, 
+            result.structuredData, 
+            assessment, 
+            parsedRequirements
+          );
+          console.log(`✅ Generated ${interviewQuestions.technicalQuestions?.length || 0} technical questions`);
+          
+          // Store candidate with assessment and interview questions
           const candidateData = {
             id: candidateId,
             name: normalizeName(result.structuredData.personal?.name || 'Name not found'),
@@ -254,6 +264,7 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
             location: result.structuredData.personal?.location || 'Location not specified',
             structuredData: result.structuredData,
             assessment: assessment,
+            interviewQuestions: interviewQuestions,
             cvText: cvText
           };
           
@@ -275,7 +286,8 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
                 candidateData.location,
                 JSON.stringify({
                   ...result.structuredData,
-                  assessment: assessment
+                  assessment: assessment,
+                  interviewQuestions: interviewQuestions
                 }),
                 Math.round(assessment.overallFit || 0)
               ]);
@@ -321,6 +333,7 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
             JSON.stringify({
               ...rankedCandidate.structuredData,
               assessment: rankedCandidate.assessment,
+              interviewQuestions: rankedCandidate.interviewQuestions,
               rank: rankedCandidate.rank,
               rankingReason: rankedCandidate.rankingReason,
               recommendationLevel: rankedCandidate.recommendationLevel

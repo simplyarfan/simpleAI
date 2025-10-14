@@ -315,27 +315,35 @@ Return valid JSON only:`;
 
 CRITICAL EXTRACTION RULES:
 
-1. SKILLS - Extract ALL technical and professional skills from:
+1. SKILLS - Extract ALL technical and professional skills from EVERYWHERE:
    - Dedicated skills sections
-   - Tools/technologies mentioned in experience ("used Python", "worked with AWS", "managed Jira")
-   - Project descriptions
+   - Tools/technologies mentioned in experience descriptions ("used Python", "worked with AWS", "managed Jira", "implemented Scrum")
+   - Project descriptions and achievements
    - Technologies in job descriptions
-   - Methodologies (Agile, Scrum, Waterfall)
+   - Methodologies (Agile, Scrum, Waterfall, Kanban)
    - Soft skills if explicitly listed
+   - IMPORTANT: Extract skills from job experience text, not just skills section
 
-2. CERTIFICATIONS - ONLY extract if EXPLICITLY mentioned:
+2. SKILL NORMALIZATION:
+   - Fix common spelling errors: "AGIL" → "Agile", "Scrum Master" → "Scrum"
+   - Remove redundant words: "Agile frameworks" → "Agile", "Scrum practices" → "Scrum"
+   - Standardize capitalization: "javascript" → "JavaScript", "python" → "Python"
+   - Merge duplicates: ["Agile", "Agile frameworks", "AGIL"] → ["Agile"]
+
+3. CERTIFICATIONS - ONLY extract if EXPLICITLY mentioned:
    - Look for words like "Certified", "Certification", "Certificate"
    - Extract the EXACT certification name as written
    - If NO certifications are mentioned, return EMPTY array []
    - DO NOT infer certifications from skills
    - DO NOT create fake certifications
 
-3. EXPERIENCE - Extract:
+4. EXPERIENCE - Extract:
    - Company name, role, dates
    - Key achievements and responsibilities
    - Technologies used in each role (separate field)
+   - Extract ALL tools, frameworks, methodologies mentioned in descriptions
 
-4. Use null for missing personal information, not "Not found"
+5. Use null for missing personal information, not "Not found"
 
 Resume text:
 ${text}
@@ -817,6 +825,97 @@ Return only the JSON object:`;
         culturalFit: 'Assessment failed',
         recommendation: 'Pass',
         detailedReasoning: 'Unable to assess candidate due to technical error'
+      };
+    }
+  }
+
+  /**
+   * GENERATE INTERVIEW QUESTIONS - Tailored to candidate's CV and gaps
+   */
+  async generateInterviewQuestions(cvText, structuredData, assessment, jobRequirements) {
+    const prompt = `You are an expert interviewer. Generate targeted interview questions for this candidate based on their CV and the job requirements.
+
+JOB REQUIREMENTS:
+${JSON.stringify(jobRequirements, null, 2)}
+
+CANDIDATE PROFILE:
+Name: ${structuredData.personal?.name || 'Candidate'}
+Experience: ${structuredData.experience?.length || 0} positions
+Key Skills: ${structuredData.skills?.slice(0, 10).join(', ') || 'Not specified'}
+
+ASSESSMENT SUMMARY:
+Overall Fit: ${assessment.overallFit}/100
+Recommendation: ${assessment.recommendation}
+Missing Requirements: ${assessment.missingRequirements?.join(', ') || 'None'}
+
+Generate interview questions in JSON format:
+
+{
+  "technicalQuestions": [
+    {
+      "question": "Specific technical question",
+      "purpose": "What this question validates",
+      "expectedAnswer": "What to look for in their answer"
+    }
+  ],
+  "behavioralQuestions": [
+    {
+      "question": "Behavioral/situational question",
+      "purpose": "What this reveals about the candidate",
+      "expectedAnswer": "Key points to listen for"
+    }
+  ],
+  "gapQuestions": [
+    {
+      "question": "Question about missing skills/experience",
+      "purpose": "Assess if gap is critical or can be filled",
+      "expectedAnswer": "What would indicate they can learn/adapt"
+    }
+  ],
+  "scenarioQuestions": [
+    {
+      "question": "Real-world scenario question",
+      "purpose": "Test problem-solving and practical application",
+      "expectedAnswer": "Approach and thought process to look for"
+    }
+  ]
+}
+
+QUESTION GENERATION RULES:
+1. Reference specific items from their CV
+2. Focus on missing requirements from assessment
+3. Probe depth of claimed experience
+4. Test problem-solving ability
+5. Assess cultural fit and soft skills
+6. Generate 3-5 questions per category
+7. Make questions specific, not generic
+
+Return only the JSON object:`;
+
+    try {
+      const response = await axios.post(this.apiUrl, {
+        model: 'gpt-4',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.4,
+        max_tokens: 2000
+      }, {
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const jsonText = response.data.choices[0].message.content.trim();
+      const questions = JSON.parse(jsonText);
+      
+      return questions;
+    } catch (error) {
+      console.error('Interview question generation failed:', error.message);
+      return {
+        technicalQuestions: [],
+        behavioralQuestions: [],
+        gapQuestions: [],
+        scenarioQuestions: []
       };
     }
   }

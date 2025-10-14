@@ -461,6 +461,72 @@ const BatchDetail = () => {
                 </div>
               </div>
 
+              {/* Professional Assessment - MOVED TO TOP */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Icons.FileText className="w-5 h-5 mr-2 text-blue-600" />
+                  Professional Assessment
+                </h3>
+                <div className="space-y-4">
+                  {/* Extract professional summary from profile_json.assessment */}
+                  {(() => {
+                    try {
+                      const profileData = selectedCandidate.profile_json || {};
+                      const assessment = profileData.assessment || {};
+                      const rankingReason = selectedCandidate.rankingReason || assessment.detailedReasoning || '';
+                      const rank = selectedCandidate.rank || 0;
+                      const recommendationLevel = selectedCandidate.recommendationLevel || assessment.recommendation || 'Maybe';
+                      
+                      return (
+                        <div className="space-y-4">
+                          {/* Main Assessment */}
+                          {rankingReason && (
+                            <div className="bg-white border border-blue-200 rounded-lg p-4">
+                              <h4 className="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                Overall Assessment
+                              </h4>
+                              <p className="text-gray-700 leading-relaxed text-sm whitespace-pre-wrap">{rankingReason}</p>
+                            </div>
+                          )}
+                          
+                          {/* Ranking Badge */}
+                          <div className="flex items-center justify-between pt-2">
+                            <span className="text-sm font-medium text-gray-600">Candidate Rank:</span>
+                            <span className={`px-4 py-2 rounded-full text-sm font-bold flex items-center ${
+                              rank === 1 ? 'bg-green-100 text-green-800 border-2 border-green-300' :
+                              rank === 2 ? 'bg-blue-100 text-blue-800 border-2 border-blue-300' :
+                              rank === 3 ? 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300' :
+                              'bg-gray-100 text-gray-800 border-2 border-gray-300'
+                            }`}>
+                              #{rank} {rank === 1 && '🏆'}
+                            </span>
+                          </div>
+
+                          {/* Recommendation Level */}
+                          {recommendationLevel && (
+                            <div className="flex items-center justify-between pt-2 border-t border-blue-200">
+                              <span className="text-sm font-medium text-gray-600">Recommendation:</span>
+                              <span className={`px-4 py-2 rounded-full text-sm font-bold ${
+                                recommendationLevel === 'Strong Hire' ? 'bg-green-100 text-green-800' :
+                                recommendationLevel === 'Hire' ? 'bg-blue-100 text-blue-800' :
+                                recommendationLevel === 'Maybe' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {recommendationLevel}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    } catch (error) {
+                      console.error('Error rendering professional assessment:', error);
+                      return <p className="text-gray-500 text-sm">Assessment not available</p>;
+                    }
+                  })()}
+                </div>
+              </div>
+
               {/* Skills Analysis */}
               <div className="bg-white border border-gray-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
