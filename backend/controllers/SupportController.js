@@ -180,6 +180,8 @@ class SupportController {
       }
 
       // Get ticket comments
+      console.log(`🔍 [SUPPORT] Fetching comments for ticket ${ticket_id}`);
+      
       const comments = await database.all(`
         SELECT 
           tc.*,
@@ -193,8 +195,9 @@ class SupportController {
         ORDER BY tc.created_at ASC
       `, [ticket_id]);
 
-      console.log(`📊 [SUPPORT] Ticket ${ticket_id} - Found ${comments.length} comments (isAdmin: ${isAdmin})`);
+      console.log(`📊 [SUPPORT] Ticket ${ticket_id} - Found ${comments.length} comments`);
       console.log(`📝 [SUPPORT] Comment IDs:`, comments.map(c => c.id));
+      console.log(`💬 [SUPPORT] Comment texts:`, comments.map(c => `${c.id}:${c.comment}`));
 
       res.json({
         success: true,
