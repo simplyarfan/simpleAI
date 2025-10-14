@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -27,6 +27,7 @@ export default function TicketDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const hasLoadedRef = useRef(false);
 
   const statusOptions = [
     { value: 'open', label: 'Open', color: 'text-blue-400', bgColor: 'bg-blue-500/20', icon: Clock },
@@ -51,9 +52,7 @@ export default function TicketDetail() {
       
       console.log('🔄 Fetching ticket details for ID:', id, 'Cache bust:', bustCache);
       
-      // Add cache-busting parameter if needed
-      const timestamp = bustCache ? `?_t=${Date.now()}` : '';
-      const response = await supportAPI.getTicket(id + timestamp);
+      const response = await supportAPI.getTicket(id);
       
       console.log('📦 Full fetch response:', JSON.stringify(response.data, null, 2));
       console.log('💬 Comments in response:', response.data?.data?.comments);
@@ -66,9 +65,12 @@ export default function TicketDetail() {
         console.log('✅ Setting ticket:', ticketData?.id);
         console.log('✅ Setting comments:', commentsData.length, 'total');
         console.log('📝 Comment IDs:', commentsData.map(c => c.id));
+        console.log('📝 Comment texts:', commentsData.map(c => c.comment));
         
         setTicket(ticketData);
         setComments(commentsData);
+        
+        console.log('✅ State updated - ticket and', commentsData.length, 'comments set');
       } else {
         toast.error('Failed to load ticket details');
         router.push('/support/my-tickets');
@@ -178,8 +180,15 @@ export default function TicketDetail() {
   };
 
   useEffect(() => {
-    console.log('useEffect triggered - fetching ticket details for ID:', id);
-    fetchTicketDetails();
+    // Only fetch on initial load or when ID changes
+    if (!hasLoadedRef.current || !ticket || ticket.id !== id) {
+      console.log('useEffect triggered - fetching ticket details for ID:', id);
+      fetchTicketDetails().then(() => {
+        hasLoadedRef.current = true;
+      });
+    } else {
+      console.log('useEffect skipped - already loaded ticket:', id);
+    }
   }, [id]);
   
   // Add a refresh function that can be called from anywhere
