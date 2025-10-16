@@ -92,24 +92,34 @@ export default function TicketDetail() {
       const response = await supportAPI.addComment(id, commentText, false);
       console.log('✅ Comment added, response:', response.data);
       
+      // Get the new comment from response
+      const newCommentData = response.data?.data?.comment || response.data?.comment;
+      
       // Clear input immediately
       setNewComment('');
       
-      // Wait a moment for database to commit
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Reload all comments from database
-      console.log('🔄 Fetching updated comments...');
-      const ticketResponse = await supportAPI.getTicket(id);
-      console.log('📦 Received comments:', ticketResponse.data?.data?.comments?.length);
-      
-      if (ticketResponse.data?.success) {
-        const fetchedComments = ticketResponse.data.data.comments || [];
-        console.log('📝 Setting', fetchedComments.length, 'comments');
-        console.log('📋 Comment IDs:', fetchedComments.map(c => c.id));
-        setComments(fetchedComments);
-        toast.success('Comment added');
+      // Add comment to UI immediately (optimistic update)
+      if (newCommentData) {
+        setComments(prev => [...prev, newCommentData]);
+        console.log('➕ Added comment to UI optimistically');
       }
+      
+      toast.success('Comment added');
+      
+      // Reload in background to ensure consistency
+      setTimeout(async () => {
+        try {
+          const ticketResponse = await supportAPI.getTicket(id);
+          if (ticketResponse.data?.success) {
+            const fetchedComments = ticketResponse.data.data.comments || [];
+            console.log('🔄 Background refresh: got', fetchedComments.length, 'comments');
+            setComments(fetchedComments);
+          }
+        } catch (error) {
+          console.error('Background refresh failed:', error);
+        }
+      }, 1000);
+      
     } catch (error) {
       console.error('❌ Add comment error:', error);
       toast.error('Failed to add comment');
