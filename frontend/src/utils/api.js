@@ -253,7 +253,7 @@ export const cvAPI = {
 
 export const notificationsAPI = {
   getNotifications: (params) => api.get('/notifications', { params }),
-  getUnreadCount: () => api.get('/notifications/unread-count'),
+  getUnreadCount: (params) => api.get('/notifications/unread-count', { params }),
   markAsRead: (notificationId) => api.put(`/notifications/${notificationId}/read`),
   markAllAsRead: () => api.put('/notifications/mark-all-read'),
   deleteNotification: (notificationId) => api.delete(`/notifications/${notificationId}`)

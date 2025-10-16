@@ -5,7 +5,7 @@ class NotificationController {
   // Get user notifications
   static async getUserNotifications(req, res) {
     try {
-      const { page = 1, limit = 20, unread_only = false } = req.query;
+      const { page = 1, limit = 20, unread_only = false, types } = req.query;
       const offset = (page - 1) * limit;
 
       let query = `
@@ -28,6 +28,13 @@ class NotificationController {
       
       const params = [req.user.id];
 
+      // Filter by notification types if provided
+      if (types) {
+        const typeArray = Array.isArray(types) ? types : types.split(',');
+        query += ` AND n.type = ANY($${params.length + 1})`;
+        params.push(typeArray);
+      }
+
       if (unread_only === 'true') {
         query += ` AND n.is_read = false`;
       }
@@ -44,6 +51,13 @@ class NotificationController {
       // Get total count for pagination
       let countQuery = 'SELECT COUNT(*) as total FROM notifications WHERE user_id = $1';
       const countParams = [req.user.id];
+
+      // Apply same type filter to count query
+      if (types) {
+        const typeArray = Array.isArray(types) ? types : types.split(',');
+        countQuery += ` AND type = ANY($${countParams.length + 1})`;
+        countParams.push(typeArray);
+      }
 
       if (unread_only === 'true') {
         countQuery += ` AND is_read = false`;
@@ -137,10 +151,22 @@ class NotificationController {
   // Get unread notification count
   static async getUnreadCount(req, res) {
     try {
-      const result = await database.get(`
+      const { types } = req.query;
+      
+      let query = `
         SELECT COUNT(*) as count FROM notifications 
         WHERE user_id = $1 AND is_read = false
-      `, [req.user.id]);
+      `;
+      const params = [req.user.id];
+
+      // Filter by notification types if provided
+      if (types) {
+        const typeArray = Array.isArray(types) ? types : types.split(',');
+        query += ` AND type = ANY($${params.length + 1})`;
+        params.push(typeArray);
+      }
+
+      const result = await database.get(query, params);
 
       res.json({
         success: true,

@@ -12,10 +12,12 @@ export default function NotificationBell() {
   const dropdownRef = useRef(null);
   const router = useRouter();
 
-  // Fetch unread count
+  // Fetch unread count (ticket-related only)
   const fetchUnreadCount = async () => {
     try {
-      const response = await notificationsAPI.getUnreadCount();
+      const response = await notificationsAPI.getUnreadCount({
+        types: 'new_ticket,ticket_comment,ticket_response,ticket_status_change'
+      });
       if (response.data?.success) {
         setUnreadCount(response.data.data.unread_count);
       }
@@ -31,7 +33,7 @@ export default function NotificationBell() {
       // Only fetch ticket-related notifications
       const response = await notificationsAPI.getNotifications({ 
         limit: 10,
-        types: ['new_ticket', 'ticket_comment', 'ticket_response', 'ticket_status_change']
+        types: 'new_ticket,ticket_comment,ticket_response,ticket_status_change'
       });
       if (response.data?.success) {
         setNotifications(response.data.data.notifications);
