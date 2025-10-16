@@ -24,11 +24,15 @@ export default function NotificationBell() {
     }
   };
 
-  // Fetch notifications
+  // Fetch notifications (ticket-related only)
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);
-      const response = await notificationsAPI.getNotifications({ limit: 10 });
+      // Only fetch ticket-related notifications
+      const response = await notificationsAPI.getNotifications({ 
+        limit: 10,
+        types: ['new_ticket', 'ticket_comment', 'ticket_response', 'ticket_status_change']
+      });
       if (response.data?.success) {
         setNotifications(response.data.data.notifications);
       }
