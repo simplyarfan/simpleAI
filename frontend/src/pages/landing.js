@@ -36,6 +36,9 @@ export default function LandingPage() {
           colors={['#1a1a1a', '#2d2d2d']}
           items={[
             { label: 'Home', link: '/', ariaLabel: 'Go to home page' },
+            { label: 'Features', link: '/features', ariaLabel: 'View features' },
+            { label: 'About', link: '/about', ariaLabel: 'About us' },
+            { label: 'Contact', link: '/contact', ariaLabel: 'Contact us' },
             { label: 'Login', link: '/auth/login', ariaLabel: 'Login to your account' },
             { label: 'Sign Up', link: '/auth/register', ariaLabel: 'Create new account' }
           ]}
