@@ -1,3 +1,4 @@
+# Production build (main branch)
 [build]
   publish = "out"
   command = "npm run build"
@@ -6,6 +7,29 @@
   NEXT_TELEMETRY_DISABLED = "1"
   NODE_ENV = "production"
   NEXT_PUBLIC_API_URL = "https://thesimpleai.vercel.app/api"
+
+# Deploy contexts - separate production and test
+[context.production]
+  publish = "out"
+  command = "npm run build"
+  [context.production.environment]
+    NEXT_TELEMETRY_DISABLED = "1"
+    NODE_ENV = "production"
+    NEXT_PUBLIC_API_URL = "https://thesimpleai.vercel.app/api"
+
+# Test branch context - preview only
+[context.test]
+  publish = "out"
+  command = "npm run build"
+  [context.test.environment]
+    NEXT_TELEMETRY_DISABLED = "1"
+    NODE_ENV = "development"
+    NEXT_PUBLIC_API_URL = "https://thesimpleai.vercel.app/api"
+
+# Branch deploy context - for any other branches
+[context.branch-deploy]
+  publish = "out"
+  command = "npm run build"
 
 [[redirects]]
   from = "/api/*"
