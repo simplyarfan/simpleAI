@@ -15,6 +15,13 @@ const Dashboard = () => {
   // TEST ENVIRONMENT INDICATOR
   const isTestEnvironment = true; // This will only be on test branch
 
+  // Dashboard mapping for cleaner code
+  const DASHBOARD_MAP = {
+    'Human Resources': LivelyHRDashboard,
+    'Finance': LivelyFinanceDashboard,
+    'Sales & Marketing': LivelySalesDashboard
+  };
+
   // Redirect superadmin users to /superadmin route
   useEffect(() => {
     if (!loading && isAuthenticated && user?.email === 'syedarfan@securemaxtech.com') {
@@ -51,64 +58,31 @@ const Dashboard = () => {
     );
   }
 
+  // Helper function to render dashboard with test banner
+  const renderDashboard = (Component) => (
+    <>
+      {isTestEnvironment && (
+        <div style={{
+          backgroundColor: '#ff6b00',
+          color: 'white',
+          padding: '20px',
+          textAlign: 'center',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          borderBottom: '4px solid #ff4500'
+        }}>
+          🧪 TEST ENVIRONMENT - You are on the TEST branch
+        </div>
+      )}
+      <Component />
+    </>
+  );
+
   // Route users based on their department
   if (user?.role === 'user') {
-    // If user has no department assigned, show waiting dashboard
-    if (!user?.department) {
-      return (
-        <>
-          {isTestEnvironment && (
-            <div style={{
-              backgroundColor: '#ff6b00',
-              color: 'white',
-              padding: '20px',
-              textAlign: 'center',
-              fontSize: '18px',
-              fontWeight: 'bold',
-              borderBottom: '4px solid #ff4500'
-            }}>
-              🧪 TEST ENVIRONMENT - You are on the TEST branch
-            </div>
-          )}
-          <WaitingDashboard />
-        </>
-      );
-    }
-
-    // Route based on department
-    let DashboardComponent;
-    switch (user.department) {
-      case 'Human Resources':
-        DashboardComponent = LivelyHRDashboard;
-        break;
-      case 'Finance':
-        DashboardComponent = LivelyFinanceDashboard;
-        break;
-      case 'Sales & Marketing':
-        DashboardComponent = LivelySalesDashboard;
-        break;
-      default:
-        DashboardComponent = WaitingDashboard;
-    }
-
-    return (
-      <>
-        {isTestEnvironment && (
-          <div style={{
-            backgroundColor: '#ff6b00',
-            color: 'white',
-            padding: '20px',
-            textAlign: 'center',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            borderBottom: '4px solid #ff4500'
-          }}>
-            🧪 TEST ENVIRONMENT - You are on the TEST branch
-          </div>
-        )}
-        <DashboardComponent />
-      </>
-    );
+    // Get dashboard component from mapping or use WaitingDashboard
+    const DashboardComponent = DASHBOARD_MAP[user?.department] || WaitingDashboard;
+    return renderDashboard(DashboardComponent);
   }
 
   // Admin role gets admin dashboard
