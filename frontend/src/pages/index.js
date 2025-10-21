@@ -12,6 +12,9 @@ const Dashboard = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
 
+  // TEST ENVIRONMENT INDICATOR
+  const isTestEnvironment = true; // This will only be on test branch
+
   // Redirect superadmin users to /superadmin route
   useEffect(() => {
     if (!loading && isAuthenticated && user?.email === 'syedarfan@securemaxtech.com') {
@@ -52,21 +55,60 @@ const Dashboard = () => {
   if (user?.role === 'user') {
     // If user has no department assigned, show waiting dashboard
     if (!user?.department) {
-      return <WaitingDashboard />;
+      return (
+        <>
+          {isTestEnvironment && (
+            <div style={{
+              backgroundColor: '#ff6b00',
+              color: 'white',
+              padding: '20px',
+              textAlign: 'center',
+              fontSize: '18px',
+              fontWeight: 'bold',
+              borderBottom: '4px solid #ff4500'
+            }}>
+              🧪 TEST ENVIRONMENT - You are on the TEST branch
+            </div>
+          )}
+          <WaitingDashboard />
+        </>
+      );
     }
 
     // Route based on department
+    let DashboardComponent;
     switch (user.department) {
       case 'Human Resources':
-        return <LivelyHRDashboard />;
+        DashboardComponent = LivelyHRDashboard;
+        break;
       case 'Finance':
-        return <LivelyFinanceDashboard />;
+        DashboardComponent = LivelyFinanceDashboard;
+        break;
       case 'Sales & Marketing':
-        return <LivelySalesDashboard />;
+        DashboardComponent = LivelySalesDashboard;
+        break;
       default:
-        // If department is not recognized, show waiting dashboard
-        return <WaitingDashboard />;
+        DashboardComponent = WaitingDashboard;
     }
+
+    return (
+      <>
+        {isTestEnvironment && (
+          <div style={{
+            backgroundColor: '#ff6b00',
+            color: 'white',
+            padding: '20px',
+            textAlign: 'center',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            borderBottom: '4px solid #ff4500'
+          }}>
+            🧪 TEST ENVIRONMENT - You are on the TEST branch
+          </div>
+        )}
+        <DashboardComponent />
+      </>
+    );
   }
 
   // Admin role gets admin dashboard
