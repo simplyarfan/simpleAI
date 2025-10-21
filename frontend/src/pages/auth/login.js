@@ -13,14 +13,20 @@ const Login = () => {
     email: '',
     password: ''
   });
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted (client-side only)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (mounted && isAuthenticated && router.isReady) {
       const returnUrl = router.query.returnUrl || '/';
       router.push(returnUrl);
     }
-  }, [isAuthenticated, router]);
+  }, [mounted, isAuthenticated, router]);
 
   const handleLogin = async (formData) => {
     try {
@@ -48,7 +54,8 @@ const Login = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  if (loading) {
+  // Show loading during SSR or while mounting
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
