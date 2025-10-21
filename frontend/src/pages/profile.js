@@ -20,8 +20,9 @@ import {
 } from 'lucide-react';
 import { authAPI } from '../utils/api';
 import toast from 'react-hot-toast';
+import ClientOnly from '../components/shared/ClientOnly';
 
-export default function ProfileSettings() {
+function ProfileSettings() {
   const { user, logout, updateUser } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -573,5 +574,14 @@ export default function ProfileSettings() {
 
       </div>
     </>
+  );
+}
+
+// Wrap with ClientOnly to prevent SSR/build issues
+export default function ProfilePage() {
+  return (
+    <ClientOnly>
+      <ProfileSettings />
+    </ClientOnly>
   );
 }

@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import ClientOnly from '../../components/shared/ClientOnly';
 
 const Login = () => {
   const router = useRouter();
@@ -148,4 +149,11 @@ const Login = () => {
   );
 };
 
-export default Login;
+// Wrap with ClientOnly to prevent SSR/build issues
+const LoginPage = () => (
+  <ClientOnly>
+    <Login />
+  </ClientOnly>
+);
+
+export default LoginPage;
