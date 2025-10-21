@@ -3,6 +3,7 @@ import { AuthProvider } from '../contexts/AuthContext'
 import { Toaster } from 'react-hot-toast'
 import ErrorBoundary from '../components/shared/ErrorBoundary'
 
+// Production version - clean interface without test banners
 export default function App({ Component, pageProps }) {
   return (
     <ErrorBoundary>
