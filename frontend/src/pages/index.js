@@ -7,6 +7,7 @@ import LivelySalesDashboard from '../components/user/LivelySalesDashboard';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import WaitingDashboard from '../components/user/WaitingDashboard';
 import LandingPage from './landing';
+import ClientOnly from '../components/shared/ClientOnly';
 
 const Dashboard = () => {
   const { user, loading, isAuthenticated } = useAuth();
@@ -94,4 +95,11 @@ const Dashboard = () => {
   return <WaitingDashboard />;
 };
 
-export default Dashboard;
+// Wrap with ClientOnly to prevent SSR/build issues
+export default function IndexPage() {
+  return (
+    <ClientOnly>
+      <Dashboard />
+    </ClientOnly>
+  );
+}
