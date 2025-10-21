@@ -2,6 +2,17 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+// Import security middleware
+const { 
+  securityHeaders, 
+  cors: corsMiddleware, 
+  securityLogger,
+  requestSizeLimiter 
+} = require('./middleware/security');
+
+// Import logger
+const logger = require('./utils/logger');
+
 // Import database
 const database = require('./models/database');
 // Load routes with error handling
@@ -57,16 +68,37 @@ try {
   console.error('❌ Error loading interview coordinator routes:', error.message);
 }
 
-// Simple request logger middleware (only errors and important routes)
+// Enhanced request logger middleware with timing
 const requestLogger = (req, res, next) => {
+  const start = Date.now();
+  
+  // Log request
   if (req.url.includes('/api/') && !req.url.includes('/health')) {
-    console.log(`${req.method} ${req.url}`);
+    logger.info(`${req.method} ${req.url}`, {
+      ip: req.ip,
+      userAgent: req.get('user-agent')
+    });
   }
+  
+  // Log response
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (req.url.includes('/api/') && !req.url.includes('/health')) {
+      logger.logRequest(req, res, duration);
+    }
+  });
+  
   next();
 };
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Apply security headers first
+app.use(securityHeaders);
+
+// Apply security logger
+app.use(securityLogger);
 
 // CORS Configuration - Environment-driven
 app.use((req, res, next) => {
