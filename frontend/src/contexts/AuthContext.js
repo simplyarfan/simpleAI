@@ -17,8 +17,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Get the API base URL (expected format: https://domain.com/api)
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+  // Get the API base URL (expected format: https://domain.com)
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
   
   // Development logging helper
   const isDev = process.env.NODE_ENV === 'development';
@@ -63,7 +63,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const response = await fetch(`${API_BASE}/auth/check`, {
+      const response = await fetch(`${API_BASE}/api/auth/check`, {
         method: 'GET',
         headers: headers,
       });
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       log('📝 Starting registration...', { email: userData.email });
 
-      const response = await fetch(`${API_BASE}/auth/register`, {
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,7 +180,7 @@ export const AuthProvider = ({ children }) => {
         endpoint: `${API_BASE}/auth/login`
       });
 
-      const response = await fetch(`${API_BASE}/auth/login`, {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -279,7 +279,7 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = useCallback(async (token) => {
     try {
       console.log('📧 Verifying email with token...');
-      const response = await fetch(`${API_BASE}/auth/verify-email`, {
+      const response = await fetch(`${API_BASE}/api/auth/verify-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -308,7 +308,7 @@ export const AuthProvider = ({ children }) => {
   const resendVerification = useCallback(async (email) => {
     try {
       console.log('📧 Resending verification email...');
-      const response = await fetch(`${API_BASE}/auth/resend-verification`, {
+      const response = await fetch(`${API_BASE}/api/auth/resend-verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

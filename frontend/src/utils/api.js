@@ -13,15 +13,15 @@ const getApiBaseUrl = () => {
     baseUrl = process.env.NEXT_PUBLIC_API_URL;
   } else if (typeof window === 'undefined') {
     // Server-side rendering fallback
-    baseUrl = 'https://thesimpleai.vercel.app/api';
+    baseUrl = 'https://thesimpleai.vercel.app';
   } else {
     // Client-side fallback
     const hostname = window.location.hostname;
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      baseUrl = 'http://localhost:5000/api';
+      baseUrl = 'http://localhost:5000';
     } else {
       // Production fallback
-      baseUrl = 'https://thesimpleai.vercel.app/api';
+      baseUrl = 'https://thesimpleai.vercel.app';
     }
   }
   
@@ -35,7 +35,7 @@ const API_BASE_URL = getApiBaseUrl();
 
 // Create optimized axios instance
 const api = axios.create({
-  baseURL: API_BASE_URL,  // Use baseURL as-is (already has /api from .env.local)
+  baseURL: `${API_BASE_URL}/api`,  // Add /api prefix since backend routes are mounted at /api/*
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -150,7 +150,7 @@ api.interceptors.response.use(
       if (refreshToken && !tokenManager.isTokenExpired(refreshToken)) {
         try {
           console.log('🔄 [AUTH] Refreshing token...');
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
+          const response = await axios.post(`${API_BASE_URL}/api/auth/refresh-token`, {
             refreshToken
           });
           
