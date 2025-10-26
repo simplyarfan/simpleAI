@@ -75,20 +75,29 @@ const register = async (req, res) => {
         WHERE id = $3
       `, [hashedCode, expiresAt, existingUser.id]);
       
-      // Send verification email
-      try {
-        await emailService.send2FACode(email.toLowerCase(), code, firstName);
-        console.log(`Verification code resent to: ${email}`);
-      } catch (emailError) {
-        console.error('Failed to send verification email:', emailError);
-      }
+      console.log(`✅ [DB] Verification code updated for existing user: ${email}`);
       
-      return res.status(200).json({
+      // Prepare response
+      const resendResponse = {
         success: true,
         requiresVerification: true,
         userId: existingUser.id,
         message: 'Verification code sent to your email'
-      });
+      };
+      
+      // Send HTTP response immediately
+      res.status(200).json(resendResponse);
+      console.log('✅ [HTTP] Resend response sent to client');
+      
+      // Send verification email in background (non-blocking)
+      console.log(`📧 [EMAIL] Resending verification code to: ${email}`);
+      emailService.send2FACode(email.toLowerCase(), code, firstName)
+        .then(() => {
+          console.log(`✅ [EMAIL] Verification code resent successfully to: ${email}`);
+        })
+        .catch((emailError) => {
+          console.error(`❌ [EMAIL] Failed to resend verification email to ${email}:`, emailError.message);
+        });
     }
 
     // Hash password with enterprise-grade security
@@ -126,18 +135,9 @@ const register = async (req, res) => {
     }
 
     const newUser = result.rows[0];
+    console.log(`✅ [DB] User created successfully: ${newUser.email} (ID: ${newUser.id})`);
 
-    // Send verification email
-    try {
-      await emailService.send2FACode(newUser.email, code, newUser.first_name);
-      console.log(`Verification code sent to: ${newUser.email}`);
-    } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
-    }
-
-    // Log registration (pending verification)
-    console.log(`User registered (pending verification): ${newUser.email}`);
-
+    // Prepare response FIRST
     const response = {
       success: true,
       requiresVerification: true,
@@ -146,7 +146,21 @@ const register = async (req, res) => {
     };
     
     console.log('🔍 [BACKEND] Sending registration response:', JSON.stringify(response));
+    
+    // Send HTTP response immediately (don't wait for email)
     res.status(201).json(response);
+    console.log('✅ [HTTP] Response sent to client');
+
+    // Send verification email in background (non-blocking)
+    console.log(`📧 [EMAIL] Attempting to send verification code to: ${newUser.email}`);
+    emailService.send2FACode(newUser.email, code, newUser.first_name)
+      .then(() => {
+        console.log(`✅ [EMAIL] Verification code sent successfully to: ${newUser.email}`);
+      })
+      .catch((emailError) => {
+        console.error(`❌ [EMAIL] Failed to send verification email to ${newUser.email}:`, emailError.message);
+        // Email failure doesn't affect registration success
+      });
 
   } catch (error) {
     console.error('Registration error:', error);
