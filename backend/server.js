@@ -23,8 +23,11 @@ try {
   authRoutes = require('./routes/auth');
   console.log('✅ Auth routes loaded successfully');
 } catch (error) {
-  console.error('❌ Error loading auth routes:', error.message);
+  console.error('❌ FATAL: Error loading auth routes:', error.message);
   console.error('❌ Stack trace:', error.stack);
+  console.error('❌ Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
+  // Make sure route still loads without auth
+  authRoutes = null;
 }
 
 try {
