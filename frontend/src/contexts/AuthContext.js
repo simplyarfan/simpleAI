@@ -194,6 +194,18 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       console.log('🔐 Login response data:', data);
 
+      // Handle unverified user (403 status)
+      if (response.status === 403 && data.requiresVerification) {
+        console.log('📧 Email verification required (403), redirecting...');
+        toast.warning(data.message || 'Please verify your email first');
+        return { 
+          success: false,
+          requiresVerification: true, 
+          userId: data.userId,
+          message: data.message 
+        };
+      }
+
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }

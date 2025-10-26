@@ -202,7 +202,37 @@ const login = async (req, res) => {
       });
     }
 
-    // Check if email is verified
+    // Verify password BEFORE checking verification status
+    // This prevents account enumeration attacks
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    
+    if (!isPasswordValid) {
+      // Increment failed login attempts
+      const newFailedAttempts = (user.failed_login_attempts || 0) + 1;
+      let lockUntil = null;
+      
+      // Lock account after 5 failed attempts for 15 minutes
+      if (newFailedAttempts >= 5) {
+        lockUntil = new Date(Date.now() + 15 * 60 * 1000);
+      }
+      
+      await database.run(`
+        UPDATE users SET 
+          failed_login_attempts = $1,
+          account_locked_until = $2,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
+      `, [newFailedAttempts, lockUntil, user.id]);
+      
+      return res.status(401).json({
+        success: false,
+        message: lockUntil 
+          ? 'Too many failed attempts. Account locked for 15 minutes.'
+          : 'Incorrect password. Please try again.'
+      });
+    }
+
+    // Check if email is verified (AFTER password check)
     if (!user.is_verified) {
       return res.status(403).json({
         success: false,
@@ -228,32 +258,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    
-    if (!isPasswordValid) {
-      // Increment failed login attempts
-      const newFailedAttempts = (user.failed_login_attempts || 0) + 1;
-      let lockUntil = null;
-      
-      // Lock account after 5 failed attempts for 15 minutes
-      if (newFailedAttempts >= 5) {
-        lockUntil = new Date(Date.now() + 15 * 60 * 1000);
-      }
-      
-      await database.run(`
-        UPDATE users SET 
-          failed_login_attempts = $1,
-          account_locked_until = $2,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $3
-      `, [newFailedAttempts, lockUntil, user.id]);
-      
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-    }
 
     // Check if 2FA is enabled for this user
     if (user.two_factor_enabled) {
