@@ -14,7 +14,7 @@ class EmailService {
   }
 
   /**
-   * Initialize email transporter - NO FALLBACKS
+   * Initialize email transporter - lazy initialization (don't crash on startup)
    */
   initializeTransporter() {
     console.log('🔍 [EMAIL] Initializing email service...');
@@ -23,10 +23,11 @@ class EmailService {
     console.log('🔍 [EMAIL] EMAIL_HOST:', process.env.EMAIL_HOST || 'smtp.gmail.com (default)');
     
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      const error = new Error('EMAIL_USER and EMAIL_PASS environment variables are required');
-      console.error('❌ [EMAIL] FATAL: Email credentials not configured');
+      console.error('❌ [EMAIL] CRITICAL: Email credentials not configured');
       console.error('❌ [EMAIL] Set EMAIL_USER and EMAIL_PASS in Vercel environment variables');
-      throw error;
+      console.error('❌ [EMAIL] Email sending will FAIL until credentials are added');
+      // DON'T throw - let the service initialize but fail when trying to send
+      return;
     }
 
     try {
