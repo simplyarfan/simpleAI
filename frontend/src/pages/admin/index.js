@@ -1,8 +1,9 @@
- import { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../contexts/AuthContext';
+import ClientOnly from '../../components/shared/ClientOnly';
 
-export default function AdminDashboard() {
+function AdminDashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -26,5 +27,13 @@ export default function AdminDashboard() {
         <p className="mt-4 text-gray-600">Redirecting...</p>
       </div>
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <ClientOnly>
+      <AdminDashboardPage />
+    </ClientOnly>
   );
 }

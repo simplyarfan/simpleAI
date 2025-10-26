@@ -7,10 +7,21 @@ import LivelySalesDashboard from '../components/user/LivelySalesDashboard';
 import AdminDashboard from '../components/admin/AdminDashboard';
 import WaitingDashboard from '../components/user/WaitingDashboard';
 import LandingPage from './landing';
+import ClientOnly from '../components/shared/ClientOnly';
 
 const Dashboard = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
+
+  // TEST ENVIRONMENT INDICATOR
+  const isTestEnvironment = true; // This will only be on test branch
+
+  // Dashboard mapping for cleaner code
+  const DASHBOARD_MAP = {
+    'Human Resources': LivelyHRDashboard,
+    'Finance': LivelyFinanceDashboard,
+    'Sales & Marketing': LivelySalesDashboard
+  };
 
   // Redirect superadmin users to /superadmin route
   useEffect(() => {
@@ -48,25 +59,31 @@ const Dashboard = () => {
     );
   }
 
+  // Helper function to render dashboard with test banner
+  const renderDashboard = (Component) => (
+    <>
+      {isTestEnvironment && (
+        <div style={{
+          backgroundColor: '#ff6b00',
+          color: 'white',
+          padding: '20px',
+          textAlign: 'center',
+          fontSize: '18px',
+          fontWeight: 'bold',
+          borderBottom: '4px solid #ff4500'
+        }}>
+          🧪 TEST ENVIRONMENT - You are on the TEST branch
+        </div>
+      )}
+      <Component />
+    </>
+  );
+
   // Route users based on their department
   if (user?.role === 'user') {
-    // If user has no department assigned, show waiting dashboard
-    if (!user?.department) {
-      return <WaitingDashboard />;
-    }
-
-    // Route based on department
-    switch (user.department) {
-      case 'Human Resources':
-        return <LivelyHRDashboard />;
-      case 'Finance':
-        return <LivelyFinanceDashboard />;
-      case 'Sales & Marketing':
-        return <LivelySalesDashboard />;
-      default:
-        // If department is not recognized, show waiting dashboard
-        return <WaitingDashboard />;
-    }
+    // Get dashboard component from mapping or use WaitingDashboard
+    const DashboardComponent = DASHBOARD_MAP[user?.department] || WaitingDashboard;
+    return renderDashboard(DashboardComponent);
   }
 
   // Admin role gets admin dashboard
@@ -78,4 +95,11 @@ const Dashboard = () => {
   return <WaitingDashboard />;
 };
 
-export default Dashboard;
+// Wrap with ClientOnly to prevent SSR/build issues
+export default function IndexPage() {
+  return (
+    <ClientOnly>
+      <Dashboard />
+    </ClientOnly>
+  );
+}

@@ -108,8 +108,17 @@ const Register = () => {
         jobTitle: formData.job_title || undefined
       });
       
-      if (result.success) {
-        // Registration successful, user is now logged in automatically
+      console.log('🔍 [REGISTER] Registration result:', result);
+      console.log('🔍 [REGISTER] requiresVerification:', result.requiresVerification);
+      console.log('🔍 [REGISTER] userId:', result.userId);
+      
+      if (result.success && result.requiresVerification) {
+        // Redirect to email verification page
+        console.log('🔍 [REGISTER] Redirecting to verify-email page...');
+        router.push(`/auth/verify-email?userId=${result.userId}`);
+      } else if (result.success) {
+        // Fallback: if already logged in (shouldn't happen)
+        console.log('🔍 [REGISTER] Auto-logged in, redirecting to dashboard...');
         router.push('/');
       }
     } catch (error) {

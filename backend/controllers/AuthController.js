@@ -3,9 +3,12 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const database = require('../models/database');
 const { validationResult } = require('express-validator');
+const ResponseOptimizer = require('../utils/responseOptimizer');
+const { generate2FACode, verify2FACode } = require('../utils/twoFactorAuth');
+const emailService = require('../services/emailService');
 
 // Helper function to generate secure JWT tokens
-const generateTokens = (userId, email, role) => {
+const generateTokens = (userId, email, role, rememberMe = false) => {
   // Ensure JWT secrets are configured
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET environment variable is required');
@@ -20,16 +23,19 @@ const generateTokens = (userId, email, role) => {
     { expiresIn: '24h' } // Changed from 15m to 24h for better UX
   );
   
+  // Extended expiration if remember me is enabled
+  const refreshTokenExpiry = rememberMe ? '90d' : '30d';
+  
   const refreshToken = jwt.sign(
     { userId, type: 'refresh' },
     refreshSecret,
-    { expiresIn: '30d' } // Changed from 7d to 30d
+    { expiresIn: refreshTokenExpiry }
   );
   
-  return { accessToken, refreshToken };
+  return { accessToken, refreshToken, expiresIn: rememberMe ? 90 : 30 };
 };
 
-// Register new user - Enterprise Grade
+// Register new user - With Email Verification
 const register = async (req, res) => {
   try {
     const { email, password, firstName, lastName, department, jobTitle } = req.body;
@@ -47,29 +53,71 @@ const register = async (req, res) => {
 
     // Check if user already exists
     const existingUser = await database.get(
-      'SELECT id FROM users WHERE email = $1',
+      'SELECT id, is_verified FROM users WHERE email = $1',
       [email.toLowerCase()]
     );
 
     if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: 'User already exists with this email address'
-      });
+      if (existingUser.is_verified) {
+        return res.status(400).json({
+          success: false,
+          message: 'User already exists with this email address'
+        });
+      }
+      // User exists but not verified - resend verification code
+      const { code, hashedCode, expiresAt } = generate2FACode();
+      
+      await database.run(`
+        UPDATE users SET 
+          verification_token = $1,
+          verification_expiry = $2,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
+      `, [hashedCode, expiresAt, existingUser.id]);
+      
+      console.log(`✅ [DB] Verification code updated for existing user: ${email}`);
+      
+      // Prepare response
+      const resendResponse = {
+        success: true,
+        requiresVerification: true,
+        userId: existingUser.id,
+        message: 'Verification code sent to your email'
+      };
+      
+      // Send HTTP response immediately
+      res.status(200).json(resendResponse);
+      console.log('✅ [HTTP] Resend response sent to client');
+      
+      // Send verification email in background (non-blocking)
+      console.log(`📧 [EMAIL] Resending verification code to: ${email}`);
+      emailService.send2FACode(email.toLowerCase(), code, firstName)
+        .then(() => {
+          console.log(`✅ [EMAIL] Verification code resent successfully to: ${email}`);
+        })
+        .catch((emailError) => {
+          console.error(`❌ [EMAIL] Failed to resend verification email to ${email}:`, emailError.message);
+        });
+      
+      return; // IMPORTANT: Stop execution after sending resend response
     }
 
     // Hash password with enterprise-grade security
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Create user with proper transaction handling
+    // Generate verification code
+    const { code, hashedCode, expiresAt } = generate2FACode();
+
+    // Create user (unverified)
     const result = await database.run(`
       INSERT INTO users (
         email, password_hash, first_name, last_name, 
         department, job_title, role, is_active, is_verified,
+        verification_token, verification_expiry,
         created_at, updated_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      RETURNING id, email, first_name, last_name, role, is_active
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      RETURNING id, email, first_name, last_name, role
     `, [
       email.toLowerCase(),
       hashedPassword,
@@ -79,7 +127,9 @@ const register = async (req, res) => {
       jobTitle || null,
       'user', // Default role
       true,   // Active by default
-      true    // Verified by default for company domain
+      false,  // NOT verified yet
+      hashedCode,
+      expiresAt
     ]);
 
     if (!result.rows || result.rows.length === 0) {
@@ -87,46 +137,32 @@ const register = async (req, res) => {
     }
 
     const newUser = result.rows[0];
+    console.log(`✅ [DB] User created successfully: ${newUser.email} (ID: ${newUser.id})`);
 
-    // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(
-      newUser.id,
-      newUser.email,
-      newUser.role
-    );
-
-    // Create session record
-    await database.run(`
-      INSERT INTO user_sessions (user_id, session_token, refresh_token, ip_address, user_agent, expires_at)
-      VALUES ($1, $2, $3, $4, $5, $6)
-    `, [
-      newUser.id,
-      accessToken,
-      refreshToken,
-      req.ip,
-      req.get('User-Agent') || 'Unknown',
-      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
-    ]);
-
-    // Log successful registration
-    console.log(`User registered: ${newUser.email}`);
-
-    res.status(201).json({
+    // Prepare response FIRST
+    const response = {
       success: true,
-      message: 'Registration successful',
-      data: {
-        user: {
-          id: newUser.id,
-          email: newUser.email,
-          firstName: newUser.first_name,
-          lastName: newUser.last_name,
-          role: newUser.role,
-          isActive: newUser.is_active
-        },
-        accessToken,
-        refreshToken
-      }
-    });
+      requiresVerification: true,
+      userId: newUser.id,
+      message: 'Registration successful! Please check your email for verification code.'
+    };
+    
+    console.log('🔍 [BACKEND] Sending registration response:', JSON.stringify(response));
+    
+    // Send HTTP response immediately (don't wait for email)
+    res.status(201).json(response);
+    console.log('✅ [HTTP] Response sent to client');
+
+    // Send verification email in background (non-blocking)
+    console.log(`📧 [EMAIL] Attempting to send verification code to: ${newUser.email}`);
+    emailService.send2FACode(newUser.email, code, newUser.first_name)
+      .then(() => {
+        console.log(`✅ [EMAIL] Verification code sent successfully to: ${newUser.email}`);
+      })
+      .catch((emailError) => {
+        console.error(`❌ [EMAIL] Failed to send verification email to ${newUser.email}:`, emailError.message);
+        // Email failure doesn't affect registration success
+      });
 
   } catch (error) {
     console.error('Registration error:', error);
@@ -141,7 +177,7 @@ const register = async (req, res) => {
 // Login user - Enterprise Grade
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -155,7 +191,7 @@ const login = async (req, res) => {
     // Get user with security checks
     const user = await database.get(`
       SELECT id, email, password_hash, first_name, last_name, role, 
-             department, job_title, is_active, failed_login_attempts, account_locked_until
+             department, job_title, is_active, is_verified, failed_login_attempts, account_locked_until
       FROM users WHERE email = $1
     `, [email.toLowerCase()]);
 
@@ -163,6 +199,16 @@ const login = async (req, res) => {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
+      });
+    }
+
+    // Check if email is verified
+    if (!user.is_verified) {
+      return res.status(403).json({
+        success: false,
+        requiresVerification: true,
+        userId: user.id,
+        message: 'Please verify your email address first. Check your inbox for the verification code.'
       });
     }
 
@@ -209,6 +255,39 @@ const login = async (req, res) => {
       });
     }
 
+    // Check if 2FA is enabled for this user
+    if (user.two_factor_enabled) {
+      // Generate 2FA code
+      const { code, hashedCode, expiresAt } = generate2FACode();
+      
+      // Store 2FA code in database
+      await database.run(`
+        UPDATE users SET 
+          two_factor_code = $1,
+          two_factor_code_expires_at = $2,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $3
+      `, [hashedCode, expiresAt, user.id]);
+      
+      // Send 2FA code via email
+      try {
+        await emailService.send2FACode(user.email, code, user.first_name);
+        console.log(`2FA code sent to: ${user.email}`);
+      } catch (emailError) {
+        console.error('Failed to send 2FA email:', emailError);
+        // Continue anyway - code is logged in dev mode
+      }
+      
+      // Return response indicating 2FA is required
+      return res.json({
+        success: true,
+        requires2FA: true,
+        message: 'Verification code sent to your email',
+        userId: user.id, // Temporary ID for verification step
+        rememberMe: rememberMe || false // Pass through for 2FA completion
+      });
+    }
+
     // Reset failed login attempts on successful login
     await database.run(`
       UPDATE users SET 
@@ -219,11 +298,12 @@ const login = async (req, res) => {
       WHERE id = $1
     `, [user.id]);
 
-    // Generate tokens
-    const { accessToken, refreshToken } = generateTokens(
+    // Generate tokens with remember me support
+    const { accessToken, refreshToken, expiresIn } = generateTokens(
       user.id,
       user.email,
-      user.role
+      user.role,
+      rememberMe || false
     );
 
     // Create session record
@@ -915,25 +995,605 @@ const refreshToken = async (req, res) => {
   }
 };
 
-// Request password reset - TODO: Implement email-based password reset
-const requestPasswordReset = async (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: 'Password reset functionality not yet implemented. Please contact administrator.'
-  });
+// Resend 2FA code
+const resend2FACode = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required'
+      });
+    }
+
+    await database.connect();
+
+    // Get user
+    const user = await database.get(`
+      SELECT id, email, first_name, two_factor_enabled, two_factor_code_expires_at
+      FROM users 
+      WHERE id = $1 AND is_active = true
+    `, [userId]);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid request'
+      });
+    }
+
+    if (!user.two_factor_enabled) {
+      return res.status(400).json({
+        success: false,
+        message: '2FA is not enabled for this user'
+      });
+    }
+
+    // Rate limiting: Check if last code was sent less than 1 minute ago
+    if (user.two_factor_code_expires_at) {
+      const lastSent = new Date(user.two_factor_code_expires_at).getTime() - (10 * 60 * 1000);
+      const oneMinuteAgo = Date.now() - (60 * 1000);
+      
+      if (lastSent > oneMinuteAgo) {
+        return res.status(429).json({
+          success: false,
+          message: 'Please wait before requesting a new code'
+        });
+      }
+    }
+
+    // Generate new 2FA code
+    const { code, hashedCode, expiresAt } = generate2FACode();
+    
+    // Store new 2FA code
+    await database.run(`
+      UPDATE users SET 
+        two_factor_code = $1,
+        two_factor_code_expires_at = $2,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
+    `, [hashedCode, expiresAt, user.id]);
+    
+    // Send new code via email
+    try {
+      await emailService.send2FACode(user.email, code, user.first_name);
+      console.log(`2FA code resent to: ${user.email}`);
+    } catch (emailError) {
+      console.error('Failed to resend 2FA email:', emailError);
+    }
+
+    res.json({
+      success: true,
+      message: 'A new verification code has been sent to your email'
+    });
+
+  } catch (error) {
+    console.error('Resend 2FA code error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to resend verification code'
+    });
+  }
 };
 
-// Reset password - TODO: Implement email-based password reset
+// Verify 2FA code and complete login
+const verify2FA = async (req, res) => {
+  try {
+    const { userId, code } = req.body;
+
+    if (!userId || !code) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID and verification code are required'
+      });
+    }
+
+    await database.connect();
+
+    // Get user with 2FA code
+    const user = await database.get(`
+      SELECT id, email, first_name, last_name, role, department, job_title,
+             two_factor_code, two_factor_code_expires_at
+      FROM users 
+      WHERE id = $1 AND is_active = true
+    `, [userId]);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid verification request'
+      });
+    }
+
+    // Verify 2FA code
+    const isValid = verify2FACode(code, user.two_factor_code, user.two_factor_code_expires_at);
+
+    if (!isValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired verification code'
+      });
+    }
+
+    // Clear 2FA code
+    await database.run(`
+      UPDATE users SET 
+        two_factor_code = NULL,
+        two_factor_code_expires_at = NULL,
+        failed_login_attempts = 0,
+        account_locked_until = NULL,
+        last_login = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+    `, [user.id]);
+
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(
+      user.id,
+      user.email,
+      user.role
+    );
+
+    // Create session record
+    await database.run(`
+      INSERT INTO user_sessions (user_id, session_token, refresh_token, ip_address, user_agent, expires_at)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `, [
+      user.id,
+      accessToken,
+      refreshToken,
+      req.ip,
+      req.get('User-Agent') || 'Unknown',
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    ]);
+
+    console.log(`2FA verified, user login: ${user.email}`);
+
+    res.json({
+      success: true,
+      message: 'Login successful',
+      token: accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        name: `${user.first_name} ${user.last_name}`,
+        role: user.role,
+        department: user.department,
+        job_title: user.job_title
+      }
+    });
+
+  } catch (error) {
+    console.error('2FA verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Verification failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
+// Enable 2FA for user
+const enable2FA = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    await database.connect();
+    await database.run(`
+      UPDATE users SET 
+        two_factor_enabled = true,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+    `, [userId]);
+
+    console.log(`2FA enabled for user: ${req.user.email}`);
+
+    res.json({
+      success: true,
+      message: 'Two-factor authentication enabled'
+    });
+  } catch (error) {
+    console.error('Enable 2FA error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to enable two-factor authentication'
+    });
+  }
+};
+
+// Disable 2FA for user
+const disable2FA = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password is required to disable 2FA'
+      });
+    }
+
+    await database.connect();
+
+    // Verify password
+    const user = await database.get(
+      'SELECT password_hash FROM users WHERE id = $1',
+      [userId]
+    );
+
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid password'
+      });
+    }
+
+    // Disable 2FA
+    await database.run(`
+      UPDATE users SET 
+        two_factor_enabled = false,
+        two_factor_code = NULL,
+        two_factor_code_expires_at = NULL,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+    `, [userId]);
+
+    console.log(`2FA disabled for user: ${req.user.email}`);
+
+    res.json({
+      success: true,
+      message: 'Two-factor authentication disabled'
+    });
+  } catch (error) {
+    console.error('Disable 2FA error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to disable two-factor authentication'
+    });
+  }
+};
+
+// Request password reset
+const requestPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is required'
+      });
+    }
+
+    await database.connect();
+
+    // Check if user exists
+    const user = await database.get(
+      'SELECT id, email, first_name, is_active FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
+
+    // Always return success message to prevent email enumeration
+    if (!user || !user.is_active) {
+      return res.json({
+        success: true,
+        message: 'If an account exists with this email, a password reset link has been sent'
+      });
+    }
+
+    // Generate reset token (secure random string)
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = await bcrypt.hash(resetToken, 10);
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    // Store reset token in database
+    await database.run(`
+      UPDATE users SET 
+        reset_token = $1,
+        reset_token_expiry = $2,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
+    `, [hashedToken, expiresAt, user.id]);
+
+    // Send reset email
+    try {
+      await emailService.sendPasswordReset(user.email, resetToken, user.first_name);
+      console.log(`Password reset email sent to: ${user.email}`);
+    } catch (emailError) {
+      console.error('Failed to send password reset email:', emailError);
+      // Continue anyway - token is logged in dev mode
+    }
+
+    res.json({
+      success: true,
+      message: 'If an account exists with this email, a password reset link has been sent'
+    });
+
+  } catch (error) {
+    console.error('Request password reset error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process password reset request'
+    });
+  }
+};
+
+// Reset password with token
 const resetPassword = async (req, res) => {
-  res.status(501).json({
-    success: false,
-    message: 'Password reset functionality not yet implemented. Please contact administrator.'
-  });
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Token and new password are required'
+      });
+    }
+
+    // Validate password strength
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters long'
+      });
+    }
+
+    await database.connect();
+
+    // Get all users with active reset tokens
+    const users = await database.all(
+      'SELECT id, email, reset_token, reset_token_expiry FROM users WHERE reset_token IS NOT NULL AND reset_token_expiry > NOW()'
+    );
+
+    // Find user with matching token
+    let matchedUser = null;
+    for (const user of users) {
+      const isValid = await bcrypt.compare(token, user.reset_token);
+      if (isValid) {
+        matchedUser = user;
+        break;
+      }
+    }
+
+    if (!matchedUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired reset token'
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update password and clear reset token
+    await database.run(`
+      UPDATE users SET 
+        password_hash = $1,
+        reset_token = NULL,
+        reset_token_expiry = NULL,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+    `, [hashedPassword, matchedUser.id]);
+
+    // Invalidate all existing sessions for security
+    await database.run('DELETE FROM user_sessions WHERE user_id = $1', [matchedUser.id]);
+
+    console.log(`Password reset successful for: ${matchedUser.email}`);
+
+    res.json({
+      success: true,
+      message: 'Password reset successful. Please log in with your new password.'
+    });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reset password'
+    });
+  }
+};
+
+// Verify email during registration
+const verifyEmail = async (req, res) => {
+  try {
+    const { userId, code } = req.body;
+
+    if (!userId || !code) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID and verification code are required'
+      });
+    }
+
+    await database.connect();
+
+    // Fetch user with verification token
+    const user = await database.get(
+      'SELECT id, email, first_name, last_name, role, verification_token, verification_expiry, is_verified FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (user.is_verified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email already verified'
+      });
+    }
+
+    if (!user.verification_token || !user.verification_expiry) {
+      return res.status(400).json({
+        success: false,
+        message: 'No verification code found. Please request a new one.'
+      });
+    }
+
+    // Check expiry
+    if (new Date() > new Date(user.verification_expiry)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification code has expired. Please request a new one.'
+      });
+    }
+
+    // Verify code
+    const isValid = await bcrypt.compare(code, user.verification_token);
+    if (!isValid) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid verification code'
+      });
+    }
+
+    // Mark as verified and clear tokens
+    await database.run(`
+      UPDATE users SET 
+        is_verified = true,
+        verification_token = NULL,
+        verification_expiry = NULL,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+    `, [userId]);
+
+    // Generate tokens for login
+    const { accessToken, refreshToken } = generateTokens(
+      user.id,
+      user.email,
+      user.role
+    );
+
+    // Create session record
+    await database.run(`
+      INSERT INTO user_sessions (user_id, session_token, refresh_token, ip_address, user_agent, expires_at)
+      VALUES ($1, $2, $3, $4, $5, $6)
+    `, [
+      user.id,
+      accessToken,
+      refreshToken,
+      req.ip,
+      req.get('User-Agent') || 'Unknown',
+      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+    ]);
+
+    console.log(`Email verified and user logged in: ${user.email}`);
+
+    res.status(200).json(
+      ResponseOptimizer.success({
+        user: ResponseOptimizer.sanitizeUser({
+          id: user.id,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          role: user.role,
+          is_active: true,
+          is_verified: true
+        }),
+        accessToken,
+        refreshToken
+      }, 'Email verified successfully')
+    );
+
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Verification failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+};
+
+// Resend verification code during registration
+const resendVerificationCode = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required'
+      });
+    }
+
+    await database.connect();
+
+    const user = await database.get(
+      'SELECT id, email, first_name, is_verified FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (user.is_verified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email already verified'
+      });
+    }
+
+    // Generate new verification code
+    const { code, hashedCode, expiresAt } = generate2FACode();
+
+    await database.run(`
+      UPDATE users SET 
+        verification_token = $1,
+        verification_expiry = $2,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
+    `, [hashedCode, expiresAt, userId]);
+
+    // Send verification email
+    try {
+      await emailService.send2FACode(user.email, code, user.first_name);
+      console.log(`Verification code resent to: ${user.email}`);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send verification email'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Verification code sent to your email'
+    });
+
+  } catch (error) {
+    console.error('Resend verification code error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to resend verification code',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
 };
 
 module.exports = {
   register,
   login,
+  verify2FA,
+  resend2FACode,
+  enable2FA,
+  disable2FA,
   logout,
   logoutAll,
   getCurrentUser,
@@ -949,5 +1609,7 @@ module.exports = {
   changePassword,
   refreshToken,
   requestPasswordReset,
-  resetPassword
+  resetPassword,
+  verifyEmail,
+  resendVerificationCode
 };

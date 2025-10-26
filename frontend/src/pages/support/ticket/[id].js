@@ -42,7 +42,7 @@ export default function TicketDetail() {
   ];
 
   // Load ticket and comments on mount
-  const loadTicket = async () => {
+  const loadTicket = React.useCallback(async () => {
     if (!id) return;
     
     setIsLoading(true);
@@ -71,7 +71,7 @@ export default function TicketDetail() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id, router]);
 
   // Add comment handler
   const handleAddComment = async (e) => {
@@ -97,28 +97,21 @@ export default function TicketDetail() {
       
       // Clear input immediately
       setNewComment('');
-      
-      // Add comment to UI immediately (optimistic update)
-      if (newCommentData) {
-        setComments(prev => [...prev, newCommentData]);
-        console.log('➕ Added comment to UI optimistically');
-      }
-      
       toast.success('Comment added');
       
-      // Reload in background to ensure consistency
-      setTimeout(async () => {
-        try {
-          const ticketResponse = await supportAPI.getTicket(id);
-          if (ticketResponse.data?.success) {
-            const fetchedComments = ticketResponse.data.data.comments || [];
-            console.log('🔄 Background refresh: got', fetchedComments.length, 'comments');
-            setComments(fetchedComments);
+      // Update comments state with new comment
+      if (newCommentData) {
+        setComments(prev => {
+          // Check if comment already exists (prevent duplicates)
+          const exists = prev.some(c => c.id === newCommentData.id);
+          if (exists) {
+            console.log('⚠️ Comment already exists in state, skipping');
+            return prev;
           }
-        } catch (error) {
-          console.error('Background refresh failed:', error);
-        }
-      }, 1000);
+          console.log('➕ Added comment to UI:', newCommentData.id);
+          return [...prev, newCommentData];
+        });
+      }
       
     } catch (error) {
       console.error('❌ Add comment error:', error);
@@ -148,7 +141,7 @@ export default function TicketDetail() {
 
   useEffect(() => {
     loadTicket();
-  }, [id]);
+  }, [id, loadTicket]);
 
   if (!user) {
     return (

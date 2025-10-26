@@ -1,4 +1,14 @@
-const { Pool } = require('pg');
+// Use Neon serverless driver for Vercel compatibility
+let Pool;
+if (process.env.VERCEL) {
+  // On Vercel, use Neon's serverless driver
+  const { Pool: NeonPool } = require('@neondatabase/serverless');
+  Pool = NeonPool;
+} else {
+  // Locally, use standard pg driver
+  const { Pool: PgPool } = require('pg');
+  Pool = PgPool;
+}
 require('dotenv').config();
 
 class Database {
@@ -160,6 +170,12 @@ class Database {
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_refresh_token TEXT`);
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_token_expires_at TIMESTAMP`);
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS outlook_email VARCHAR(255)`);
+        
+        // 2FA columns
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_enabled BOOLEAN DEFAULT FALSE`);
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255)`);
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_code VARCHAR(10)`);
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_code_expires_at TIMESTAMP`);
       } catch (error) {
         // Columns already exist
       }
@@ -416,7 +432,38 @@ class Database {
 
 
       console.log('✅ Interview Coordinator tables initialized successfully');
-      console.log('✅ All PostgreSQL tables initialized successfully');
+      
+      // ============================================
+      // PERFORMANCE OPTIMIZATION INDEXES
+      // ============================================
+      console.log('🔧 Creating performance optimization indexes...');
+      
+      // Support tickets performance indexes
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_tickets_status_created ON support_tickets(status, created_at DESC)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_tickets_priority_status ON support_tickets(priority, status)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_tickets_user_status ON support_tickets(user_id, status)`);
+      console.log('✅ Support tickets performance indexes created');
+      
+      // Comments performance indexes
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_comments_ticket_created ON ticket_comments(ticket_id, created_at)`);
+      console.log('✅ Comments performance indexes created');
+      
+      // Analytics performance indexes
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_analytics_user_action_date ON user_analytics(user_id, action, created_at DESC)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_analytics_agent_date ON agent_usage_stats(agent_id, date DESC)`);
+      console.log('✅ Analytics performance indexes created');
+      
+      // CV Intelligence performance indexes
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_candidates_batch_score ON candidates(batch_id, overall_score DESC)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_batches_user_status ON cv_batches(user_id, status, created_at DESC)`);
+      console.log('✅ CV Intelligence performance indexes created');
+      
+      // Interview Coordinator additional performance indexes
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_interviews_scheduled_time_status ON interviews(scheduled_time, status)`);
+      await this.run(`CREATE INDEX IF NOT EXISTS idx_reminders_send_at_sent ON interview_reminders(send_at, sent)`);
+      console.log('✅ Interview Coordinator performance indexes created');
+      
+      console.log('✅ All PostgreSQL tables and indexes initialized successfully');
       await this.createDefaultAdmin();
       this.tablesInitialized = true;
       
