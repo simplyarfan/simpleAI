@@ -17,12 +17,8 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Get the API base URL and remove /api suffix if present
-  let API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
-  if (API_BASE.endsWith('/api')) {
-    console.warn('⚠️ [AUTH] API_BASE had /api suffix, removing it');
-    API_BASE = API_BASE.slice(0, -4);
-  }
+  // Get the API base URL (expected format: https://domain.com/api)
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
   
   // Development logging helper
   const isDev = process.env.NODE_ENV === 'development';
@@ -67,7 +63,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const response = await fetch(`${API_BASE}/api/auth/check`, {
+      const response = await fetch(`${API_BASE}/auth/check`, {
         method: 'GET',
         headers: headers,
       });
@@ -109,7 +105,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       log('📝 Starting registration...', { email: userData.email });
 
-      const response = await fetch(`${API_BASE}/api/auth/register`, {
+      const response = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +180,7 @@ export const AuthProvider = ({ children }) => {
         endpoint: `${API_BASE}/api/auth/login`
       });
 
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

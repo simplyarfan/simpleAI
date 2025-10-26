@@ -103,8 +103,9 @@ Best regards,
         return;
       }
       
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/interviews`,
+        `${API_URL}/interview-coordinator/interviews`,
         { headers }
       );
       
@@ -143,8 +144,9 @@ Best regards,
         bccEmails: availabilityForm.bccEmails.split(',').map(e => e.trim()).filter(Boolean)
       };
 
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/request-availability`,
+        `${API_URL}/interview-coordinator/request-availability`,
         payload,
         { headers }
       );
@@ -187,8 +189,9 @@ Best regards,
         bccEmails: scheduleForm.bccEmails.split(',').map(e => e.trim()).filter(Boolean)
       };
 
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/schedule-interview`,
+        `${API_URL}/interview-coordinator/schedule-interview`,
         payload,
         { headers }
       );
@@ -209,8 +212,9 @@ Best regards,
   const updateInterviewStatus = async (interviewId, status, outcome = null) => {
     try {
       const headers = getAuthHeaders();
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
       await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/interview-coordinator/interview/${interviewId}/status`,
+        `${API_URL}/interview-coordinator/interview/${interviewId}/status`,
         { status, outcome },
         { headers }
       );
@@ -225,11 +229,10 @@ Best regards,
   const downloadCalendar = async (interviewId, candidateName) => {
     try {
       const headers = getAuthHeaders();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
-      const cleanUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
       
       const response = await axios.get(
-        `${cleanUrl}/api/interview-coordinator/interview/${interviewId}/calendar`,
+        `${API_URL}/interview-coordinator/interview/${interviewId}/calendar`,
         { headers, responseType: 'blob' }
       );
       
@@ -254,11 +257,10 @@ Best regards,
     
     try {
       const headers = getAuthHeaders();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
-      const cleanUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
       
       await axios.delete(
-        `${cleanUrl}/api/interview-coordinator/interview/${interviewId}`,
+        `${API_URL}/interview-coordinator/interview/${interviewId}`,
         { headers }
       );
       

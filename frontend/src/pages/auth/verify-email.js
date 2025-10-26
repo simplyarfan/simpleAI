@@ -4,13 +4,8 @@ import Head from 'next/head';
 import axios from 'axios';
 import ErrorAlert from '@/components/shared/ErrorAlert';
 
-// Ensure API_URL includes /api path
-const getAPIUrl = () => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-  // Only add /api if it's not already there
-  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
-};
-const API_URL = getAPIUrl();
+// Get API URL (expected format: https://domain.com/api)
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function VerifyEmail() {
   const router = useRouter();
