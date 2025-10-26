@@ -121,7 +121,7 @@ export default function VerifyEmail() {
 
       if (response.data.success) {
         setSuccessMessage('Verification code sent! Check your email.');
-        setResendCooldown(60); // 60 second cooldown
+        setResendCooldown(30); // 30 second cooldown
       }
     } catch (err) {
       console.error('Resend error:', err);

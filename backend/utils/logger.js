@@ -1,12 +1,4 @@
 const winston = require('winston');
-const path = require('path');
-const fs = require('fs');
-
-// Create logs directory if it doesn't exist
-const logsDir = path.join(__dirname, '../logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir, { recursive: true });
-}
 
 // Define log format
 const logFormat = winston.format.combine(
@@ -20,52 +12,25 @@ const logFormat = winston.format.combine(
   })
 );
 
-// Define log format for JSON (production)
+// Define log format for JSON (production/serverless)
 const jsonFormat = winston.format.combine(
   winston.format.timestamp(),
   winston.format.errors({ stack: true }),
   winston.format.json()
 );
 
-// Create the logger
+// Create the logger - CONSOLE ONLY for serverless compatibility
 const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: process.env.NODE_ENV === 'production' ? jsonFormat : logFormat,
   defaultMeta: { service: 'ai-platform' },
   transports: [
-    // Console transport
+    // Console transport (works in all environments including serverless)
     new winston.transports.Console({
-      format: winston.format.combine(
+      format: process.env.NODE_ENV === 'production' ? jsonFormat : winston.format.combine(
         winston.format.colorize(),
         logFormat
       )
-    }),
-    
-    // Error log file
-    new winston.transports.File({
-      filename: path.join(logsDir, 'error.log'),
-      level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-    
-    // Combined log file
-    new winston.transports.File({
-      filename: path.join(logsDir, 'combined.log'),
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-  ],
-  
-  // Handle exceptions and rejections
-  exceptionHandlers: [
-    new winston.transports.File({
-      filename: path.join(logsDir, 'exceptions.log')
-    })
-  ],
-  rejectionHandlers: [
-    new winston.transports.File({
-      filename: path.join(logsDir, 'rejections.log')
     })
   ]
 });
@@ -119,15 +84,6 @@ logger.logQuery = (query, duration, error = null) => {
   }
 };
 
-// If we're not in production, log to console with colors
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
-}
 
 // Add development-only logging helper
 logger.dev = (...args) => {

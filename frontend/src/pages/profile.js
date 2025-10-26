@@ -32,8 +32,6 @@ function ProfileSettings() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [connectedEmail, setConnectedEmail] = useState({});
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [toggle2FALoading, setToggle2FALoading] = useState(false);
   
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -58,22 +56,8 @@ function ProfileSettings() {
         jobTitle: user.job_title || '',
         department: user.department || ''
       });
-      
-      // Load 2FA status
-      fetch2FAStatus();
     }
   }, [user]);
-
-  const fetch2FAStatus = async () => {
-    try {
-      const response = await authAPI.getProfile();
-      if (response.success && response.data?.user) {
-        setTwoFactorEnabled(response.data.user.two_factor_enabled || false);
-      }
-    } catch (error) {
-      console.error('Error fetching 2FA status:', error);
-    }
-  };
 
   // Load connected email on component mount
   useEffect(() => {
@@ -584,105 +568,6 @@ function ProfileSettings() {
                     </button>
                   </div>
                 </form>
-
-                {/* 2FA Settings Section */}
-                <div className="p-8 border-t border-gray-200">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Shield className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">Two-Factor Authentication</h3>
-                        <p className="text-sm text-gray-600 mb-3">
-                          {twoFactorEnabled 
-                            ? 'Enhanced security is enabled. You\'ll receive a verification code via email when signing in.'
-                            : 'Add an extra layer of security to your account by requiring a verification code when you sign in.'
-                          }
-                        </p>
-                        {twoFactorEnabled && (
-                          <div className="inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Active
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end space-y-2">
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={twoFactorEnabled}
-                          onChange={async (e) => {
-                            const enabled = e.target.checked;
-                            
-                            if (enabled) {
-                              // Enable 2FA
-                              setToggle2FALoading(true);
-                              try {
-                                const response = await authAPI.enable2FA();
-                                if (response.success) {
-                                  setTwoFactorEnabled(true);
-                                  toast.success('Two-factor authentication enabled');
-                                } else {
-                                  toast.error(response.message || 'Failed to enable 2FA');
-                                  e.target.checked = false;
-                                }
-                              } catch (error) {
-                                console.error('Error enabling 2FA:', error);
-                                toast.error('Failed to enable 2FA');
-                                e.target.checked = false;
-                              } finally {
-                                setToggle2FALoading(false);
-                              }
-                            } else {
-                              // Disable 2FA - require password
-                              const password = prompt('Enter your password to disable 2FA:');
-                              if (!password) {
-                                e.target.checked = true;
-                                return;
-                              }
-                              
-                              setToggle2FALoading(true);
-                              try {
-                                const response = await authAPI.disable2FA(password);
-                                if (response.success) {
-                                  setTwoFactorEnabled(false);
-                                  toast.success('Two-factor authentication disabled');
-                                } else {
-                                  toast.error(response.message || 'Failed to disable 2FA');
-                                  e.target.checked = true;
-                                }
-                              } catch (error) {
-                                console.error('Error disabling 2FA:', error);
-                                toast.error(error.response?.data?.message || 'Failed to disable 2FA');
-                                e.target.checked = true;
-                              } finally {
-                                setToggle2FALoading(false);
-                              }
-                            }
-                          }}
-                          disabled={toggle2FALoading}
-                        />
-                        <div className="w-14 h-8 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-1 after:left-1 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                      {toggle2FALoading && (
-                        <div className="text-xs text-gray-500">Updating...</div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Info box */}
-                  <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="text-sm font-semibold text-blue-900 mb-2">How it works:</h4>
-                    <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                      <li>Enter your email and password as usual</li>
-                      <li>Receive a 6-digit code via email</li>
-                      <li>Enter the code to complete sign in</li>
-                    </ol>
-                  </div>
-                </div>
               </div>
             )}
           </div>
