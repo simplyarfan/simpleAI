@@ -202,18 +202,19 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Login failed');
       }
 
+      // Check if email verification is required (before checking success)
+      if (data.requiresVerification) {
+        console.log('📧 Email verification required, redirecting...');
+        toast.warning(data.message || 'Please verify your email first');
+        return { 
+          success: false,
+          requiresVerification: true, 
+          userId: data.userId,
+          message: data.message 
+        };
+      }
+
       if (data.success) {
-        // Check if email verification is required
-        if (data.requiresVerification) {
-          console.log('📧 Email verification required, redirecting...');
-          toast.warning(data.message || 'Please verify your email first');
-          return { 
-            success: false,
-            requiresVerification: true, 
-            userId: data.userId,
-            message: data.message 
-          };
-        }
         
         // Check if 2FA is required
         if (data.requires2FA) {
@@ -248,6 +249,17 @@ export const AuthProvider = ({ children }) => {
       throw new Error(data.message || 'Authentication failed');
     } catch (error) {
       console.error('❌ Login error:', error);
+      
+      // Check if this is a verification error (don't show error toast, just return result)
+      if (error.response?.data?.requiresVerification) {
+        return {
+          success: false,
+          requiresVerification: true,
+          userId: error.response.data.userId,
+          message: error.response.data.message
+        };
+      }
+      
       const errorMessage = error.message || 'Login failed';
       toast.error(errorMessage);
       throw new Error(errorMessage);

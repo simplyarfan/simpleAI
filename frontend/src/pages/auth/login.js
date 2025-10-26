@@ -52,6 +52,7 @@ const Login = () => {
       
       // Check if email verification is required
       if (result.requiresVerification) {
+        toast.info(result.message || 'Please verify your email address first');
         router.push(`/auth/verify-email?userId=${result.userId}`);
         return;
       }
@@ -77,7 +78,12 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('An error occurred during login');
+      // Check if error message indicates email verification needed
+      if (error.message && error.message.toLowerCase().includes('verify')) {
+        // Don't show duplicate toast - AuthContext already showed it
+      } else {
+        toast.error('An error occurred during login');
+      }
     }
   };
 
