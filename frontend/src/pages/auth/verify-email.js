@@ -4,7 +4,7 @@ import Head from 'next/head';
 import axios from 'axios';
 import ErrorAlert from '@/components/shared/ErrorAlert';
 
-// Get API URL (expected format: https://domain.com/api)
+// Get API URL (already includes /api from .env.local)
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function VerifyEmail() {

@@ -177,7 +177,7 @@ export const AuthProvider = ({ children }) => {
       console.log('🔐 Starting login...', { 
         email: credentials.email,
         apiBase: API_BASE,
-        endpoint: `${API_BASE}/api/auth/login`
+        endpoint: `${API_BASE}/auth/login`
       });
 
       const response = await fetch(`${API_BASE}/auth/login`, {
@@ -279,7 +279,7 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = useCallback(async (token) => {
     try {
       console.log('📧 Verifying email with token...');
-      const response = await fetch(`${API_BASE}/api/auth/verify-email`, {
+      const response = await fetch(`${API_BASE}/auth/verify-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -308,7 +308,7 @@ export const AuthProvider = ({ children }) => {
   const resendVerification = useCallback(async (email) => {
     try {
       console.log('📧 Resending verification email...');
-      const response = await fetch(`${API_BASE}/api/auth/resend-verification`, {
+      const response = await fetch(`${API_BASE}/auth/resend-verification`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
