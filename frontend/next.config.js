@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, // Disable strict mode for static export
   swcMinify: true,
   
-  // Static export for Netlify
+  // Static export for Netlify - client-side only SPA
   output: 'export',
   trailingSlash: true,
   skipTrailingSlashRedirect: true,

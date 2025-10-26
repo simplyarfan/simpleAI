@@ -318,4 +318,6 @@ export const handleAPIError = (error) => {
   }
 };
 
+// Export both named and default for compatibility
+export { api };
 export default api;

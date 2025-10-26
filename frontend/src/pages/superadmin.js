@@ -2,8 +2,9 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
 import ImprovedSuperAdminDashboard from '../components/superadmin/ImprovedSuperAdminDashboard';
+import ClientOnly from '../components/shared/ClientOnly';
 
-export default function SuperAdmin() {
+function SuperAdminPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -33,4 +34,12 @@ export default function SuperAdmin() {
   }
 
   return <ImprovedSuperAdminDashboard />;
+}
+
+export default function SuperAdmin() {
+  return (
+    <ClientOnly>
+      <SuperAdminPage />
+    </ClientOnly>
+  );
 }
