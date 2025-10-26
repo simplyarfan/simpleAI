@@ -17,8 +17,14 @@ class EmailService {
    * Initialize email transporter
    */
   initializeTransporter() {
+    console.log('🔍 [EMAIL] Checking environment variables...');
+    console.log('🔍 [EMAIL] EMAIL_USER exists:', !!process.env.EMAIL_USER);
+    console.log('🔍 [EMAIL] EMAIL_PASS exists:', !!process.env.EMAIL_PASS);
+    console.log('🔍 [EMAIL] NODE_ENV:', process.env.NODE_ENV);
+    
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.warn('⚠️ Email credentials not configured. Emails will be logged to console.');
+      console.warn('⚠️ [EMAIL] Credentials not configured. Running in DEV MODE - emails logged to console only.');
+      console.warn('⚠️ [EMAIL] To fix: Add EMAIL_USER and EMAIL_PASS to Vercel environment variables');
       return;
     }
 
