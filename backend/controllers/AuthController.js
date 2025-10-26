@@ -138,12 +138,15 @@ const register = async (req, res) => {
     // Log registration (pending verification)
     console.log(`User registered (pending verification): ${newUser.email}`);
 
-    res.status(201).json({
+    const response = {
       success: true,
       requiresVerification: true,
       userId: newUser.id,
       message: 'Registration successful! Please check your email for verification code.'
-    });
+    };
+    
+    console.log('🔍 [BACKEND] Sending registration response:', JSON.stringify(response));
+    res.status(201).json(response);
 
   } catch (error) {
     console.error('Registration error:', error);
