@@ -1,4 +1,14 @@
-const { Pool } = require('pg');
+// Use Neon serverless driver for Vercel compatibility
+let Pool;
+if (process.env.VERCEL) {
+  // On Vercel, use Neon's serverless driver
+  const { Pool: NeonPool } = require('@neondatabase/serverless');
+  Pool = NeonPool;
+} else {
+  // Locally, use standard pg driver
+  const { Pool: PgPool } = require('pg');
+  Pool = PgPool;
+}
 require('dotenv').config();
 
 class Database {
