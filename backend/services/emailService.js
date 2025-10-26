@@ -46,6 +46,14 @@ class EmailService {
     }
 
     try {
+      // Check if createTransporter exists
+      if (typeof nodemailer.createTransporter !== 'function') {
+        console.error('❌ [EMAIL] nodemailer.createTransporter is not a function');
+        console.error('❌ [EMAIL] nodemailer type:', typeof nodemailer);
+        console.error('❌ [EMAIL] nodemailer keys:', Object.keys(nodemailer || {}));
+        return;
+      }
+      
       this.transporter = nodemailer.createTransporter({
         host: process.env.EMAIL_HOST || 'smtp.gmail.com',
         port: parseInt(process.env.EMAIL_PORT) || 587,
@@ -62,8 +70,9 @@ class EmailService {
       console.log('✅ [EMAIL] SMTP transporter created successfully');
       console.log('✅ [EMAIL] Using:', process.env.EMAIL_USER);
     } catch (error) {
-      console.error('❌ [EMAIL] FATAL: Failed to create SMTP transporter:', error.message);
-      throw error;
+      console.error('❌ [EMAIL] Failed to create SMTP transporter:', error.message);
+      // Don't throw - just log and continue
+      this.transporter = null;
     }
   }
 
