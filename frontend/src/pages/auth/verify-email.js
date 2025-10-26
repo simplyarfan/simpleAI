@@ -9,13 +9,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function VerifyEmail() {
   const router = useRouter();
-  const { userId } = router.query;
+  const { userId, from } = router.query;
 
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showLoginBanner, setShowLoginBanner] = useState(false);
 
   const inputRefs = useRef([]);
 
@@ -26,6 +27,13 @@ export default function VerifyEmail() {
       return () => clearTimeout(timer);
     }
   }, [resendCooldown]);
+
+  // Check if user came from login attempt
+  useEffect(() => {
+    if (from === 'login') {
+      setShowLoginBanner(true);
+    }
+  }, [from]);
 
   // Redirect if no userId
   useEffect(() => {
@@ -167,6 +175,33 @@ export default function VerifyEmail() {
                 We've sent a 6-digit code to your email address. Enter it below to verify your account.
               </p>
             </div>
+
+            {/* Login Redirect Banner */}
+            {showLoginBanner && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start">
+                  <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-900">
+                      Please verify your email address first
+                    </p>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Check your inbox for the verification code we sent you.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowLoginBanner(false)}
+                    className="text-blue-400 hover:text-blue-600 ml-3"
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Error/Success Messages */}
             {error && (

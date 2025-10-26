@@ -52,8 +52,8 @@ const Login = () => {
       
       // Check if email verification is required
       if (result.requiresVerification) {
-        toast.info(result.message || 'Please verify your email address first');
-        router.push(`/auth/verify-email?userId=${result.userId}`);
+        // Redirect immediately without toast - verify-email page will show message
+        router.push(`/auth/verify-email?userId=${result.userId}&from=login`);
         return;
       }
       

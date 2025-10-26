@@ -197,7 +197,7 @@ export const AuthProvider = ({ children }) => {
       // Handle unverified user (403 status)
       if (response.status === 403 && data.requiresVerification) {
         console.log('📧 Email verification required (403), redirecting...');
-        toast.warning(data.message || 'Please verify your email first');
+        // DON'T show toast here - login page will handle redirect
         return { 
           success: false,
           requiresVerification: true, 
@@ -213,7 +213,7 @@ export const AuthProvider = ({ children }) => {
       // Check if email verification is required (before checking success)
       if (data.requiresVerification) {
         console.log('📧 Email verification required, redirecting...');
-        toast.warning(data.message || 'Please verify your email first');
+        // DON'T show toast here - login page will handle redirect
         return { 
           success: false,
           requiresVerification: true, 
