@@ -358,6 +358,21 @@ app.get('/', (req, res) => {
 // Import cache middleware
 const { longCacheMiddleware, shortCacheMiddleware, cacheInvalidationMiddleware } = require('./middleware/cache');
 
+// DIRECT AUTH ENDPOINT - BYPASS ROUTE LOADING
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email and password required' });
+    }
+    const AuthController = require('./controllers/AuthController');
+    await AuthController.login(req, res);
+  } catch (error) {
+    console.error('Direct login error:', error.message);
+    res.status(500).json({ success: false, message: 'Login failed', error: error.message });
+  }
+});
+
 // API Routes with caching (conditional)
 if (authRoutes) {
   app.use('/api/auth', authRoutes);
