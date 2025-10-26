@@ -337,6 +337,15 @@ app.get('/', (req, res) => {
       support: '/api/support/*',
       cvIntelligence: '/api/cv-intelligence/*',
       notifications: '/api/notifications/*'
+    },
+    routesLoaded: {
+      auth: !!authRoutes,
+      analytics: !!analyticsRoutes,
+      support: !!supportRoutes,
+      cv: !!cvRoutes,
+      notifications: !!notificationRoutes,
+      init: !!initRoutes,
+      interview: !!interviewRoutes
     }
   });
 });
