@@ -4,7 +4,13 @@ import Head from 'next/head';
 import axios from 'axios';
 import ErrorAlert from '@/components/shared/ErrorAlert';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+// Ensure API_URL includes /api path
+const getAPIUrl = () => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  // Only add /api if it's not already there
+  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+};
+const API_URL = getAPIUrl();
 
 export default function VerifyEmail() {
   const router = useRouter();
@@ -78,7 +84,7 @@ export default function VerifyEmail() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/api/auth/verify-email`, {
+      const response = await axios.post(`${API_URL}/auth/verify-email`, {
         userId,
         code: verificationCode
       });
@@ -115,7 +121,7 @@ export default function VerifyEmail() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/api/auth/resend-verification`, {
+      const response = await axios.post(`${API_URL}/auth/resend-verification`, {
         userId
       });
 
