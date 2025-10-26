@@ -14,34 +14,40 @@ class EmailService {
   }
 
   /**
-   * Initialize email transporter
+   * Initialize email transporter - NO FALLBACKS
    */
   initializeTransporter() {
-    console.log('🔍 [EMAIL] Checking environment variables...');
-    console.log('🔍 [EMAIL] EMAIL_USER exists:', !!process.env.EMAIL_USER);
-    console.log('🔍 [EMAIL] EMAIL_PASS exists:', !!process.env.EMAIL_PASS);
-    console.log('🔍 [EMAIL] NODE_ENV:', process.env.NODE_ENV);
+    console.log('🔍 [EMAIL] Initializing email service...');
+    console.log('🔍 [EMAIL] EMAIL_USER:', process.env.EMAIL_USER ? 'SET' : 'MISSING');
+    console.log('🔍 [EMAIL] EMAIL_PASS:', process.env.EMAIL_PASS ? 'SET' : 'MISSING');
+    console.log('🔍 [EMAIL] EMAIL_HOST:', process.env.EMAIL_HOST || 'smtp.gmail.com (default)');
     
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.warn('⚠️ [EMAIL] Credentials not configured. Running in DEV MODE - emails logged to console only.');
-      console.warn('⚠️ [EMAIL] To fix: Add EMAIL_USER and EMAIL_PASS to Vercel environment variables');
-      return;
+      const error = new Error('EMAIL_USER and EMAIL_PASS environment variables are required');
+      console.error('❌ [EMAIL] FATAL: Email credentials not configured');
+      console.error('❌ [EMAIL] Set EMAIL_USER and EMAIL_PASS in Vercel environment variables');
+      throw error;
     }
 
     try {
       this.transporter = nodemailer.createTransporter({
         host: process.env.EMAIL_HOST || 'smtp.gmail.com',
         port: parseInt(process.env.EMAIL_PORT) || 587,
-        secure: false, // true for 465, false for other ports
+        secure: false,
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS
-        }
+        },
+        // Fail fast - no retries
+        pool: false,
+        maxConnections: 1
       });
       
-      console.log('✅ Email service initialized');
+      console.log('✅ [EMAIL] SMTP transporter created successfully');
+      console.log('✅ [EMAIL] Using:', process.env.EMAIL_USER);
     } catch (error) {
-      console.error('❌ Failed to initialize email service:', error.message);
+      console.error('❌ [EMAIL] FATAL: Failed to create SMTP transporter:', error.message);
+      throw error;
     }
   }
 
@@ -77,20 +83,19 @@ class EmailService {
   }
 
   /**
-   * Core email sending function
+   * Core email sending function - NO FALLBACKS, FAIL PROPERLY
    */
   async sendEmail(to, subject, html) {
-    // If transporter not configured, log to console (development)
     if (!this.transporter) {
-      console.log('\n📧 ===== EMAIL (Dev Mode) =====');
-      console.log(`To: ${to}`);
-      console.log(`Subject: ${subject}`);
-      console.log('HTML Content:', html.substring(0, 200) + '...');
-      console.log('================================\n');
-      return { success: true, mode: 'console' };
+      const error = new Error('Email service not initialized - missing credentials');
+      console.error('❌ [EMAIL] Cannot send email - transporter not initialized');
+      throw error;
     }
 
     try {
+      console.log(`📧 [EMAIL] Sending to: ${to}`);
+      console.log(`📧 [EMAIL] Subject: ${subject}`);
+      
       const info = await this.transporter.sendMail({
         from: `"Enterprise AI Hub" <${this.from}>`,
         to,
@@ -98,18 +103,14 @@ class EmailService {
         html
       });
 
-      console.log('✅ Email sent:', info.messageId);
+      console.log('✅ [EMAIL] Successfully sent:', info.messageId);
+      console.log('✅ [EMAIL] Response:', info.response);
       return { success: true, messageId: info.messageId };
     } catch (error) {
-      console.error('❌ Email sending failed:', error.message);
-      
-      // Fallback to console in case of error
-      console.log('\n📧 ===== EMAIL (Fallback) =====');
-      console.log(`To: ${to}`);
-      console.log(`Subject: ${subject}`);
-      console.log('================================\n');
-      
-      return { success: false, error: error.message };
+      console.error('❌ [EMAIL] FAILED to send email:', error.message);
+      console.error('❌ [EMAIL] Error details:', error);
+      // Throw the error - let the caller handle it
+      throw error;
     }
   }
 

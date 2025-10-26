@@ -11,11 +11,13 @@ if (process.env.VERCEL) {
 }
 require('dotenv').config();
 
+// Global flag to prevent reinitialization on every serverless invocation
+let GLOBAL_TABLES_INITIALIZED = false;
+
 class Database {
   constructor() {
     this.pool = null;
     this.isConnected = false;
-    this.tablesInitialized = false; // Reset to allow proper table creation
   }
 
   async connect() {
@@ -56,8 +58,13 @@ class Database {
       const testResult = await this.pool.query('SELECT NOW() as current_time');
       this.isConnected = true;
       
-      // Initialize tables
-      await this.initializeTables();
+      // Initialize tables ONLY ONCE globally (not every request)
+      if (!GLOBAL_TABLES_INITIALIZED) {
+        console.log('🔧 First connection - checking database schema...');
+        await this.initializeTables();
+        GLOBAL_TABLES_INITIALIZED = true;
+      }
+      
       return this.pool;
         
     } catch (error) {
@@ -132,12 +139,8 @@ class Database {
   }
 
   async initializeTables() {
-    if (this.tablesInitialized) {
-      return;
-    }
-
     try {
-      console.log('🔧 Initializing PostgreSQL tables...');
+      console.log('🔧 Initializing PostgreSQL schema (one-time check)...');
 
       // Users table
       await this.run(`
@@ -180,13 +183,11 @@ class Database {
         // Columns already exist
       }
 
-      // Add critical indexes for performance
+      // Create indexes (IF NOT EXISTS is safe but slow - only runs once)
       await this.run(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
       await this.run(`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)`);
-      await this.run(`CREATE INDEX IF NOT EXISTS idx_users_department ON users(department)`);
       await this.run(`CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active)`);
-      await this.run(`CREATE INDEX IF NOT EXISTS idx_users_created_at ON users(created_at)`);
-      console.log('✅ User table indexes created');
+      console.log('✅ User table indexes verified');
 
       // User sessions table
       await this.run(`
@@ -203,11 +204,10 @@ class Database {
         )
       `);
 
-      // Add indexes for user sessions
+      // Create essential indexes only
       await this.run(`CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id)`);
       await this.run(`CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at)`);
-      await this.run(`CREATE INDEX IF NOT EXISTS idx_user_sessions_session_token ON user_sessions(session_token)`);
-      console.log('✅ User sessions indexes created');
+      console.log('✅ User sessions indexes verified');
 
       // User preferences table
       await this.run(`
@@ -276,11 +276,10 @@ class Database {
         )
       `);
 
-      // Add indexes for CV batches
+      // Create essential indexes only
       await this.run(`CREATE INDEX IF NOT EXISTS idx_cv_batches_user_id ON cv_batches(user_id)`);
       await this.run(`CREATE INDEX IF NOT EXISTS idx_cv_batches_status ON cv_batches(status)`);
-      await this.run(`CREATE INDEX IF NOT EXISTS idx_cv_batches_created_at ON cv_batches(created_at)`);
-      console.log('✅ CV batches indexes created');
+      console.log('✅ CV batches indexes verified');
 
       // Add jd_requirements column if it doesn't exist (for existing databases)
       try {
@@ -304,11 +303,9 @@ class Database {
         )
       `);
 
-      // Add indexes for candidates
+      // Create essential indexes only
       await this.run(`CREATE INDEX IF NOT EXISTS idx_candidates_batch_id ON candidates(batch_id)`);
-      await this.run(`CREATE INDEX IF NOT EXISTS idx_candidates_email ON candidates(email)`);
-      await this.run(`CREATE INDEX IF NOT EXISTS idx_candidates_overall_score ON candidates(overall_score)`);
-      console.log('✅ Candidates indexes created');
+      console.log('✅ Candidates indexes verified');
 
       // Support tickets table
       await this.run(`
@@ -330,12 +327,10 @@ class Database {
         )
       `);
 
-      // Add indexes for support tickets
+      // Create essential indexes only
       await this.run(`CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id)`);
       await this.run(`CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status)`);
-      await this.run(`CREATE INDEX IF NOT EXISTS idx_support_tickets_priority ON support_tickets(priority)`);
-      await this.run(`CREATE INDEX IF NOT EXISTS idx_support_tickets_created_at ON support_tickets(created_at)`);
-      console.log('✅ Support tickets indexes created');
+      console.log('✅ Support tickets indexes verified');
 
       // Ticket comments table
       await this.run(`
