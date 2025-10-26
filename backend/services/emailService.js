@@ -4,7 +4,13 @@
  * Fallback to console logging if SMTP not configured
  */
 
-const nodemailer = require('nodemailer');
+let nodemailer;
+try {
+  nodemailer = require('nodemailer');
+} catch (e) {
+  console.error('[EMAIL] Failed to load nodemailer:', e.message);
+  nodemailer = null;
+}
 
 class EmailService {
   constructor() {
@@ -21,6 +27,11 @@ class EmailService {
     console.log('🔍 [EMAIL] EMAIL_USER:', process.env.EMAIL_USER ? 'SET' : 'MISSING');
     console.log('🔍 [EMAIL] EMAIL_PASS:', process.env.EMAIL_PASS ? 'SET' : 'MISSING');
     console.log('🔍 [EMAIL] EMAIL_HOST:', process.env.EMAIL_HOST || 'smtp.gmail.com (default)');
+    
+    if (!nodemailer) {
+      console.error('❌ [EMAIL] nodemailer package not available');
+      return;
+    }
     
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('❌ [EMAIL] CRITICAL: Email credentials not configured');
