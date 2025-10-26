@@ -47,7 +47,33 @@ router.post('/login',
   AuthController.login
 );
 
-// Email verification routes removed - no longer needed
+// Verify 2FA code
+router.post('/verify-2fa',
+  authLimiter,
+  trackActivity('2fa_verification'),
+  AuthController.verify2FA
+);
+
+// Resend 2FA code
+router.post('/resend-2fa',
+  authLimiter,
+  trackActivity('2fa_resend'),
+  AuthController.resend2FACode
+);
+
+// Email verification during registration
+router.post('/verify-email',
+  authLimiter,
+  trackActivity('email_verification'),
+  AuthController.verifyEmail
+);
+
+// Resend verification code during registration
+router.post('/resend-verification',
+  emailVerificationLimiter,
+  trackActivity('verification_resend'),
+  AuthController.resendVerificationCode
+);
 
 // Request password reset
 router.post('/forgot-password', 
@@ -95,6 +121,20 @@ router.put('/change-password',
   validatePasswordChange,
   trackActivity('password_changed'),
   AuthController.changePassword
+);
+
+// Enable 2FA
+router.post('/enable-2fa',
+  authenticateToken,
+  trackActivity('2fa_enabled'),
+  AuthController.enable2FA
+);
+
+// Disable 2FA
+router.post('/disable-2fa',
+  authenticateToken,
+  trackActivity('2fa_disabled'),
+  AuthController.disable2FA
 );
 
 // Check authentication status

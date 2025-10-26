@@ -108,8 +108,11 @@ const Register = () => {
         jobTitle: formData.job_title || undefined
       });
       
-      if (result.success) {
-        // Registration successful, user is now logged in automatically
+      if (result.success && result.requiresVerification) {
+        // Redirect to email verification page
+        router.push(`/auth/verify-email?userId=${result.userId}`);
+      } else if (result.success) {
+        // Fallback: if already logged in (shouldn't happen)
         router.push('/');
       }
     } catch (error) {

@@ -129,4 +129,17 @@ if (process.env.NODE_ENV !== 'production') {
   }));
 }
 
+// Add development-only logging helper
+logger.dev = (...args) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(...args);
+  }
+};
+
+// Add conditional logging (skip certain paths)
+logger.shouldLog = (req) => {
+  const skipPaths = ['/health', '/favicon.ico', '/api/test'];
+  return !skipPaths.some(path => req.url.includes(path));
+};
+
 module.exports = logger;

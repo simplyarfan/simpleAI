@@ -202,6 +202,10 @@ export const authAPI = {
   getProfile: () => api.get('/auth/profile'),
   changePassword: (data) => api.put('/auth/change-password', data),
   
+  // 2FA methods
+  enable2FA: () => api.post('/auth/enable-2fa').then(res => res.data),
+  disable2FA: (password) => api.post('/auth/disable-2fa', { password }).then(res => res.data),
+  
   // Admin/Superadmin user management
   getAllUsers: (params) => api.get('/auth/users', { params }),
   getUser: (userId) => api.get(`/auth/users/${userId}`),

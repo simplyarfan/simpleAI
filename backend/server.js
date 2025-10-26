@@ -68,24 +68,19 @@ try {
   console.error('❌ Error loading interview coordinator routes:', error.message);
 }
 
-// Enhanced request logger middleware with timing
-const requestLogger = (req, res, next) => {
-  const start = Date.now();
-  
-  // Log request
-  if (req.url.includes('/api/') && !req.url.includes('/health')) {
-    logger.info(`${req.method} ${req.url}`, {
-      ip: req.ip,
-      userAgent: req.get('user-agent')
-    });
+// Optimized conditional request logger
+const conditionalLogger = (req, res, next) => {
+  // Skip logging for health checks and static assets
+  if (!logger.shouldLog(req)) {
+    return next();
   }
   
-  // Log response
+  const start = Date.now();
+  
+  // Log response only
   res.on('finish', () => {
     const duration = Date.now() - start;
-    if (req.url.includes('/api/') && !req.url.includes('/health')) {
-      logger.logRequest(req, res, duration);
-    }
+    logger.logRequest(req, res, duration);
   });
   
   next();
@@ -94,11 +89,23 @@ const requestLogger = (req, res, next) => {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Apply security headers first
-app.use(securityHeaders);
+// Trust proxy for accurate IP addresses (must be first)
+app.set('trust proxy', true);
 
-// Apply security logger
-app.use(securityLogger);
+// Compression middleware (gzip)
+const compression = require('compression');
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6 // Balance between speed and compression
+}));
+
+// Apply security headers
+app.use(securityHeaders);
 
 // CORS Configuration - Environment-driven
 app.use((req, res, next) => {
@@ -168,13 +175,12 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Middleware
+// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-app.use(requestLogger);
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Trust proxy for accurate IP addresses
-app.set('trust proxy', true);
+// Conditional request logging (skip health checks)
+app.use(conditionalLogger);
 
 // Health Check endpoint
 app.get('/health', (req, res) => {

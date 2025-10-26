@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { tokenManager } from '../utils/api';
 import toast from 'react-hot-toast';
 
@@ -49,12 +49,8 @@ export const AuthProvider = ({ children }) => {
     };
   };
 
-  // Check authentication status on mount
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
+  // Memoize checkAuthStatus to prevent recreation on every render
+  const checkAuthStatus = useCallback(async () => {
     try {
       const token = tokenManager.getAccessToken();
       if (!token) {
@@ -101,9 +97,14 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_BASE, isDev]); // Dependencies for useCallback
 
-  const register = async (userData) => {
+  // Check authentication status on mount
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  const register = useCallback(async (userData) => {
     try {
       setLoading(true);
       log('📝 Starting registration...', { email: userData.email });
@@ -126,6 +127,17 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data.success) {
+        // Check if email verification is required
+        if (data.requiresVerification) {
+          toast.success(data.message || 'Registration successful! Please verify your email.');
+          return {
+            success: true,
+            requiresVerification: true,
+            userId: data.userId,
+            message: data.message
+          };
+        }
+        
         // Store tokens and auto-login (handle both response formats)
         const accessToken = data.data?.accessToken || data.token || data.accessToken;
         const refreshToken = data.data?.refreshToken || data.refreshToken;
@@ -161,9 +173,9 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_BASE]);
 
-  const login = async (credentials) => {
+  const login = useCallback(async (credentials) => {
     try {
       setLoading(true);
       console.log('🔐 Starting login...', { 
@@ -191,6 +203,29 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data.success) {
+        // Check if email verification is required
+        if (data.requiresVerification) {
+          console.log('📧 Email verification required, redirecting...');
+          toast.warning(data.message || 'Please verify your email first');
+          return { 
+            success: false,
+            requiresVerification: true, 
+            userId: data.userId,
+            message: data.message 
+          };
+        }
+        
+        // Check if 2FA is required
+        if (data.requires2FA) {
+          console.log('🔐 2FA required, redirecting...');
+          return { 
+            success: true, 
+            requires2FA: true, 
+            userId: data.userId,
+            message: data.message 
+          };
+        }
+
         // Store tokens from backend (backend sends token and refreshToken at top level)
         const accessToken = data.token || data.accessToken;
         const refreshToken = data.refreshToken;
@@ -219,9 +254,9 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_BASE]);
 
-  const verifyEmail = async (token) => {
+  const verifyEmail = useCallback(async (token) => {
     try {
       console.log('📧 Verifying email with token...');
       const response = await fetch(`${API_BASE}/api/auth/verify-email`, {
@@ -248,9 +283,9 @@ export const AuthProvider = ({ children }) => {
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
-  };
+  }, [API_BASE]);
 
-  const resendVerification = async (email) => {
+  const resendVerification = useCallback(async (email) => {
     try {
       console.log('📧 Resending verification email...');
       const response = await fetch(`${API_BASE}/api/auth/resend-verification`, {
@@ -276,9 +311,9 @@ export const AuthProvider = ({ children }) => {
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
-  };
+  }, [API_BASE]);
 
-  const logout = async (logoutAll = false) => {
+  const logout = useCallback(async (logoutAll = false) => {
     try {
       const token = tokenManager.getAccessToken();
       const endpoint = logoutAll ? '/auth/logout-all' : '/auth/logout';
@@ -301,13 +336,14 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       setIsAuthenticated(false);
     }
-  };
+  }, [API_BASE]);
 
-  const updateUser = (userData) => {
+  const updateUser = useCallback((userData) => {
     setUser(userData);
-  };
+  }, []);
 
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     user,
     loading,
     isAuthenticated,
@@ -319,7 +355,19 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus,
     updateUser,
     getAuthHeaders
-  };
+  }), [
+    user,
+    loading,
+    isAuthenticated,
+    login,
+    register,
+    logout,
+    verifyEmail,
+    resendVerification,
+    checkAuthStatus,
+    updateUser,
+    getAuthHeaders
+  ]);
 
   return (
     <AuthContext.Provider value={value}>

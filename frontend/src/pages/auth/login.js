@@ -10,6 +10,7 @@ const Login = () => {
   const router = useRouter();
   const { login, loading, isAuthenticated } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -19,6 +20,13 @@ const Login = () => {
   // Ensure component is mounted (client-side only)
   useEffect(() => {
     setMounted(true);
+    // Load remember me preference and email
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
+    if (savedEmail && savedRememberMe) {
+      setFormData(prev => ({ ...prev, email: savedEmail }));
+      setRememberMe(true);
+    }
   }, []);
 
   // Redirect if already authenticated
@@ -31,12 +39,39 @@ const Login = () => {
 
   const handleLogin = async (formData) => {
     try {
-      const result = await login(formData);
+      // Save remember me preference
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+        localStorage.setItem('rememberedEmail', formData.email);
+      } else {
+        localStorage.removeItem('rememberMe');
+        localStorage.removeItem('rememberedEmail');
+      }
+
+      const result = await login({ ...formData, rememberMe });
+      
+      // Check if email verification is required
+      if (result.requiresVerification) {
+        router.push(`/auth/verify-email?userId=${result.userId}`);
+        return;
+      }
       
       if (result.success) {
-        toast.success('Welcome back!');
-        const returnUrl = router.query.returnUrl || '/';
-        router.push(returnUrl);
+        // Check if 2FA is required
+        if (result.requires2FA) {
+          toast.success(result.message || 'Verification code sent to your email');
+          router.push({
+            pathname: '/auth/verify-2fa',
+            query: { 
+              userId: result.userId,
+              returnUrl: router.query.returnUrl || '/'
+            }
+          });
+        } else {
+          toast.success('Welcome back!');
+          const returnUrl = router.query.returnUrl || '/';
+          router.push(returnUrl);
+        }
       } else {
         toast.error(result.message || 'Login failed');
       }
@@ -118,8 +153,13 @@ const Login = () => {
           </div>
 
           <div className="flex items-center justify-between">
-            <label className="flex items-center">
-              <input type="checkbox" className="rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+            <label className="flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="rounded border-gray-300 text-orange-600 focus:ring-orange-500" 
+              />
               <span className="ml-2 text-sm text-gray-600">Remember me</span>
             </label>
             <Link href="/auth/forgot-password" className="text-sm text-orange-600 hover:text-orange-700">
