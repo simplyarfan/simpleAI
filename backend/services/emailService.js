@@ -7,6 +7,10 @@
 let nodemailer;
 try {
   nodemailer = require('nodemailer');
+  // Handle ESM vs CommonJS
+  if (nodemailer && nodemailer.default) {
+    nodemailer = nodemailer.default;
+  }
 } catch (e) {
   console.error('[EMAIL] Failed to load nodemailer:', e.message);
   nodemailer = null;
