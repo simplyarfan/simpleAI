@@ -98,6 +98,8 @@ const register = async (req, res) => {
         .catch((emailError) => {
           console.error(`❌ [EMAIL] Failed to resend verification email to ${email}:`, emailError.message);
         });
+      
+      return; // IMPORTANT: Stop execution after sending resend response
     }
 
     // Hash password with enterprise-grade security
