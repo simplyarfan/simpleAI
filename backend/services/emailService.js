@@ -7,42 +7,53 @@
 let nodemailer;
 try {
   nodemailer = require('nodemailer');
-  // Handle ESM vs CommonJS
-  if (nodemailer && nodemailer.default) {
+  console.log('[EMAIL] nodemailer loaded, type:', typeof nodemailer);
+  console.log('[EMAIL] nodemailer has createTransporter:', typeof nodemailer?.createTransporter);
+  
+  // Handle ESM vs CommonJS (nodemailer v7 should be CommonJS)
+  if (nodemailer && nodemailer.default && typeof nodemailer.default.createTransporter === 'function') {
+    console.log('[EMAIL] Using nodemailer.default (ESM)');
     nodemailer = nodemailer.default;
   }
 } catch (e) {
   console.error('[EMAIL] Failed to load nodemailer:', e.message);
+  console.error('[EMAIL] Error stack:', e.stack);
   nodemailer = null;
 }
 
 class EmailService {
   constructor() {
     this.transporter = null;
-    this.from = process.env.EMAIL_USER || 'noreply@securemaxtech.com';
-    this.initializeTransporter();
+    this.initializationAttempted = false;
   }
 
   /**
-   * Initialize email transporter - lazy initialization (don't crash on startup)
+   * Initialize email transporter - LAZY: only when first email is sent
+   * This ensures environment variables are loaded in serverless environments
    */
   initializeTransporter() {
-    console.log('🔍 [EMAIL] Initializing email service...');
+    // Prevent multiple initialization attempts
+    if (this.initializationAttempted) {
+      return this.transporter !== null;
+    }
+    
+    this.initializationAttempted = true;
+    
+    console.log('🔍 [EMAIL] Initializing email service (lazy)...');
     console.log('🔍 [EMAIL] EMAIL_USER:', process.env.EMAIL_USER ? 'SET' : 'MISSING');
     console.log('🔍 [EMAIL] EMAIL_PASS:', process.env.EMAIL_PASS ? 'SET' : 'MISSING');
     console.log('🔍 [EMAIL] EMAIL_HOST:', process.env.EMAIL_HOST || 'smtp.gmail.com (default)');
     
     if (!nodemailer) {
       console.error('❌ [EMAIL] nodemailer package not available');
-      return;
+      return false;
     }
     
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error('❌ [EMAIL] CRITICAL: Email credentials not configured');
       console.error('❌ [EMAIL] Set EMAIL_USER and EMAIL_PASS in Vercel environment variables');
       console.error('❌ [EMAIL] Email sending will FAIL until credentials are added');
-      // DON'T throw - let the service initialize but fail when trying to send
-      return;
+      return false;
     }
 
     try {
@@ -51,7 +62,7 @@ class EmailService {
         console.error('❌ [EMAIL] nodemailer.createTransporter is not a function');
         console.error('❌ [EMAIL] nodemailer type:', typeof nodemailer);
         console.error('❌ [EMAIL] nodemailer keys:', Object.keys(nodemailer || {}));
-        return;
+        return false;
       }
       
       this.transporter = nodemailer.createTransporter({
@@ -69,10 +80,11 @@ class EmailService {
       
       console.log('✅ [EMAIL] SMTP transporter created successfully');
       console.log('✅ [EMAIL] Using:', process.env.EMAIL_USER);
+      return true;
     } catch (error) {
       console.error('❌ [EMAIL] Failed to create SMTP transporter:', error.message);
-      // Don't throw - just log and continue
       this.transporter = null;
+      return false;
     }
   }
 
@@ -111,10 +123,15 @@ class EmailService {
    * Core email sending function - NO FALLBACKS, FAIL PROPERLY
    */
   async sendEmail(to, subject, html) {
+    // Lazy initialization: try to initialize transporter if not already done
     if (!this.transporter) {
-      const error = new Error('Email service not initialized - missing credentials');
-      console.error('❌ [EMAIL] Cannot send email - transporter not initialized');
-      throw error;
+      console.log('🔄 [EMAIL] Transporter not initialized, attempting lazy initialization...');
+      const initialized = this.initializeTransporter();
+      if (!initialized || !this.transporter) {
+        const error = new Error('Email service not initialized - missing credentials');
+        console.error('❌ [EMAIL] Cannot send email - transporter initialization failed');
+        throw error;
+      }
     }
 
     try {

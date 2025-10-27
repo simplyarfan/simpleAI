@@ -77,27 +77,28 @@ const register = async (req, res) => {
       
       console.log(`✅ [DB] Verification code updated for existing user: ${email}`);
       
-      // Prepare response
-      const resendResponse = {
-        success: true,
-        requiresVerification: true,
-        userId: existingUser.id,
-        message: 'Verification code sent to your email'
-      };
-      
-      // Send HTTP response immediately
-      res.status(200).json(resendResponse);
-      console.log('✅ [HTTP] Resend response sent to client');
-      
-      // Send verification email in background (non-blocking)
+      // CRITICAL: Send verification email BEFORE responding
       console.log(`📧 [EMAIL] Resending verification code to: ${email}`);
-      emailService.send2FACode(email.toLowerCase(), code, firstName)
-        .then(() => {
-          console.log(`✅ [EMAIL] Verification code resent successfully to: ${email}`);
-        })
-        .catch((emailError) => {
-          console.error(`❌ [EMAIL] Failed to resend verification email to ${email}:`, emailError.message);
+      try {
+        await emailService.send2FACode(email.toLowerCase(), code, firstName);
+        console.log(`✅ [EMAIL] Verification code resent successfully to: ${email}`);
+        
+        // Only respond after successful email send
+        res.status(200).json({
+          success: true,
+          requiresVerification: true,
+          userId: existingUser.id,
+          message: 'Verification code sent to your email'
         });
+        console.log('✅ [HTTP] Resend response sent to client after email success');
+      } catch (emailError) {
+        console.error(`❌ [EMAIL] Failed to resend verification email to ${email}:`, emailError.message);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to send verification email. Please try again or contact support.',
+          error: process.env.NODE_ENV === 'development' ? emailError.message : 'Email service unavailable'
+        });
+      }
       
       return; // IMPORTANT: Stop execution after sending resend response
     }
@@ -139,30 +140,34 @@ const register = async (req, res) => {
     const newUser = result.rows[0];
     console.log(`✅ [DB] User created successfully: ${newUser.email} (ID: ${newUser.id})`);
 
-    // Prepare response FIRST
-    const response = {
-      success: true,
-      requiresVerification: true,
-      userId: newUser.id,
-      message: 'Registration successful! Please check your email for verification code.'
-    };
-    
-    console.log('🔍 [BACKEND] Sending registration response:', JSON.stringify(response));
-    
-    // Send HTTP response immediately (don't wait for email)
-    res.status(201).json(response);
-    console.log('✅ [HTTP] Response sent to client');
-
-    // Send verification email in background (non-blocking)
+    // CRITICAL: Send verification email BEFORE responding to user
     console.log(`📧 [EMAIL] Attempting to send verification code to: ${newUser.email}`);
-    emailService.send2FACode(newUser.email, code, newUser.first_name)
-      .then(() => {
-        console.log(`✅ [EMAIL] Verification code sent successfully to: ${newUser.email}`);
-      })
-      .catch((emailError) => {
-        console.error(`❌ [EMAIL] Failed to send verification email to ${newUser.email}:`, emailError.message);
-        // Email failure doesn't affect registration success
+    try {
+      await emailService.send2FACode(newUser.email, code, newUser.first_name);
+      console.log(`✅ [EMAIL] Verification code sent successfully to: ${newUser.email}`);
+      
+      // Only send success response if email was sent successfully
+      res.status(201).json({
+        success: true,
+        requiresVerification: true,
+        userId: newUser.id,
+        message: 'Registration successful! Please check your email for verification code.'
       });
+      console.log('✅ [HTTP] Response sent to client after email success');
+    } catch (emailError) {
+      console.error(`❌ [EMAIL] Failed to send verification email to ${newUser.email}:`, emailError.message);
+      
+      // Delete the user we just created since email failed
+      await database.run('DELETE FROM users WHERE id = $1', [newUser.id]);
+      console.log(`🗑️ [DB] Rolled back user creation due to email failure`);
+      
+      // Send error response
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send verification email. Please try again or contact support.',
+        error: process.env.NODE_ENV === 'development' ? emailError.message : 'Email service unavailable'
+      });
+    }
 
   } catch (error) {
     console.error('Registration error:', error);

@@ -16,7 +16,7 @@ const logger = require('./utils/logger');
 // Import database
 const database = require('./models/database');
 // Load routes with error handling
-let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes, initRoutes, interviewRoutes;
+let authRoutes, analyticsRoutes, supportRoutes, cvRoutes, notificationRoutes, initRoutes, interviewRoutes, debugEmailRoutes;
 
 // Load each route individually with error handling
 try {
@@ -69,6 +69,13 @@ try {
   console.log('✅ Interview Coordinator routes loaded successfully');
 } catch (error) {
   console.error('❌ Error loading interview coordinator routes:', error.message);
+}
+
+try {
+  debugEmailRoutes = require('./routes/debug-email');
+  console.log('✅ Debug email routes loaded successfully');
+} catch (error) {
+  console.error('❌ Error loading debug email routes:', error.message);
 }
 
 // Optimized conditional request logger
@@ -408,7 +415,11 @@ if (interviewRoutes) {
   console.error('❌ Interview Coordinator routes failed to load');
 }
 
-// Debug routes removed - not needed in production
+// Debug email routes (temporary, for diagnosing email issues)
+if (debugEmailRoutes) {
+  app.use('/api/debug/email', debugEmailRoutes);
+  console.log('✅ Debug email routes mounted at /api/debug/email');
+}
 
 // Debug user endpoint removed - security risk in production
 

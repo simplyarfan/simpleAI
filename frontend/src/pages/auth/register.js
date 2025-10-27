@@ -112,6 +112,7 @@ const Register = () => {
       console.log('🔍 [REGISTER] requiresVerification:', result.requiresVerification);
       console.log('🔍 [REGISTER] userId:', result.userId);
       
+      // CRITICAL: Only redirect on successful registration
       if (result.success && result.requiresVerification) {
         // Redirect to email verification page
         console.log('🔍 [REGISTER] Redirecting to verify-email page...');
@@ -121,8 +122,11 @@ const Register = () => {
         console.log('🔍 [REGISTER] Auto-logged in, redirecting to dashboard...');
         router.push('/');
       }
+      // If result.success is false, error was already shown by AuthContext
     } catch (error) {
-      console.error('Registration error:', error);
+      // Error already handled and displayed by AuthContext
+      console.error('❌ [REGISTER] Registration failed:', error.message);
+      // Stay on registration page - don't redirect
     } finally {
       setIsSubmitting(false);
     }

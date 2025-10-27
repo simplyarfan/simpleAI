@@ -118,10 +118,16 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       log('📝 Registration response data:', data);
 
+      // CRITICAL: Check response.ok first - don't trust data.success if HTTP status failed
       if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
+        // Backend returned an error (4xx or 5xx)
+        const errorMessage = data.message || data.error || 'Registration failed';
+        console.error('❌ [REGISTER] Backend error:', errorMessage);
+        toast.error(errorMessage);
+        throw new Error(errorMessage);
       }
 
+      // Only trust data.success if response.ok is true
       if (data.success) {
         // Check if email verification is required
         if (data.requiresVerification) {
@@ -160,11 +166,15 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
+      // Fallback: data.success was false or missing
       throw new Error(data.message || 'Registration failed');
     } catch (err) {
       console.error('❌ Registration error:', err);
       const errorMessage = err.message || 'Registration failed';
-      toast.error(errorMessage);
+      // Don't show duplicate toast - already shown above
+      if (!err.message || err.message === 'Registration failed') {
+        toast.error(errorMessage);
+      }
       throw new Error(errorMessage);
     } finally {
       setLoading(false);
