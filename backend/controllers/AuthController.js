@@ -1499,21 +1499,23 @@ const verifyEmail = async (req, res) => {
 
     console.log(`Email verified and user logged in: ${user.email}`);
 
-    res.status(200).json(
-      ResponseOptimizer.success({
-        user: ResponseOptimizer.sanitizeUser({
-          id: user.id,
-          email: user.email,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          role: user.role,
-          is_active: true,
-          is_verified: true
-        }),
-        accessToken,
-        refreshToken
-      }, 'Email verified successfully')
-    );
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully',
+      token: accessToken,
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        name: `${user.first_name} ${user.last_name}`,
+        role: user.role,
+        is_active: true,
+        is_verified: true
+      }
+    });
 
   } catch (error) {
     console.error('Email verification error:', error);
