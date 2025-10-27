@@ -93,10 +93,10 @@ export default function VerifyEmail() {
       });
 
       if (response.data.success) {
-        // Store tokens
-        localStorage.setItem('token', response.data.data.accessToken);
-        localStorage.setItem('refreshToken', response.data.data.refreshToken);
-        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        // Store tokens (flat response structure)
+        localStorage.setItem('token', response.data.accessToken || response.data.token);
+        localStorage.setItem('refreshToken', response.data.refreshToken);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
 
         setSuccessMessage('Email verified! Redirecting...');
         
