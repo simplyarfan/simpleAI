@@ -1458,8 +1458,12 @@ const verifyEmail = async (req, res) => {
       });
     }
 
-    // Verify code
-    const isValid = await bcrypt.compare(code, user.verification_token);
+    // Verify code using SHA256 hash (matching generate2FACode)
+    const inputHash = crypto.createHash('sha256').update(code).digest('hex');
+    const isValid = inputHash === user.verification_token;
+    
+    console.log(`[VERIFY] User: ${user.email}, Input: ${code}, InputHash: ${inputHash.substring(0, 10)}..., StoredHash: ${user.verification_token?.substring(0, 10)}..., Match: ${isValid}`);
+    
     if (!isValid) {
       return res.status(400).json({
         success: false,

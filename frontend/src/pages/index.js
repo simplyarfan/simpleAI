@@ -13,9 +13,6 @@ const Dashboard = () => {
   const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
 
-  // TEST ENVIRONMENT INDICATOR
-  const isTestEnvironment = true; // This will only be on test branch
-
   // Dashboard mapping for cleaner code
   const DASHBOARD_MAP = {
     'Human Resources': LivelyHRDashboard,
@@ -59,31 +56,11 @@ const Dashboard = () => {
     );
   }
 
-  // Helper function to render dashboard with test banner
-  const renderDashboard = (Component) => (
-    <>
-      {isTestEnvironment && (
-        <div style={{
-          backgroundColor: '#ff6b00',
-          color: 'white',
-          padding: '20px',
-          textAlign: 'center',
-          fontSize: '18px',
-          fontWeight: 'bold',
-          borderBottom: '4px solid #ff4500'
-        }}>
-          🧪 TEST ENVIRONMENT - You are on the TEST branch
-        </div>
-      )}
-      <Component />
-    </>
-  );
-
   // Route users based on their department
   if (user?.role === 'user') {
     // Get dashboard component from mapping or use WaitingDashboard
     const DashboardComponent = DASHBOARD_MAP[user?.department] || WaitingDashboard;
-    return renderDashboard(DashboardComponent);
+    return <DashboardComponent />;
   }
 
   // Admin role gets admin dashboard
