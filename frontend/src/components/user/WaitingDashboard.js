@@ -72,6 +72,10 @@ const WaitingDashboard = () => {
   ];
 
   const [currentGame, setCurrentGame] = useState(null);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [reactionTimer, setReactionTimer] = useState('WAIT...');
+  const [reactionGreen, setReactionGreen] = useState(false);
+  const [reactionScore, setReactionScore] = useState(null);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -299,9 +303,32 @@ const WaitingDashboard = () => {
                   {currentGame === 'reaction' && (
                     <div>
                       <Zap className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-                      <p className="text-gray-600 mb-4">Click as fast as you can when the circle turns green!</p>
-                      <div className="w-32 h-32 bg-red-200 rounded-full mx-auto flex items-center justify-center cursor-pointer transition-colors hover:bg-red-300">
-                        <span className="text-red-600 font-bold">WAIT...</span>
+                      <p className="text-gray-600 mb-4">
+                        {!gameStarted ? 'Click START to begin!' : 'Click as fast as you can when the circle turns green!'}
+                      </p>
+                      {reactionScore !== null && (
+                        <div className="mb-4 p-3 bg-green-50 rounded-lg">
+                          <p className="text-green-700 font-bold">Your time: {reactionScore}ms</p>
+                        </div>
+                      )}
+                      <div 
+                        onClick={() => {
+                          if (gameStarted && reactionGreen) {
+                            const time = Date.now() - reactionTimer;
+                            setReactionScore(time);
+                            setGameStarted(false);
+                            setReactionGreen(false);
+                          }
+                        }}
+                        className={`w-32 h-32 rounded-full mx-auto flex items-center justify-center cursor-pointer transition-all ${
+                          !gameStarted ? 'bg-gray-200' : reactionGreen ? 'bg-green-400' : 'bg-red-400'
+                        }`}
+                      >
+                        <span className={`font-bold ${
+                          !gameStarted ? 'text-gray-600' : reactionGreen ? 'text-green-900' : 'text-red-900'
+                        }`}>
+                          {!gameStarted ? 'READY' : reactionGreen ? 'CLICK!' : 'WAIT...'}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -323,14 +350,37 @@ const WaitingDashboard = () => {
                 
                 <div className="flex justify-center space-x-3">
                   <button
-                    onClick={() => setCurrentGame(null)}
+                    onClick={() => {
+                      setCurrentGame(null);
+                      setGameStarted(false);
+                      setReactionScore(null);
+                      setReactionGreen(false);
+                    }}
                     className="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     Close
                   </button>
-                  <button className="px-4 py-2 text-white bg-gradient-to-r from-orange-500 to-red-600 rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors">
-                    Start Game
-                  </button>
+                  {currentGame === 'reaction' && !gameStarted && (
+                    <button 
+                      onClick={() => {
+                        setGameStarted(true);
+                        setReactionScore(null);
+                        const delay = Math.random() * 3000 + 1000; // 1-4 seconds
+                        setTimeout(() => {
+                          setReactionGreen(true);
+                          setReactionTimer(Date.now());
+                        }, delay);
+                      }}
+                      className="px-4 py-2 text-white bg-gradient-to-r from-orange-500 to-red-600 rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors"
+                    >
+                      Start Game
+                    </button>
+                  )}
+                  {currentGame !== 'reaction' && (
+                    <button className="px-4 py-2 text-white bg-gradient-to-r from-orange-500 to-red-600 rounded-lg hover:from-orange-600 hover:to-red-700 transition-colors opacity-50 cursor-not-allowed">
+                      Coming Soon
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

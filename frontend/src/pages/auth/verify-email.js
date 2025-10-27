@@ -98,10 +98,10 @@ export default function VerifyEmail() {
         localStorage.setItem('refreshToken', response.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(response.data.user));
 
-        setSuccessMessage('Email verified! Redirecting...');
+        setSuccessMessage('Email verified! Redirecting to login...');
         
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push('/auth/login');
         }, 1500);
       }
     } catch (err) {
@@ -153,9 +153,9 @@ export default function VerifyEmail() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-16 h-16 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center mb-4">
                 <svg 
-                  className="w-8 h-8 text-blue-600 dark:text-blue-400" 
+                  className="w-8 h-8 text-orange-600 dark:text-orange-400"
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -178,22 +178,22 @@ export default function VerifyEmail() {
 
             {/* Login Redirect Banner */}
             {showLoginBanner && (
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
                 <div className="flex items-start">
-                  <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-orange-600 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-blue-900">
+                    <p className="text-sm font-medium text-orange-900">
                       Please verify your email address first
                     </p>
-                    <p className="text-sm text-blue-700 mt-1">
+                    <p className="text-sm text-orange-700 mt-1">
                       Check your inbox for the verification code we sent you.
                     </p>
                   </div>
                   <button
                     onClick={() => setShowLoginBanner(false)}
-                    className="text-blue-400 hover:text-blue-600 ml-3"
+                    className="text-orange-400 hover:text-orange-600 ml-3"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -238,7 +238,7 @@ export default function VerifyEmail() {
                     value={digit}
                     onChange={(e) => handleInputChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-500 dark:bg-gray-700 dark:text-white"
                     disabled={loading}
                   />
                 ))}
@@ -247,7 +247,7 @@ export default function VerifyEmail() {
               <button
                 type="submit"
                 disabled={loading || code.join('').length !== 6}
-                className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center"
+                className="w-full py-3 px-4 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white font-medium rounded-lg transition-colors duration-200 flex items-center justify-center"
               >
                 {loading ? (
                   <>
@@ -286,7 +286,7 @@ export default function VerifyEmail() {
               <button
                 onClick={handleResend}
                 disabled={loading || resendCooldown > 0}
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {resendCooldown > 0 
                   ? `Resend code in ${resendCooldown}s` 
