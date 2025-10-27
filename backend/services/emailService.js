@@ -8,10 +8,10 @@ let nodemailer;
 try {
   nodemailer = require('nodemailer');
   console.log('[EMAIL] nodemailer loaded, type:', typeof nodemailer);
-  console.log('[EMAIL] nodemailer has createTransporter:', typeof nodemailer?.createTransporter);
+  console.log('[EMAIL] nodemailer has createTransport:', typeof nodemailer?.createTransport);
   
   // Handle ESM vs CommonJS (nodemailer v7 should be CommonJS)
-  if (nodemailer && nodemailer.default && typeof nodemailer.default.createTransporter === 'function') {
+  if (nodemailer && nodemailer.default && typeof nodemailer.default.createTransport === 'function') {
     console.log('[EMAIL] Using nodemailer.default (ESM)');
     nodemailer = nodemailer.default;
   }
@@ -57,15 +57,15 @@ class EmailService {
     }
 
     try {
-      // Check if createTransporter exists
-      if (typeof nodemailer.createTransporter !== 'function') {
-        console.error('❌ [EMAIL] nodemailer.createTransporter is not a function');
+      // Check if createTransport exists (note: it's createTransport, not createTransporter)
+      if (typeof nodemailer.createTransport !== 'function') {
+        console.error('❌ [EMAIL] nodemailer.createTransport is not a function');
         console.error('❌ [EMAIL] nodemailer type:', typeof nodemailer);
         console.error('❌ [EMAIL] nodemailer keys:', Object.keys(nodemailer || {}));
         return false;
       }
       
-      this.transporter = nodemailer.createTransporter({
+      this.transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST || 'smtp.gmail.com',
         port: parseInt(process.env.EMAIL_PORT) || 587,
         secure: false,
