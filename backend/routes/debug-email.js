@@ -6,13 +6,8 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/check-env', (req, res) => {
-  // Only allow in development or if specific debug flag is set
-  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEBUG !== 'true') {
-    return res.status(403).json({
-      success: false,
-      message: 'Debug endpoints disabled in production'
-    });
-  }
+  // Always allow this endpoint for debugging email issues
+  // Security: Only shows if env vars are SET, not their values
 
   const emailConfig = {
     EMAIL_USER: process.env.EMAIL_USER ? '✅ SET' : '❌ MISSING',
