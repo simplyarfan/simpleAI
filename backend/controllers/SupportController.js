@@ -5,10 +5,8 @@ class SupportController {
   // Create new support ticket
   static async createTicket(req, res) {
     try {
-      console.log('🎫 [SUPPORT] Create ticket request:', req.body);
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        console.log('🎫 [SUPPORT] Validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           message: 'Validation errors',
@@ -17,7 +15,6 @@ class SupportController {
       }
 
       const { subject, description, priority = 'medium', category = 'general' } = req.body;
-      console.log('🎫 [SUPPORT] Creating ticket for user:', req.user.id);
 
       // Create ticket
       const result = await database.run(`
@@ -27,7 +24,6 @@ class SupportController {
 
       // Get ticket ID from PostgreSQL result
       const ticketId = result.rows?.[0]?.id || result.id;
-      console.log('🎫 [SUPPORT] Ticket created with ID:', ticketId);
 
       // Get created ticket
       const ticket = await database.get(`
@@ -75,7 +71,6 @@ class SupportController {
             }
           );
         }
-        console.log(`📧 [SUPPORT] Notified ${admins.length} admins about new ticket`);
       } catch (notifError) {
         console.error('Failed to create admin notifications:', notifError);
         // Don't fail the request if notifications fail
@@ -208,8 +203,6 @@ class SupportController {
       }
 
       // Get ticket comments
-      console.log(`🔍 [SUPPORT] Fetching comments for ticket ${ticket_id}`);
-      
       const comments = await database.all(`
         SELECT 
           tc.*,
@@ -222,10 +215,6 @@ class SupportController {
         WHERE tc.ticket_id = $1
         ORDER BY tc.created_at ASC
       `, [ticket_id]);
-
-      console.log(`📊 [SUPPORT] Ticket ${ticket_id} - Found ${comments.length} comments`);
-      console.log(`📝 [SUPPORT] Comment IDs:`, comments.map(c => c.id));
-      console.log(`💬 [SUPPORT] Comment texts:`, comments.map(c => `${c.id}:${c.comment}`));
 
       res.json({
         success: true,
@@ -247,16 +236,8 @@ class SupportController {
   // Add comment to ticket
   static async addComment(req, res) {
     try {
-      console.log('🎫 [SUPPORT] Add comment request received:', {
-        ticket_id: req.params.ticket_id,
-        user_id: req.user?.id,
-        user_role: req.user?.role,
-        body: req.body
-      });
-
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        console.log('🎫 [SUPPORT] Validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           message: 'Validation errors',
@@ -268,14 +249,11 @@ class SupportController {
       const { comment, is_internal = false } = req.body;
 
       // Check if ticket exists and user has access
-      console.log('🎫 [SUPPORT] Looking for ticket:', ticket_id);
       const ticket = await database.get(`
         SELECT * FROM support_tickets WHERE id = $1
       `, [ticket_id]);
 
-      console.log('🎫 [SUPPORT] Ticket found:', !!ticket);
       if (!ticket) {
-        console.log('🎫 [SUPPORT] Ticket not found for ID:', ticket_id);
         return res.status(404).json({
           success: false,
           message: 'Ticket not found'
@@ -295,22 +273,23 @@ class SupportController {
       const isInternalComment = is_internal && isAdmin;
 
       // Add comment
-      console.log('🎫 [SUPPORT] Inserting comment:', { ticket_id, user_id: req.user.id, comment, isInternalComment });
       const result = await database.run(`
         INSERT INTO ticket_comments (ticket_id, user_id, comment, is_internal)
         VALUES ($1, $2, $3, $4) RETURNING id
       `, [ticket_id, req.user.id, comment, isInternalComment]);
 
-      console.log('🎫 [SUPPORT] Database result:', result);
       // Handle PostgreSQL result format
       const commentId = result.rows?.[0]?.id || result.id;
       
+      // Immediate validation - fail fast if no ID returned
       if (!commentId) {
-        console.error('🎫 [SUPPORT] Failed to get comment ID from result:', result);
-        throw new Error('Failed to get comment ID from database');
+        console.error('🎫 [SUPPORT] Failed to create comment - no ID returned');
+        console.error('🎫 [SUPPORT] Result structure:', JSON.stringify(result));
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to create comment - database error'
+        });
       }
-      
-      console.log('🎫 [SUPPORT] Comment created with ID:', commentId);
 
       // Update ticket's updated_at timestamp
       await database.run(`
@@ -343,7 +322,6 @@ class SupportController {
             req.user.id, 
             comment
           );
-          console.log(`📧 [SUPPORT] Notified ticket owner about admin response`);
         } catch (notifError) {
           console.error('Failed to notify ticket owner:', notifError);
         }
@@ -373,7 +351,6 @@ class SupportController {
               }
             );
           }
-          console.log(`📧 [SUPPORT] Notified ${admins.length} admins about user comment`);
         } catch (notifError) {
           console.error('Failed to notify admins:', notifError);
         }
@@ -395,7 +372,6 @@ class SupportController {
         req.get('User-Agent')
       ]);
 
-      console.log('🎫 [SUPPORT] Comment added successfully:', createdComment.id);
       res.status(201).json({
         success: true,
         message: 'Comment added successfully',
@@ -414,16 +390,8 @@ class SupportController {
   // Update ticket (user can update their own, admin can update any)
   static async updateTicket(req, res) {
     try {
-      console.log('🎫 [SUPPORT] Update ticket request:', {
-        ticket_id: req.params.ticket_id,
-        user_id: req.user?.id,
-        user_role: req.user?.role,
-        body: req.body
-      });
-
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
-        console.log('🎫 [SUPPORT] Validation errors:', errors.array());
         return res.status(400).json({
           success: false,
           message: 'Validation errors',
@@ -440,7 +408,6 @@ class SupportController {
       `, [ticket_id]);
 
       if (!ticket) {
-        console.log('🎫 [SUPPORT] Ticket not found:', ticket_id);
         return res.status(404).json({
           success: false,
           message: 'Ticket not found'
@@ -450,7 +417,6 @@ class SupportController {
       // Check permissions
       const isAdmin = ['admin', 'superadmin'].includes(req.user.role);
       if (ticket.user_id !== req.user.id && !isAdmin) {
-        console.log('🎫 [SUPPORT] Access denied for user:', req.user.id);
         return res.status(403).json({
           success: false,
           message: 'Access denied'
@@ -668,13 +634,13 @@ class SupportController {
       const { timeframe = '30d' } = req.query;
 
       const timeFrameMap = {
-        '7d': '7 days',
-        '30d': '30 days',
-        '90d': '90 days',
-        '1y': '1 year'
+        '7d': 7,
+        '30d': 30,
+        '90d': 90,
+        '1y': 365
       };
 
-      const sqlTimeFrame = timeFrameMap[timeframe] || '30 days';
+      const days = timeFrameMap[timeframe] || 30;
 
       // Overall statistics
       const overallStats = await database.get(`
@@ -687,8 +653,8 @@ class SupportController {
           COUNT(DISTINCT user_id) as unique_users,
           AVG(EXTRACT(EPOCH FROM (resolved_at - created_at))/3600) as avg_resolution_time_hours
         FROM support_tickets 
-        WHERE created_at > NOW() - INTERVAL '${sqlTimeFrame}'
-      `);
+        WHERE created_at > NOW() - INTERVAL '1 day' * $1
+      `, [days]);
 
       // Tickets by priority
       const priorityStats = await database.all(`
@@ -696,7 +662,7 @@ class SupportController {
           priority,
           COUNT(*) as count
         FROM support_tickets 
-        WHERE created_at > NOW() - INTERVAL '${sqlTimeFrame}'
+        WHERE created_at > NOW() - INTERVAL '1 day' * $1
         GROUP BY priority
         ORDER BY 
           CASE priority 
@@ -704,7 +670,7 @@ class SupportController {
             WHEN 'medium' THEN 2
             WHEN 'low' THEN 3
           END
-      `);
+      `, [days]);
 
       // Tickets by category
       const categoryStats = await database.all(`
@@ -712,10 +678,10 @@ class SupportController {
           category,
           COUNT(*) as count
         FROM support_tickets 
-        WHERE created_at > NOW() - INTERVAL '${sqlTimeFrame}'
+        WHERE created_at > NOW() - INTERVAL '1 day' * $1
         GROUP BY category
         ORDER BY count DESC
-      `);
+      `, [days]);
 
       // Daily ticket creation trends
       const dailyTrends = await database.all(`
@@ -724,10 +690,10 @@ class SupportController {
           COUNT(*) as tickets_created,
           COUNT(CASE WHEN status = 'resolved' THEN 1 END) as tickets_resolved
         FROM support_tickets 
-        WHERE created_at > NOW() - INTERVAL '${sqlTimeFrame}'
+        WHERE created_at > NOW() - INTERVAL '1 day' * $1
         GROUP BY DATE(created_at)
         ORDER BY date ASC
-      `);
+      `, [days]);
 
       // Most active users
       const activeUsers = await database.all(`
@@ -739,11 +705,11 @@ class SupportController {
           COUNT(st.id) as ticket_count
         FROM users u
         JOIN support_tickets st ON u.id = st.user_id
-        WHERE st.created_at > NOW() - INTERVAL '${sqlTimeFrame}'
+        WHERE st.created_at > NOW() - INTERVAL '1 day' * $1
         GROUP BY u.id, u.email, u.first_name, u.last_name
         ORDER BY ticket_count DESC
         LIMIT 10
-      `);
+      `, [days]);
 
       res.json({
         success: true,

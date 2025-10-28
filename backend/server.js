@@ -416,9 +416,9 @@ if (interviewRoutes) {
 }
 
 // Debug email routes (temporary, for diagnosing email issues)
-if (debugEmailRoutes) {
+if (debugEmailRoutes && process.env.NODE_ENV !== 'production') {
   app.use('/api/debug/email', debugEmailRoutes);
-  console.log('✅ Debug email routes mounted at /api/debug/email');
+  console.log('✅ Debug email routes mounted at /api/debug/email (development only)');
 }
 
 // Debug user endpoint removed - security risk in production

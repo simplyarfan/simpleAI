@@ -75,13 +75,9 @@ const register = async (req, res) => {
         WHERE id = $3
       `, [hashedCode, expiresAt, existingUser.id]);
       
-      console.log(`✅ [DB] Verification code updated for existing user: ${email}`);
-      
       // CRITICAL: Send verification email BEFORE responding
-      console.log(`📧 [EMAIL] Resending verification code to: ${email}`);
       try {
         await emailService.send2FACode(email.toLowerCase(), code, firstName);
-        console.log(`✅ [EMAIL] Verification code resent successfully to: ${email}`);
         
         // Only respond after successful email send
         res.status(200).json({
@@ -90,7 +86,6 @@ const register = async (req, res) => {
           userId: existingUser.id,
           message: 'Verification code sent to your email'
         });
-        console.log('✅ [HTTP] Resend response sent to client after email success');
       } catch (emailError) {
         console.error(`❌ [EMAIL] Failed to resend verification email to ${email}:`, emailError.message);
         return res.status(500).json({
@@ -138,13 +133,10 @@ const register = async (req, res) => {
     }
 
     const newUser = result.rows[0];
-    console.log(`✅ [DB] User created successfully: ${newUser.email} (ID: ${newUser.id})`);
 
     // CRITICAL: Send verification email BEFORE responding to user
-    console.log(`📧 [EMAIL] Attempting to send verification code to: ${newUser.email}`);
     try {
       await emailService.send2FACode(newUser.email, code, newUser.first_name);
-      console.log(`✅ [EMAIL] Verification code sent successfully to: ${newUser.email}`);
       
       // Only send success response if email was sent successfully
       res.status(201).json({
@@ -153,13 +145,11 @@ const register = async (req, res) => {
         userId: newUser.id,
         message: 'Registration successful! Please check your email for verification code.'
       });
-      console.log('✅ [HTTP] Response sent to client after email success');
     } catch (emailError) {
-      console.error(`❌ [EMAIL] Failed to send verification email to ${newUser.email}:`, emailError.message);
+      console.error(`Failed to send verification email:`, emailError.message);
       
       // Delete the user we just created since email failed
       await database.run('DELETE FROM users WHERE id = $1', [newUser.id]);
-      console.log(`🗑️ [DB] Rolled back user creation due to email failure`);
       
       // Send error response
       return res.status(500).json({
@@ -281,7 +271,6 @@ const login = async (req, res) => {
       // Send 2FA code via email
       try {
         await emailService.send2FACode(user.email, code, user.first_name);
-        console.log(`2FA code sent to: ${user.email}`);
       } catch (emailError) {
         console.error('Failed to send 2FA email:', emailError);
         // Continue anyway - code is logged in dev mode
@@ -327,9 +316,6 @@ const login = async (req, res) => {
       req.get('User-Agent') || 'Unknown',
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     ]);
-
-    // Log successful login
-    console.log(`User login: ${user.email}`);
 
     res.json({
       success: true,
@@ -770,7 +756,7 @@ const updateUser = async (req, res) => {
           department = $5,
           job_title = $6,
           is_active = COALESCE($7, is_active),
-          password = $8,
+          password_hash = $8,
           updated_at = CURRENT_TIMESTAMP
         WHERE id = $9
       `, [finalFirstName, finalLastName, email, role, department, finalJobTitle, is_active, hashedPassword, user_id]);

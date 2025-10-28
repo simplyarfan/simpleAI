@@ -26,15 +26,11 @@ export const AuthProvider = ({ children }) => {
     if (isDev) console.log(message, data);
   };
 
-  log('🔗 API Base URL:', API_BASE);
-
   // Helper function to get auth headers
   const getAuthHeaders = () => {
     const token = tokenManager.getAccessToken();
-    console.log('🔐 [AUTH] Getting headers - Token exists:', !!token);
     
     if (!token) {
-      console.log('🔐 [AUTH] No token found');
       return null;
     }
     
@@ -58,7 +54,6 @@ export const AuthProvider = ({ children }) => {
       
       const headers = getAuthHeaders();
       if (!headers) {
-        console.log('🔐 [AUTH] No valid headers, skipping auth check');
         setLoading(false);
         return;
       }
@@ -184,11 +179,6 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (credentials) => {
     try {
       setLoading(true);
-      console.log('🔐 Starting login...', { 
-        email: credentials.email,
-        apiBase: API_BASE,
-        endpoint: `${API_BASE}/auth/login`
-      });
 
       const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
@@ -200,13 +190,10 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify(credentials),
       });
 
-      console.log('🔐 Login response status:', response.status);
       const data = await response.json();
-      console.log('🔐 Login response data:', data);
 
       // Handle unverified user (403 status)
       if (response.status === 403 && data.requiresVerification) {
-        console.log('📧 Email verification required (403), redirecting...');
         // DON'T show toast here - login page will handle redirect
         return { 
           success: false,
@@ -222,7 +209,6 @@ export const AuthProvider = ({ children }) => {
 
       // Check if email verification is required (before checking success)
       if (data.requiresVerification) {
-        console.log('📧 Email verification required, redirecting...');
         // DON'T show toast here - login page will handle redirect
         return { 
           success: false,
@@ -236,7 +222,6 @@ export const AuthProvider = ({ children }) => {
         
         // Check if 2FA is required
         if (data.requires2FA) {
-          console.log('🔐 2FA required, redirecting...');
           return { 
             success: true, 
             requires2FA: true, 
@@ -250,7 +235,6 @@ export const AuthProvider = ({ children }) => {
         const refreshToken = data.refreshToken;
         if (accessToken) {
           tokenManager.setTokens(accessToken, refreshToken);
-          console.log('🍪 Tokens stored successfully');
         }
 
         // Update state with user data
@@ -259,7 +243,6 @@ export const AuthProvider = ({ children }) => {
           setUser(userData);
           setIsAuthenticated(true);
           toast.success('Login successful!');
-          console.log('✅ Login successful', { user: userData });
           return { success: true, user: userData };
         }
       }
@@ -288,7 +271,6 @@ export const AuthProvider = ({ children }) => {
 
   const verifyEmail = useCallback(async (token) => {
     try {
-      console.log('📧 Verifying email with token...');
       const response = await fetch(`${API_BASE}/api/auth/verify-email`, {
         method: 'POST',
         headers: {
@@ -299,7 +281,6 @@ export const AuthProvider = ({ children }) => {
       });
 
       const data = await response.json();
-      console.log('📧 Email verification response:', data);
 
       if (data.success) {
         toast.success('Email verified successfully!');
@@ -317,7 +298,6 @@ export const AuthProvider = ({ children }) => {
 
   const resendVerification = useCallback(async (email) => {
     try {
-      console.log('📧 Resending verification email...');
       const response = await fetch(`${API_BASE}/api/auth/resend-verification`, {
         method: 'POST',
         headers: {

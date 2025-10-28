@@ -70,10 +70,11 @@ const validatePasswordResetRequest = [
 // Password reset validation
 const validatePasswordReset = [
   body('token')
-    .isUUID()
+    .isLength({ min: 64, max: 64 })
+    .isHexadecimal()
     .withMessage('Invalid reset token format'),
   
-  body('password')
+  body('newPassword')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)

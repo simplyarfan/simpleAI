@@ -25,6 +25,7 @@ class EmailService {
   constructor() {
     this.transporter = null;
     this.initializationAttempted = false;
+    this.from = process.env.EMAIL_USER;
   }
 
   /**

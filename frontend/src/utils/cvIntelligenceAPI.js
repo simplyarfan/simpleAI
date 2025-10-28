@@ -1,12 +1,12 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-// Get API base URL (expected format: https://domain.com/api)
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+// Get API base URL (expected format: https://domain.com)
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/cv-intelligence`,
+  baseURL: `${API_BASE_URL}/api/cv-intelligence`,
   timeout: 600000, // 10 minutes for file processing (increased for multiple CVs)
   headers: {
     'Content-Type': 'application/json',

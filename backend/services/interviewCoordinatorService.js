@@ -17,7 +17,6 @@ class InterviewCoordinatorService {
    * Generate interview questions based on JD and candidate resume
    */
   async generateInterviewQuestions(jobDescription, candidateData, interviewType = 'technical') {
-    console.log(`🎯 Generating ${interviewType} interview questions...`);
 
     const prompt = `You are an expert HR interviewer. Generate tailored interview questions based on the job requirements and candidate background.
 
@@ -78,7 +77,6 @@ Make questions specific to the candidate's background and job requirements.`;
       });
 
       const questions = JSON.parse(response.data.choices[0].message.content);
-      console.log('✅ Interview questions generated successfully');
       return questions;
     } catch (error) {
       console.error('❌ Failed to generate interview questions:', error.message);
@@ -90,7 +88,6 @@ Make questions specific to the candidate's background and job requirements.`;
    * Create interview schedule with panel coordination
    */
   async createInterviewSchedule(candidateData, interviewDetails) {
-    console.log('📅 Creating interview schedule...');
 
     const interviewId = uuidv4();
     const schedule = {
@@ -121,7 +118,6 @@ Make questions specific to the candidate's background and job requirements.`;
    * Generate ICS calendar invite (updated for new workflow)
    */
   generateICSInvite(interviewData) {
-    console.log('📧 Generating ICS calendar invite...');
 
     const startDate = new Date(interviewData.scheduledTime);
     const duration = interviewData.duration || 60;
@@ -168,7 +164,6 @@ END:VCALENDAR`;
    * Send interview invitation email
    */
   async sendInterviewInvitation(schedule, questions) {
-    console.log('📨 Sending interview invitation...');
 
     const emailContent = {
       to: schedule.candidate.email,
@@ -184,7 +179,6 @@ END:VCALENDAR`;
     };
 
     // This would integrate with your email service (Brevo/SendGrid)
-    console.log('Email content prepared:', emailContent.subject);
     return emailContent;
   }
 
@@ -256,7 +250,6 @@ END:VCALENDAR`;
    * Schedule interview reminders
    */
   async scheduleReminders(schedule) {
-    console.log('⏰ Scheduling interview reminders...');
 
     const reminders = [
       {
@@ -283,7 +276,6 @@ END:VCALENDAR`;
    * Check for scheduling conflicts
    */
   async checkConflicts(proposedTime, panelEmails, duration = 60) {
-    console.log('🔍 Checking for scheduling conflicts...');
 
     // This would integrate with Google Calendar API or similar
     // For now, returning a mock response
@@ -355,7 +347,6 @@ END:VCALENDAR`;
    * Main orchestration method
    */
   async coordinateInterview(candidateData, jobDescription, interviewDetails) {
-    console.log('🎯 Starting interview coordination process...');
 
     try {
       // 1. Generate interview questions

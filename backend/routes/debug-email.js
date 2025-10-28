@@ -19,8 +19,6 @@ router.get('/check-env', (req, res) => {
     EMAIL_USER_PREFIX: process.env.EMAIL_USER ? process.env.EMAIL_USER.substring(0, 3) + '***' : 'N/A'
   };
 
-  console.log('📋 [DEBUG] Email configuration check:', emailConfig);
-
   res.json({
     success: true,
     message: 'Email configuration status',
@@ -48,8 +46,6 @@ router.post('/test-email', async (req, res) => {
         message: 'Email address required'
       });
     }
-
-    console.log('📧 [DEBUG] Testing email send to:', email);
 
     // Try to send a test verification code
     await emailService.send2FACode(email, '123456', 'Test User');

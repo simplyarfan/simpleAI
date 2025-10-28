@@ -189,10 +189,10 @@ class NotificationController {
     try {
       const result = await database.run(`
         INSERT INTO notifications (user_id, type, title, message, metadata)
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES ($1, $2, $3, $4, $5) RETURNING id
       `, [userId, type, title, message, JSON.stringify(metadata)]);
 
-      return result.lastID;
+      return result.rows?.[0]?.id || result.id;
     } catch (error) {
       console.error('Create notification error:', error);
       throw error;

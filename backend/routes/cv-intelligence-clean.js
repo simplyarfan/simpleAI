@@ -14,7 +14,6 @@ let CVIntelligenceHR01 = null;
 try {
   const CVIntelligenceHR01Service = require('../services/cvIntelligenceHR01');
   CVIntelligenceHR01 = new CVIntelligenceHR01Service();
-  console.log('✅ CV Intelligence HR-01 Service loaded');
 } catch (error) {
   console.error('❌ Failed to load CV Intelligence HR-01 Service:', error.message);
 }
@@ -155,7 +154,6 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
       console.error('Database connection failed:', dbError);
       databaseAvailable = false;
       // Continue without database for now - just process files
-      console.log('⚠️ Continuing without database - files will be processed but not stored');
     }
 
     // Process JD file to extract requirements FIRST
@@ -163,38 +161,22 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
     
     if (jdFile && CVIntelligenceHR01) {
       try {
-        console.log('🔄 Processing Job Description:', jdFile.originalname);
-        console.log('🔄 JD file size:', jdFile.size, 'bytes');
-        
         const jdResult = await CVIntelligenceHR01.processJobDescription(jdFile.buffer, jdFile.originalname);
-        console.log('🔄 JD processing result:', JSON.stringify(jdResult, null, 2));
         
         if (jdResult.success && jdResult.requirements) {
           parsedRequirements = jdResult.requirements;
-          console.log('✅ JD processed successfully!');
-          console.log('✅ Extracted skills:', parsedRequirements.skills);
-          console.log('✅ Must-have skills:', parsedRequirements.mustHave);
-          console.log('✅ Experience requirements:', parsedRequirements.experience);
-          console.log('✅ Education requirements:', parsedRequirements.education);
         } else {
-          console.error('⚠️ JD processing failed!');
-          console.error('⚠️ Result:', jdResult);
+          console.error('⚠️ JD processing failed:', jdResult);
         }
       } catch (error) {
-        console.error('❌ Error processing JD:', error);
-        console.error('❌ Error stack:', error.stack);
+        console.error('❌ Error processing JD:', error.message);
       }
-    } else {
-      console.error('⚠️ No JD file provided or CVIntelligenceHR01 not available!');
-      console.error('⚠️ jdFile:', jdFile ? 'present' : 'missing');
-      console.error('⚠️ CVIntelligenceHR01:', CVIntelligenceHR01 ? 'available' : 'missing');
     }
 
     // Update batch status, file count, and JD requirements (if database available)
     if (databaseAvailable) {
       try {
         const jdRequirementsJSON = JSON.stringify(parsedRequirements);
-        console.log('💾 Storing JD requirements in database:', jdRequirementsJSON);
         
         // FORCE UPDATE - Clear any cached/corrupted JD requirements
         await database.run(`
@@ -203,11 +185,8 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
           WHERE id = $3 AND user_id = $4
         `, [cvFiles.length, jdRequirementsJSON, batchId, req.user.id]);
         
-        console.log('✅ JD requirements FORCE UPDATED for batch:', batchId);
-        
         // Also clear any existing candidates to force re-processing
         await database.run(`DELETE FROM candidates WHERE batch_id = $1`, [batchId]);
-        console.log('✅ Cleared existing candidates for fresh processing');
         
       } catch (dbError) {
         console.error('❌ Database update failed:', dbError);
@@ -223,7 +202,6 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
       const file = cvFiles[i];
       
       try {
-        console.log(`🔄 Processing CV ${i + 1}/${cvFiles.length}: ${file.originalname}`);
         
         // Process with HR-01 service
         const result = await CVIntelligenceHR01.processResume(
@@ -241,19 +219,15 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
           cvTexts.push(cvText);
           
           // Perform holistic assessment
-          console.log(`🧠 Performing holistic assessment for ${file.originalname}...`);
           const assessment = await CVIntelligenceHR01.assessCVHolistically(cvText, parsedRequirements);
-          console.log(`✅ Assessment complete: ${assessment.recommendation} (${assessment.overallFit}/100)`);
           
           // Generate interview questions
-          console.log(`🎯 Generating interview questions for ${file.originalname}...`);
           const interviewQuestions = await CVIntelligenceHR01.generateInterviewQuestions(
             cvText, 
             result.structuredData, 
             assessment, 
             parsedRequirements
           );
-          console.log(`✅ Generated ${interviewQuestions.technicalQuestions?.length || 0} technical questions`);
           
           // Perform smart skill matching
           const candidateSkills = result.structuredData.skills || [];
@@ -271,8 +245,6 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
               missingSkills.push(reqSkill);
             }
           }
-          
-          console.log(`📊 Smart skill matching: ${matchedSkills.length}/${requiredSkills.length} matched`);
           
           // Store candidate with assessment, interview questions, and smart skill matching
           const candidateData = {
@@ -318,8 +290,6 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
               console.error('Failed to store candidate:', dbError);
             }
           }
-
-          console.log(`✅ CV ${i + 1} processed successfully with holistic assessment`);
         } else {
           console.error(`❌ CV ${i + 1} processing failed:`, result.error);
         }
@@ -329,9 +299,7 @@ router.post('/batch/:id/process', authenticateToken, uploadLimiter, upload.field
     }
 
     // Let ChatGPT rank all candidates intelligently
-    console.log(`🧠 Ranking ${candidates.length} candidates intelligently with ChatGPT...`);
     const rankings = await CVIntelligenceHR01.rankCandidatesIntelligently(candidates, parsedRequirements);
-    console.log(`✅ Intelligent ranking complete`);
     
     // Apply rankings to candidates
     const rankedCandidates = rankings.map(ranking => {
@@ -487,11 +455,7 @@ router.get('/batch/:id', authenticateToken, async (req, res) => {
     `, [id]);
 
     // Add cv_count field and parse JD requirements for frontend compatibility
-    console.log('📖 Retrieved batch from database:', batch.id);
-    console.log('📖 Raw jd_requirements from DB:', batch.jd_requirements);
-    
     const jdRequirements = batch.jd_requirements ? JSON.parse(batch.jd_requirements) : { skills: [], experience: [], education: [], mustHave: [] };
-    console.log('📖 Parsed JD requirements:', jdRequirements);
     
     const batchWithCount = {
       ...batch,
@@ -596,8 +560,6 @@ router.post('/batch/:id/reset', authenticateToken, async (req, res) => {
     
     await database.run(`DELETE FROM candidates WHERE batch_id = $1`, [id]);
     
-    console.log('🧹 Batch reset completed for:', id);
-    
     res.json({
       success: true,
       message: 'Batch reset successfully - ready for fresh JD upload'
@@ -646,8 +608,6 @@ router.delete('/batch/:id', authenticateToken, async (req, res) => {
       DELETE FROM cv_batches 
       WHERE id = $1 AND user_id = $2
     `, [id, req.user.id]);
-
-    console.log(`🗑️ Batch deleted: ${batch.name} (${candidatesDeleted.changes || 0} candidates removed)`);
 
     res.json({
       success: true,

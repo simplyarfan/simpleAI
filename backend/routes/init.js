@@ -5,7 +5,6 @@ const database = require('../models/database');
 // Initialize database tables
 router.get('/database', async (req, res) => {
   try {
-    console.log('🔧 Initializing database tables...');
     await database.init();
     
     res.json({

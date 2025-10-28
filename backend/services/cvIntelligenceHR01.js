@@ -15,8 +15,6 @@ class CVIntelligenceHR01 {
     // Check if API key is configured
     if (!this.apiKey) {
       console.error('❌ OPENAI_API_KEY not configured in environment variables');
-    } else {
-      console.log('✅ OpenAI API key configured');
     }
     
     // Smart skill matching mappings
@@ -75,7 +73,6 @@ class CVIntelligenceHR01 {
    */
   async processJobDescription(fileBuffer, fileName) {
     try {
-      console.log('🔄 Processing Job Description:', fileName);
       
       // Parse the JD document
       const fileType = fileName.split('.').pop().toLowerCase();
@@ -92,9 +89,6 @@ class CVIntelligenceHR01 {
           requirements: { skills: [], experience: [], education: [], mustHave: [] }
         };
       }
-      
-      console.log('📄 JD text extracted (first 500 chars):', jdText.substring(0, 500));
-      console.log('📄 JD text length:', jdText.length, 'characters');
       
       // Extract requirements using AI
       const requirements = await this.extractJobRequirements(jdText);
@@ -145,8 +139,6 @@ class CVIntelligenceHR01 {
    * Extract job requirements from JD text using AI ONLY
    */
   async extractJobRequirements(jdText) {
-    console.log('🤖 Sending JD to AI for extraction...');
-    console.log('🤖 JD text preview (first 300 chars):', jdText.substring(0, 300));
     
     // Add timestamp to prevent caching
     const timestamp = Date.now();
@@ -194,7 +186,6 @@ Return valid JSON only:`;
       });
 
       const content = response.data.choices[0].message.content.trim();
-      console.log('🤖 AI JD extraction response:', content);
       
       // Remove any markdown formatting
       const cleanContent = content.replace(/```json\n?|\n?```/g, '').trim();
@@ -211,7 +202,6 @@ Return valid JSON only:`;
         throw new Error('AI returned wrong skills for job type');
       }
       
-      console.log('✅ JD requirements extracted via AI:', requirements);
       return requirements;
       
     } catch (error) {
@@ -254,7 +244,6 @@ Return valid JSON only:`;
         }
       } catch (e) {
         console.error('❌ PDF parsing failed:', e.message);
-        console.log('🔄 Trying alternative PDF parsing...');
         
         // Try with different options for corrupted PDFs
         try {
@@ -267,7 +256,6 @@ Return valid JSON only:`;
           if (!text || text.trim().length === 0) {
             throw new Error('PDF contains no extractable text even with alternative parsing');
           }
-          console.log('✅ Alternative PDF parsing succeeded');
         } catch (e2) {
           console.error('❌ Alternative PDF parsing also failed:', e2.message);
           throw new Error(`PDF is corrupted or unreadable. Please save as a new PDF or convert to TXT format. Error: ${e.message}`);
@@ -440,10 +428,8 @@ Return only the JSON object, no other text:`;
       });
 
       const jsonText = response.data.choices[0].message.content.trim();
-      console.log('🤖 AI CV extraction response:', jsonText);
       
       const structuredData = JSON.parse(jsonText);
-      console.log('✅ CV skills extracted:', structuredData.skills);
       
       return structuredData;
     } catch (error) {

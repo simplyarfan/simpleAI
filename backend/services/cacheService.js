@@ -18,11 +18,8 @@ class CacheService {
       const redisUrl = process.env.REDIS_URL || process.env.UPSTASH_REDIS_REST_URL;
       
       if (!redisUrl) {
-        console.log('⚠️ No Redis URL configured, caching disabled');
         return null;
       }
-
-      console.log('🔗 Connecting to Redis cache...');
       
       // Create Redis connection
       this.redis = new Redis(redisUrl, {
@@ -40,7 +37,6 @@ class CacheService {
       // Test connection
       await this.redis.ping();
       this.isConnected = true;
-      console.log('✅ Redis cache connected successfully');
       
       // Handle connection events
       this.redis.on('error', (error) => {
@@ -48,9 +44,6 @@ class CacheService {
         this.isConnected = false;
       });
 
-      this.redis.on('reconnecting', () => {
-        console.log('🔄 Redis reconnecting...');
-      });
 
       return this.redis;
     } catch (error) {
@@ -70,7 +63,6 @@ class CacheService {
 
       const cacheKey = `cv_analysis:${key}`;
       await this.redis.setex(cacheKey, ttl, JSON.stringify(analysisResult));
-      console.log('💾 Cached CV analysis:', cacheKey);
       return true;
     } catch (error) {
       console.error('❌ Cache write failed:', error.message);
@@ -90,11 +82,9 @@ class CacheService {
       const cached = await this.redis.get(cacheKey);
       
       if (cached) {
-        console.log('🎯 Cache hit for CV analysis:', cacheKey);
         return JSON.parse(cached);
       }
       
-      console.log('❌ Cache miss for CV analysis:', cacheKey);
       return null;
     } catch (error) {
       console.error('❌ Cache read failed:', error.message);
@@ -112,7 +102,6 @@ class CacheService {
 
       const cacheKey = `api:${endpoint}:${this.hashParams(params)}`;
       await this.redis.setex(cacheKey, ttl, JSON.stringify(response));
-      console.log('💾 Cached API response:', cacheKey);
       return true;
     } catch (error) {
       console.error('❌ API cache write failed:', error.message);
@@ -132,7 +121,6 @@ class CacheService {
       const cached = await this.redis.get(cacheKey);
       
       if (cached) {
-        console.log('🎯 API cache hit:', cacheKey);
         return JSON.parse(cached);
       }
       
@@ -188,7 +176,6 @@ class CacheService {
       const keys = await this.redis.keys(pattern);
       if (keys.length > 0) {
         await this.redis.del(...keys);
-        console.log(`🗑️ Cleared ${keys.length} cache entries matching: ${pattern}`);
       }
       return true;
     } catch (error) {
@@ -265,7 +252,6 @@ class CacheService {
     if (this.redis) {
       await this.redis.quit();
       this.isConnected = false;
-      console.log('👋 Redis cache disconnected');
     }
   }
 }

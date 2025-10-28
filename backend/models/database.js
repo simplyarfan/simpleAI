@@ -462,10 +462,45 @@ class Database {
       await this.createDefaultAdmin();
       this.tablesInitialized = true;
       
+      // Start session cleanup routine (only once globally)
+      this.startSessionCleanup();
+      
     } catch (error) {
       console.error('❌ Error initializing database tables:', error);
       throw error;
     }
+  }
+  
+  startSessionCleanup() {
+    // Prevent multiple cleanup intervals in serverless
+    if (global.__SESSION_CLEANUP_STARTED) {
+      return;
+    }
+    global.__SESSION_CLEANUP_STARTED = true;
+    
+    // Run cleanup daily at 3 AM (or immediately if missed)
+    const runCleanup = async () => {
+      try {
+        const result = await this.run(`
+          DELETE FROM user_sessions 
+          WHERE expires_at < NOW()
+        `);
+        
+        if (result.changes > 0) {
+          console.log(`🧹 Cleaned up ${result.changes} expired sessions`);
+        }
+      } catch (error) {
+        console.error('Session cleanup error:', error.message);
+      }
+    };
+    
+    // Run cleanup every 24 hours
+    setInterval(runCleanup, 24 * 60 * 60 * 1000);
+    
+    // Also run cleanup on startup
+    runCleanup();
+    
+    console.log('🔄 Session cleanup routine started (daily at 3 AM)');
   }
 
   async createDefaultAdmin() {

@@ -4,31 +4,15 @@ const database = require('../models/database');
 // JWT Authentication Middleware - Enterprise Grade
 const authenticateToken = async (req, res, next) => {
   try {
-  const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-    // Debug logging
-    console.log('🔍 [AUTH DEBUG] === JWT AUTHENTICATION DEBUGGING ===');
-    console.log('🔍 [AUTH DEBUG] Request URL:', req.url);
-    console.log('🔍 [AUTH DEBUG] Request method:', req.method);
-    console.log('🔍 [AUTH DEBUG] All headers:', Object.keys(req.headers));
-    console.log('🔍 [AUTH DEBUG] Auth header raw:', authHeader);
-    console.log('🔍 [AUTH DEBUG] Token extracted:', token ? 'YES' : 'NO');
-    if (token) {
-      console.log('🔍 [AUTH DEBUG] Token preview:', token.substring(0, 30) + '...');
-      console.log('🔍 [AUTH DEBUG] Token length:', token.length);
-    }
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
-  return res.status(401).json({ 
-  success: false, 
-message: 'Access token required',
-debug: {
-  authHeader: authHeader ? 'present' : 'missing',
-  headers: Object.keys(req.headers)
-}
-});
-}
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Access token required'
+      });
+    }
 
     // Verify JWT token
     let decoded;
@@ -37,13 +21,10 @@ debug: {
         throw new Error('JWT_SECRET environment variable is required');
       }
       decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log('🔍 [AUTH DEBUG] JWT decoded successfully:', { userId: decoded.userId, email: decoded.email });
     } catch (jwtError) {
-      console.error('🔍 [AUTH DEBUG] JWT verification failed:', jwtError.message);
       return res.status(401).json({ 
         success: false, 
-        message: 'Invalid or expired token',
-        debug: { jwtError: jwtError.message }
+        message: 'Invalid or expired token'
       });
     }
 
@@ -53,16 +34,14 @@ await database.connect();
 // Get user details directly from database
 const user = await database.get(
   'SELECT id, email, first_name, last_name, role, is_active, department, job_title FROM users WHERE id = $1',
-      [decoded.userId]
+  [decoded.userId]
 );
 
-console.log('🔍 [AUTH DEBUG] User lookup result:', user ? { id: user.id, email: user.email } : 'null');
-
 if (!user) {
-return res.status(401).json({ 
-  success: false, 
+  return res.status(401).json({ 
+    success: false, 
     message: 'User not found' 
-      });
+  });
 }
 
 if (!user.is_active) {

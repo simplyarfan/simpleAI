@@ -34,7 +34,6 @@ const cacheMiddleware = (ttl = 3600) => {
       // Check cache first
       const cachedResponse = await cacheService.getCachedAPIResponse(endpoint, params);
       if (cachedResponse) {
-        console.log('🎯 API Cache hit:', endpoint);
         return res.json(cachedResponse);
       }
 
@@ -112,7 +111,6 @@ const sessionCacheMiddleware = async (req, res, next) => {
     const cachedSession = await cacheService.getCachedUserSession(req.user.id);
     if (cachedSession) {
       req.cachedUser = cachedSession;
-      console.log('🎯 Session cache hit for user:', req.user.id);
     }
 
     // Intercept response to cache updated session data

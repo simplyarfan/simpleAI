@@ -25,9 +25,6 @@ const getApiBaseUrl = () => {
     }
   }
   
-  // Log the configured base URL for debugging
-  console.log('🔍 [API] Base URL configured:', baseUrl);
-  
   return baseUrl;
 };
 
@@ -49,20 +46,14 @@ const api = axios.create({
 export const tokenManager = {
   getAccessToken: () => {
     const token = Cookies.get('accessToken');
-    console.log('🔍 [TOKEN] Retrieved access token:', token ? 'present' : 'missing');
     return token;
   },
   getRefreshToken: () => {
     const token = Cookies.get('refreshToken');
-    console.log('🔍 [TOKEN] Retrieved refresh token:', token ? 'present' : 'missing');
     return token;
   },
   
   setTokens: (accessToken, refreshToken) => {
-    console.log('🍪 [TOKENS] Setting tokens:', {
-      accessToken: accessToken ? 'present' : 'missing',
-      refreshToken: refreshToken ? 'present' : 'missing'
-    });
     
     const isProduction = typeof window !== 'undefined' && 
       window.location.hostname !== 'localhost' && 
@@ -80,8 +71,6 @@ export const tokenManager = {
       ...cookieOptions,
       expires: 90 // Increased from 30 to 90 days
     });
-    
-    console.log('🍪 [TOKENS] Tokens saved to cookies with extended expiration');
   },
   
   clearTokens: () => {
@@ -113,14 +102,9 @@ export const tokenManager = {
 api.interceptors.request.use(
   (config) => {
     const token = tokenManager.getAccessToken();
-    console.log('🔍 [API] Request interceptor - Token exists:', !!token);
-    console.log('🔍 [API] Request to:', config.url);
     
     if (token && !tokenManager.isTokenExpired(token)) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔍 [API] Added Bearer token to request');
-    } else {
-      console.log('🔍 [API] No token or token expired');
     }
     
     // Add request ID for tracking
@@ -143,13 +127,11 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     
     if (error.response?.status === 401 && !originalRequest._retry) {
-      console.log('🔄 [AUTH] 401 error, attempting token refresh...');
       originalRequest._retry = true;
       
       const refreshToken = tokenManager.getRefreshToken();
       if (refreshToken && !tokenManager.isTokenExpired(refreshToken)) {
         try {
-          console.log('🔄 [AUTH] Refreshing token...');
           const response = await axios.post(`${API_BASE_URL}/api/auth/refresh-token`, {
             refreshToken
           });
@@ -159,7 +141,6 @@ api.interceptors.response.use(
             tokenManager.setTokens(accessToken, newRefreshToken || refreshToken);
             
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            console.log('✅ [AUTH] Token refreshed successfully, retrying request');
             return api(originalRequest);
           } else {
             throw new Error('Token refresh response invalid');
@@ -168,15 +149,12 @@ api.interceptors.response.use(
           console.error('❌ [AUTH] Token refresh failed:', refreshError.message);
           tokenManager.clearTokens();
           if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/')) {
-            console.log('🔄 [AUTH] Redirecting to login...');
             window.location.href = '/auth/login';
           }
         }
       } else {
-        console.log('❌ [AUTH] No valid refresh token, clearing tokens');
         tokenManager.clearTokens();
         if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/')) {
-          console.log('🔄 [AUTH] Redirecting to login...');
           window.location.href = '/auth/login';
         }
       }

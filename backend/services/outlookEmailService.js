@@ -500,7 +500,6 @@ class OutlookEmailService {
         }
       );
 
-      console.log('✅ Email sent successfully via Outlook');
       return {
         success: true,
         messageId: response.headers['request-id'],
