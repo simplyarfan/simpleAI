@@ -337,6 +337,30 @@ Return valid JSON only:`;
         confidence: 0.80
       });
     }
+    
+    // Name extraction - NEW: Extract candidate name from beginning of CV
+    const nameRegex = /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/gm;
+    const lines = text.split('\n');
+    // Check first 10 lines for name
+    for (let i = 0; i < Math.min(10, lines.length); i++) {
+      const line = lines[i].trim();
+      const nameMatch = line.match(/^([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,3})$/);
+      if (nameMatch) {
+        const name = nameMatch[1];
+        // Skip if looks like company, university, or section header
+        if (!name.match(/\b(company|corporation|inc|ltd|llc|university|college|school|institute|resume|curriculum|vitae|cv)\b/i)) {
+          entities.push({
+            type: 'PERSON',
+            value: name,
+            startOffset: text.indexOf(name),
+            endOffset: text.indexOf(name) + name.length,
+            contextWindow: this.getContextWindow(text, text.indexOf(name), 30),
+            confidence: 0.85
+          });
+          break; // Take first valid name match
+        }
+      }
+    }
 
     return entities;
   }
@@ -345,7 +369,15 @@ Return valid JSON only:`;
    * STEP 4: LLM EXTRACTION - Llama 3.1 8B with Pydantic JSON schema
    */
   async extractStructuredData(text, entities) {
-    const prompt = `You are a world-class CV analyst. Extract structured information from this resume with extreme accuracy. Return ONLY valid JSON matching this exact schema:
+    const prompt = `You are a world-class CV analyst. Extract structured information from this resume with extreme accuracy.
+
+CRITICAL: Extract the candidate's ACTUAL NAME from the top of the resume.
+- Look for the full name at the beginning of the CV (usually first line or in header)
+- Format as "First Name Last Name" with proper capitalization
+- Example: "John Smith" NOT "johnsmith123" or "john.smith" or email username
+- If name contains Jr/Sr/III, include it: "John Smith Jr"
+
+Return ONLY valid JSON matching this exact schema:
 
 {
   "personal": {
@@ -374,7 +406,13 @@ Return valid JSON only:`;
     }
   ],
   "skills": ["string"],
-  "certifications": ["string"]
+  "certifications": [
+    {
+      "name": "string",
+      "issuer": "string or null",
+      "year": "string or null"
+    }
+  ]
 }
 
 CRITICAL EXTRACTION RULES:
@@ -428,13 +466,20 @@ Return only the JSON object, no other text:`;
       });
 
       const jsonText = response.data.choices[0].message.content.trim();
+      // Remove markdown code blocks if present
+      const cleanJson = jsonText.replace(/```json\n?|\n?```/g, '').trim();
       
-      const structuredData = JSON.parse(jsonText);
+      const structuredData = JSON.parse(cleanJson);
+      
+      // Validate structure
+      if (!structuredData.personal || !structuredData.skills) {
+        throw new Error('Invalid extraction structure - missing required fields');
+      }
       
       return structuredData;
     } catch (error) {
-      console.error('LLM extraction failed:', error.message);
-      return this.getFallbackStructure(entities, text);
+      console.error('❌ CV extraction failed:', error.message);
+      throw new Error(`Failed to extract CV data: ${error.message}`);
     }
   }
 
@@ -861,7 +906,7 @@ Return only the JSON object:`;
       const response = await axios.post(this.apiUrl, {
         model: 'gpt-3.5-turbo', // Use GPT-3.5 for cost efficiency
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3,
+        temperature: 0.5, // Higher temperature for more nuanced analysis
         max_tokens: 1500
       }, {
         headers: {
@@ -871,7 +916,8 @@ Return only the JSON object:`;
       });
 
       const jsonText = response.data.choices[0].message.content.trim();
-      const assessment = JSON.parse(jsonText);
+      const cleanJson = jsonText.replace(/```json\n?|\n?```/g, '').trim();
+      const assessment = JSON.parse(cleanJson);
       
       return assessment;
     } catch (error) {
