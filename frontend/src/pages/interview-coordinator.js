@@ -108,11 +108,15 @@ Best regards,
       
       console.log('Outlook connection check:', response.data?.user);
       
-      // Check for outlook_connected flag (backend adds this without exposing tokens)
-      if (response.data?.user?.outlook_connected) {
+      // Check for outlook_connected flag (new backend) or outlook_email (fallback for old backend)
+      const isConnected = response.data?.user?.outlook_connected || response.data?.user?.outlook_email;
+      
+      if (isConnected) {
+        console.log('✅ Outlook is connected');
         setOutlookConnected(true);
         setShowOutlookPrompt(false);
       } else {
+        console.log('❌ Outlook is NOT connected');
         setOutlookConnected(false);
         setShowOutlookPrompt(true);
       }
