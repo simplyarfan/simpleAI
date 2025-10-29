@@ -406,6 +406,16 @@ class Database {
       await this.run(`CREATE INDEX IF NOT EXISTS idx_interviews_scheduled_time ON interviews(scheduled_time)`);
       await this.run(`CREATE INDEX IF NOT EXISTS idx_interviews_status ON interviews(status)`);
 
+      // Add missing columns if they don't exist
+      try {
+        await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS platform VARCHAR(100)`);
+        await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS outcome VARCHAR(50)`);
+        await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMP`);
+        console.log('✅ Added missing columns to interviews table');
+      } catch (error) {
+        console.log('ℹ️  Interview columns already exist or error:', error.message);
+      }
+
       await this.run(`
         CREATE TABLE IF NOT EXISTS interview_reminders (
           id VARCHAR(255) PRIMARY KEY,
