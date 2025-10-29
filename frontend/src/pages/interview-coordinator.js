@@ -106,7 +106,10 @@ Best regards,
       const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
       const response = await axios.get(`${API_URL}/auth/profile`, { headers });
       
-      if (response.data?.user?.outlook_access_token) {
+      console.log('Outlook connection check:', response.data?.user);
+      
+      // Check for outlook_connected flag (backend adds this without exposing tokens)
+      if (response.data?.user?.outlook_connected) {
         setOutlookConnected(true);
         setShowOutlookPrompt(false);
       } else {
@@ -115,7 +118,10 @@ Best regards,
       }
     } catch (error) {
       console.error('Failed to check Outlook connection:', error);
+      setOutlookConnected(false);
       setShowOutlookPrompt(true);
+    } finally {
+      setLoading(false);
     }
   };
 

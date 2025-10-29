@@ -41,7 +41,10 @@ class ResponseOptimizer {
       job_title: user.job_title,
       is_active: user.is_active,
       created_at: user.created_at,
-      last_login: user.last_login
+      last_login: user.last_login,
+      // Add Outlook connection status without exposing tokens
+      outlook_connected: !!(user.outlook_access_token || user.outlook_email),
+      outlook_email: user.outlook_email || null
     };
 
     // Never include these sensitive fields
