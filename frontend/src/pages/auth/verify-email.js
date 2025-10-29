@@ -148,7 +148,7 @@ export default function VerifyEmail() {
         <title>Verify Email - Enterprise AI Hub</title>
       </Head>
 
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900 px-4">
         <div className="w-full max-w-md">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8">
             {/* Header */}
