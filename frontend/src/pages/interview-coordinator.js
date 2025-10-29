@@ -228,8 +228,8 @@ Best regards,
       const payload = {
         ...scheduleForm,
         interviewId: selectedInterview.id,
-        ccEmails: scheduleForm.ccEmails.split(',').map(e => e.trim()).filter(Boolean),
-        bccEmails: scheduleForm.bccEmails.split(',').map(e => e.trim()).filter(Boolean)
+        ccEmails: scheduleForm.ccEmails ? scheduleForm.ccEmails.split(',').map(e => e.trim()).filter(Boolean) : [],
+        bccEmails: scheduleForm.bccEmails ? scheduleForm.bccEmails.split(',').map(e => e.trim()).filter(Boolean) : []
       };
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
@@ -243,10 +243,22 @@ Best regards,
         toast.success('Interview scheduled successfully!');
         setShowScheduleModal(false);
         setSelectedInterview(null);
+        setScheduleForm({
+          interviewType: 'technical',
+          scheduledTime: '',
+          duration: 60,
+          platform: 'Google Meet',
+          notes: ''
+        });
         fetchInterviews();
+      } else {
+        toast.error(response.data?.message || 'Failed to schedule interview');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to schedule interview');
+      console.error('Schedule interview error:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMsg = error.response?.data?.message || error.message || 'Failed to schedule interview';
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
