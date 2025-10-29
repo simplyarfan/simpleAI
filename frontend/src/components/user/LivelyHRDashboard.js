@@ -97,33 +97,15 @@ export default function LivelyHRDashboard() {
             {aiAgents.map((agent) => (
               <button
                 key={agent.id}
-                onClick={() => {
-                  // Make Interview Coordinator unclickable for users but keep link active
-                  if (agent.id === 'interview-coordinator') {
-                    return; // Do nothing on click
-                  }
-                  router.push(agent.route);
-                }}
-                className={`w-full flex items-center px-3 py-3 text-left rounded-lg transition-colors group ${
-                  agent.id === 'interview-coordinator' 
-                    ? 'text-gray-400 cursor-not-allowed' 
-                    : 'text-gray-700 hover:bg-gray-100 cursor-pointer'
-                }`}
+                onClick={() => router.push(agent.route)}
+                className="w-full flex items-center px-3 py-3 text-left rounded-lg transition-colors group text-gray-700 hover:bg-gray-100 cursor-pointer"
               >
                 <div className={`w-10 h-10 bg-gradient-to-br ${agent.color} rounded-lg flex items-center justify-center mr-3`}>
                   <agent.icon className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className={`text-sm font-medium ${
-                    agent.id === 'interview-coordinator' 
-                      ? 'text-gray-400' 
-                      : 'text-gray-900'
-                  }`}>{agent.name}</p>
-                  <p className={`text-xs ${
-                    agent.id === 'interview-coordinator' 
-                      ? 'text-gray-400' 
-                      : 'text-gray-500'
-                  }`}>{agent.description}</p>
+                  <p className="text-sm font-medium text-gray-900">{agent.name}</p>
+                  <p className="text-xs text-gray-500">{agent.description}</p>
                 </div>
                 <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
               </button>
@@ -236,41 +218,27 @@ export default function LivelyHRDashboard() {
 
           {/* AI Agents Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {aiAgents.map((agent) => {
-              const isDisabled = agent.id === 'interview-coordinator'; // Disable Interview Coordinator
-              
-              return (
-                <div
-                  key={agent.id}
-                  onClick={() => !isDisabled && router.push(agent.route)}
-                  className={`bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all ${
-                    isDisabled 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:shadow-md cursor-pointer group'
-                  }`}
-                >
-                  <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 bg-gradient-to-br ${agent.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                      <agent.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{agent.name}</h3>
-                      <p className="text-gray-600 text-sm mb-4">{agent.description}</p>
-                      {isDisabled ? (
-                        <div className="flex items-center text-gray-400 text-sm font-medium">
-                          <span>Coming Soon</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center text-orange-600 text-sm font-medium group-hover:text-orange-700">
-                          <span>Launch Agent</span>
-                          <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      )}
+            {aiAgents.map((agent) => (
+              <div
+                key={agent.id}
+                onClick={() => router.push(agent.route)}
+                className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 transition-all hover:shadow-md cursor-pointer group"
+              >
+                <div className="flex items-start space-x-4">
+                  <div className={`w-12 h-12 bg-gradient-to-br ${agent.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                    <agent.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{agent.name}</h3>
+                    <p className="text-gray-600 text-sm mb-4">{agent.description}</p>
+                    <div className="flex items-center text-orange-600 text-sm font-medium group-hover:text-orange-700">
+                      <span>Launch Agent</span>
+                      <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
 
         </div>
