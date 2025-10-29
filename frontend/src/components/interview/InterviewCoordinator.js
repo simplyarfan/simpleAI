@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Users, FileText, Download, Plus, Check, X } from 'lucide-react';
+import DateTimePicker from '../ui/DateTimePicker';
 
 const InterviewCoordinator = () => {
   const [interviews, setInterviews] = useState([]);
@@ -380,14 +381,11 @@ const InterviewCoordinator = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Scheduled Time
-                    </label>
-                    <input
-                      type="datetime-local"
+                    <DateTimePicker
+                      label="Scheduled Date & Time"
                       value={interviewForm.scheduled_time}
                       onChange={(e) => setInterviewForm({...interviewForm, scheduled_time: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      required
                     />
                   </div>
 

@@ -6,6 +6,7 @@ import * as Icons from 'lucide-react';
 import axios from 'axios';
 import emailService from '../../services/emailService';
 import toast from 'react-hot-toast';
+import DateTimePicker from '../../components/ui/DateTimePicker';
 
 const ScheduleInterview = () => {
   const { user, getAuthHeaders } = useAuth();
@@ -271,16 +272,11 @@ ${user?.email || ''}`;
                     <option value={120}>2 hours</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Scheduled Date & Time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    name="scheduledTime"
+                <div className="md:col-span-2">
+                  <DateTimePicker
+                    label="Scheduled Date & Time"
                     value={formData.scheduledTime}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
                 </div>
                 <div>
