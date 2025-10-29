@@ -329,6 +329,59 @@ Best regards,
 
   if (!user) return null;
 
+  // Block access if Outlook is not connected
+  if (!outlookConnected && !loading) {
+    return (
+      <>
+        <Head>
+          <title>Interview Coordinator - Enterprise AI Platform</title>
+        </Head>
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full">
+            <div className="bg-white rounded-2xl shadow-xl border border-orange-100 p-8">
+              <div className="text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Mail className="w-10 h-10 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-3">
+                  Connect Your Outlook Account
+                </h1>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  To use the Interview Coordinator and send interview invitations and availability requests, you need to connect your Outlook email account first.
+                </p>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-start space-x-3">
+                    <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-orange-800 text-left">
+                      <p className="font-medium mb-1">Why is this required?</p>
+                      <p className="text-orange-700">We need your Outlook account to send emails, create calendar invites, and manage interview schedules on your behalf.</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <button
+                    onClick={connectOutlook}
+                    className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <Mail className="w-5 h-5 mr-2" />
+                    Connect Outlook Account
+                  </button>
+                  <button
+                    onClick={() => router.push('/')}
+                    className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    Go Back Home
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -368,46 +421,6 @@ Best regards,
             </div>
           </div>
         </div>
-
-        {/* Outlook Connection Prompt */}
-        {showOutlookPrompt && (
-          <div className="bg-orange-50 border-b border-orange-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-orange-600" />
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-sm font-semibold text-orange-900 mb-1">
-                        Connect Your Outlook Account
-                      </h3>
-                      <p className="text-sm text-orange-700 mb-3">
-                        To send interview invitations and availability requests, you need to connect your Outlook email account first.
-                      </p>
-                      <button
-                        onClick={connectOutlook}
-                        className="inline-flex items-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors"
-                      >
-                        <Mail className="w-4 h-4 mr-2" />
-                        Connect Outlook
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => setShowOutlookPrompt(false)}
-                      className="text-orange-400 hover:text-orange-600 transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -660,101 +673,148 @@ Best regards,
 
         {/* Schedule Interview Modal */}
         {showScheduleModal && selectedInterview && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="px-6 py-4 border-b border-gray-200">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Schedule Interview - {selectedInterview.candidate_name}
-                  </h3>
-                  <button onClick={() => setShowScheduleModal(false)}>
-                    <X className="w-5 h-5 text-gray-400" />
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-1">
+                      Schedule Interview
+                    </h3>
+                    <p className="text-blue-100 text-sm">
+                      {selectedInterview.candidate_name} • {selectedInterview.candidate_email}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => setShowScheduleModal(false)}
+                    className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
               
-              <div className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Interview Type</label>
-                    <select
-                      value={scheduleForm.interviewType}
-                      onChange={(e) => setScheduleForm({...scheduleForm, interviewType: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    >
-                      <option value="technical">Technical</option>
-                      <option value="behavioral">Behavioral</option>
-                      <option value="screening">Screening</option>
-                      <option value="final">Final</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
-                    <select
-                      value={scheduleForm.duration}
-                      onChange={(e) => setScheduleForm({...scheduleForm, duration: parseInt(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    >
-                      <option value={30}>30 minutes</option>
-                      <option value={45}>45 minutes</option>
-                      <option value={60}>1 hour</option>
-                      <option value={90}>1.5 hours</option>
-                      <option value={120}>2 hours</option>
-                    </select>
+              {/* Form Body */}
+              <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+                {/* Candidate Info Card */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-blue-900 mb-0.5">Position</p>
+                      <p className="text-lg font-semibold text-gray-900">{selectedInterview.job_title}</p>
+                    </div>
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Scheduled Date & Time *</label>
-                  <input
-                    type="datetime-local"
-                    value={scheduleForm.scheduledTime}
-                    onChange={(e) => setScheduleForm({...scheduleForm, scheduledTime: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                    required
-                  />
-                </div>
+                {/* Interview Details */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Interview Type
+                      </label>
+                      <select
+                        value={scheduleForm.interviewType}
+                        onChange={(e) => setScheduleForm({...scheduleForm, interviewType: e.target.value})}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 font-medium transition-shadow"
+                      >
+                        <option value="technical">Technical</option>
+                        <option value="behavioral">Behavioral</option>
+                        <option value="screening">Screening</option>
+                        <option value="final">Final</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Duration (minutes)
+                      </label>
+                      <select
+                        value={scheduleForm.duration}
+                        onChange={(e) => setScheduleForm({...scheduleForm, duration: parseInt(e.target.value)})}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 font-medium transition-shadow"
+                      >
+                        <option value={30}>30 minutes</option>
+                        <option value={45}>45 minutes</option>
+                        <option value={60}>1 hour</option>
+                        <option value={90}>1.5 hours</option>
+                        <option value={120}>2 hours</option>
+                      </select>
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Platform *</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Scheduled Date & Time <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={scheduleForm.scheduledTime}
+                      onChange={(e) => setScheduleForm({...scheduleForm, scheduledTime: e.target.value})}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 font-medium transition-shadow"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Platform <span className="text-red-500">*</span>
+                    </label>
                     <select
                       value={scheduleForm.platform}
                       onChange={(e) => setScheduleForm({...scheduleForm, platform: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 font-medium transition-shadow"
                     >
                       <option value="Google Meet">Google Meet</option>
                       <option value="Microsoft Teams">Microsoft Teams</option>
                       <option value="Zoom">Zoom</option>
                     </select>
-                    <p className="mt-1 text-sm text-gray-500">✨ Meeting link will be auto-generated</p>
+                    <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 flex items-center space-x-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+                      <p className="text-xs text-blue-700 font-medium">Meeting link will be auto-generated</p>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                  <textarea
-                    value={scheduleForm.notes}
-                    onChange={(e) => setScheduleForm({...scheduleForm, notes: e.target.value})}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                  />
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Notes (Optional)
+                    </label>
+                    <textarea
+                      value={scheduleForm.notes}
+                      onChange={(e) => setScheduleForm({...scheduleForm, notes: e.target.value})}
+                      rows={3}
+                      placeholder="Add any additional notes or instructions for the interview..."
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400 transition-shadow"
+                    />
+                  </div>
                 </div>
               </div>
               
-              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
+              {/* Footer */}
+              <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
                 <button
                   onClick={() => setShowScheduleModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  className="px-5 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleScheduleInterview}
                   disabled={loading || !scheduleForm.scheduledTime || !scheduleForm.platform}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
-                  {loading ? 'Scheduling...' : 'Schedule Interview'}
+                  {loading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Scheduling...
+                    </span>
+                  ) : 'Schedule Interview'}
                 </button>
               </div>
             </div>
