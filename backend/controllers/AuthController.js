@@ -508,18 +508,37 @@ const checkAuth = async (req, res) => {
       });
     }
 
+    await database.connect();
+    
+    // Fetch fresh user data including Outlook fields
+    const user = await database.get(`
+      SELECT id, email, first_name, last_name, role, department, job_title, 
+             is_active, outlook_email, outlook_access_token
+      FROM users 
+      WHERE id = $1
+    `, [req.user.id]);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
     res.json({
       success: true,
       user: {
-        id: req.user.id,
-        email: req.user.email,
-        first_name: req.user.first_name,
-        last_name: req.user.last_name,
-        name: `${req.user.first_name} ${req.user.last_name}`,
-        role: req.user.role,
-        department: req.user.department,
-        job_title: req.user.job_title,
-        is_active: req.user.is_active
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        name: `${user.first_name} ${user.last_name}`,
+        role: user.role,
+        department: user.department,
+        job_title: user.job_title,
+        is_active: user.is_active,
+        outlook_email: user.outlook_email,
+        outlook_connected: !!user.outlook_access_token  // Boolean flag
       }
     });
   } catch (error) {
