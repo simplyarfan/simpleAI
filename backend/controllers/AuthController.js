@@ -418,18 +418,37 @@ const getProfile = async (req, res) => {
       });
     }
 
+    await database.connect();
+    
+    // Fetch fresh user data including Outlook fields
+    const user = await database.get(`
+      SELECT id, email, first_name, last_name, role, department, job_title, 
+             is_active, outlook_email, outlook_access_token
+      FROM users 
+      WHERE id = $1
+    `, [req.user.id]);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
     res.json({
       success: true,
       data: {
         user: {
-          id: req.user.id,
-          email: req.user.email,
-          firstName: req.user.first_name,
-          lastName: req.user.last_name,
-          role: req.user.role,
-          department: req.user.department,
-          jobTitle: req.user.job_title,
-          isActive: req.user.is_active
+          id: user.id,
+          email: user.email,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          role: user.role,
+          department: user.department,
+          jobTitle: user.job_title,
+          isActive: user.is_active,
+          outlook_email: user.outlook_email,
+          outlook_connected: !!user.outlook_access_token  // Boolean flag
         }
       }
     });
