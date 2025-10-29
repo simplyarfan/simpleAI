@@ -103,7 +103,7 @@ Best regards,
   const checkOutlookConnection = async () => {
     try {
       const headers = getAuthHeaders();
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
       const response = await axios.get(`${API_URL}/auth/profile`, { headers });
       
       if (response.data?.user?.outlook_access_token) {
@@ -135,7 +135,7 @@ Best regards,
         return;
       }
       
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
       const response = await axios.get(
         `${API_URL}/interview-coordinator/interviews`,
         { headers }
@@ -176,7 +176,7 @@ Best regards,
         bccEmails: availabilityForm.bccEmails.split(',').map(e => e.trim()).filter(Boolean)
       };
 
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
       const response = await axios.post(
         `${API_URL}/interview-coordinator/request-availability`,
         payload,
@@ -221,7 +221,7 @@ Best regards,
         bccEmails: scheduleForm.bccEmails.split(',').map(e => e.trim()).filter(Boolean)
       };
 
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
       const response = await axios.post(
         `${API_URL}/interview-coordinator/schedule-interview`,
         payload,
@@ -244,7 +244,7 @@ Best regards,
   const updateInterviewStatus = async (interviewId, status, outcome = null) => {
     try {
       const headers = getAuthHeaders();
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
       await axios.put(
         `${API_URL}/interview-coordinator/interview/${interviewId}/status`,
         { status, outcome },
@@ -261,7 +261,7 @@ Best regards,
   const downloadCalendar = async (interviewId, candidateName) => {
     try {
       const headers = getAuthHeaders();
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
       
       const response = await axios.get(
         `${API_URL}/interview-coordinator/interview/${interviewId}/calendar`,
@@ -289,7 +289,7 @@ Best regards,
     
     try {
       const headers = getAuthHeaders();
-      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
       
       await axios.delete(
         `${API_URL}/interview-coordinator/interview/${interviewId}`,
@@ -336,38 +336,33 @@ Best regards,
       </Head>
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center space-x-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-semibold text-gray-900">Interview Coordinator</h1>
-                  <p className="text-sm text-gray-500">Multi-stage interview workflow</p>
+                <button
+                  onClick={() => router.push('/')}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-600" />
+                </button>
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-semibold text-gray-900">Interview Coordinator</h1>
+                    <p className="text-sm text-gray-500">Multi-stage interview workflow</p>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
                 <button
-                  onClick={() => router.back()}
-                  className="flex items-center px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
-                </button>
-                <button
                   onClick={() => setShowAvailabilityModal(true)}
-                  className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center"
+                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-4 py-2 rounded-lg inline-flex items-center text-sm font-medium transition-colors"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Request Availability
-                </button>
-                <button
-                  onClick={() => router.push('/profile')}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <User className="w-5 h-5 text-gray-600" />
                 </button>
               </div>
             </div>
