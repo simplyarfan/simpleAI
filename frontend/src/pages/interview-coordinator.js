@@ -115,6 +115,10 @@ Best regards,
       });
       
       console.log('Outlook connection check:', response.data?.user);
+      console.log('Raw response data:', response.data);
+      console.log('outlook_connected field:', response.data?.user?.outlook_connected);
+      console.log('outlook_email field:', response.data?.user?.outlook_email);
+      console.log('Full user object keys:', response.data?.user ? Object.keys(response.data.user) : 'no user');
       
       // Check for outlook_connected flag (new backend) or outlook_email (fallback for old backend)
       const isConnected = response.data?.user?.outlook_connected || response.data?.user?.outlook_email;
