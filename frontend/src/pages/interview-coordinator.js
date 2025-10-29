@@ -104,7 +104,15 @@ Best regards,
     try {
       const headers = getAuthHeaders();
       const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
-      const response = await axios.get(`${API_URL}/auth/profile`, { headers });
+      
+      // Add cache-busting parameter and no-cache header
+      const response = await axios.get(`${API_URL}/auth/profile?t=${Date.now()}`, { 
+        headers: {
+          ...headers,
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       
       console.log('Outlook connection check:', response.data?.user);
       
