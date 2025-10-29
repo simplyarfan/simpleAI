@@ -877,19 +877,31 @@ const BatchDetail = () => {
 
                       return (
                         <div className="grid gap-3">
-                          {certifications.map((cert, index) => (
-                            <div key={index} className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                              <div className="flex items-start space-x-3">
-                                <div className="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                  <Icons.Award className="w-5 h-5 text-yellow-600" />
-                                </div>
-                                <div className="flex-1">
-                                  <h4 className="font-semibold text-gray-900 text-sm mb-1">{cert}</h4>
-                                  <p className="text-xs text-gray-600">Professional Certification</p>
+                          {certifications.map((cert, index) => {
+                            // Handle both string and object formats
+                            const certName = typeof cert === 'string' ? cert : (cert.name || cert);
+                            const certIssuer = typeof cert === 'object' ? cert.issuer : null;
+                            const certYear = typeof cert === 'object' ? cert.year : null;
+                            
+                            return (
+                              <div key={index} className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div className="flex items-start space-x-3">
+                                  <div className="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                    <Icons.Award className="w-5 h-5 text-yellow-600" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="font-semibold text-gray-900 text-sm mb-1">{certName}</h4>
+                                    <div className="flex items-center space-x-2 text-xs text-gray-600">
+                                      {certIssuer && <span>{certIssuer}</span>}
+                                      {certIssuer && certYear && <span>•</span>}
+                                      {certYear && <span>{certYear}</span>}
+                                      {!certIssuer && !certYear && <span>Professional Certification</span>}
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       );
                     } catch (e) {
