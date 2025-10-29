@@ -102,26 +102,14 @@ Best regards,
 
   const checkOutlookConnection = async () => {
     try {
-      const headers = getAuthHeaders();
-      const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
+      // Use the user object from AuthContext which comes from /api/auth/check
+      // This endpoint now includes outlook_connected and outlook_email fields
+      console.log('Checking Outlook connection from user context:', user);
+      console.log('outlook_connected field:', user?.outlook_connected);
+      console.log('outlook_email field:', user?.outlook_email);
       
-      // Add cache-busting parameter and no-cache header
-      const response = await axios.get(`${API_URL}/auth/profile?t=${Date.now()}`, { 
-        headers: {
-          ...headers,
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
-      });
-      
-      console.log('Outlook connection check:', response.data?.user);
-      console.log('Raw response data:', response.data);
-      console.log('outlook_connected field:', response.data?.user?.outlook_connected);
-      console.log('outlook_email field:', response.data?.user?.outlook_email);
-      console.log('Full user object keys:', response.data?.user ? Object.keys(response.data.user) : 'no user');
-      
-      // Check for outlook_connected flag (new backend) or outlook_email (fallback for old backend)
-      const isConnected = response.data?.user?.outlook_connected || response.data?.user?.outlook_email;
+      // Check for outlook_connected flag (boolean) or outlook_email (string)
+      const isConnected = user?.outlook_connected || user?.outlook_email;
       
       if (isConnected) {
         console.log('✅ Outlook is connected');
