@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import DateTimePicker from '../components/ui/DateTimePicker';
 
 const InterviewCoordinator = () => {
   const { user, logout, getAuthHeaders } = useAuth();
@@ -757,14 +758,10 @@ Best regards,
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Scheduled Date & Time <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="datetime-local"
+                    <DateTimePicker
+                      label="Scheduled Date & Time"
                       value={scheduleForm.scheduledTime}
                       onChange={(e) => setScheduleForm({...scheduleForm, scheduledTime: e.target.value})}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 font-medium transition-shadow"
                       required
                     />
                   </div>
