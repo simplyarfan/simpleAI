@@ -115,10 +115,9 @@ Make questions specific to the candidate's background and job requirements.`;
   }
 
   /**
-   * Generate ICS calendar invite (updated for new workflow)
+   * Generate ICS calendar invite with RFC 5545 compliance
    */
-  generateICSInvite(interviewData) {
-
+  generateICSInvite(interviewData, organizerEmail = 'hr@company.com', organizerName = 'HR Team') {
     const startDate = new Date(interviewData.scheduledTime);
     const duration = interviewData.duration || 60;
     const endDate = new Date(startDate.getTime() + (duration * 60000));
@@ -127,37 +126,75 @@ Make questions specific to the candidate's background and job requirements.`;
       return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     };
 
+    // RFC 5545 compliant text escaping
     const escapeText = (text) => {
-      return text.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+      if (!text) return '';
+      return text
+        .replace(/\\/g, '\\\\')    // Backslashes FIRST
+        .replace(/;/g, '\\;')      // Semicolons
+        .replace(/,/g, '\\,')      // Commas
+        .replace(/\n/g, '\\n')     // Newlines
+        .replace(/\r/g, '');       // Remove carriage returns
+    };
+
+    // Line folding for long lines (max 75 chars per RFC 5545)
+    const foldLine = (line) => {
+      if (line.length <= 75) return line;
+      const folded = [];
+      for (let i = 0; i < line.length; i += 75) {
+        folded.push(i === 0 ? line.substr(i, 75) : ' ' + line.substr(i, 74));
+      }
+      return folded.join('\r\n');
     };
 
     const title = `Interview - ${interviewData.candidateName} - ${interviewData.position}`;
-    const description = `Interview with ${interviewData.candidateName}\\n\\nPosition: ${interviewData.position}\\nInterview Type: ${interviewData.interviewType || 'General'}\\nDuration: ${duration} minutes\\nPlatform: ${interviewData.platform || 'Video Call'}${interviewData.meetingLink ? `\\n\\nMeeting Link: ${interviewData.meetingLink}` : ''}`;
+    const description = `Interview Details:\\n\\n` +
+      `Position: ${interviewData.position}\\n` +
+      `Type: ${interviewData.interviewType || 'General'}\\n` +
+      `Duration: ${duration} minutes\\n` +
+      `Platform: ${interviewData.platform || 'Video Call'}\\n\\n` +
+      (interviewData.meetingLink ? `Meeting Link: ${interviewData.meetingLink}\\n\\n` : '') +
+      (interviewData.notes ? `Notes: ${interviewData.notes}\\n\\n` : '') +
+      `If you need to reschedule, please contact the interviewer.`;
 
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//Nexus AI Platform//Interview Coordinator//EN
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-BEGIN:VEVENT
-UID:${interviewData.id}@nexusai.com
-DTSTART:${formatDate(startDate)}
-DTEND:${formatDate(endDate)}
-DTSTAMP:${formatDate(new Date())}
-SUMMARY:${escapeText(title)}
-DESCRIPTION:${escapeText(description)}
-LOCATION:${escapeText(interviewData.platform || 'Video Call')}
-STATUS:CONFIRMED
-SEQUENCE:0
-BEGIN:VALARM
-TRIGGER:-PT15M
-ACTION:DISPLAY
-DESCRIPTION:Interview starts in 15 minutes
-END:VALARM
-END:VEVENT
-END:VCALENDAR`;
+    const icsLines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Nexus AI Platform//Interview Coordinator v2.0//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:REQUEST',                            // Changed to REQUEST for proper invites
+      'BEGIN:VEVENT',
+      `UID:${interviewData.id}@nexusai.com`,
+      `DTSTART:${formatDate(startDate)}`,
+      `DTEND:${formatDate(endDate)}`,
+      `DTSTAMP:${formatDate(new Date())}`,
+      foldLine(`SUMMARY:${escapeText(title)}`),
+      foldLine(`DESCRIPTION:${escapeText(description)}`),
+      foldLine(`LOCATION:${escapeText(interviewData.meetingLink || interviewData.platform || 'Video Call')}`),
+      `ORGANIZER;CN="${escapeText(organizerName)}":mailto:${organizerEmail}`,
+      `ATTENDEE;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE;CN="${escapeText(interviewData.candidateName)}":mailto:${interviewData.candidateEmail}`,
+      'STATUS:CONFIRMED',
+      'SEQUENCE:0',
+      'TRANSP:OPAQUE',                            // Blocks time on calendar
+      'PRIORITY:5',                               // Medium priority
+      'CLASS:PUBLIC',
+      'BEGIN:VALARM',
+      'TRIGGER:-PT15M',                           // 15 min reminder
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Interview starts in 15 minutes',
+      'END:VALARM',
+      'BEGIN:VALARM',
+      'TRIGGER:-PT1H',                            // 1 hour reminder
+      'ACTION:EMAIL',
+      'SUMMARY:Interview Reminder',
+      `DESCRIPTION:Your interview with ${escapeText(interviewData.candidateName)} starts in 1 hour`,
+      `ATTENDEE:mailto:${organizerEmail}`,
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ];
 
-    return icsContent;
+    return icsLines.join('\r\n');
   }
 
   /**
