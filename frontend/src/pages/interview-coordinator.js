@@ -8,7 +8,9 @@ import {
   User, 
   ArrowLeft, 
   Search, 
-  X 
+  X,
+  Mail,
+  AlertCircle 
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -23,6 +25,8 @@ const InterviewCoordinator = () => {
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
+  const [showOutlookPrompt, setShowOutlookPrompt] = useState(false);
+  const [outlookConnected, setOutlookConnected] = useState(false);
 
   // Form states
   const [availabilityForm, setAvailabilityForm] = useState({
@@ -72,6 +76,10 @@ Best regards,
       router.push('/auth/login');
       return;
     }
+    
+    // Check if Outlook is connected
+    checkOutlookConnection();
+    
     fetchInterviews();
     
     // Handle pre-filled data from CV Intelligence
@@ -92,6 +100,30 @@ Best regards,
     }
   }, [user, router.query]);
 
+  const checkOutlookConnection = async () => {
+    try {
+      const headers = getAuthHeaders();
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
+      const response = await axios.get(`${API_URL}/auth/profile`, { headers });
+      
+      if (response.data?.user?.outlook_access_token) {
+        setOutlookConnected(true);
+        setShowOutlookPrompt(false);
+      } else {
+        setOutlookConnected(false);
+        setShowOutlookPrompt(true);
+      }
+    } catch (error) {
+      console.error('Failed to check Outlook connection:', error);
+      setShowOutlookPrompt(true);
+    }
+  };
+
+  const connectOutlook = () => {
+    // Redirect to profile with email tab open
+    router.push('/profile?tab=email');
+  };
+
   const fetchInterviews = async () => {
     try {
       setLoading(true);
@@ -103,7 +135,7 @@ Best regards,
         return;
       }
       
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
       const response = await axios.get(
         `${API_URL}/interview-coordinator/interviews`,
         { headers }
@@ -144,7 +176,7 @@ Best regards,
         bccEmails: availabilityForm.bccEmails.split(',').map(e => e.trim()).filter(Boolean)
       };
 
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
       const response = await axios.post(
         `${API_URL}/interview-coordinator/request-availability`,
         payload,
@@ -189,7 +221,7 @@ Best regards,
         bccEmails: scheduleForm.bccEmails.split(',').map(e => e.trim()).filter(Boolean)
       };
 
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
       const response = await axios.post(
         `${API_URL}/interview-coordinator/schedule-interview`,
         payload,
@@ -212,7 +244,7 @@ Best regards,
   const updateInterviewStatus = async (interviewId, status, outcome = null) => {
     try {
       const headers = getAuthHeaders();
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
       await axios.put(
         `${API_URL}/interview-coordinator/interview/${interviewId}/status`,
         { status, outcome },
@@ -229,7 +261,7 @@ Best regards,
   const downloadCalendar = async (interviewId, candidateName) => {
     try {
       const headers = getAuthHeaders();
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
       
       const response = await axios.get(
         `${API_URL}/interview-coordinator/interview/${interviewId}/calendar`,
@@ -257,7 +289,7 @@ Best regards,
     
     try {
       const headers = getAuthHeaders();
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app/api';
+      const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000') + '/api';
       
       await axios.delete(
         `${API_URL}/interview-coordinator/interview/${interviewId}`,
@@ -341,6 +373,46 @@ Best regards,
             </div>
           </div>
         </div>
+
+        {/* Outlook Connection Prompt */}
+        {showOutlookPrompt && (
+          <div className="bg-orange-50 border-b border-orange-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-orange-600" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-sm font-semibold text-orange-900 mb-1">
+                        Connect Your Outlook Account
+                      </h3>
+                      <p className="text-sm text-orange-700 mb-3">
+                        To send interview invitations and availability requests, you need to connect your Outlook email account first.
+                      </p>
+                      <button
+                        onClick={connectOutlook}
+                        className="inline-flex items-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg transition-colors"
+                      >
+                        <Mail className="w-4 h-4 mr-2" />
+                        Connect Outlook
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => setShowOutlookPrompt(false)}
+                      className="text-orange-400 hover:text-orange-600 transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
