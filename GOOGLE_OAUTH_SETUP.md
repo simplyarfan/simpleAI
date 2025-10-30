@@ -9,6 +9,8 @@ You're seeing this error because the redirect URI configured in your Google Clou
 https://thesimpleai.vercel.app/api/auth/google/callback
 ```
 
+**IMPORTANT:** You MUST add this exact URL to Google Cloud Console. Do NOT use Vercel preview URLs (the ones with random hashes like `thesimpleai-7j85zwjt9-...`).
+
 ### Steps to Fix:
 
 1. **Go to Google Cloud Console**
@@ -68,8 +70,9 @@ FRONTEND_URL=https://thesimpleai.netlify.app
    - After processing, the backend redirects the user back to the frontend
 
 2. **Vercel Deployment:**
-   - If you're using Vercel, the backend URL should be: `https://thesimpleai.vercel.app`
-   - The code automatically uses `process.env.VERCEL_URL` as a fallback
+   - The backend URL MUST be your production URL: `https://thesimpleai.vercel.app`
+   - Set `BACKEND_URL` environment variable in Vercel to ensure it uses the production URL
+   - DO NOT rely on `VERCEL_URL` as it changes with each preview deployment
 
 3. **Testing Mode:**
    - If your Google OAuth app is in testing mode, only added test users can authenticate
