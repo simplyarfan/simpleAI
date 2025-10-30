@@ -69,7 +69,9 @@ Best regards,
     scheduledTime: '',
     duration: 60,
     platform: 'Google Meet',
-    notes: ''
+    notes: '',
+    ccEmails: '',
+    bccEmails: ''
   });
 
   useEffect(() => {
@@ -248,7 +250,9 @@ Best regards,
           scheduledTime: '',
           duration: 60,
           platform: 'Google Meet',
-          notes: ''
+          notes: '',
+          ccEmails: '',
+          bccEmails: ''
         });
         fetchInterviews();
       } else {
@@ -507,7 +511,11 @@ Best regards,
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredInterviews.map((interview) => (
-                      <tr key={interview.id} className="hover:bg-gray-50">
+                      <tr 
+                        key={interview.id} 
+                        className="hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => router.push(`/interview-coordinator/${interview.id}`)}
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
                             <div className="text-sm font-medium text-gray-900">{interview.candidate_name}</div>
@@ -519,7 +527,7 @@ Best regards,
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {interview.scheduled_time ? new Date(interview.scheduled_time).toLocaleString() : '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2" onClick={(e) => e.stopPropagation()}>
                           {interview.status === 'awaiting_response' && (
                             <button
                               onClick={() => {
@@ -673,6 +681,31 @@ Best regards,
                     placeholder="Custom email content (optional - will use default template if empty)"
                   />
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">CC (Optional)</label>
+                    <input
+                      type="text"
+                      value={availabilityForm.ccEmails}
+                      onChange={(e) => setAvailabilityForm({...availabilityForm, ccEmails: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                      placeholder="email1@example.com, email2@example.com"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Comma-separated email addresses</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">BCC (Optional)</label>
+                    <input
+                      type="text"
+                      value={availabilityForm.bccEmails}
+                      onChange={(e) => setAvailabilityForm({...availabilityForm, bccEmails: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                      placeholder="email1@example.com, email2@example.com"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Comma-separated email addresses</p>
+                  </div>
+                </div>
               </div>
               
               <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
@@ -808,6 +841,35 @@ Best regards,
                       placeholder="Add any additional notes or instructions for the interview..."
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400 transition-shadow"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        CC Emails (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={scheduleForm.ccEmails}
+                        onChange={(e) => setScheduleForm({...scheduleForm, ccEmails: e.target.value})}
+                        placeholder="email1@example.com, email2@example.com"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400 transition-shadow"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Comma-separated email addresses</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        BCC Emails (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={scheduleForm.bccEmails}
+                        onChange={(e) => setScheduleForm({...scheduleForm, bccEmails: e.target.value})}
+                        placeholder="email1@example.com, email2@example.com"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-400 transition-shadow"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Comma-separated email addresses</p>
+                    </div>
                   </div>
                 </div>
               </div>

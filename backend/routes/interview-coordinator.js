@@ -287,7 +287,9 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, async (req
       scheduledTime,
       duration,
       platform,
-      notes
+      notes,
+      ccEmails,
+      bccEmails
     } = req.body;
     
     if (!interviewId || !scheduledTime || !platform) {
@@ -297,25 +299,36 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, async (req
       });
     }
 
-    // Auto-generate meeting link based on platform
+    // Generate proper meeting link based on platform
     let meetingLink = '';
-    const meetingId = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
     
-    switch(platform) {
-      case 'Google Meet':
-        meetingLink = `https://meet.google.com/${meetingId}`;
-        break;
-      case 'Microsoft Teams':
-        meetingLink = `https://teams.microsoft.com/l/meetup-join/${meetingId}`;
-        break;
-      case 'Zoom':
-        meetingLink = `https://zoom.us/j/${meetingId}`;
-        break;
-      default:
-        meetingLink = 'To be provided';
+    // For Google Meet, we need to use Google Calendar API to create a real meeting
+    // For now, we'll create a placeholder that can be updated manually
+    if (platform === 'Google Meet') {
+      // Generate a meeting code that follows Google Meet's format: xxx-xxxx-xxx
+      const generateMeetCode = () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyz';
+        const part1 = Array(3).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+        const part2 = Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+        const part3 = Array(3).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+        return `${part1}-${part2}-${part3}`;
+      };
+      meetingLink = `https://meet.google.com/${generateMeetCode()}`;
+      console.log('⚠️  Note: This is a placeholder Google Meet link. For production, integrate with Google Calendar API.');
+    } else if (platform === 'Microsoft Teams') {
+      // For Teams, we could use Microsoft Graph API if configured
+      const meetingId = `19:meeting_${Buffer.from(scheduledTime).toString('base64').substring(0, 32)}`;
+      meetingLink = `https://teams.microsoft.com/l/meetup-join/${meetingId}`;
+    } else if (platform === 'Zoom') {
+      // For Zoom, would need Zoom API integration
+      const meetingId = Math.floor(Math.random() * 9000000000) + 1000000000;
+      meetingLink = `https://zoom.us/j/${meetingId}`;
+      console.log('⚠️  Note: This is a placeholder Zoom link. For production, integrate with Zoom API.');
+    } else {
+      meetingLink = 'To be provided';
     }
     
-    console.log('🔗 Auto-generated meeting link:', meetingLink);
+    console.log('🔗 Generated meeting link:', meetingLink);
 
     await database.connect();
 
@@ -381,14 +394,12 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, async (req
           interview.candidate_email,
           {
             candidateName: interview.candidate_name,
-            position: interview.position,
+            position: interview.job_title,
             interviewType: interviewType || 'technical',
             scheduledTime,
             duration: duration || 60,
             platform,
             meetingLink: meetingLink || '',
-            customSubject: emailSubject,
-            customContent: emailContent,
             ccEmails: ccEmails || [],
             bccEmails: bccEmails || []
           },
