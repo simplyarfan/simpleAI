@@ -327,13 +327,6 @@ const InterviewDetailPage = () => {
                   <p className="text-sm text-gray-500">Manage and track interview progress</p>
                 </div>
               </div>
-              <button
-                onClick={deleteInterview}
-                className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg inline-flex items-center text-sm font-medium transition-colors border border-red-200"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete Interview
-              </button>
             </div>
           </div>
         </div>
@@ -475,7 +468,30 @@ const InterviewDetailPage = () => {
                     currentOutcome={interview.outcome}
                     onStatusChange={(status, outcome) => updateInterviewStatus(status, outcome)}
                   />
+                  
+                  {/* Schedule Interview Button - Show when awaiting response */}
+                  {interview.status === 'awaiting_response' && !interview.scheduled_time && (
+                    <button
+                      onClick={() => router.push(`/interview-coordinator?scheduleCandidate=${id}`)}
+                      className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center"
+                    >
+                      <Calendar className="w-5 h-5 mr-2" />
+                      Schedule Interview
+                    </button>
+                  )}
                 </div>
+              </div>
+
+              {/* Delete Action */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Danger Zone</h3>
+                <button
+                  onClick={deleteInterview}
+                  className="w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg inline-flex items-center justify-center text-sm font-medium transition-colors border-2 border-red-200 hover:border-red-300"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Interview
+                </button>
               </div>
 
               {/* Metadata */}

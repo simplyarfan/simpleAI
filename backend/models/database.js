@@ -411,6 +411,7 @@ class Database {
         await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS platform VARCHAR(100)`);
         await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS outcome VARCHAR(50)`);
         await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMP`);
+        await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS cv_file_path TEXT`);
         console.log('✅ Added missing columns to interviews table');
       } catch (error) {
         console.log('ℹ️  Interview columns already exist or error:', error.message);

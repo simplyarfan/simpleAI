@@ -71,7 +71,8 @@ Best regards,
     platform: 'Google Meet',
     notes: '',
     ccEmails: '',
-    bccEmails: ''
+    bccEmails: '',
+    cvFile: null
   });
 
   useEffect(() => {
@@ -227,18 +228,32 @@ Best regards,
       setLoading(true);
       const headers = getAuthHeaders();
       
-      const payload = {
-        ...scheduleForm,
-        interviewId: selectedInterview.id,
-        ccEmails: scheduleForm.ccEmails ? scheduleForm.ccEmails.split(',').map(e => e.trim()).filter(Boolean) : [],
-        bccEmails: scheduleForm.bccEmails ? scheduleForm.bccEmails.split(',').map(e => e.trim()).filter(Boolean) : []
-      };
+      // Create FormData for multipart upload
+      const formData = new FormData();
+      formData.append('interviewId', selectedInterview.id);
+      formData.append('interviewType', scheduleForm.interviewType);
+      formData.append('scheduledTime', scheduleForm.scheduledTime);
+      formData.append('duration', scheduleForm.duration);
+      formData.append('platform', scheduleForm.platform);
+      formData.append('notes', scheduleForm.notes);
+      formData.append('ccEmails', JSON.stringify(scheduleForm.ccEmails ? scheduleForm.ccEmails.split(',').map(e => e.trim()).filter(Boolean) : []));
+      formData.append('bccEmails', JSON.stringify(scheduleForm.bccEmails ? scheduleForm.bccEmails.split(',').map(e => e.trim()).filter(Boolean) : []));
+      
+      // Add CV file if selected
+      if (scheduleForm.cvFile) {
+        formData.append('cvFile', scheduleForm.cvFile);
+      }
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
       const response = await axios.post(
         `${API_URL}/interview-coordinator/schedule-interview`,
-        payload,
-        { headers }
+        formData,
+        { 
+          headers: {
+            ...headers,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
       );
 
       if (response.data?.success) {
@@ -252,7 +267,8 @@ Best regards,
           platform: 'Google Meet',
           notes: '',
           ccEmails: '',
-          bccEmails: ''
+          bccEmails: '',
+          cvFile: null
         });
         fetchInterviews();
       } else {
@@ -841,6 +857,29 @@ Best regards,
                       placeholder="Add any additional notes or instructions for the interview..."
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400 transition-shadow"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Attach Candidate CV (Optional)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={(e) => setScheduleForm({...scheduleForm, cvFile: e.target.files[0]})}
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-shadow"
+                      />
+                      {scheduleForm.cvFile && (
+                        <p className="text-xs text-green-600 mt-1 flex items-center">
+                          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          {scheduleForm.cvFile.name} selected
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">CV will be sent to the candidate and CC/BCC recipients along with the calendar invite</p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

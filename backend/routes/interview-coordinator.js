@@ -4,10 +4,35 @@
  */
 
 const express = require('express');
+const multer = require('multer');
 const database = require('../models/database');
 const auth = require('../middleware/auth');
 const authenticateToken = auth.authenticateToken;
 const { generalLimiter } = require('../middleware/rateLimiting');
+const fs = require('fs').promises;
+const path = require('path');
+
+// Configure multer for CV file uploads (memory storage)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024  // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow PDF, DOC, DOCX files
+    const allowedMimes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF, DOC, and DOCX files are allowed'));
+    }
+  }
+});
 
 // Load Interview Coordinator Service
 let InterviewCoordinatorService = null;
@@ -286,12 +311,13 @@ Best regards`;
 
 /**
  * POST /schedule-interview - Stage 2: Schedule interview with specific time
+ * Now accepts multipart/form-data with optional CV file
  */
-router.post('/schedule-interview', authenticateToken, generalLimiter, async (req, res) => {
+router.post('/schedule-interview', authenticateToken, generalLimiter, upload.single('cvFile'), async (req, res) => {
   try {
     console.log('📅 Scheduling interview for user:', req.user.id);
     
-    const {
+    let {
       interviewId,
       interviewType,
       scheduledTime,
@@ -301,6 +327,22 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, async (req
       ccEmails,
       bccEmails
     } = req.body;
+    
+    // Parse ccEmails and bccEmails if they are JSON strings (from FormData)
+    if (typeof ccEmails === 'string') {
+      try {
+        ccEmails = JSON.parse(ccEmails);
+      } catch (e) {
+        ccEmails = [];
+      }
+    }
+    if (typeof bccEmails === 'string') {
+      try {
+        bccEmails = JSON.parse(bccEmails);
+      } catch (e) {
+        bccEmails = [];
+      }
+    }
     
     if (!interviewId || !scheduledTime || !platform) {
       return res.status(400).json({
@@ -417,10 +459,38 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, async (req
       });
     }
 
-    // Send confirmation email with calendar invite
+    // Handle CV file if uploaded
+    let cvFilePath = null;
+    if (req.file) {
+      // Save CV file to uploads directory
+      const uploadsDir = path.join(__dirname, '../uploads/cvs');
+      try {
+        await fs.mkdir(uploadsDir, { recursive: true });
+        const filename = `cv_${interviewId}_${Date.now()}_${req.file.originalname}`;
+        cvFilePath = path.join(uploadsDir, filename);
+        await fs.writeFile(cvFilePath, req.file.buffer);
+        console.log('✅ CV file saved:', cvFilePath);
+        
+        // Update interview with CV file path
+        await database.run(`
+          UPDATE interviews 
+          SET cv_file_path = $1
+          WHERE id = $2
+        `, [cvFilePath, interviewId]);
+      } catch (error) {
+        console.error('❌ Failed to save CV file:', error.message);
+        // Don't fail the request if CV save fails
+      }
+    }
+    
+    // Send confirmation email with calendar invite and CV attachment
     let emailSent = false;
     if (OutlookEmailService) {
       try {
+        // Prepare CV buffer and filename for email attachment
+        const cvBuffer = req.file ? req.file.buffer : null;
+        const cvFilename = req.file ? req.file.originalname : null;
+        
         await OutlookEmailService.sendInterviewConfirmation(
           req.user.id,
           interview.candidate_email,
@@ -435,10 +505,12 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, async (req
             ccEmails: ccEmails || [],
             bccEmails: bccEmails || []
           },
-          icsContent
+          icsContent,
+          cvBuffer,
+          cvFilename
         );
         emailSent = true;
-        console.log('✅ Interview confirmation email sent successfully');
+        console.log('✅ Interview confirmation email sent successfully with CV attachment');
       } catch (error) {
         console.error('❌ Failed to send email:', error.message);
       }

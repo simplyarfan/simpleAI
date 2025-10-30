@@ -98,11 +98,40 @@ class OutlookEmailService {
   /**
    * Send interview confirmation email with calendar invite (Stage 2)
    */
-  async sendInterviewConfirmation(userId, recipientEmail, data, icsContent) {
+  async sendInterviewConfirmation(userId, recipientEmail, data, icsContent, cvFileBuffer = null, cvFileName = null) {
     const htmlBody = this.generateInterviewConfirmationHTML(data);
 
-    // Convert ICS content to base64 for attachment
-    const icsBase64 = icsContent ? Buffer.from(icsContent).toString('base64') : null;
+    // Prepare attachments array
+    const attachments = [];
+    
+    // Add ICS calendar file
+    if (icsContent) {
+      const icsBase64 = Buffer.from(icsContent).toString('base64');
+      attachments.push({
+        '@odata.type': '#microsoft.graph.fileAttachment',
+        name: 'interview.ics',
+        contentType: 'text/calendar',
+        contentBytes: icsBase64
+      });
+    }
+    
+    // Add CV attachment if provided
+    if (cvFileBuffer && cvFileName) {
+      const cvBase64 = cvFileBuffer.toString('base64');
+      // Determine content type based on file extension
+      const ext = cvFileName.split('.').pop().toLowerCase();
+      const contentType = ext === 'pdf' ? 'application/pdf' : 
+                          ext === 'doc' ? 'application/msword' :
+                          ext === 'docx' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' :
+                          'application/octet-stream';
+      
+      attachments.push({
+        '@odata.type': '#microsoft.graph.fileAttachment',
+        name: cvFileName,
+        contentType: contentType,
+        contentBytes: cvBase64
+      });
+    }
 
     const emailData = {
       to: [recipientEmail],
@@ -110,14 +139,7 @@ class OutlookEmailService {
       bcc: data.bccEmails || [],
       subject: data.customSubject || `Interview Scheduled - ${data.position}`,
       htmlBody: data.customContent ? this.wrapCustomContent(data.customContent) : htmlBody,
-      attachments: icsBase64 ? [
-        {
-          '@odata.type': '#microsoft.graph.fileAttachment',
-          name: 'interview.ics',
-          contentType: 'text/calendar',
-          contentBytes: icsBase64
-        }
-      ] : []
+      attachments: attachments
     };
 
     return await this.sendEmail(userId, emailData);
