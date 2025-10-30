@@ -16,10 +16,129 @@ import {
   Trash2,
   Edit2,
   Video,
-  AlertCircle
+  AlertCircle,
+  ChevronDown
 } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import AddToCalendarDropdown from '../../components/ui/AddToCalendarDropdown';
+
+// Status Dropdown Component
+const StatusDropdown = ({ currentStatus, currentOutcome, onStatusChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = React.useRef(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const statusOptions = [
+    { 
+      status: 'awaiting_response', 
+      outcome: null, 
+      label: 'Awaiting Response',
+      color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      icon: Clock
+    },
+    { 
+      status: 'scheduled', 
+      outcome: null, 
+      label: 'Scheduled',
+      color: 'bg-blue-100 text-blue-800 border-blue-200',
+      icon: Calendar
+    },
+    { 
+      status: 'completed', 
+      outcome: null, 
+      label: 'Completed',
+      color: 'bg-gray-100 text-gray-800 border-gray-200',
+      icon: CheckCircle2
+    },
+    { 
+      status: 'completed', 
+      outcome: 'selected', 
+      label: 'Selected',
+      color: 'bg-green-100 text-green-800 border-green-200',
+      icon: CheckCircle2
+    },
+    { 
+      status: 'completed', 
+      outcome: 'rejected', 
+      label: 'Rejected',
+      color: 'bg-red-100 text-red-800 border-red-200',
+      icon: XCircle
+    },
+    { 
+      status: 'cancelled', 
+      outcome: null, 
+      label: 'Cancelled',
+      color: 'bg-red-100 text-red-800 border-red-200',
+      icon: XCircle
+    }
+  ];
+
+  const currentOption = statusOptions.find(
+    opt => opt.status === currentStatus && opt.outcome === currentOutcome
+  ) || statusOptions[0];
+
+  const CurrentIcon = currentOption.icon;
+
+  const handleStatusSelect = (option) => {
+    onStatusChange(option.status, option.outcome);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`w-full px-4 py-3 rounded-lg border-2 transition-all flex items-center justify-between font-semibold ${currentOption.color}`}
+      >
+        <span className="flex items-center">
+          <CurrentIcon className="w-5 h-5 mr-2" />
+          {currentOption.label}
+        </span>
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
+          {statusOptions.map((option, idx) => {
+            const OptionIcon = option.icon;
+            const isActive = option.status === currentStatus && option.outcome === currentOutcome;
+            
+            return (
+              <button
+                key={idx}
+                onClick={() => handleStatusSelect(option)}
+                className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center justify-between border-b border-gray-100 last:border-b-0 ${
+                  isActive ? 'bg-gray-50' : ''
+                }`}
+              >
+                <span className="flex items-center space-x-3">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${option.color}`}>
+                    <OptionIcon className="w-4 h-4 inline mr-1" />
+                    {option.label}
+                  </span>
+                </span>
+                {isActive && (
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const InterviewDetailPage = () => {
   const { user, getAuthHeaders } = useAuth();
@@ -341,38 +460,9 @@ const InterviewDetailPage = () => {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <Download className="w-5 h-5 mr-2 text-gray-600" />
-                    Download Calendar
+                    Add to Calendar
                   </h3>
-                  <div className="space-y-3">
-                    <button
-                      onClick={() => downloadCalendar('google')}
-                      className="w-full px-4 py-3 bg-white border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-700 rounded-lg transition-all flex items-center justify-center font-medium"
-                    >
-                      <Calendar className="w-5 h-5 mr-2" />
-                      Google Calendar
-                    </button>
-                    <button
-                      onClick={() => downloadCalendar('outlook')}
-                      className="w-full px-4 py-3 bg-white border-2 border-gray-300 hover:border-blue-600 hover:bg-blue-50 text-gray-700 rounded-lg transition-all flex items-center justify-center font-medium"
-                    >
-                      <Mail className="w-5 h-5 mr-2" />
-                      Outlook Calendar
-                    </button>
-                    <button
-                      onClick={() => downloadCalendar('apple')}
-                      className="w-full px-4 py-3 bg-white border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 rounded-lg transition-all flex items-center justify-center font-medium"
-                    >
-                      <Calendar className="w-5 h-5 mr-2" />
-                      Apple Calendar
-                    </button>
-                    <button
-                      onClick={() => downloadCalendar('ics')}
-                      className="w-full px-4 py-3 bg-white border-2 border-gray-300 hover:border-purple-500 hover:bg-purple-50 text-gray-700 rounded-lg transition-all flex items-center justify-center font-medium"
-                    >
-                      <Download className="w-5 h-5 mr-2" />
-                      Download .ICS File
-                    </button>
-                  </div>
+                  <AddToCalendarDropdown interview={interview} />
                 </div>
               )}
 
@@ -380,50 +470,11 @@ const InterviewDetailPage = () => {
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Update Status</h3>
                 <div className="space-y-3">
-                  {interview.status === 'awaiting_response' && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
-                      <AlertCircle className="w-4 h-4 inline mr-2" />
-                      Waiting for candidate response
-                    </div>
-                  )}
-                  
-                  {interview.status === 'scheduled' && (
-                    <>
-                      <button
-                        onClick={() => updateInterviewStatus('completed')}
-                        className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-all flex items-center justify-center font-medium shadow-lg hover:shadow-xl"
-                      >
-                        <CheckCircle2 className="w-5 h-5 mr-2" />
-                        Mark as Completed
-                      </button>
-                    </>
-                  )}
-                  
-                  {interview.status === 'completed' && !interview.outcome && (
-                    <>
-                      <button
-                        onClick={() => updateInterviewStatus('completed', 'selected')}
-                        className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-all flex items-center justify-center font-medium shadow-lg hover:shadow-xl"
-                      >
-                        <CheckCircle2 className="w-5 h-5 mr-2" />
-                        Select Candidate
-                      </button>
-                      <button
-                        onClick={() => updateInterviewStatus('completed', 'rejected')}
-                        className="w-full px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all flex items-center justify-center font-medium shadow-lg hover:shadow-xl"
-                      >
-                        <XCircle className="w-5 h-5 mr-2" />
-                        Reject Candidate
-                      </button>
-                    </>
-                  )}
-                  
-                  {interview.outcome && (
-                    <div className={`${statusDisplay.color} border rounded-lg p-4 text-center font-semibold`}>
-                      <StatusIcon className="w-6 h-6 inline mr-2" />
-                      {statusDisplay.text}
-                    </div>
-                  )}
+                  <StatusDropdown 
+                    currentStatus={interview.status}
+                    currentOutcome={interview.outcome}
+                    onStatusChange={(status, outcome) => updateInterviewStatus(status, outcome)}
+                  />
                 </div>
               </div>
 

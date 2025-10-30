@@ -29,6 +29,16 @@ try {
   console.error('❌ Failed to load Outlook Email Service:', error.message);
 }
 
+// Load Google Calendar Service
+let GoogleCalendarService = null;
+try {
+  const GoogleCalendarServiceClass = require('../services/googleCalendarService');
+  GoogleCalendarService = new GoogleCalendarServiceClass();
+  console.log('✅ Google Calendar Service loaded successfully');
+} catch (error) {
+  console.error('❌ Failed to load Google Calendar Service:', error.message);
+}
+
 const router = express.Router();
 
 /**
@@ -301,20 +311,40 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, async (req
 
     // Generate proper meeting link based on platform
     let meetingLink = '';
+    let googleEventId = null;
     
-    // For Google Meet, we need to use Google Calendar API to create a real meeting
-    // For now, we'll create a placeholder that can be updated manually
-    if (platform === 'Google Meet') {
-      // Generate a meeting code that follows Google Meet's format: xxx-xxxx-xxx
-      const generateMeetCode = () => {
-        const chars = 'abcdefghijklmnopqrstuvwxyz';
-        const part1 = Array(3).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
-        const part2 = Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
-        const part3 = Array(3).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
-        return `${part1}-${part2}-${part3}`;
-      };
-      meetingLink = `https://meet.google.com/${generateMeetCode()}`;
-      console.log('⚠️  Note: This is a placeholder Google Meet link. For production, integrate with Google Calendar API.');
+    // Try to create real Google Meet link if Google Calendar is connected and platform is Google Meet
+    if (platform === 'Google Meet' && GoogleCalendarService) {
+      try {
+        const googleMeetResult = await GoogleCalendarService.createCalendarEventWithMeet(
+          req.user.id,
+          {
+            candidateName: interview.candidate_name,
+            candidateEmail: interview.candidate_email,
+            position: interview.job_title,
+            interviewType: interviewType || 'technical',
+            scheduledTime,
+            duration: duration || 60,
+            notes: notes || ''
+          }
+        );
+        
+        meetingLink = googleMeetResult.meetingLink;
+        googleEventId = googleMeetResult.eventId;
+        console.log('✅ Real Google Meet link created:', meetingLink);
+      } catch (error) {
+        console.log('⚠️  Could not create real Google Meet link (user may not have connected Google):', error.message);
+        // Fallback to placeholder
+        const generateMeetCode = () => {
+          const chars = 'abcdefghijklmnopqrstuvwxyz';
+          const part1 = Array(3).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+          const part2 = Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+          const part3 = Array(3).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+          return `${part1}-${part2}-${part3}`;
+        };
+        meetingLink = `https://meet.google.com/${generateMeetCode()}`;
+        console.log('📝 Using placeholder Google Meet link:', meetingLink);
+      }
     } else if (platform === 'Microsoft Teams') {
       // For Teams, we could use Microsoft Graph API if configured
       const meetingId = `19:meeting_${Buffer.from(scheduledTime).toString('base64').substring(0, 32)}`;
@@ -328,7 +358,7 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, async (req
       meetingLink = 'To be provided';
     }
     
-    console.log('🔗 Generated meeting link:', meetingLink);
+    console.log('🔗 Meeting link:', meetingLink);
 
     await database.connect();
 
@@ -356,8 +386,9 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, async (req
           notes = $6,
           status = 'scheduled',
           scheduled_at = $7,
+          google_event_id = $8,
           updated_at = CURRENT_TIMESTAMP
-      WHERE id = $8
+      WHERE id = $9
     `, [
       interviewType || 'technical',
       scheduledTime,
@@ -366,6 +397,7 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, async (req
       meetingLink || '',
       notes || '',
       new Date(),
+      googleEventId,
       interviewId
     ]);
 
