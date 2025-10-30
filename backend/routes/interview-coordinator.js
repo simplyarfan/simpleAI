@@ -57,8 +57,7 @@ try {
 // Load Google Calendar Service
 let GoogleCalendarService = null;
 try {
-  const GoogleCalendarServiceClass = require('../services/googleCalendarService');
-  GoogleCalendarService = new GoogleCalendarServiceClass();
+  GoogleCalendarService = require('../services/googleCalendarService');
   console.log('✅ Google Calendar Service loaded successfully');
 } catch (error) {
   console.error('❌ Failed to load Google Calendar Service:', error.message);

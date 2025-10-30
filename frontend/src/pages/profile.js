@@ -32,6 +32,8 @@ function ProfileSettings() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [connectedEmail, setConnectedEmail] = useState({});
+  const [googleCalendarStatus, setGoogleCalendarStatus] = useState(false);
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
   
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -64,6 +66,35 @@ function ProfileSettings() {
     setConnectedEmail(emailService.getConnectedEmail());
   }, []);
 
+  // Check Google Calendar connection status
+  useEffect(() => {
+    const checkGoogleStatus = async () => {
+      try {
+        const response = await authAPI.get('/auth/google/status');
+        if (response.success) {
+          setGoogleCalendarStatus(response.isConnected);
+        }
+      } catch (error) {
+        console.error('Error checking Google Calendar status:', error);
+      }
+    };
+    checkGoogleStatus();
+  }, []);
+
+  // Handle Google Calendar connection result from URL query
+  useEffect(() => {
+    const { google_calendar } = router.query;
+    if (google_calendar === 'connected') {
+      setGoogleCalendarStatus(true);
+      toast.success('Google Calendar connected successfully!');
+      // Clean up URL
+      router.replace('/profile', undefined, { shallow: true });
+    } else if (google_calendar === 'error') {
+      toast.error('Failed to connect Google Calendar');
+      router.replace('/profile', undefined, { shallow: true });
+    }
+  }, [router.query]);
+
   // Handle URL tab parameter
   useEffect(() => {
     const { tab } = router.query;
@@ -81,6 +112,42 @@ function ProfileSettings() {
     emailService.disconnectEmail(provider);
     setConnectedEmail(emailService.getConnectedEmail());
     toast.success(`${provider === 'outlook' ? 'Outlook' : 'Email'} disconnected`);
+  };
+
+  const handleGoogleCalendarConnect = async () => {
+    setLoadingGoogle(true);
+    try {
+      const response = await authAPI.get('/auth/google/auth');
+      if (response.success && response.authUrl) {
+        // Redirect to Google OAuth
+        window.location.href = response.authUrl;
+      } else {
+        toast.error('Failed to initiate Google Calendar connection');
+      }
+    } catch (error) {
+      console.error('Error connecting Google Calendar:', error);
+      toast.error('Failed to connect Google Calendar');
+    } finally {
+      setLoadingGoogle(false);
+    }
+  };
+
+  const handleGoogleCalendarDisconnect = async () => {
+    setLoadingGoogle(true);
+    try {
+      const response = await authAPI.post('/auth/google/disconnect');
+      if (response.success) {
+        setGoogleCalendarStatus(false);
+        toast.success('Google Calendar disconnected successfully');
+      } else {
+        toast.error('Failed to disconnect Google Calendar');
+      }
+    } catch (error) {
+      console.error('Error disconnecting Google Calendar:', error);
+      toast.error('Failed to disconnect Google Calendar');
+    } finally {
+      setLoadingGoogle(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -436,6 +503,42 @@ function ProfileSettings() {
                       </div>
                     </div>
 
+                    {/* Google Calendar */}
+                    <div className="border border-gray-200 rounded-lg p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                            <Calendar className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">Google Calendar</h3>
+                            {googleCalendarStatus ? (
+                              <p className="text-sm text-green-600">Connected - Create Google Meet links automatically</p>
+                            ) : (
+                              <p className="text-sm text-gray-500">Connect to create interviews with Google Meet links</p>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {googleCalendarStatus ? (
+                          <button
+                            onClick={handleGoogleCalendarDisconnect}
+                            disabled={loadingGoogle}
+                            className="px-4 py-2 text-sm text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            {loadingGoogle ? 'Disconnecting...' : 'Disconnect'}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={handleGoogleCalendarConnect}
+                            disabled={loadingGoogle}
+                            className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+                          >
+                            {loadingGoogle ? 'Connecting...' : 'Connect Google Calendar'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
 
                     {/* Benefits */}
                     <div className="bg-red-50 border border-red-200 rounded-lg p-6">

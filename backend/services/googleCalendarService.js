@@ -4,71 +4,111 @@
  * Requires Google OAuth integration
  */
 
-const axios = require('axios');
+const { google } = require('googleapis');
 const database = require('../models/database');
 
 class GoogleCalendarService {
   constructor() {
-    this.calendarApiUrl = 'https://www.googleapis.com/calendar/v3';
+    this.oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      `${process.env.FRONTEND_URL || 'https://thesimpleai.vercel.app'}/api/auth/google/callback`
+    );
   }
 
   /**
-   * Get user's Google Calendar access token from database
+   * Generate Google OAuth authorization URL
    */
-  async getUserAccessToken(userId) {
-    try {
-      await database.connect();
-      const user = await database.get(
-        'SELECT google_access_token, google_refresh_token, google_token_expires_at FROM users WHERE id = $1',
-        [userId]
-      );
+  getAuthUrl(userId) {
+    const scopes = [
+      'https://www.googleapis.com/auth/calendar.events',
+      'https://www.googleapis.com/auth/calendar.readonly',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile'
+    ];
 
-      if (!user || !user.google_access_token) {
-        throw new Error('User has not connected their Google Calendar account');
-      }
-
-      // Check if token is expired
-      const expiresAt = new Date(user.google_token_expires_at);
-      const now = new Date();
-
-      if (expiresAt <= now) {
-        // Token expired, need to refresh
-        return await this.refreshAccessToken(userId, user.google_refresh_token);
-      }
-
-      return user.google_access_token;
-    } catch (error) {
-      console.error('Error getting Google access token:', error);
-      throw error;
-    }
+    return this.oauth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: scopes,
+      prompt: 'consent',
+      state: userId // Pass user ID for callback
+    });
   }
 
   /**
-   * Refresh expired access token
+   * Exchange authorization code for tokens
    */
-  async refreshAccessToken(userId, refreshToken) {
-    try {
-      const response = await axios.post('https://oauth2.googleapis.com/token', {
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        refresh_token: refreshToken,
-        grant_type: 'refresh_token'
-      });
+  async getTokensFromCode(code) {
+    const { tokens } = await this.oauth2Client.getToken(code);
+    return tokens;
+  }
 
-      const { access_token, refresh_token, expires_in } = response.data;
-      const expiresAt = new Date(Date.now() + expires_in * 1000);
+  /**
+   * Store user's Google Calendar tokens
+   */
+  async storeUserTokens(userId, tokens) {
+    const expiresAt = new Date(tokens.expiry_date || Date.now() + 3600000);
+    
+    await database.run(
+      `UPDATE users 
+       SET google_access_token = $1, 
+           google_refresh_token = COALESCE($2, google_refresh_token),
+           google_token_expires_at = $3
+       WHERE id = $4`,
+      [
+        tokens.access_token,
+        tokens.refresh_token,
+        expiresAt.toISOString(),
+        userId
+      ]
+    );
+  }
 
-      // Update tokens in database
-      await database.run(
-        'UPDATE users SET google_access_token = $1, google_refresh_token = $2, google_token_expires_at = $3 WHERE id = $4',
-        [access_token, refresh_token || refreshToken, expiresAt.toISOString(), userId]
-      );
+  /**
+   * Get user's stored Google Calendar tokens
+   */
+  async getUserTokens(userId) {
+    const user = await database.get(
+      'SELECT google_access_token, google_refresh_token, google_token_expires_at FROM users WHERE id = $1',
+      [userId]
+    );
 
-      return access_token;
-    } catch (error) {
-      console.error('Error refreshing Google token:', error);
-      throw new Error('Failed to refresh Google access token');
+    if (!user || !user.google_access_token) {
+      throw new Error('User has not connected their Google Calendar account');
     }
+
+    return user;
+  }
+
+  /**
+   * Set up OAuth client with user's tokens
+   */
+  async setupClientForUser(userId) {
+    const tokenData = await this.getUserTokens(userId);
+    
+    this.oauth2Client.setCredentials({
+      access_token: tokenData.google_access_token,
+      refresh_token: tokenData.google_refresh_token,
+      expiry_date: new Date(tokenData.google_token_expires_at).getTime()
+    });
+
+    // Handle automatic token refresh
+    this.oauth2Client.on('tokens', async (tokens) => {
+      if (tokens.refresh_token) {
+        await this.storeUserTokens(userId, tokens);
+      } else {
+        // Update only access token
+        const expiresAt = new Date(tokens.expiry_date || Date.now() + 3600000);
+        await database.run(
+          `UPDATE users 
+           SET google_access_token = $1, google_token_expires_at = $2
+           WHERE id = $3`,
+          [tokens.access_token, expiresAt.toISOString(), userId]
+        );
+      }
+    });
+
+    return google.calendar({ version: 'v3', auth: this.oauth2Client });
   }
 
   /**
@@ -76,7 +116,7 @@ class GoogleCalendarService {
    */
   async createCalendarEventWithMeet(userId, eventData) {
     try {
-      const accessToken = await this.getUserAccessToken(userId);
+      const calendar = await this.setupClientForUser(userId);
 
       // Format dates for Google Calendar API
       const startDate = new Date(eventData.scheduledTime);
@@ -112,16 +152,12 @@ class GoogleCalendarService {
         }
       };
 
-      const response = await axios.post(
-        `${this.calendarApiUrl}/calendars/primary/events?conferenceDataVersion=1`,
-        calendarEvent,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      const response = await calendar.events.insert({
+        calendarId: 'primary',
+        resource: calendarEvent,
+        conferenceDataVersion: 1,
+        sendUpdates: 'all'
+      });
 
       // Extract Google Meet link from response
       const meetLink = response.data.hangoutLink || response.data.conferenceData?.entryPoints?.[0]?.uri;
@@ -134,8 +170,8 @@ class GoogleCalendarService {
         message: 'Google Calendar event created with Meet link'
       };
     } catch (error) {
-      console.error('❌ Failed to create Google Calendar event:', error.response?.data || error.message);
-      throw new Error(`Failed to create Google Meet: ${error.response?.data?.error?.message || error.message}`);
+      console.error('❌ Failed to create Google Calendar event:', error.message);
+      throw new Error(`Failed to create Google Meet: ${error.message}`);
     }
   }
 
@@ -159,16 +195,13 @@ class GoogleCalendarService {
    */
   async deleteCalendarEvent(userId, eventId) {
     try {
-      const accessToken = await this.getUserAccessToken(userId);
+      const calendar = await this.setupClientForUser(userId);
 
-      await axios.delete(
-        `${this.calendarApiUrl}/calendars/primary/events/${eventId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
-        }
-      );
+      await calendar.events.delete({
+        calendarId: 'primary',
+        eventId: eventId,
+        sendUpdates: 'all'
+      });
 
       return {
         success: true,
@@ -185,7 +218,7 @@ class GoogleCalendarService {
    */
   async updateCalendarEvent(userId, eventId, eventData) {
     try {
-      const accessToken = await this.getUserAccessToken(userId);
+      const calendar = await this.setupClientForUser(userId);
 
       const startDate = new Date(eventData.scheduledTime);
       const endDate = new Date(startDate.getTime() + (eventData.duration || 60) * 60000);
@@ -203,16 +236,12 @@ class GoogleCalendarService {
         }
       };
 
-      const response = await axios.patch(
-        `${this.calendarApiUrl}/calendars/primary/events/${eventId}`,
-        calendarEvent,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+      const response = await calendar.events.update({
+        calendarId: 'primary',
+        eventId: eventId,
+        resource: calendarEvent,
+        sendUpdates: 'all'
+      });
 
       return {
         success: true,
@@ -224,6 +253,35 @@ class GoogleCalendarService {
       throw new Error('Failed to update calendar event');
     }
   }
+
+  /**
+   * Check if user has connected Google Calendar
+   */
+  async isUserConnected(userId) {
+    try {
+      const tokenData = await database.get(
+        'SELECT google_access_token FROM users WHERE id = $1',
+        [userId]
+      );
+      return !!tokenData?.google_access_token;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Disconnect user's Google Calendar
+   */
+  async disconnectUser(userId) {
+    await database.run(
+      `UPDATE users 
+       SET google_access_token = NULL, 
+           google_refresh_token = NULL, 
+           google_token_expires_at = NULL
+       WHERE id = $1`,
+      [userId]
+    );
+  }
 }
 
-module.exports = GoogleCalendarService;
+module.exports = new GoogleCalendarService();

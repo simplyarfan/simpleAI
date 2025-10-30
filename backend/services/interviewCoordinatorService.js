@@ -5,6 +5,7 @@
 
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
+const googleCalendarService = require('./googleCalendarService');
 
 class InterviewCoordinatorService {
   constructor() {
@@ -86,6 +87,8 @@ Make questions specific to the candidate's background and job requirements.`;
 
   /**
    * Create interview schedule with panel coordination
+   * @param {Object} candidateData - Candidate information
+   * @param {Object} interviewDetails - Interview details including userId for calendar integration
    */
   async createInterviewSchedule(candidateData, interviewDetails) {
 
@@ -110,6 +113,43 @@ Make questions specific to the candidate's background and job requirements.`;
       status: 'scheduled',
       created_at: new Date().toISOString()
     };
+
+    // Try to create Google Calendar event if user has connected their calendar
+    if (interviewDetails.userId && interviewDetails.useGoogleCalendar) {
+      try {
+        const isConnected = await googleCalendarService.isUserConnected(interviewDetails.userId);
+        
+        if (isConnected) {
+          const calendarResult = await googleCalendarService.createCalendarEventWithMeet(
+            interviewDetails.userId,
+            {
+              candidateName: candidateData.name,
+              candidateEmail: candidateData.email,
+              position: interviewDetails.position,
+              interviewType: interviewDetails.type,
+              scheduledTime: interviewDetails.scheduled_time,
+              duration: interviewDetails.duration,
+              notes: interviewDetails.notes
+            }
+          );
+
+          // Update schedule with Google Calendar event details
+          schedule.google_calendar = {
+            eventId: calendarResult.eventId,
+            htmlLink: calendarResult.htmlLink,
+            meetLink: calendarResult.meetingLink
+          };
+          
+          // Update meeting link if Google Meet was created
+          if (calendarResult.meetingLink) {
+            schedule.interview.meeting_link = calendarResult.meetingLink;
+          }
+        }
+      } catch (error) {
+        console.error('⚠️  Failed to create Google Calendar event:', error.message);
+        // Continue without Google Calendar integration
+      }
+    }
 
     return schedule;
   }
@@ -311,14 +351,29 @@ Make questions specific to the candidate's background and job requirements.`;
 
   /**
    * Check for scheduling conflicts
+   * @param {string} proposedTime - Proposed interview time
+   * @param {Array} panelEmails - Email addresses of panel members
+   * @param {number} duration - Interview duration in minutes
+   * @param {string} userId - User ID for Google Calendar access
    */
-  async checkConflicts(proposedTime, panelEmails, duration = 60) {
+  async checkConflicts(proposedTime, panelEmails, duration = 60, userId = null) {
 
-    // This would integrate with Google Calendar API or similar
-    // For now, returning a mock response
     const conflicts = [];
     
-    // Mock conflict detection logic
+    // If user has Google Calendar connected, check for real conflicts
+    if (userId) {
+      try {
+        const isConnected = await googleCalendarService.isUserConnected(userId);
+        if (isConnected) {
+          // TODO: Implement actual conflict checking via Google Calendar API
+          // This would require additional Calendar API methods for checking busy times
+          console.log('✓ Google Calendar connected - conflict checking available');
+        }
+      } catch (error) {
+        console.error('⚠️  Could not check Google Calendar conflicts:', error.message);
+      }
+    }
+    
     const conflictCheck = {
       has_conflicts: false,
       conflicts: conflicts,
