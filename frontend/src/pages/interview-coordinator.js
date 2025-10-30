@@ -567,10 +567,11 @@ Best regards,
                             </div>
                             
                             {/* Inline Action Buttons */}
-                            <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex flex-wrap gap-2">
                               {interview.status === 'awaiting_response' && (
                                 <button
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setSelectedInterview(interview);
                                     setShowScheduleModal(true);
                                   }}
@@ -583,13 +584,19 @@ Best regards,
                               {interview.status === 'scheduled' && (
                                 <>
                                   <button
-                                    onClick={() => downloadCalendar(interview.id, interview.candidate_name)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      downloadCalendar(interview.id, interview.candidate_name);
+                                    }}
                                     className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"
                                   >
                                     Download ICS
                                   </button>
                                   <button
-                                    onClick={() => updateInterviewStatus(interview.id, 'completed')}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateInterviewStatus(interview.id, 'completed');
+                                    }}
                                     className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
                                   >
                                     Complete
@@ -599,13 +606,19 @@ Best regards,
                               {interview.status === 'completed' && !interview.outcome && (
                                 <>
                                   <button
-                                    onClick={() => updateInterviewStatus(interview.id, 'completed', 'selected')}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateInterviewStatus(interview.id, 'completed', 'selected');
+                                    }}
                                     className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"
                                   >
                                     Select
                                   </button>
                                   <button
-                                    onClick={() => updateInterviewStatus(interview.id, 'completed', 'rejected')}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateInterviewStatus(interview.id, 'completed', 'rejected');
+                                    }}
                                     className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors"
                                   >
                                     Reject
@@ -613,7 +626,10 @@ Best regards,
                                 </>
                               )}
                               <button
-                                onClick={() => deleteInterview(interview.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteInterview(interview.id);
+                                }}
                                 className="px-3 py-1.5 border border-red-300 hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg transition-colors"
                               >
                                 Delete
