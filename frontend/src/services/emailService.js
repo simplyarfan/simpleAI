@@ -58,196 +58,85 @@ class EmailService {
   }
 
 
-  // Outlook Integration for Sending Emails
+  // Outlook Integration - Uses secure backend OAuth flow
   async connectOutlook() {
     try {
-      // Check if client ID is configured
-      if (!process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID || process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID === 'your-outlook-client-id') {
+      const { api } = await import('../utils/api');
+      
+      console.log('🔐 Starting Outlook OAuth flow...');
+      
+      // Get OAuth authorization URL from backend
+      const response = await api.get('/auth/outlook/auth');
+      
+      if (!response.data.success) {
         return {
           success: false,
-          error: 'Outlook OAuth is not configured yet. Please contact your administrator to set up NEXT_PUBLIC_OUTLOOK_CLIENT_ID.'
+          error: response.data.message || 'Failed to initiate OAuth'
         };
       }
-
-      // Load Microsoft Graph SDK
-      if (!window.msal) {
-        await this.loadMSAL();
-      }
-
-      // Use tenant-specific endpoint for single-tenant apps
-      // If you get "multi-tenant" error, you need to either:
-      // 1. Change app to multi-tenant in Azure Portal, OR
-      // 2. Use your tenant ID: 'https://login.microsoftonline.com/{your-tenant-id}'
-      // Get the correct redirect URI based on environment
-      const getRedirectUri = () => {
-        if (typeof window !== 'undefined') {
-          const origin = window.location.origin;
-          // For production, use the root domain (more likely to be configured in Azure)
-          if (origin.includes('thesimpleai.netlify.app')) {
-            return 'https://thesimpleai.netlify.app';
-          }
-          // For localhost development
-          if (origin.includes('localhost')) {
-            return 'http://localhost:3000';
-          }
-          // Fallback to current origin
-          return origin;
-        }
-        return 'https://thesimpleai.netlify.app';
-      };
-
-      const msalConfig = {
-        auth: {
-          clientId: process.env.NEXT_PUBLIC_OUTLOOK_CLIENT_ID || '64897226-99b4-4df0-8668-213000bf46e',
-          authority: 'https://login.microsoftonline.com/organizations',
-          redirectUri: getRedirectUri()
-        },
-        cache: {
-          cacheLocation: 'sessionStorage', // Changed from localStorage to sessionStorage to avoid conflicts
-          storeAuthStateInCookie: false
-        },
-        system: {
-          loggerOptions: {
-            loggerCallback: (level, message, containsPii) => {
-              if (containsPii) return;
-              console.log('[MSAL]', message);
-            }
-          }
-        }
-      };
-
-      console.log('🔧 MSAL Config:', {
-        clientId: msalConfig.auth.clientId,
-        redirectUri: msalConfig.auth.redirectUri,
-        authority: msalConfig.auth.authority
-      });
-
-      const msalInstance = new window.msal.PublicClientApplication(msalConfig);
-      await msalInstance.initialize();
       
-      const loginRequest = {
-        scopes: ['https://graph.microsoft.com/Mail.Send', 'https://graph.microsoft.com/User.Read'],
-        prompt: 'select_account',
-        forceRefresh: false
-      };
-
-      console.log('🔐 Starting Outlook OAuth...');
+      const authUrl = response.data.authUrl;
+      console.log('✅ Authorization URL received, redirecting...');
       
-      // Import Cookies library to properly save/restore tokens
-      const Cookies = (await import('js-cookie')).default;
+      // Redirect to Microsoft OAuth page
+      // The backend will handle the callback and store tokens securely
+      window.location.href = authUrl;
       
-      // Save our auth tokens before MSAL popup (MSAL popup WILL clear them!)
-      const savedAccessToken = Cookies.get('accessToken');
-      const savedRefreshToken = Cookies.get('refreshToken');
+      // Return pending status (page will redirect)
+      return { success: true, pending: true };
       
-      console.log('💾 Saving auth tokens before Outlook OAuth:', {
-        hasAccessToken: !!savedAccessToken,
-        hasRefreshToken: !!savedRefreshToken
-      });
-      
-      const response = await msalInstance.loginPopup(loginRequest);
-      
-      // CRITICAL: Restore our auth tokens after MSAL popup (they WILL be cleared!)
-      if (savedAccessToken && savedRefreshToken) {
-        console.log('🔒 Restoring auth tokens after Outlook login');
-        
-        const isProduction = window.location.hostname !== 'localhost' && 
-          window.location.hostname !== '127.0.0.1';
-        
-        const cookieOptions = {
-          expires: 30,
-          path: '/',
-          secure: isProduction,
-          sameSite: isProduction ? 'none' : 'lax'
-        };
-        
-        Cookies.set('accessToken', savedAccessToken, cookieOptions);
-        Cookies.set('refreshToken', savedRefreshToken, {
-          ...cookieOptions,
-          expires: 90
-        });
-        
-        console.log('✅ Auth tokens restored successfully');
-      } else {
-        console.error('❌ Could not restore auth tokens - they were not saved properly');
-      }
-      
-      this.outlookAuth = response;
-      this.connectedEmail.outlook = {
-        connected: true,
-        email: response.account.username,
-        name: response.account.name,
-        accessToken: response.accessToken,
-        connectedAt: new Date().toISOString()
-      };
-      
-      this.saveConnectedEmail();
-      
-      // Save tokens to backend database
-      try {
-        const axios = (await import('axios')).default;
-        const accessToken = Cookies.get('accessToken');
-        
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://thesimpleai.vercel.app';
-        const cleanUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl;
-        
-        await axios.post(
-          `${cleanUrl}/api/auth/outlook/connect`,
-          {
-            accessToken: response.accessToken,
-            refreshToken: response.account.idTokenClaims?.refresh_token || null,
-            expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(), // 1 hour from now
-            email: response.account.username
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-        console.log('✅ Outlook tokens saved to backend database');
-      } catch (saveError) {
-        console.error('Failed to save Outlook tokens to backend:', saveError);
-        // Don't fail the connection if backend save fails
-      }
-      
-      return { success: true, provider: 'outlook', user: this.connectedEmail.outlook };
     } catch (error) {
-      console.error('Gmail connection failed:', error);
-      return { success: false, error: error.message };
+      console.error('❌ Outlook connection failed:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || error.message 
+      };
     }
   }
 
-  // Send Email via Microsoft Graph API
-  async sendEmail(to, subject, body, attachments = []) {
+  // Check Outlook connection status
+  async checkOutlookStatus() {
     try {
-      if (!this.connectedEmail.outlook?.connected) {
-        throw new Error('Outlook not connected. Please connect your Outlook account first.');
-      }
-
-      // Create email message for Microsoft Graph
-      const emailMessage = {
-        message: {
-          subject: subject,
-          body: {
-            contentType: 'HTML',
-            content: body
-          },
-          toRecipients: [
-            {
-              emailAddress: {
-                address: to
-              }
-            }
-          ],
-          attachments: attachments.map(attachment => ({
-            '@odata.type': '#microsoft.graph.fileAttachment',
-            name: attachment.filename,
-            contentType: attachment.mimeType,
-            contentBytes: attachment.data
-          }))
+      const { api } = await import('../utils/api');
+      const response = await api.get('/auth/outlook/status');
+      
+      if (response.data.success) {
+        const { isConnected, isExpired, email } = response.data;
+        
+        if (isConnected && !isExpired) {
+          this.connectedEmail.outlook = {
+            connected: true,
+            email: email,
+            connectedAt: new Date().toISOString()
+          };
+          this.saveConnectedEmail();
         }
+        
+        return { isConnected, isExpired, email };
+      }
+      
+      return { isConnected: false };
+    } catch (error) {
+      console.error('Failed to check Outlook status:', error);
+      return { isConnected: false };
+    }
+  }
+  
+  // Disconnect Outlook
+  async disconnectOutlook() {
+    try {
+      const { api } = await import('../utils/api');
+      await api.post('/auth/outlook/disconnect');
+      
+      this.connectedEmail.outlook = {};
+      this.saveConnectedEmail();
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to disconnect Outlook:', error);
+      return { success: false, error: error.message };
+    }
+  }
       };
 
       // Send email via Microsoft Graph

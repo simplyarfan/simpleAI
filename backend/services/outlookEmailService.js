@@ -32,6 +32,10 @@ class OutlookEmailService {
       const now = new Date();
 
       if (expiresAt <= now) {
+        // Token expired - check if we have a refresh token
+        if (!user.outlook_refresh_token) {
+          throw new Error('Outlook token expired. Please reconnect your Outlook account.');
+        }
         // Token expired, need to refresh
         return await this.refreshAccessToken(userId, user.outlook_refresh_token);
       }
@@ -47,6 +51,12 @@ class OutlookEmailService {
    * Refresh expired access token
    */
   async refreshAccessToken(userId, refreshToken) {
+    // Check if OAuth credentials are configured
+    if (!process.env.OUTLOOK_CLIENT_ID || !process.env.OUTLOOK_CLIENT_SECRET) {
+      console.error('❌ Outlook OAuth credentials not configured');
+      throw new Error('Outlook OAuth is not configured. Please reconnect your Outlook account.');
+    }
+
     try {
       const response = await axios.post('https://login.microsoftonline.com/common/oauth2/v2.0/token', 
         new URLSearchParams({
@@ -73,8 +83,8 @@ class OutlookEmailService {
 
       return access_token;
     } catch (error) {
-      console.error('Error refreshing token:', error);
-      throw new Error('Failed to refresh access token');
+      console.error('Error refreshing token:', error.response?.data || error.message);
+      throw new Error('Failed to refresh access token. Please reconnect your Outlook account.');
     }
   }
 

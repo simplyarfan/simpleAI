@@ -235,41 +235,205 @@ router.post('/logout-all',
 );
 
 /**
- * POST /outlook/connect - Save Outlook tokens
+ * GET /outlook/auth - Initiate Outlook OAuth flow
  */
-router.post('/outlook/connect', authenticateToken, async (req, res) => {
+router.get('/outlook/auth', authenticateToken, async (req, res) => {
   try {
-    const { accessToken, refreshToken, expiresAt, email } = req.body;
-    
-    if (!accessToken || !email) {
-      return res.status(400).json({
+    // Check if OAuth credentials are configured
+    if (!process.env.OUTLOOK_CLIENT_ID) {
+      return res.status(503).json({
         success: false,
-        message: 'Missing required fields: accessToken, email'
+        message: 'Outlook OAuth is not configured. Please set OUTLOOK_CLIENT_ID environment variable.'
       });
     }
 
-    await database.connect();
+    const backendUrl = process.env.BACKEND_URL || 'https://thesimpleai.vercel.app';
+    const redirectUri = `${backendUrl}/api/auth/outlook/callback`;
     
-    await database.run(`
-      UPDATE users 
-      SET outlook_access_token = $1,
-          outlook_refresh_token = $2,
-          outlook_token_expires_at = $3,
-          outlook_email = $4,
-          updated_at = CURRENT_TIMESTAMP
-      WHERE id = $5
-    `, [accessToken, refreshToken, expiresAt, email, req.user.id]);
+    // Build OAuth authorization URL
+    const authUrl = new URL('https://login.microsoftonline.com/common/oauth2/v2.0/authorize');
+    authUrl.searchParams.append('client_id', process.env.OUTLOOK_CLIENT_ID);
+    authUrl.searchParams.append('response_type', 'code');
+    authUrl.searchParams.append('redirect_uri', redirectUri);
+    authUrl.searchParams.append('response_mode', 'query');
+    authUrl.searchParams.append('scope', 'offline_access https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/User.Read');
+    authUrl.searchParams.append('state', req.user.id); // Pass user ID in state parameter
+    authUrl.searchParams.append('prompt', 'select_account');
 
     res.json({
       success: true,
-      message: 'Outlook account connected successfully'
+      authUrl: authUrl.toString()
     });
 
   } catch (error) {
-    console.error('Outlook connect error:', error);
+    console.error('Outlook auth initiation error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to connect Outlook account',
+      message: 'Failed to initiate Outlook OAuth',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * GET /outlook/callback - Handle Outlook OAuth callback
+ */
+router.get('/outlook/callback', async (req, res) => {
+  try {
+    const { code, state: userId, error, error_description } = req.query;
+
+    const frontendUrl = process.env.FRONTEND_URL || 'https://thesimpleai.netlify.app';
+
+    // Handle OAuth errors
+    if (error) {
+      console.error('❌ Outlook OAuth error:', error, error_description);
+      return res.redirect(`${frontendUrl}/profile?outlook=error&message=${encodeURIComponent(error_description || error)}`);
+    }
+
+    if (!code) {
+      return res.redirect(`${frontendUrl}/profile?outlook=error&message=No authorization code received`);
+    }
+
+    if (!userId) {
+      return res.redirect(`${frontendUrl}/profile?outlook=error&message=User session lost`);
+    }
+
+    // Check if OAuth credentials are configured
+    if (!process.env.OUTLOOK_CLIENT_ID || !process.env.OUTLOOK_CLIENT_SECRET) {
+      console.error('❌ Outlook OAuth credentials not configured');
+      return res.redirect(`${frontendUrl}/profile?outlook=error&message=Server configuration error`);
+    }
+
+    console.log('✅ Received OAuth callback for user:', userId);
+
+    // Exchange authorization code for tokens
+    const axios = require('axios');
+    const backendUrl = process.env.BACKEND_URL || 'https://thesimpleai.vercel.app';
+    const redirectUri = `${backendUrl}/api/auth/outlook/callback`;
+
+    const tokenResponse = await axios.post(
+      'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+      new URLSearchParams({
+        client_id: process.env.OUTLOOK_CLIENT_ID,
+        client_secret: process.env.OUTLOOK_CLIENT_SECRET,
+        code: code,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+        scope: 'offline_access https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/User.Read'
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+
+    const { access_token, refresh_token, expires_in } = tokenResponse.data;
+    
+    if (!refresh_token) {
+      console.error('❌ No refresh token received. Make sure offline_access scope is requested.');
+      return res.redirect(`${frontendUrl}/profile?outlook=error&message=Failed to obtain refresh token`);
+    }
+
+    console.log('✅ Tokens received successfully');
+
+    // Get user's email from Microsoft Graph
+    const userResponse = await axios.get('https://graph.microsoft.com/v1.0/me', {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
+
+    const userEmail = userResponse.data.userPrincipalName || userResponse.data.mail;
+    console.log('✅ User email retrieved:', userEmail);
+
+    // Calculate token expiration
+    const expiresAt = new Date(Date.now() + expires_in * 1000);
+
+    // Store tokens in database
+    await database.connect();
+    await database.run(
+      `UPDATE users 
+       SET outlook_access_token = $1,
+           outlook_refresh_token = $2,
+           outlook_token_expires_at = $3,
+           outlook_email = $4,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $5`,
+      [access_token, refresh_token, expiresAt.toISOString(), userEmail, userId]
+    );
+
+    console.log('✅ Tokens stored in database for user:', userId);
+
+    // Redirect back to frontend with success
+    res.redirect(`${frontendUrl}/profile?outlook=connected`);
+
+  } catch (error) {
+    console.error('❌ Outlook OAuth callback error:', error.response?.data || error.message);
+    const frontendUrl = process.env.FRONTEND_URL || 'https://thesimpleai.netlify.app';
+    res.redirect(`${frontendUrl}/profile?outlook=error&message=Authentication failed`);
+  }
+});
+
+/**
+ * GET /outlook/status - Check Outlook connection status
+ */
+router.get('/outlook/status', authenticateToken, async (req, res) => {
+  try {
+    await database.connect();
+    const user = await database.get(
+      'SELECT outlook_email, outlook_token_expires_at FROM users WHERE id = $1',
+      [req.user.id]
+    );
+
+    const isConnected = !!(user && user.outlook_email);
+    const isExpired = isConnected && user.outlook_token_expires_at && 
+                     new Date(user.outlook_token_expires_at) <= new Date();
+
+    res.json({
+      success: true,
+      isConnected,
+      isExpired,
+      email: isConnected ? user.outlook_email : null
+    });
+
+  } catch (error) {
+    console.error('Outlook status check error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to check Outlook connection status',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * POST /outlook/disconnect - Disconnect Outlook account
+ */
+router.post('/outlook/disconnect', authenticateToken, async (req, res) => {
+  try {
+    await database.connect();
+    await database.run(
+      `UPDATE users 
+       SET outlook_access_token = NULL,
+           outlook_refresh_token = NULL,
+           outlook_token_expires_at = NULL,
+           outlook_email = NULL,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1`,
+      [req.user.id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Outlook account disconnected successfully'
+    });
+
+  } catch (error) {
+    console.error('Outlook disconnect error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to disconnect Outlook account',
       error: error.message
     });
   }

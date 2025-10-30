@@ -61,9 +61,21 @@ function ProfileSettings() {
     }
   }, [user]);
 
-  // Load connected email on component mount
+  // Load connected email and check Outlook status on component mount
   useEffect(() => {
-    setConnectedEmail(emailService.getConnectedEmail());
+    const loadEmailStatus = async () => {
+      // Check Outlook connection status from backend
+      const outlookStatus = await emailService.checkOutlookStatus();
+      if (outlookStatus.isConnected && !outlookStatus.isExpired) {
+        setConnectedEmail({
+          outlook: {
+            connected: true,
+            email: outlookStatus.email
+          }
+        });
+      }
+    };
+    loadEmailStatus();
   }, []);
 
   // Check Google Calendar connection status
@@ -81,17 +93,41 @@ function ProfileSettings() {
     checkGoogleStatus();
   }, []);
 
-  // Handle Google Calendar connection result from URL query
+  // Handle Google Calendar and Outlook connection results from URL query
   useEffect(() => {
-    const { google_calendar } = router.query;
+    const { google_calendar, outlook, message } = router.query;
+    
+    // Handle Google Calendar callback
     if (google_calendar === 'connected') {
       setGoogleCalendarStatus(true);
       toast.success('Google Calendar connected successfully!');
-      // Clean up URL
       router.replace('/profile', undefined, { shallow: true });
     } else if (google_calendar === 'error') {
       toast.error('Failed to connect Google Calendar');
       router.replace('/profile', undefined, { shallow: true });
+    }
+    
+    // Handle Outlook OAuth callback
+    if (outlook === 'connected') {
+      setActiveTab('email');
+      toast.success('Outlook connected successfully!');
+      // Reload Outlook status
+      emailService.checkOutlookStatus().then(status => {
+        if (status.isConnected) {
+          setConnectedEmail({
+            outlook: {
+              connected: true,
+              email: status.email
+            }
+          });
+        }
+      });
+      router.replace('/profile?tab=email', undefined, { shallow: true });
+    } else if (outlook === 'error') {
+      setActiveTab('email');
+      const errorMessage = message ? decodeURIComponent(message) : 'Failed to connect Outlook';
+      toast.error(errorMessage);
+      router.replace('/profile?tab=email', undefined, { shallow: true });
     }
   }, [router.query]);
 
@@ -108,10 +144,16 @@ function ProfileSettings() {
     toast.success(`${provider === 'outlook' ? 'Outlook' : 'Email'} connected successfully!`);
   };
 
-  const handleDisconnectEmail = (provider) => {
-    emailService.disconnectEmail(provider);
-    setConnectedEmail(emailService.getConnectedEmail());
-    toast.success(`${provider === 'outlook' ? 'Outlook' : 'Email'} disconnected`);
+  const handleDisconnectEmail = async (provider) => {
+    if (provider === 'outlook') {
+      const result = await emailService.disconnectOutlook();
+      if (result.success) {
+        setConnectedEmail({});
+        toast.success('Outlook disconnected successfully');
+      } else {
+        toast.error('Failed to disconnect Outlook');
+      }
+    }
   };
 
   const handleGoogleCalendarConnect = async () => {
@@ -489,9 +531,11 @@ function ProfileSettings() {
                           <button
                             onClick={async () => {
                               const result = await emailService.connectOutlook();
-                              if (result.success) {
+                              // The page will redirect to Microsoft OAuth
+                              // No need to handle result here - it will be handled in the callback
+                              if (result.success && !result.pending) {
                                 handleEmailConnected('outlook', result.user);
-                              } else {
+                              } else if (!result.success && !result.pending) {
                                 toast.error(result.error || 'Failed to connect Outlook');
                               }
                             }}
