@@ -190,7 +190,12 @@ export const authAPI = {
   createUser: (userData) => api.post('/auth/users', userData),
   updateUser: (userId, userData) => api.put(`/auth/users/${userId}`, userData),
   deleteUser: (userId) => api.delete(`/auth/users/${userId}`),
-  getStats: () => api.get('/auth/stats')
+  getStats: () => api.get('/auth/stats'),
+  
+  // Google Calendar integration
+  getGoogleAuthUrl: () => api.get('/auth/google/auth').then(res => res.data),
+  getGoogleStatus: () => api.get('/auth/google/status').then(res => res.data),
+  disconnectGoogle: () => api.post('/auth/google/disconnect').then(res => res.data)
 };
 
 export const cvAPI = {

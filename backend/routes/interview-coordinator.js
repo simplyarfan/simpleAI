@@ -63,6 +63,15 @@ try {
   console.error('❌ Failed to load Google Calendar Service:', error.message);
 }
 
+// Load Meet Link Generator Service
+let meetLinkGenerator = null;
+try {
+  meetLinkGenerator = require('../services/meetLinkGenerator');
+  console.log('✅ Meet Link Generator loaded successfully');
+} catch (error) {
+  console.error('❌ Failed to load Meet Link Generator:', error.message);
+}
+
 const router = express.Router();
 
 /**
@@ -350,53 +359,18 @@ router.post('/schedule-interview', authenticateToken, generalLimiter, upload.sin
       });
     }
 
-    // Generate proper meeting link based on platform
+    // Generate proper meeting link based on platform using our link generator
     let meetingLink = '';
     let googleEventId = null;
     
-    // Try to create real Google Meet link if Google Calendar is connected and platform is Google Meet
-    if (platform === 'Google Meet' && GoogleCalendarService) {
-      try {
-        const googleMeetResult = await GoogleCalendarService.createCalendarEventWithMeet(
-          req.user.id,
-          {
-            candidateName: interview.candidate_name,
-            candidateEmail: interview.candidate_email,
-            position: interview.job_title,
-            interviewType: interviewType || 'technical',
-            scheduledTime,
-            duration: duration || 60,
-            notes: notes || ''
-          }
-        );
-        
-        meetingLink = googleMeetResult.meetingLink;
-        googleEventId = googleMeetResult.eventId;
-        console.log('✅ Real Google Meet link created:', meetingLink);
-      } catch (error) {
-        console.log('⚠️  Could not create real Google Meet link (user may not have connected Google):', error.message);
-        // Fallback to placeholder
-        const generateMeetCode = () => {
-          const chars = 'abcdefghijklmnopqrstuvwxyz';
-          const part1 = Array(3).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
-          const part2 = Array(4).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
-          const part3 = Array(3).fill(0).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
-          return `${part1}-${part2}-${part3}`;
-        };
-        meetingLink = `https://meet.google.com/${generateMeetCode()}`;
-        console.log('📝 Using placeholder Google Meet link:', meetingLink);
-      }
-    } else if (platform === 'Microsoft Teams') {
-      // For Teams, we could use Microsoft Graph API if configured
-      const meetingId = `19:meeting_${Buffer.from(scheduledTime).toString('base64').substring(0, 32)}`;
-      meetingLink = `https://teams.microsoft.com/l/meetup-join/${meetingId}`;
-    } else if (platform === 'Zoom') {
-      // For Zoom, would need Zoom API integration
-      const meetingId = Math.floor(Math.random() * 9000000000) + 1000000000;
-      meetingLink = `https://zoom.us/j/${meetingId}`;
-      console.log('⚠️  Note: This is a placeholder Zoom link. For production, integrate with Zoom API.');
+    // Generate meeting link based on platform (no OAuth required!)
+    if (meetLinkGenerator) {
+      meetingLink = meetLinkGenerator.generateLinkForPlatform(platform);
+      console.log(`✅ Generated ${platform} link:`, meetingLink);
     } else {
-      meetingLink = 'To be provided';
+      // Fallback if link generator is not available
+      meetingLink = 'Meeting link will be provided';
+      console.log('⚠️  Meet link generator not available, using fallback');
     }
     
     console.log('🔗 Meeting link:', meetingLink);

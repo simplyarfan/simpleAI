@@ -70,7 +70,7 @@ function ProfileSettings() {
   useEffect(() => {
     const checkGoogleStatus = async () => {
       try {
-        const response = await authAPI.get('/auth/google/status');
+        const response = await authAPI.getGoogleStatus();
         if (response.success) {
           setGoogleCalendarStatus(response.isConnected);
         }
@@ -117,7 +117,7 @@ function ProfileSettings() {
   const handleGoogleCalendarConnect = async () => {
     setLoadingGoogle(true);
     try {
-      const response = await authAPI.get('/auth/google/auth');
+      const response = await authAPI.getGoogleAuthUrl();
       if (response.success && response.authUrl) {
         // Redirect to Google OAuth
         window.location.href = response.authUrl;
@@ -135,7 +135,7 @@ function ProfileSettings() {
   const handleGoogleCalendarDisconnect = async () => {
     setLoadingGoogle(true);
     try {
-      const response = await authAPI.post('/auth/google/disconnect');
+      const response = await authAPI.disconnectGoogle();
       if (response.success) {
         setGoogleCalendarStatus(false);
         toast.success('Google Calendar disconnected successfully');

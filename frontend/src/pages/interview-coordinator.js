@@ -515,84 +515,107 @@ Best regards,
           ) : (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidate</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled Time</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white">
                     {filteredInterviews.map((interview) => (
-                      <tr 
-                        key={interview.id} 
-                        className="hover:bg-gray-50 cursor-pointer transition-colors"
-                        onClick={() => router.push(`/interview-coordinator/${interview.id}`)}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{interview.candidate_name}</div>
-                            <div className="text-sm text-gray-500">{interview.candidate_email}</div>
+                      <tr key={interview.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-start space-x-4">
+                            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                              <User className="w-5 h-5 text-white" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-semibold text-gray-900">{interview.candidate_name}</div>
+                              <div className="text-sm text-gray-600">{interview.candidate_email}</div>
+                            </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{interview.job_title}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(interview.status, interview.outcome)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {interview.scheduled_time ? new Date(interview.scheduled_time).toLocaleString() : '-'}
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-medium text-gray-900">{interview.job_title}</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {interview.interview_type && `${interview.interview_type} interview`}
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2" onClick={(e) => e.stopPropagation()}>
-                          {interview.status === 'awaiting_response' && (
-                            <button
-                              onClick={() => {
-                                setSelectedInterview(interview);
-                                setShowScheduleModal(true);
-                              }}
-                              className="text-blue-600 hover:text-blue-900"
-                            >
-                              Schedule
-                            </button>
-                          )}
-                          {interview.status === 'scheduled' && (
-                            <>
+                        <td className="px-6 py-4">
+                          <div className="space-y-2">
+                            {getStatusBadge(interview.status, interview.outcome)}
+                            {interview.meeting_link && (
+                              <div className="text-xs text-blue-600 truncate max-w-[200px]">
+                                <a href={interview.meeting_link} target="_blank" rel="noopener noreferrer" className="hover:underline" onClick={(e) => e.stopPropagation()}>
+                                  {interview.platform || 'Meeting'} Link
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="space-y-3">
+                            <div className="text-sm text-gray-900">
+                              {interview.scheduled_time ? new Date(interview.scheduled_time).toLocaleString() : '-'}
+                            </div>
+                            
+                            {/* Inline Action Buttons */}
+                            <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+                              {interview.status === 'awaiting_response' && (
+                                <button
+                                  onClick={() => {
+                                    setSelectedInterview(interview);
+                                    setShowScheduleModal(true);
+                                  }}
+                                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors inline-flex items-center"
+                                >
+                                  <Calendar className="w-3 h-3 mr-1" />
+                                  Schedule
+                                </button>
+                              )}
+                              {interview.status === 'scheduled' && (
+                                <>
+                                  <button
+                                    onClick={() => downloadCalendar(interview.id, interview.candidate_name)}
+                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"
+                                  >
+                                    Download ICS
+                                  </button>
+                                  <button
+                                    onClick={() => updateInterviewStatus(interview.id, 'completed')}
+                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors"
+                                  >
+                                    Complete
+                                  </button>
+                                </>
+                              )}
+                              {interview.status === 'completed' && !interview.outcome && (
+                                <>
+                                  <button
+                                    onClick={() => updateInterviewStatus(interview.id, 'completed', 'selected')}
+                                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors"
+                                  >
+                                    Select
+                                  </button>
+                                  <button
+                                    onClick={() => updateInterviewStatus(interview.id, 'completed', 'rejected')}
+                                    className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors"
+                                  >
+                                    Reject
+                                  </button>
+                                </>
+                              )}
                               <button
-                                onClick={() => downloadCalendar(interview.id, interview.candidate_name)}
-                                className="text-green-600 hover:text-green-900"
+                                onClick={() => deleteInterview(interview.id)}
+                                className="px-3 py-1.5 border border-red-300 hover:bg-red-50 text-red-600 text-xs font-medium rounded-lg transition-colors"
                               >
-                                Download ICS
+                                Delete
                               </button>
-                              <button
-                                onClick={() => updateInterviewStatus(interview.id, 'completed')}
-                                className="text-blue-600 hover:text-blue-900"
-                              >
-                                Mark Complete
-                              </button>
-                            </>
-                          )}
-                          {interview.status === 'completed' && !interview.outcome && (
-                            <>
-                              <button
-                                onClick={() => updateInterviewStatus(interview.id, 'completed', 'selected')}
-                                className="text-green-600 hover:text-green-900"
-                              >
-                                Select
-                              </button>
-                              <button
-                                onClick={() => updateInterviewStatus(interview.id, 'completed', 'rejected')}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                Reject
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => deleteInterview(interview.id)}
-                            className="text-red-600 hover:text-red-900 ml-2"
-                          >
-                            Delete
-                          </button>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     ))}

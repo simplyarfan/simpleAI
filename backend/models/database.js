@@ -179,6 +179,11 @@ class Database {
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_secret VARCHAR(255)`);
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_code VARCHAR(10)`);
         await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS two_factor_code_expires_at TIMESTAMP`);
+        
+        // Google Calendar columns
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_access_token TEXT`);
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_refresh_token TEXT`);
+        await this.run(`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_token_expires_at TIMESTAMP`);
       } catch (error) {
         // Columns already exist
       }
@@ -412,6 +417,7 @@ class Database {
         await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS outcome VARCHAR(50)`);
         await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS scheduled_at TIMESTAMP`);
         await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS cv_file_path TEXT`);
+        await this.run(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS google_event_id VARCHAR(255)`);
         console.log('✅ Added missing columns to interviews table');
       } catch (error) {
         console.log('ℹ️  Interview columns already exist or error:', error.message);
