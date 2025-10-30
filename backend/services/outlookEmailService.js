@@ -19,7 +19,7 @@ class OutlookEmailService {
     try {
       await database.connect();
       const user = await database.get(
-        'SELECT outlook_access_token, outlook_refresh_token, outlook_token_expires_at FROM users WHERE id = ?',
+        'SELECT outlook_access_token, outlook_refresh_token, outlook_token_expires_at FROM users WHERE id = $1',
         [userId]
       );
 
@@ -67,7 +67,7 @@ class OutlookEmailService {
 
       // Update tokens in database
       await database.run(
-        'UPDATE users SET outlook_access_token = ?, outlook_refresh_token = ?, outlook_token_expires_at = ? WHERE id = ?',
+        'UPDATE users SET outlook_access_token = $1, outlook_refresh_token = $2, outlook_token_expires_at = $3 WHERE id = $4',
         [access_token, refresh_token || refreshToken, expiresAt.toISOString(), userId]
       );
 

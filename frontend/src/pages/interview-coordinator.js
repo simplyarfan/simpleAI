@@ -28,6 +28,8 @@ const InterviewCoordinator = () => {
   const [selectedInterview, setSelectedInterview] = useState(null);
   const [showOutlookPrompt, setShowOutlookPrompt] = useState(false);
   const [outlookConnected, setOutlookConnected] = useState(false);
+  const [googleCalendarConnected, setGoogleCalendarConnected] = useState(false);
+  const [showGooglePrompt, setShowGooglePrompt] = useState(false);
 
   // Form states
   const [availabilityForm, setAvailabilityForm] = useState({
@@ -84,6 +86,9 @@ Best regards,
     // Check if Outlook is connected
     checkOutlookConnection();
     
+    // Check if Google Calendar is connected
+    checkGoogleCalendarConnection();
+    
     fetchInterviews();
     
     // Handle pre-filled data from CV Intelligence
@@ -138,6 +143,38 @@ Best regards,
     router.push('/profile?tab=email');
   };
 
+  const checkGoogleCalendarConnection = async () => {
+    try {
+      const headers = getAuthHeaders();
+      if (!headers) return;
+      
+      const API_URL = process.env.NEXT_PUBLIC_API_URL + '/api';
+      const response = await axios.get(
+        `${API_URL}/auth/google/status`,
+        { headers }
+      );
+      
+      if (response.data?.success && response.data?.isConnected) {
+        console.log('✅ Google Calendar is connected');
+        setGoogleCalendarConnected(true);
+        setShowGooglePrompt(false);
+      } else {
+        console.log('❌ Google Calendar is NOT connected');
+        setGoogleCalendarConnected(false);
+        setShowGooglePrompt(true);
+      }
+    } catch (error) {
+      console.error('Failed to check Google Calendar connection:', error);
+      setGoogleCalendarConnected(false);
+      setShowGooglePrompt(true);
+    }
+  };
+
+  const connectGoogleCalendar = () => {
+    // Redirect to profile with calendar tab
+    router.push('/profile?tab=calendar');
+  };
+
   const fetchInterviews = async () => {
     try {
       setLoading(true);
@@ -180,6 +217,13 @@ Best regards,
   };
 
   const handleRequestAvailability = async () => {
+    // Check if Google Calendar is connected
+    if (!googleCalendarConnected) {
+      toast.error('Please connect your Google Calendar first');
+      setShowGooglePrompt(true);
+      return;
+    }
+    
     try {
       setLoading(true);
       const headers = getAuthHeaders();
@@ -217,6 +261,12 @@ Best regards,
     } catch (error) {
       console.error('Availability request error:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to send availability request';
+      
+      // Check if error is specifically about Google Calendar
+      if (error.response?.data?.requiresGoogleCalendar) {
+        setShowGooglePrompt(true);
+      }
+      
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -371,6 +421,59 @@ Best regards,
   };
 
   if (!user) return null;
+
+  // Block access if Google Calendar is not connected (REQUIRED)
+  if (!googleCalendarConnected && !loading) {
+    return (
+      <>
+        <Head>
+          <title>Interview Coordinator - Enterprise AI Platform</title>
+        </Head>
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full">
+            <div className="bg-white rounded-2xl shadow-xl border border-orange-100 p-8">
+              <div className="text-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Calendar className="w-10 h-10 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-3">
+                  Connect Your Google Calendar
+                </h1>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  To use the Interview Coordinator, you need to connect your Google Calendar account first. This allows us to create Google Meet links and manage interview schedules.
+                </p>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-start space-x-3">
+                    <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-orange-800 text-left">
+                      <p className="font-medium mb-1">Why is this required?</p>
+                      <p className="text-orange-700">We need access to your Google Calendar to create meetings with Google Meet links, send calendar invites, and manage interview schedules seamlessly.</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <button
+                    onClick={connectGoogleCalendar}
+                    className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <Calendar className="w-5 h-5 mr-2" />
+                    Connect Google Calendar
+                  </button>
+                  <button
+                    onClick={() => router.push('/')}
+                    className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    Go Back Home
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   // Block access if Outlook is not connected
   if (!outlookConnected && !loading) {

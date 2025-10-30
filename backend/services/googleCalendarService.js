@@ -9,10 +9,15 @@ const database = require('../models/database');
 
 class GoogleCalendarService {
   constructor() {
+    // Redirect URI must be the BACKEND URL where the callback is handled
+    const backendUrl = process.env.BACKEND_URL || process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'https://thesimpleai.vercel.app';
+    
     this.oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      `${process.env.FRONTEND_URL || 'https://thesimpleai.vercel.app'}/api/auth/google/callback`
+      `${backendUrl}/api/auth/google/callback`
     );
   }
 

@@ -157,6 +157,18 @@ router.post('/request-availability', authenticateToken, generalLimiter, async (r
   try {
     console.log('📧 Sending availability request for user:', req.user.id);
     
+    // Check if user has connected Google Calendar
+    if (GoogleCalendarService) {
+      const isGoogleConnected = await GoogleCalendarService.isUserConnected(req.user.id);
+      if (!isGoogleConnected) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please connect your Google Calendar first to use the Interview Coordinator',
+          requiresGoogleCalendar: true
+        });
+      }
+    }
+    
     const {
       candidateId,
       candidateName,
@@ -217,42 +229,20 @@ router.post('/request-availability', authenticateToken, generalLimiter, async (r
       userId: req.user.id
     });
 
-    // Send email FIRST using Microsoft Graph API
+    // Send email FIRST using OutlookEmailService
     try {
-
-      // Send email via Microsoft Graph API
-      const axios = require('axios');
-      const emailBody = emailContent || `Dear ${candidateName},
-
-We are pleased to inform you that we have shortlisted you for an interview for the ${position} position.
-
-${googleFormLink ? `Please fill out this form: ${googleFormLink}` : ''}
-
-Please let us know your availability.
-
-Best regards`;
-
-      await axios.post(
-        'https://graph.microsoft.com/v1.0/me/sendMail',
+      // Use the proper email service which handles token refresh
+      await OutlookEmailService.sendAvailabilityRequest(
+        req.user.id,
+        candidateEmail,
         {
-          message: {
-            subject: emailSubject || `Interview Opportunity - ${position}`,
-            body: {
-              contentType: 'Text',
-              content: emailBody
-            },
-            toRecipients: [
-              { emailAddress: { address: candidateEmail } }
-            ],
-            ccRecipients: ccEmails?.map(email => ({ emailAddress: { address: email } })) || [],
-            bccRecipients: bccEmails?.map(email => ({ emailAddress: { address: email } })) || []
-          }
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${user.outlook_access_token}`,
-            'Content-Type': 'application/json'
-          }
+          candidateName,
+          position,
+          googleFormLink,
+          customSubject: emailSubject,
+          customContent: emailContent,
+          ccEmails: ccEmails || [],
+          bccEmails: bccEmails || []
         }
       );
 
