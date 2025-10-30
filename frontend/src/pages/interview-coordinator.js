@@ -526,7 +526,11 @@ Best regards,
                   </thead>
                   <tbody className="bg-white">
                     {filteredInterviews.map((interview) => (
-                      <tr key={interview.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                      <tr 
+                        key={interview.id} 
+                        className="border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => router.push(`/interview-coordinator/${interview.id}`)}
+                      >
                         <td className="px-6 py-4">
                           <div className="flex items-start space-x-4">
                             <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center flex-shrink-0">
